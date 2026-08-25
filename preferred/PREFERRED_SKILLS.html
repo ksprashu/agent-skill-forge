@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferred Skills</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Preferred Skills</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="PREFERRED_SKILLS.html" class="sidebar-link active">Preferred Skills</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="preferred-domain-skills-catalog" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">🛠️ Preferred Domain Skills Catalog</h1>
+<p class="mb-4 text-[var(--text-secondary)]">This catalog lists curated, specialized engineering skills for on-demand (JIT) project bootstrapping. These skills are <strong>project-scoped</strong>—they are installed directly into your repository when needed rather than cluttering global agent memory.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="how-to-install-project-scoped-skills" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">⚡ How to Install Project-Scoped Skills</h2>
+<h3 id="method-1-local-monorepo-sync-instant-symlinks" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Method 1: Local Monorepo Sync (Instant Symlinks)</h3>
+<p class="mb-4 text-[var(--text-secondary)]">From your project's root directory:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Bootstrap 1 or more domain skills into .gemini/skills/ and .agents/skills/
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+</code></pre>
+            </div>
+            
+<h3 id="method-2-global---inline-code-0---registry-zero-config" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Method 2: Global <code class="inline-code">npx skills</code> Registry (Zero Config)</h3>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Pull directly from community / canonical remotes
+npx skills add addyosmani/agent-skills --skill &lt;skill-name&gt;
+</code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="curated-domain-skills-directory" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📦 Curated Domain Skills Directory</h2>
+<h3 id="frontend-design" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🎨 Frontend & Design</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">frontend-ui-engineering</code></strong></li>
+<li>  <strong>What it does:</strong> Enforces modern CSS (<code class="inline-code">:has()</code>, container queries, subgrid, View Transitions API) and bans obsolete layout hacks.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill frontend-ui-engineering</code></li>
+</ul>
+<h3 id="performance-core-web-vitals" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">⚡ Performance & Core Web Vitals</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">performance-optimization</code></strong></li>
+<li>  <strong>What it does:</strong> Enforces LCP/INP performance budgets, identifies memory leaks, and fixes layout thrashing.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills performance-optimization</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill performance-optimization</code></li>
+</ul>
+<h3 id="architecture-api-contracts" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🔌 Architecture & API Contracts</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">api-and-interface-design</code></strong></li>
+<li>  <strong>What it does:</strong> Designs resilient REST/gRPC interfaces, enforces Hyrum's law guardrails, discriminated unions, and idempotency keys.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills api-and-interface-design</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill api-and-interface-design</code></li>
+</ul>
+<h3 id="security-hardening" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🛡️ Security & Hardening</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">security-and-hardening</code></strong></li>
+<li>  <strong>What it does:</strong> Builds threat models, enforces OWASP Top 10 mitigations, remediates CWE vulnerabilities, and secures input boundaries.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills security-and-hardening</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill security-and-hardening</code></li>
+</ul>
+<h3 id="database-schema-migrations" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🗄️ Database & Schema Migrations</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">deprecation-and-migration</code></strong></li>
+<li>  <strong>What it does:</strong> Executes Expand/Contract database migrations, non-blocking table alterations, and backward-compatible API deprecations.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills deprecation-and-migration</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill deprecation-and-migration</code></li>
+</ul>
+<h3 id="browser-e2e-testing" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧪 Browser & E2E Testing</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">browser-testing-with-devtools</code></strong></li>
+<li>  <strong>What it does:</strong> Drives headless Chrome DevTools for UI testing, traps runtime console errors, and verifies network responses.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills browser-testing-with-devtools</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill browser-testing-with-devtools</code></li>
+</ul>
+<h3 id="observability-telemetry" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">📊 Observability & Telemetry</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">observability-and-instrumentation</code></strong></li>
+<li>  <strong>What it does:</strong> Configures structured JSON logging, OpenTelemetry distributed tracing, and RED/USE metrics emission.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills observability-and-instrumentation</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill observability-and-instrumentation</code></li>
+</ul>
+<h3 id="ci-cd-automation" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🚀 CI/CD & Automation</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">ci-cd-and-automation</code></strong></li>
+<li>  <strong>What it does:</strong> Scaffolds multi-platform GitHub Actions workflows, automated matrix tests, release tagging, and lint presubmits.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills ci-cd-and-automation</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill ci-cd-and-automation</code></li>
+</ul>
+<h3 id="debugging-diagnostics" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🐛 Debugging & Diagnostics</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">debugging-and-error-recovery</code></strong></li>
+<li>  <strong>What it does:</strong> Deconstructs stack traces, isolates minimal reproducible examples, and applies defensive error recovery.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills debugging-and-error-recovery</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill debugging-and-error-recovery</code></li>
+</ul>
+<h3 id="git-workflow-versioning" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🔀 Git Workflow & Versioning</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">git-workflow-and-versioning</code></strong></li>
+<li>  <strong>What it does:</strong> Enforces conventional commits, atomic PRs, semantic versioning, and clean linear Git history.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills git-workflow-and-versioning</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill git-workflow-and-versioning</code></li>
+</ul>
+<h3 id="context-engineering" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧠 Context Engineering</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">context-engineering</code></strong></li>
+<li>  <strong>What it does:</strong> Optimizes token context windows, designs compact system instructions, and manages memory eviction for LLM workflows.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills context-engineering</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add addyosmani/agent-skills --skill context-engineering</code></li>
+</ul>
+<h3 id="benchmark-harness" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">⚖️ Benchmark Harness</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">benchmark-harness</code></strong></li>
+<li>  <strong>What it does:</strong> Runs automated physical verification and Dual Gemini LLM-as-a-Judge scoring across 12 standardized software engineering use cases.</li>
+<li>  <strong>Install:</strong> <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills benchmark-harness</code></li>
+<li>  <strong>Remote:</strong> <code class="inline-code">npx skills add agent-skill-forge --skill benchmark-harness</code></li>
+</ul>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># 🛠️ Preferred Domain Skills Catalog
+
+This catalog lists curated, specialized engineering skills for on-demand (JIT) project bootstrapping. These skills are **project-scoped**—they are installed directly into your repository when needed rather than cluttering global agent memory.
+
+---
+
+## ⚡ How to Install Project-Scoped Skills
+
+### Method 1: Local Monorepo Sync (Instant Symlinks)
+From your project&#x27;s root directory:
+```bash
+# Bootstrap 1 or more domain skills into .gemini/skills/ and .agents/skills/
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+```
+
+### Method 2: Global `npx skills` Registry (Zero Config)
+```bash
+# Pull directly from community / canonical remotes
+npx skills add addyosmani/agent-skills --skill &lt;skill-name&gt;
+```
+
+---
+
+## 📦 Curated Domain Skills Directory
+
+### 🎨 Frontend &amp; Design
+*   **`frontend-ui-engineering`**
+    *   **What it does:** Enforces modern CSS (`:has()`, container queries, subgrid, View Transitions API) and bans obsolete layout hacks.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill frontend-ui-engineering`
+
+### ⚡ Performance &amp; Core Web Vitals
+*   **`performance-optimization`**
+    *   **What it does:** Enforces LCP/INP performance budgets, identifies memory leaks, and fixes layout thrashing.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills performance-optimization`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill performance-optimization`
+
+### 🔌 Architecture &amp; API Contracts
+*   **`api-and-interface-design`**
+    *   **What it does:** Designs resilient REST/gRPC interfaces, enforces Hyrum&#x27;s law guardrails, discriminated unions, and idempotency keys.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills api-and-interface-design`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill api-and-interface-design`
+
+### 🛡️ Security &amp; Hardening
+*   **`security-and-hardening`**
+    *   **What it does:** Builds threat models, enforces OWASP Top 10 mitigations, remediates CWE vulnerabilities, and secures input boundaries.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills security-and-hardening`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill security-and-hardening`
+
+### 🗄️ Database &amp; Schema Migrations
+*   **`deprecation-and-migration`**
+    *   **What it does:** Executes Expand/Contract database migrations, non-blocking table alterations, and backward-compatible API deprecations.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills deprecation-and-migration`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill deprecation-and-migration`
+
+### 🧪 Browser &amp; E2E Testing
+*   **`browser-testing-with-devtools`**
+    *   **What it does:** Drives headless Chrome DevTools for UI testing, traps runtime console errors, and verifies network responses.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills browser-testing-with-devtools`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill browser-testing-with-devtools`
+
+### 📊 Observability &amp; Telemetry
+*   **`observability-and-instrumentation`**
+    *   **What it does:** Configures structured JSON logging, OpenTelemetry distributed tracing, and RED/USE metrics emission.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills observability-and-instrumentation`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill observability-and-instrumentation`
+
+### 🚀 CI/CD &amp; Automation
+*   **`ci-cd-and-automation`**
+    *   **What it does:** Scaffolds multi-platform GitHub Actions workflows, automated matrix tests, release tagging, and lint presubmits.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills ci-cd-and-automation`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill ci-cd-and-automation`
+
+### 🐛 Debugging &amp; Diagnostics
+*   **`debugging-and-error-recovery`**
+    *   **What it does:** Deconstructs stack traces, isolates minimal reproducible examples, and applies defensive error recovery.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills debugging-and-error-recovery`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill debugging-and-error-recovery`
+
+### 🔀 Git Workflow &amp; Versioning
+*   **`git-workflow-and-versioning`**
+    *   **What it does:** Enforces conventional commits, atomic PRs, semantic versioning, and clean linear Git history.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills git-workflow-and-versioning`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill git-workflow-and-versioning`
+
+### 🧠 Context Engineering
+*   **`context-engineering`**
+    *   **What it does:** Optimizes token context windows, designs compact system instructions, and manages memory eviction for LLM workflows.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills context-engineering`
+    *   **Remote:** `npx skills add addyosmani/agent-skills --skill context-engineering`
+
+### ⚖️ Benchmark Harness
+*   **`benchmark-harness`**
+    *   **What it does:** Runs automated physical verification and Dual Gemini LLM-as-a-Judge scoring across 12 standardized software engineering use cases.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills benchmark-harness`
+    *   **Remote:** `npx skills add agent-skill-forge --skill benchmark-harness`
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#how-to-install-project-scoped-skills" class="sidebar-link text-xs">⚡ How to Install Project-Scoped Skills</a>
+<a href="#method-1-local-monorepo-sync-instant-symlinks" class="sidebar-link text-xs ml-2">Method 1: Local Monorepo Sync (Instant Symlinks)</a>
+<a href="#method-2-global---inline-code-0---registry-zero-config" class="sidebar-link text-xs ml-2">Method 2: Global <!--INLINE_CODE_0--> Registry (Zero Config)</a>
+<a href="#curated-domain-skills-directory" class="sidebar-link text-xs">📦 Curated Domain Skills Directory</a>
+<a href="#frontend-design" class="sidebar-link text-xs ml-2">🎨 Frontend & Design</a>
+<a href="#performance-core-web-vitals" class="sidebar-link text-xs ml-2">⚡ Performance & Core Web Vitals</a>
+<a href="#architecture-api-contracts" class="sidebar-link text-xs ml-2">🔌 Architecture & API Contracts</a>
+<a href="#security-hardening" class="sidebar-link text-xs ml-2">🛡️ Security & Hardening</a>
+<a href="#database-schema-migrations" class="sidebar-link text-xs ml-2">🗄️ Database & Schema Migrations</a>
+<a href="#browser-e2e-testing" class="sidebar-link text-xs ml-2">🧪 Browser & E2E Testing</a>
+<a href="#observability-telemetry" class="sidebar-link text-xs ml-2">📊 Observability & Telemetry</a>
+<a href="#ci-cd-automation" class="sidebar-link text-xs ml-2">🚀 CI/CD & Automation</a>
+<a href="#debugging-diagnostics" class="sidebar-link text-xs ml-2">🐛 Debugging & Diagnostics</a>
+<a href="#git-workflow-versioning" class="sidebar-link text-xs ml-2">🔀 Git Workflow & Versioning</a>
+<a href="#context-engineering" class="sidebar-link text-xs ml-2">🧠 Context Engineering</a>
+<a href="#benchmark-harness" class="sidebar-link text-xs ml-2">⚖️ Benchmark Harness</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

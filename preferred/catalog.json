@@ -1,0 +1,114 @@
+{
+  "version": "1.0.0",
+  "forge": "agent-skill-forge",
+  "skills": [
+    {
+      "name": "frontend-ui-engineering",
+      "category": "Frontend & Design",
+      "description": "Modern CSS layouts, View Transitions, :has() selector, container queries, and slop-free component design.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill frontend-ui-engineering",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/frontend-ui-engineering",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills frontend-ui-engineering",
+      "tags": ["css", "html", "react", "view-transitions", "ui", "a11y"]
+    },
+    {
+      "name": "performance-optimization",
+      "category": "Performance & CWV",
+      "description": "Core Web Vitals (CWV) budgets, LCP/INP optimization, memory leak diagnosis, and performance profiling.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill performance-optimization",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/performance-optimization",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills performance-optimization",
+      "tags": ["perf", "cwv", "lcp", "inp", "memory", "profiling"]
+    },
+    {
+      "name": "api-and-interface-design",
+      "category": "Architecture & APIs",
+      "description": "Hyrum's law, discriminated unions, idempotent routes, backward compatibility, and RESTful contract design.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill api-and-interface-design",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/api-and-interface-design",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills api-and-interface-design",
+      "tags": ["api", "rest", "typescript", "architecture", "contracts"]
+    },
+    {
+      "name": "security-and-hardening",
+      "category": "Security & Sentry",
+      "description": "Trust boundary mapping, OWASP Top 10 mitigations, CWE fixes, input validation, and secret sanitization.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill security-and-hardening",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/security-and-hardening",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills security-and-hardening",
+      "tags": ["security", "owasp", "cwe", "sast", "auth"]
+    },
+    {
+      "name": "deprecation-and-migration",
+      "category": "Database & Infrastructure",
+      "description": "Expand/Contract schema evolution, non-blocking database operations, and zero-downtime API versioning.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill deprecation-and-migration",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/deprecation-and-migration",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills deprecation-and-migration",
+      "tags": ["database", "migration", "schema", "postgres", "sql"]
+    },
+    {
+      "name": "browser-testing-with-devtools",
+      "category": "Testing & QA",
+      "description": "Chrome DevTools automation, console message trapping, network payload auditing, and visual layout assertions.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill browser-testing-with-devtools",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/browser-testing-with-devtools",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills browser-testing-with-devtools",
+      "tags": ["browser", "devtools", "e2e", "qa", "chrome"]
+    },
+    {
+      "name": "observability-and-instrumentation",
+      "category": "Ops & Telemetry",
+      "description": "Structured JSON logging, OpenTelemetry distributed tracing, metrics emission, and production monitoring.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill observability-and-instrumentation",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/observability-and-instrumentation",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills observability-and-instrumentation",
+      "tags": ["logging", "tracing", "opentelemetry", "metrics", "cloud"]
+    },
+    {
+      "name": "ci-cd-and-automation",
+      "category": "DevOps & Pipelines",
+      "description": "GitHub Actions matrix workflows, automated release tags, presubmit lint gates, and automated test runners.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill ci-cd-and-automation",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/ci-cd-and-automation",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills ci-cd-and-automation",
+      "tags": ["ci", "cd", "github-actions", "devops", "automation"]
+    },
+    {
+      "name": "debugging-and-error-recovery",
+      "category": "Debugging & Diagnostics",
+      "description": "Root-cause isolation, stack trace deconstruction, error boundaries, and defensive remediation loops.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill debugging-and-error-recovery",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/debugging-and-error-recovery",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills debugging-and-error-recovery",
+      "tags": ["debugging", "errors", "diagnostics", "troubleshooting"]
+    },
+    {
+      "name": "git-workflow-and-versioning",
+      "category": "Git & Release",
+      "description": "Conventional commits, semantic release tagging, squash merges, clean rebase flows, and PR structuring.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill git-workflow-and-versioning",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/git-workflow-and-versioning",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills git-workflow-and-versioning",
+      "tags": ["git", "versioning", "commits", "pr", "releases"]
+    },
+    {
+      "name": "context-engineering",
+      "category": "AI Engineering",
+      "description": "Long-context token efficiency, prompt packing, knowledge chunking, and memory eviction strategies.",
+      "npx_command": "npx skills add addyosmani/agent-skills --skill context-engineering",
+      "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/context-engineering",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills context-engineering",
+      "tags": ["context", "tokens", "rag", "prompting", "memory"]
+    },
+    {
+      "name": "benchmark-harness",
+      "category": "Benchmarking & Evals",
+      "description": "Universal AI assistant evaluation suite scoring codebases across 12 standardized engineering use cases.",
+      "npx_command": "npx skills add agent-skill-forge --skill benchmark-harness",
+      "github_url": "https://github.com/agent-skill-forge/agent-skill-forge/tree/main/preferred/benchmark-harness",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills benchmark-harness",
+      "tags": ["evals", "benchmark", "llm-judge", "scoring", "harness"]
+    }
+  ]
+}
