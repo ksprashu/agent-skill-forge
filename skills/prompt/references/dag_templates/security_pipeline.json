@@ -1,0 +1,63 @@
+{
+  "domain": "security",
+  "name": "Autonomous Security Swarm Pipeline",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "node_01_vulnerability_scan",
+      "name": "Vulnerability Scanning",
+      "prompt_template": "Run security scans on the repository using run_security_scanner. Catalog all issues with CWE IDs.",
+      "subagent_role": "Auditor - Security Scanner",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "verification_gate": {
+        "verifier_role": "Sentry - Scan Auditor",
+        "verifier_prompt": "Audit scan outputs and confirm all discovered vulnerabilities are logged.",
+        "blocking_criteria": ["run_security_scanner_executed", "vulnerabilities_logged"]
+      }
+    },
+    {
+      "id": "node_02_patch_drafting",
+      "name": "Mitigation Plan & Patch Drafting",
+      "prompt_template": "Run create-security-implementation-plan and draft safe code patches in sandboxed branches.",
+      "subagent_role": "Producer - Patch Writer",
+      "model_tier": "pro",
+      "workspace_mode": "branch",
+      "dependencies": ["node_01_vulnerability_scan"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Patch Compiler",
+        "verifier_prompt": "Verify branch workspace compiles cleanly without syntax errors.",
+        "blocking_criteria": ["patch_compiles_cleanly"]
+      }
+    },
+    {
+      "id": "node_03_poc_verification",
+      "name": "Proof-of-Concept Verification",
+      "prompt_template": "Execute run_poc against patched code to verify vulnerabilities are no longer exploitable.",
+      "subagent_role": "Auditor - PoC Verifier",
+      "model_tier": "flash_medium",
+      "workspace_mode": "branch",
+      "dependencies": ["node_02_patch_drafting"],
+      "verification_gate": {
+        "verifier_role": "Sentry - PoC Auditor",
+        "verifier_prompt": "Verify run_poc output confirms zero exploitability.",
+        "blocking_criteria": ["run_poc_passed"]
+      }
+    },
+    {
+      "id": "node_04_audit_report",
+      "name": "Consolidated Audit Report",
+      "prompt_template": "Merge verified branch patches and generate consolidated security report via generate-security-audit-report.",
+      "subagent_role": "Mentor - Security Lead",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_03_poc_verification"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Security Report Auditor",
+        "verifier_prompt": "Verify audit report rendered and EVIDENCE.md recorded.",
+        "blocking_criteria": ["audit_report_exists", "evidence_recorded"]
+      }
+    }
+  ]
+}

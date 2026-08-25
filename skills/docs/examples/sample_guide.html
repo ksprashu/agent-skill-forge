@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Platform Reference</title>
+    <meta name="description" content="Reference guide demonstrating the custom documentation skill rendering capabilities">
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700;900&family=Outfit:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS Engine -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* LUMINOUS OBSIDIAN THEME (DARK PRESENTATION KEYNOTE) */
+        :root {
+            --bg-canvas: #070512;
+            --bg-surface: rgba(13, 11, 28, 0.7);
+            --bg-surface-alt: #121021;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a1bc;
+            --color-primary: #00f0ff;
+            --color-secondary: #ff007f;
+            --color-accent: #39ff14;
+            --color-accent-glow: rgba(0, 240, 255, 0.2);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 28px;
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.6);
+            --shadow-md: 0 16px 48px rgba(0,0,0,0.7);
+            --shadow-lg: 0 0 40px rgba(0, 240, 255, 0.15);
+        }
+        body {
+            background: radial-gradient(circle at 50% 0%, #160e34 0%, var(--bg-canvas) 80%);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 48px;
+            max-width: 1560px;
+            margin: 0 auto;
+            padding: 64px 48px;
+        }
+        @media(max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 120px;
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+            background: var(--bg-surface);
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            padding: 32px;
+        }
+        .prose-content {
+            max-width: 90ch;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-md);
+            padding: 56px;
+            margin-bottom: 48px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-panel:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+    
+        
+        /* Premium Global Elements */
+        body {
+            transition: all 0.3s ease;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Modern Glass-Morph Header */
+        .premium-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 11, 28, 0.45);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Dual View Tabs */
+        .tab-btn {
+            padding: 8px 24px;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--text-secondary);
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        
+        /* Spacious Typography Overrides */
+        .prose-content h1 {
+            font-family: var(--font-heading);
+            font-size: 2.75rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-top: 0rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.15;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .prose-content h2 {
+            font-family: var(--font-heading);
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin-top: 3.5rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            color: var(--color-primary);
+        }
+        .prose-content h3 {
+            font-family: var(--font-heading);
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--color-primary);
+        }
+        .prose-content p {
+            margin-bottom: 1.75rem;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        
+        /* Word Wrapping Table Rule (Global Guideline) */
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 36px 0;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--rounding);
+            overflow: hidden;
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 700;
+            text-align: left;
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table tr:hover {
+            background-color: rgba(255,255,255,0.01);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        .rich-table td:first-child code {
+            white-space: nowrap !important;
+            word-break: normal !important;
+        }
+        
+        /* Code container */
+        .code-container {
+            background-color: #0b0a13;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            margin: 36px 0;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: #06050a;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #859397;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+        }
+        pre {
+            margin: 0;
+            padding: 24px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.925rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+        }
+        
+        /* GFM alerts */
+        .admonition {
+            display: flex;
+            gap: 20px;
+            padding: 24px;
+            border-radius: var(--rounding);
+            border-left: 5px solid;
+            margin: 36px 0;
+            box-shadow: var(--shadow-sm);
+        }
+        .admonition-note {
+            border-left-color: #00d2ff;
+            background-color: rgba(0, 210, 255, 0.04);
+            color: var(--text-primary);
+        }
+        .admonition-tip {
+            border-left-color: #39ff14;
+            background-color: rgba(57, 255, 20, 0.04);
+            color: var(--text-primary);
+        }
+        .admonition-important {
+            border-left-color: #bd00ff;
+            background-color: rgba(189, 0, 255, 0.04);
+            color: var(--text-primary);
+        }
+        .admonition-warning {
+            border-left-color: #ffaa00;
+            background-color: rgba(255, 170, 0, 0.04);
+            color: var(--text-primary);
+        }
+        .admonition-caution {
+            border-left-color: #ff0055;
+            background-color: rgba(255, 0, 85, 0.04);
+            color: var(--text-primary);
+        }
+        
+        /* Sidebar layout links */
+        .sidebar-link {
+            display: block;
+            padding: 10px 16px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            transition: all 0.3s;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--color-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+        }
+        
+        /* Lists */
+        .list-disc {
+            list-style-type: none;
+            margin-left: 0;
+            margin-bottom: 32px;
+        }
+        .list-disc li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            font-size: 1.025rem;
+        }
+        .list-disc li::before {
+            content: "•";
+            color: var(--color-accent);
+            font-weight: bold;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 8px;
+            top: -4px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 0 !important;
+        }
+        .checklist-item::before {
+            display: none !important;
+        }
+        .checklist-item input[type="checkbox"] {
+            accent-color: var(--color-accent);
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-radius: 9999px;
+            border: 1px solid;
+            margin-right: 8px;
+        }
+        .badge-indigo {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+        }
+        .badge-teal {
+            background-color: rgba(20, 184, 166, 0.1);
+            border-color: rgba(20, 184, 166, 0.2);
+            color: #14b8a6;
+        }
+        .badge-green {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .badge-red {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .badge-yellow {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Premium Nav Bar with Dual-View Switcher -->
+    <header class="premium-header">
+        <div class="flex items-center gap-4">
+            <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="text-xs font-semibold tracking-widest uppercase opacity-40 text-white/70">Document Portal</span>
+        </div>
+        <div class="flex gap-2 bg-white/5 border border-white/10 rounded-full p-1">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ UI View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <!-- Base Layout Container -->
+    <div class="main-container">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar flex flex-col space-y-4">
+            <div class="pb-6 border-b border-white/5 mb-4">
+                <h1 class="text-xl font-black text-white/90">Interactive Platform Reference</h1>
+                <p class="text-xs text-white/40 mt-1">Reference guide demonstrating the custom documentation skill rendering capabilities</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a href="sample_guide.html" class="sidebar-link active">Sample Guide</a>
+            </nav>
+        </aside>
+
+        <!-- Dynamic View Contents -->
+        <main class="prose-content">
+            
+            <!-- Default UI Presentation View -->
+            <div id="ui-view" class="transition-all duration-300">
+                <!-- Spacious Hero Banner with SVG Background Art -->
+                <div class="relative overflow-hidden bg-gradient-to-br from-violet-950/20 to-cyan-950/10 border border-white/5 rounded-3xl p-12 mb-12 shadow-2xl flex flex-col justify-between min-h-[220px]">
+                    <div class="absolute inset-0 opacity-20 pointer-events-none">
+                        <!-- Abstract Wave Art -->
+                        <svg width="100%" height="100%" viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 0,150 Q 250,50 500,150 T 1000,150 L 1000,300 L 0,300 Z" fill="url(#wave-grad)"></path>
+                            <defs>
+                                <linearGradient id="wave-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ff007f"></stop>
+                                    <stop offset="100%" stop-color="#00f0ff"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="relative z-10">
+                        <span class="text-xs font-black tracking-widest text-cyan-400 uppercase">Interactive Suite</span>
+                        <h2 class="text-4xl font-extrabold text-white mt-2 leading-tight">Interactive Platform Reference</h2>
+                        <p class="text-white/60 mt-3 text-base max-width-[65ch]">Reference guide demonstrating the custom documentation skill rendering capabilities</p>
+                    </div>
+                </div>
+
+                <!-- Page Content Prose -->
+                <article class="glass-panel">
+                    <h1 id="premium-platform-reference-guide">Premium Platform Reference Guide</h1>
+<br/>
+<p>Welcome to the premium developer and presentation documentation portal. This page showcases the visual style tokens, structural components, and responsive grid layouts compiled directly from your source markdown.</p>
+<br/>
+<p><span class="badge badge-teal">Live Showcase</span> <span class="badge badge-indigo">v2.4.0</span></p>
+<br/>
+<p>---</p>
+<br/>
+<h2 id="workspace-layout-components">Workspace Layout Components</h2>
+<br/>
+<p>Below is an interactive grid showcasing the structural components. Every card has premium padding, spacious margins, and smooth mouse hover scaling.</p>
+<br/>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
+<div class="glass-panel-card bg-white/5 border border-white/10 p-8 rounded-2xl hover:scale-[1.01] transition-all duration-300"><h4 class="text-xl font-bold mb-4 text-white/95">Development Compiler Tooling</h4>Compile your files by running the standard high-speed Python compiler tool:
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">python compile_docs.py --dir ./docs
+</code></pre>
+            </div>
+            
+<p>Or run the offline-safe watched auto-updater server:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">python watch_docs.py ./docs
+</code></pre>
+            </div>
+            </div>
+<br/>
+<div class="glass-panel-card bg-white/5 border border-white/10 p-8 rounded-2xl hover:scale-[1.01] transition-all duration-300"><h4 class="text-xl font-bold mb-4 text-white/95">Dynamic Frontmatter Themes</h4>Seamlessly toggle visual-first layouts using the <code class="inline-code">theme</code> metadata parameter:
+<ul class="list-disc">
+<li><strong><code class="inline-code">technical</code></strong>: Crisp white light mode developer portal.</li>
+<li><strong><code class="inline-code">obsidian</code></strong>: Deep violet neon-glowing presentation deck.</li>
+<li><strong><code class="inline-code">proscript</code></strong>: Authoritative formal enterprise grids.</li>
+<li><strong><code class="inline-code">dynamics</code></strong>: Dense real-time system audit lists.</div></li>
+</ul>
+</div>
+<br/>
+<p>---</p>
+<br/>
+<h2 id="callouts-alert-banners">Callouts & Alert Banners</h2>
+<br/>
+<p>Strategic callout widgets help emphasize key configurations or warning boundaries:</p>
+<br/>
+<div class="admonition admonition-note"><svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"></svg><div><strong>NOTE</strong><p><br/>This is a standard informational note highlighting architectural best practices.</p></div></div>
+<br/>
+<div class="admonition admonition-tip"><svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"></svg><div><strong>TIP</strong><p><br/>This is a performance tip showcasing compile optimization guidelines.</p></div></div>
+<br/>
+<div class="admonition admonition-important"><svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"></svg><div><strong>IMPORTANT</strong><p><br/>This is an essential project requirement that must not be omitted.</p></div></div>
+<br/>
+<div class="admonition admonition-warning"><svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"></svg><div><strong>WARNING</strong><p><br/>This is a warning callout highlighting potential deployment bottlenecks.</p></div></div>
+<br/>
+<div class="admonition admonition-caution"><svg class="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><octagon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"></svg><div><strong>CAUTION</strong><p><br/>This is a high-risk security warning regarding dependency injections.</p></div></div>
+<br/>
+<p>---</p>
+<br/>
+<h2 id="comparative-matrix">Comparative Matrix</h2>
+<br/>
+<p>Our visual grid handles structured comparison tables neatly while preventing wrapping errors on small screens:</p>
+<br/>
+<div class="overflow-x-auto"><table class="rich-table">
+<thead><tr>
+<th>Command</th>
+<th>Theme Type</th>
+<th>Best Used For</th>
+</tr></thead><tbody>
+<tr>
+<td><code class="inline-code">theme: technical</code></td>
+<td>Light Mode</td>
+<td>Highly technical prose, tutorials, APIs, and codelabs</td>
+</tr>
+<tr>
+<td><code class="inline-code">theme: obsidian</code></td>
+<td>Dark Mode</td>
+<td>Stage presentations, live keynote demos, and dashboards</td>
+</tr>
+<tr>
+<td><code class="inline-code">theme: proscript</code></td>
+<td>Light Mode</td>
+<td>Enterprise checklists, requirement plans, and compliance</td>
+</tr>
+<tr>
+<td><code class="inline-code">theme: dynamics</code></td>
+<td>Dark Mode</td>
+<td>Dense telemetry stats, numerical logs, and system audits</td>
+</tr>
+</tbody></table></div>
+<br/>
+<p>---</p>
+<br/>
+<h2 id="deliverables-checklist">Deliverables Checklist</h2>
+<br/>
+<p>Keep track of your project progress using interactive checkboxes:</p>
+<br/>
+<ul class="list-disc">
+<li class="checklist-item"><input type="checkbox" checked disabled /> <span>Phase 1: Build robust markdown parsing rules</span></li>
+<li class="checklist-item"><input type="checkbox" checked disabled /> <span>Phase 2: Codify Stitch visual design themes</span></li>
+<li class="checklist-item"><input type="checkbox" checked disabled /> <span>Phase 3: Create live-reload server modules</span></li>
+<li class="checklist-item"><input type="checkbox" checked disabled /> <span>Phase 4: Deploy and verify in staging</span></li>
+</ul>
+<br/>
+                </article>
+            </div>
+
+            <!-- Alternative Raw Markdown Code View -->
+            <div id="markdown-view" class="hidden transition-all duration-300">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-4 border-b border-white/5 mb-6">
+                        <h2 class="text-2xl font-extrabold text-white/90 m-0 p-0">Raw Markdown Source</h2>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn text-xs">Copy Source</button>
+                    </div>
+                    <pre class="bg-black/30 border border-white/5 rounded-xl p-6 overflow-x-auto"><code class="language-markdown text-white/80">---
+title: &quot;Interactive Platform Reference&quot;
+theme: &quot;obsidian&quot;
+description: &quot;Reference guide demonstrating the custom documentation skill rendering capabilities&quot;
+---
+
+# Premium Platform Reference Guide
+
+Welcome to the premium developer and presentation documentation portal. This page showcases the visual style tokens, structural components, and responsive grid layouts compiled directly from your source markdown.
+
+[badge:teal:Live Showcase] [badge:indigo:v2.4.0]
+
+---
+
+## Workspace Layout Components
+
+Below is an interactive grid showcasing the structural components. Every card has premium padding, spacious margins, and smooth mouse hover scaling.
+
+:::: grid
+
+::: card Development Compiler Tooling
+Compile your files by running the standard high-speed Python compiler tool:
+```bash
+python compile_docs.py --dir ./docs
+```
+Or run the offline-safe watched auto-updater server:
+```bash
+python watch_docs.py ./docs
+```
+:::
+
+::: card Dynamic Frontmatter Themes
+Seamlessly toggle visual-first layouts using the `theme` metadata parameter:
+- **`technical`**: Crisp white light mode developer portal.
+- **`obsidian`**: Deep violet neon-glowing presentation deck.
+- **`proscript`**: Authoritative formal enterprise grids.
+- **`dynamics`**: Dense real-time system audit lists.
+:::
+
+::::
+
+---
+
+## Callouts &amp; Alert Banners
+
+Strategic callout widgets help emphasize key configurations or warning boundaries:
+
+&gt; [!NOTE]
+&gt; This is a standard informational note highlighting architectural best practices.
+
+&gt; [!TIP]
+&gt; This is a performance tip showcasing compile optimization guidelines.
+
+&gt; [!IMPORTANT]
+&gt; This is an essential project requirement that must not be omitted.
+
+&gt; [!WARNING]
+&gt; This is a warning callout highlighting potential deployment bottlenecks.
+
+&gt; [!CAUTION]
+&gt; This is a high-risk security warning regarding dependency injections.
+
+---
+
+## Comparative Matrix
+
+Our visual grid handles structured comparison tables neatly while preventing wrapping errors on small screens:
+
+| Command | Theme Type | Best Used For |
+| :--- | :--- | :--- |
+| `theme: technical` | Light Mode | Highly technical prose, tutorials, APIs, and codelabs |
+| `theme: obsidian` | Dark Mode | Stage presentations, live keynote demos, and dashboards |
+| `theme: proscript` | Light Mode | Enterprise checklists, requirement plans, and compliance |
+| `theme: dynamics` | Dark Mode | Dense telemetry stats, numerical logs, and system audits |
+
+---
+
+## Deliverables Checklist
+
+Keep track of your project progress using interactive checkboxes:
+
+- [x] Phase 1: Build robust markdown parsing rules
+- [x] Phase 2: Codify Stitch visual design themes
+- [x] Phase 3: Create live-reload server modules
+- [/] Phase 4: Deploy and verify in staging
+</code></pre>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Right Side TOC (only for 3-column layouts) -->
+        
+
+    </div>
+
+    <!-- Client-side Tab Switcher and Helpers -->
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied Source!";
+                setTimeout(() => btn.innerText = "Copy Source", 1500);
+            });
+        }
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,30 @@
+[
+  {
+    "ID": "E-001",
+    "Topic": "Metadata Schema",
+    "Source": "metadata-schemas.md",
+    "Why authoritative": "Internal standard for codelab formatting",
+    "Last-checked": "2026-04-06"
+  },
+  {
+    "ID": "E-002",
+    "Topic": "Skill Workflow",
+    "Source": "SKILL.md",
+    "Why authoritative": "Skill instructions used for generation",
+    "Last-checked": "2026-04-06"
+  },
+  {
+    "ID": "E-003",
+    "Topic": "Boilerplate Script",
+    "Source": "scripts/init_codelab.cjs",
+    "Why authoritative": "Tool for scaffolding new codelabs",
+    "Last-checked": "2026-04-06"
+  },
+  {
+    "ID": "E-004",
+    "Topic": "Template Asset",
+    "Source": "assets/example-template/codelab/index.lab.md",
+    "Why authoritative": "Pre-defined codelab example",
+    "Last-checked": "2026-04-06"
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "domain": "verification",
+  "name": "Full Audit & Dual Test Runner Pipeline",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "node_01_spec_contract_audit",
+      "name": "Spec & Contract Alignment Audit",
+      "prompt_template": "Verify 1:1 key alignment between design specs, Pydantic schemas, and API contracts.",
+      "subagent_role": "Analyst - Contract Auditor",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "verification_gate": {
+        "verifier_role": "Sentry - Schema Auditor",
+        "verifier_prompt": "Run test_contracts.py to verify key alignment.",
+        "blocking_criteria": ["contracts_aligned"]
+      }
+    },
+    {
+      "id": "node_02_dual_test_runner",
+      "name": "Dual Test Runner (pytest + behave)",
+      "prompt_template": "Execute pytest unit test suite AND behave Gherkin feature scenarios.",
+      "subagent_role": "Sentry - Dual Test Runner",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_01_spec_contract_audit"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Test Verifier",
+        "verifier_prompt": "Verify both pytest and behave suites report 100% pass rate.",
+        "blocking_criteria": ["pytest_passed", "behave_passed"]
+      }
+    },
+    {
+      "id": "node_03_evidence_validation",
+      "name": "Evidence Ledger Verification",
+      "prompt_template": "Execute validate_evidence.py to programmatically confirm all Evidence IDs in EVIDENCE.md match files on disk.",
+      "subagent_role": "Auditor - Evidence Verifier",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_02_dual_test_runner"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Final Evidence Gatekeeper",
+        "verifier_prompt": "Confirm validate_evidence.py returned exit code 0.",
+        "blocking_criteria": ["validate_evidence_pass"]
+      }
+    }
+  ]
+}

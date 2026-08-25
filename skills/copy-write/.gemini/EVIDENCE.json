@@ -1,0 +1,58 @@
+[
+  {
+    "ID": "E-001",
+    "Topic": "Protocol Initialization",
+    "Source": "Current turn",
+    "Why authoritative": "Bootstrapping action",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-002",
+    "Topic": "Skill Definition",
+    "Source": "`SKILL.md`",
+    "Why authoritative": "Primary skill definition file",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-003",
+    "Topic": "Persona & Mandates",
+    "Source": "`references/voice_and_tone.md`",
+    "Why authoritative": "Dedicated style guide",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-004",
+    "Topic": "Tone Examples",
+    "Source": "`references/golden_examples.md`",
+    "Why authoritative": "Reference snippets for tone matching",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-005",
+    "Topic": "Documentation Requirements",
+    "Source": "`SKILL.md` & User Request",
+    "Why authoritative": "Source for README content",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-006",
+    "Topic": "README CLI Commands",
+    "Source": "`git log c7f018`",
+    "Why authoritative": "Verification of recent doc update",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-007",
+    "Topic": "SKILL.md Canonical Polishing",
+    "Source": "`git log c7f018`",
+    "Why authoritative": "Alignment with canonical templates",
+    "Last-checked": "2026-04-04"
+  },
+  {
+    "ID": "E-008",
+    "Topic": "Official Gemini CLI Repo",
+    "Source": "`https://github.com/google-gemini/gemini-cli`",
+    "Why authoritative": "Official tool source",
+    "Last-checked": "2026-04-04"
+  }
+]

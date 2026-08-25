@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Private Persona Local Overrides
+*.local.md
+references/*.local.md
+
+# Compiled documentation artifacts
+output/
+dist/
+build/

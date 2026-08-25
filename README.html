@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readme</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Readme</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="README.html" class="sidebar-link active">Readme</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="agent-skill-forge" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">🔨 Agent Skill Forge</h1>
+<p class="mb-4 text-[var(--text-secondary)]">A curated, unified monorepo of high-performance skills for <strong>Google Antigravity</strong>, <strong>Claude Code</strong>, <strong>Gemini CLI</strong>, and agentic AI coding assistants.</p>
+<p class="mb-4 text-[var(--text-secondary)]">Built for engineering rigor, token context economy, and zero AI slop.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="quickstart" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🚀 Quickstart</h2>
+<h3 id="1-install-synchronize-global-skills-1-liner" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">1. Install & Synchronize Global Skills (1-Liner)</h3>
+<p class="mb-4 text-[var(--text-secondary)]">Run the installer to link the 15 core universal action verbs into all your AI tools:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">bash scripts/install.sh
+</code></pre>
+            </div>
+            
+<h3 id="2-verify-your-active-symlinks" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">2. Verify Your Active Symlinks</h3>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">python3 scripts/sync_skills.py
+</code></pre>
+            </div>
+            
+<h3 id="3-bootstrap-project-specific-skills-on-demand" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">3. Bootstrap Project-Specific Skills on Demand</h3>
+<p class="mb-4 text-[var(--text-secondary)]">Need specialized domain skills for a specific project? Bootstrap them directly into your repo workspace without cluttering global memory:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># Inside your project directory:
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+</code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="the-15-core-global-action-verbs" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 The 15 Core Global Action Verbs</h2>
+<p class="mb-4 text-[var(--text-secondary)]">These skills cover the entire software engineering lifecycle. They are linked globally across all your agent environments:</p>
+<div class="overflow-x-auto my-4"><table class="rich-table">
+<thead><tr>
+<th>Primary Verb</th>
+<th>Slash Command</th>
+<th>Mode</th>
+<th>What It Does & When to Use</th>
+</tr></thead><tbody>
+<tr>
+<td><strong><code class="inline-code">prompt</code></strong></td>
+<td><code class="inline-code">/prompt</code></td>
+<td>User Slash</td>
+<td>Meta-task intent engineering, Socratic grilling, and DAG task graph generation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">grill</code></strong></td>
+<td><code class="inline-code">/grill</code></td>
+<td>User Slash</td>
+<td>Disciplined 1-question Socratic interview with attached hypotheses and 95% confidence stop test.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">spec</code></strong></td>
+<td><code class="inline-code">/spec</code></td>
+<td>Autonomous</td>
+<td>Gated specifications, non-goals, and official API documentation grounding.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">plan</code></strong></td>
+<td><code class="inline-code">/plan</code></td>
+<td>Autonomous</td>
+<td>Vertical task slicing, dependency DAGs, and checkpointing.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">test</code></strong></td>
+<td><code class="inline-code">/test</code></td>
+<td>Autonomous</td>
+<td>Test-Driven Development (TDD) and Prove-It bug reproduction loops.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">verify</code></strong></td>
+<td><code class="inline-code">/verify</code></td>
+<td>Autonomous</td>
+<td>Expectation-Grounded Alignment (EGA) static AST/schema verifiers + 6-persona blinded judge rubrics.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">review</code></strong></td>
+<td><code class="inline-code">/review</code></td>
+<td>Autonomous</td>
+<td>5-axis code and architecture review (correctness, readability, architecture, security, performance).</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">unslop</code></strong></td>
+<td><code class="inline-code">/unslop</code></td>
+<td>Autonomous</td>
+<td>Anti-AI bloat, Laziness Protocol ("Subtract before you add"), and ghost abstraction elimination.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">docs</code></strong></td>
+<td><code class="inline-code">/docs</code></td>
+<td>User Slash</td>
+<td>Full SDLC documentation suite + 4 Stitch themes interactive HTML presentation compilation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">catalog</code></strong></td>
+<td><code class="inline-code">/catalog</code></td>
+<td>Autonomous</td>
+<td>Google Open Knowledge Format (OKF) bundle scaffolding and progressive disclosure trees.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">sync</code></strong></td>
+<td><code class="inline-code">/sync</code></td>
+<td>User Slash</td>
+<td>Canonical symlink manager and project-scoped skill bootstrapper.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">google-oss</code></strong></td>
+<td><code class="inline-code">/google-oss</code></td>
+<td>User Slash</td>
+<td>Google Open Source compliance, license header checks, and repo sanitization.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">codelab</code></strong></td>
+<td><code class="inline-code">/codelab</code></td>
+<td>User Slash</td>
+<td>Interactive Google Codelab tutorial scaffolding and markdown validation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">voice</code></strong></td>
+<td><code class="inline-code">/voice</code></td>
+<td>User Slash</td>
+<td>Linguistic style analysis, typing cadence extraction, and speech profiling.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">copy-write</code></strong></td>
+<td><code class="inline-code">/copy-write</code></td>
+<td>User Slash</td>
+<td>Technical drafting companion with 3-tier Profile-Overlay personalization.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">image-gen</code></strong></td>
+<td><code class="inline-code">/image-gen</code></td>
+<td>User Slash</td>
+<td>Multimodal diagram, infographic, and blog asset generator via Gemini Flash Image.</td>
+</tr>
+</tbody></table></div>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="curated-preferred-skills-project-scoped-jit" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛠️ Curated Preferred Skills (Project-Scoped JIT)</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Specialized engineering skills are stored in <a href="./preferred/" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">preferred/</code></a> and can be installed into any workspace in seconds:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">frontend-ui-engineering</code></strong>: Modern CSS layouts (<code class="inline-code">:has()</code>, container queries, View Transitions API).</li>
+<li>  <strong><code class="inline-code">performance-optimization</code></strong>: Core Web Vitals (CWV), LCP/INP budgets, and memory leak analysis.</li>
+<li>  <strong><code class="inline-code">api-and-interface-design</code></strong>: Hyrum's law, discriminated unions, and idempotent REST contracts.</li>
+<li>  <strong><code class="inline-code">security-and-hardening</code></strong>: Threat modeling, OWASP Top 10 fixes, and CWE sanitization.</li>
+<li>  <strong><code class="inline-code">deprecation-and-migration</code></strong>: Expand/Contract database schema migrations and zero-downtime updates.</li>
+<li>  <strong><code class="inline-code">browser-testing-with-devtools</code></strong>: Headless Chrome DevTools testing, console trapping, and network assertions.</li>
+<li>  <strong><code class="inline-code">observability-and-instrumentation</code></strong>: Structured JSON logs, OpenTelemetry distributed tracing, and metrics.</li>
+<li>  <strong><code class="inline-code">ci-cd-and-automation</code></strong>: GitHub Actions workflows, matrix testing, and automated release gates.</li>
+<li>  <strong><code class="inline-code">debugging-and-error-recovery</code></strong>: Stack trace deconstruction and defensive error isolation.</li>
+<li>  <strong><code class="inline-code">git-workflow-and-versioning</code></strong>: Conventional commits, atomic PRs, and linear Git history.</li>
+<li>  <strong><code class="inline-code">context-engineering</code></strong>: Token context optimization and LLM prompt packing.</li>
+<li>  <strong><code class="inline-code">benchmark-harness</code></strong>: Dual Gemini LLM-as-a-Judge scoring across 12 standardized engineering use cases.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">👉 Check out the full <strong><a href="PREFERRED_SKILLS.html" class="nav-link-item">Preferred Skills Catalog</a></strong> for <code class="inline-code">npx skills</code> commands and documentation links.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="profile-overlay-personalization" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛡️ Profile-Overlay Personalization</h2>
+<code class="inline-code">agent-skill-forge</code> uses a **3-tier Profile-Overlay Architecture** so you can personalize tone and voice without leaking private information:
+<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Priority 1: Local Machine Profile (<code class="inline-code">references/*.local.md</code>)</strong> — Gitignored private personal style rules.</p>
+<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Priority 2: User Home Profile (<code class="inline-code">~/.gemini/personas/default/*.md</code>)</strong> — System-wide user profile.</p>
+<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Priority 3: Open Source Template (<code class="inline-code">references/*.template.md</code>)</strong> — Public, clean baseline for team sharing.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="monorepo-structure" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📁 Monorepo Structure</h2>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>TXT</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-txt">agent-skill-forge/
+├── skills/                     # 15 Core Universal Global Action Verbs
+├── preferred/                  # Curated Domain-Specific Skills (JIT)
+│   ├── catalog.json            # Machine-readable registry
+│   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
+├── scripts/                    # Installer &amp; Verification Scripts
+│   ├── install.sh              # 1-liner installer
+│   ├── sync_skills.py          # Symlink manager &amp; JIT bootstrapper
+│   └── validate_skills.py      # Frontmatter linter &amp; PII scanner
+├── docs/                       # Full Documentation Suite
+├── .gemini/knowledge/          # Google OKF Knowledge Bundle
+└── README.md                   # Monorepo Entrypoint
+</code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="license-compliance" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📜 License & Compliance</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Distributed under the <strong>Apache-2.0 License</strong>. All skill definitions are free of hardcoded PII and ready for enterprise collaboration.</p>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># 🔨 Agent Skill Forge
+
+A curated, unified monorepo of high-performance skills for **Google Antigravity**, **Claude Code**, **Gemini CLI**, and agentic AI coding assistants.
+
+Built for engineering rigor, token context economy, and zero AI slop.
+
+---
+
+## 🚀 Quickstart
+
+### 1. Install &amp; Synchronize Global Skills (1-Liner)
+Run the installer to link the 15 core universal action verbs into all your AI tools:
+```bash
+bash scripts/install.sh
+```
+
+### 2. Verify Your Active Symlinks
+```bash
+python3 scripts/sync_skills.py
+```
+
+### 3. Bootstrap Project-Specific Skills on Demand
+Need specialized domain skills for a specific project? Bootstrap them directly into your repo workspace without cluttering global memory:
+```bash
+# Inside your project directory:
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+```
+
+---
+
+## 🌟 The 15 Core Global Action Verbs
+
+These skills cover the entire software engineering lifecycle. They are linked globally across all your agent environments:
+
+| Primary Verb | Slash Command | Mode | What It Does &amp; When to Use |
+| :--- | :--- | :--- | :--- |
+| **`prompt`** | `/prompt` | User Slash | Meta-task intent engineering, Socratic grilling, and DAG task graph generation. |
+| **`grill`** | `/grill` | User Slash | Disciplined 1-question Socratic interview with attached hypotheses and 95% confidence stop test. |
+| **`spec`** | `/spec` | Autonomous | Gated specifications, non-goals, and official API documentation grounding. |
+| **`plan`** | `/plan` | Autonomous | Vertical task slicing, dependency DAGs, and checkpointing. |
+| **`test`** | `/test` | Autonomous | Test-Driven Development (TDD) and Prove-It bug reproduction loops. |
+| **`verify`** | `/verify` | Autonomous | Expectation-Grounded Alignment (EGA) static AST/schema verifiers + 6-persona blinded judge rubrics. |
+| **`review`** | `/review` | Autonomous | 5-axis code and architecture review (correctness, readability, architecture, security, performance). |
+| **`unslop`** | `/unslop` | Autonomous | Anti-AI bloat, Laziness Protocol (&quot;Subtract before you add&quot;), and ghost abstraction elimination. |
+| **`docs`** | `/docs` | User Slash | Full SDLC documentation suite + 4 Stitch themes interactive HTML presentation compilation. |
+| **`catalog`** | `/catalog` | Autonomous | Google Open Knowledge Format (OKF) bundle scaffolding and progressive disclosure trees. |
+| **`sync`** | `/sync` | User Slash | Canonical symlink manager and project-scoped skill bootstrapper. |
+| **`google-oss`**| `/google-oss` | User Slash | Google Open Source compliance, license header checks, and repo sanitization. |
+| **`codelab`** | `/codelab` | User Slash | Interactive Google Codelab tutorial scaffolding and markdown validation. |
+| **`voice`** | `/voice` | User Slash | Linguistic style analysis, typing cadence extraction, and speech profiling. |
+| **`copy-write`**| `/copy-write` | User Slash | Technical drafting companion with 3-tier Profile-Overlay personalization. |
+| **`image-gen`** | `/image-gen` | User Slash | Multimodal diagram, infographic, and blog asset generator via Gemini Flash Image. |
+
+---
+
+## 🛠️ Curated Preferred Skills (Project-Scoped JIT)
+
+Specialized engineering skills are stored in [`preferred/`](./preferred/) and can be installed into any workspace in seconds:
+
+*   **`frontend-ui-engineering`**: Modern CSS layouts (`:has()`, container queries, View Transitions API).
+*   **`performance-optimization`**: Core Web Vitals (CWV), LCP/INP budgets, and memory leak analysis.
+*   **`api-and-interface-design`**: Hyrum&#x27;s law, discriminated unions, and idempotent REST contracts.
+*   **`security-and-hardening`**: Threat modeling, OWASP Top 10 fixes, and CWE sanitization.
+*   **`deprecation-and-migration`**: Expand/Contract database schema migrations and zero-downtime updates.
+*   **`browser-testing-with-devtools`**: Headless Chrome DevTools testing, console trapping, and network assertions.
+*   **`observability-and-instrumentation`**: Structured JSON logs, OpenTelemetry distributed tracing, and metrics.
+*   **`ci-cd-and-automation`**: GitHub Actions workflows, matrix testing, and automated release gates.
+*   **`debugging-and-error-recovery`**: Stack trace deconstruction and defensive error isolation.
+*   **`git-workflow-and-versioning`**: Conventional commits, atomic PRs, and linear Git history.
+*   **`context-engineering`**: Token context optimization and LLM prompt packing.
+*   **`benchmark-harness`**: Dual Gemini LLM-as-a-Judge scoring across 12 standardized engineering use cases.
+
+👉 Check out the full **[Preferred Skills Catalog](./preferred/PREFERRED_SKILLS.md)** for `npx skills` commands and documentation links.
+
+---
+
+## 🛡️ Profile-Overlay Personalization
+
+`agent-skill-forge` uses a **3-tier Profile-Overlay Architecture** so you can personalize tone and voice without leaking private information:
+
+1. **Priority 1: Local Machine Profile (`references/*.local.md`)** — Gitignored private personal style rules.
+2. **Priority 2: User Home Profile (`~/.gemini/personas/default/*.md`)** — System-wide user profile.
+3. **Priority 3: Open Source Template (`references/*.template.md`)** — Public, clean baseline for team sharing.
+
+---
+
+## 📁 Monorepo Structure
+
+```
+agent-skill-forge/
+├── skills/                     # 15 Core Universal Global Action Verbs
+├── preferred/                  # Curated Domain-Specific Skills (JIT)
+│   ├── catalog.json            # Machine-readable registry
+│   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
+├── scripts/                    # Installer &amp; Verification Scripts
+│   ├── install.sh              # 1-liner installer
+│   ├── sync_skills.py          # Symlink manager &amp; JIT bootstrapper
+│   └── validate_skills.py      # Frontmatter linter &amp; PII scanner
+├── docs/                       # Full Documentation Suite
+├── .gemini/knowledge/          # Google OKF Knowledge Bundle
+└── README.md                   # Monorepo Entrypoint
+```
+
+---
+
+## 📜 License &amp; Compliance
+
+Distributed under the **Apache-2.0 License**. All skill definitions are free of hardcoded PII and ready for enterprise collaboration.
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#quickstart" class="sidebar-link text-xs">🚀 Quickstart</a>
+<a href="#1-install-synchronize-global-skills-1-liner" class="sidebar-link text-xs ml-2">1. Install & Synchronize Global Skills (1-Liner)</a>
+<a href="#2-verify-your-active-symlinks" class="sidebar-link text-xs ml-2">2. Verify Your Active Symlinks</a>
+<a href="#3-bootstrap-project-specific-skills-on-demand" class="sidebar-link text-xs ml-2">3. Bootstrap Project-Specific Skills on Demand</a>
+<a href="#the-15-core-global-action-verbs" class="sidebar-link text-xs">🌟 The 15 Core Global Action Verbs</a>
+<a href="#curated-preferred-skills-project-scoped-jit" class="sidebar-link text-xs">🛠️ Curated Preferred Skills (Project-Scoped JIT)</a>
+<a href="#profile-overlay-personalization" class="sidebar-link text-xs">🛡️ Profile-Overlay Personalization</a>
+<a href="#monorepo-structure" class="sidebar-link text-xs">📁 Monorepo Structure</a>
+<a href="#license-compliance" class="sidebar-link text-xs">📜 License & Compliance</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

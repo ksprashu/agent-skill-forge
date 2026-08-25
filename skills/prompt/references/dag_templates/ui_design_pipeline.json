@@ -1,0 +1,63 @@
+{
+  "domain": "ui_design",
+  "name": "Modern Web UI Design Pipeline",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "node_01_design_tokens",
+      "name": "Design Tokens & System Spec",
+      "prompt_template": "Define modern CSS design tokens, HSL color palette, typography hierarchy, and glassmorphism utilities.",
+      "subagent_role": "Architect - UI Designer",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "verification_gate": {
+        "verifier_role": "Sentry - Token Validator",
+        "verifier_prompt": "Verify index.css or tokens file exists with HSL color variables and typography rules.",
+        "blocking_criteria": ["tokens_css_exists"]
+      }
+    },
+    {
+      "id": "node_02_component_build",
+      "name": "Responsive Component Construction",
+      "prompt_template": "Build semantic HTML components with responsive CSS layouts, hover states, and smooth transitions.",
+      "subagent_role": "Builder - UI Engineer",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_01_design_tokens"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Markup Validator",
+        "verifier_prompt": "Validate HTML structure and responsive media queries.",
+        "blocking_criteria": ["html_valid", "no_missing_tags"]
+      }
+    },
+    {
+      "id": "node_03_devtools_visual_audit",
+      "name": "Chrome DevTools Visual Inspection",
+      "prompt_template": "Use Chrome DevTools MCP (new_page, take_screenshot) to physically render UI and capture WebP visual evidence.",
+      "subagent_role": "Auditor - Visual Verifier",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_02_component_build"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Visual Inspector",
+        "verifier_prompt": "Verify screenshots captured and visual rendering aligned.",
+        "blocking_criteria": ["screenshot_captured", "layout_aligned"]
+      }
+    },
+    {
+      "id": "node_04_a11y_accessibility",
+      "name": "A11y Accessibility & Contrast Sweep",
+      "prompt_template": "Run accessibility auditing (WCAG AA contrast, ARIA labels, focus states, tap targets).",
+      "subagent_role": "Sentry - A11y Auditor",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_03_devtools_visual_audit"],
+      "verification_gate": {
+        "verifier_role": "Sentry - A11y Gatekeeper",
+        "verifier_prompt": "Verify zero high-severity WCAG AA contrast or ARIA violations.",
+        "blocking_criteria": ["a11y_audit_pass"]
+      }
+    }
+  ]
+}

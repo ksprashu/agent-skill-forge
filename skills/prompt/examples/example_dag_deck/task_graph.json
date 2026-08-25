@@ -1,0 +1,56 @@
+{
+  "short_id": "PRMT-A4C9",
+  "title": "Autonomous Security Swarm DAG Deck Example",
+  "domain": "security",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "task_01_scan",
+      "name": "Scan Workspace Vulnerabilities",
+      "template": "security_scan",
+      "prompt_file": "tasks/task_01_scan.md",
+      "subagent_role": "Auditor - Vulnerability Scanner",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "status": "PENDING",
+      "verification_gate": {
+        "verifier_role": "Sentry - Scan Auditor",
+        "verifier_prompt": "Audit scan logs in .gemini/knowledge/PRMT-A4C9/sout/scans.json. Confirm all CWE IDs are logged.",
+        "blocking_criteria": ["run_security_scanner_executed", "scan_results_logged"]
+      }
+    },
+    {
+      "id": "task_02_patch",
+      "name": "Draft Security Patch for Core API",
+      "template": "coding_patch",
+      "prompt_file": "tasks/task_02_patch.md",
+      "subagent_role": "Producer - Secure Patch Writer",
+      "model_tier": "pro",
+      "workspace_mode": "branch",
+      "dependencies": ["task_01_scan"],
+      "status": "PENDING",
+      "verification_gate": {
+        "verifier_role": "Sentry - Patch Compiler",
+        "verifier_prompt": "Verify patched code compiles in branched workspace.",
+        "blocking_criteria": ["compilation_pass", "unit_tests_pass"]
+      }
+    },
+    {
+      "id": "task_03_poc",
+      "name": "Proof-of-Concept Verification",
+      "template": "poc_verification",
+      "prompt_file": "tasks/task_03_poc.md",
+      "subagent_role": "Auditor - PoC Verifier",
+      "model_tier": "flash_medium",
+      "workspace_mode": "branch",
+      "dependencies": ["task_02_patch"],
+      "status": "PENDING",
+      "verification_gate": {
+        "verifier_role": "Sentry - PoC Gatekeeper",
+        "verifier_prompt": "Execute run_poc and verify zero exploitability.",
+        "blocking_criteria": ["run_poc_pass", "evidence_recorded"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "domain": "research",
+  "name": "Multi-Source Research & Knowledge Pipeline",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "node_01_scout_crawl",
+      "name": "Parallel Multi-Source Crawl",
+      "prompt_template": "Execute parallel crawl: Codebase Scout maps paths, Web Intelligence searches docs, Docs Crawler queries MCP servers.",
+      "subagent_role": "Scout - Multi-Source Crawler",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "verification_gate": {
+        "verifier_role": "Sentry - Data Ingestion Verifier",
+        "verifier_prompt": "Verify scout documents exist under .gemini/knowledge/scout/.",
+        "blocking_criteria": ["scout_docs_exist"]
+      }
+    },
+    {
+      "id": "node_02_synthesis",
+      "name": "Synthesis & Fact Extraction",
+      "prompt_template": "Synthesize findings into OKF Concept Documents, resolving technical trade-offs and verifying citations.",
+      "subagent_role": "Analyst - Knowledge Synthesizer",
+      "model_tier": "pro",
+      "workspace_mode": "share",
+      "dependencies": ["node_01_scout_crawl"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Citation Gatekeeper",
+        "verifier_prompt": "Verify zero unverified claims and all source links valid.",
+        "blocking_criteria": ["okf_docs_valid", "citations_grounded"]
+      }
+    },
+    {
+      "id": "node_03_compilation",
+      "name": "OKF Knowledge Bundle Compilation",
+      "prompt_template": "Compile final OKF bundle index.md, MEMORY.md promote entries, and interactive summary.",
+      "subagent_role": "Mentor - Knowledge Compiler",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_02_synthesis"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Bundle Inspector",
+        "verifier_prompt": "Verify OKF bundle index and MEMORY updates.",
+        "blocking_criteria": ["okf_index_updated"]
+      }
+    }
+  ]
+}

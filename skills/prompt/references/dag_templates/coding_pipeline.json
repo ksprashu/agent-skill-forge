@@ -1,0 +1,63 @@
+{
+  "domain": "coding",
+  "name": "Standard Coding & Engineering Pipeline",
+  "execution_mode": "dag_orchestration",
+  "nodes": [
+    {
+      "id": "node_01_architecture",
+      "name": "Architecture & Data Contracts",
+      "prompt_template": "Architect the module boundaries, Pydantic data schemas, and API contracts for the feature.",
+      "subagent_role": "Architect - System Designer",
+      "model_tier": "pro",
+      "workspace_mode": "share",
+      "dependencies": [],
+      "verification_gate": {
+        "verifier_role": "Sentry - Schema Validator",
+        "verifier_prompt": "Verify data contracts and Pydantic schemas exist and are syntactically valid.",
+        "blocking_criteria": ["schemas_file_exists", "python_syntax_valid"]
+      }
+    },
+    {
+      "id": "node_02_module_build",
+      "name": "Parallel Module Implementation",
+      "prompt_template": "Implement the core logic and functions adhering strictly to data schemas created in node_01.",
+      "subagent_role": "Builder - Module Developer",
+      "model_tier": "flash_medium",
+      "workspace_mode": "branch",
+      "dependencies": ["node_01_architecture"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Code Verifier",
+        "verifier_prompt": "Run py_compile / node --check on implemented modules.",
+        "blocking_criteria": ["compilation_pass", "no_placeholders"]
+      }
+    },
+    {
+      "id": "node_03_tdd_suite",
+      "name": "Unit & Integration Test Suite",
+      "prompt_template": "Write comprehensive pytest / Jest unit and integration tests covering green and red paths.",
+      "subagent_role": "Sentry - Test Engineer",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_02_module_build"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Test Runner",
+        "verifier_prompt": "Execute test suite and verify 100% pass rate.",
+        "blocking_criteria": ["pytest_pass_100_percent"]
+      }
+    },
+    {
+      "id": "node_04_review_and_signoff",
+      "name": "Code Review & Walkthrough",
+      "prompt_template": "Conduct a 5-axis code review (correctness, readability, architecture, security, performance) and generate walkthrough.md.",
+      "subagent_role": "Mentor - Lead Code Reviewer",
+      "model_tier": "flash_medium",
+      "workspace_mode": "share",
+      "dependencies": ["node_03_tdd_suite"],
+      "verification_gate": {
+        "verifier_role": "Sentry - Final Gatekeeper",
+        "verifier_prompt": "Verify walkthrough.md and EVIDENCE.md exist with valid output logs.",
+        "blocking_criteria": ["walkthrough_exists", "evidence_ledger_valid"]
+      }
+    }
+  ]
+}
