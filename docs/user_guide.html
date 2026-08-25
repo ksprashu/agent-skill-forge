@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">User Guide</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="architecture.html" class="sidebar-link">Architecture</a>
+<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
+<a href="user_guide.html" class="sidebar-link active">User Guide</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="agent-skill-forge-user-guide" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">📖 Agent Skill Forge User Guide</h1>
+<p class="mb-4 text-[var(--text-secondary)]">A practical handbook for using the <strong>Agent Skill Forge</strong> ecosystem in your everyday development workflows.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="global-action-verbs-walkthrough" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🎯 Global Action Verbs Walkthrough</h2>
+<h3 id="1-requirements-intent-engineering" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">1. Requirements & Intent Engineering</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/prompt</code></strong>: Use whenever you have an underspecified or complex request. The prompt writer conducts a Socratic interview, builds a dependency DAG (<code class="inline-code">task_graph.json</code>), and generates modular intent directives.</li>
+<li>  <strong><code class="inline-code">/grill</code></strong>: Use when you need to align on a spec quickly. The agent asks strictly <strong>one question at a time</strong>, attaches its best guess/hypothesis, and automatically terminates when 95% confidence is reached, writing a clean <code class="inline-code">CONTEXT.md</code>.</li>
+</ul>
+<h3 id="2-specification-planning" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">2. Specification & Planning</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/spec</code></strong> (Autonomous or manual): Generates structured specifications grounded in official documentation. Enforces non-goals, data contracts, and dual links before writing any code.</li>
+<li>  <strong><code class="inline-code">/plan</code></strong> (Autonomous or manual): Decomposes specifications into vertical, testable task slices with explicit dependency checkpoints.</li>
+</ul>
+<h3 id="3-implementation-testing" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">3. Implementation & Testing</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/test</code></strong> (Autonomous or manual): Enforces Test-Driven Development (TDD) and Prove-It bug reproduction loops. Tests must fail before implementation code is written.</li>
+<li>  <strong><code class="inline-code">/unslop</code></strong> (Autonomous or manual): Eliminates AI clichés (<em>delve</em>, <em>testament</em>, <em>tapestry</em>), inlines unnecessary single-use helper functions, removes ghost wrappers, and applies the Laziness Protocol ("Subtract before you add").</li>
+</ul>
+<h3 id="4-verification-review" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">4. Verification & Review</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/verify</code></strong> (Autonomous or manual): Runs the Expectation-Grounded Alignment (EGA) engine. Combines deterministic static check scripts with 6-persona blinded judge rubrics and doubt-driven adversarial disproof.</li>
+<li>  <strong><code class="inline-code">/review</code></strong> (Autonomous or manual): Conducts a rigorous 5-axis code review across correctness, readability, architecture, security, and performance.</li>
+</ul>
+<h3 id="5-documentation-presentation" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">5. Documentation & Presentation</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/docs</code></strong>: Generates full SDLC documentation sheets and compiles them into interactive, single-file HTML presentations across 4 premium Stitch themes (<code class="inline-code">technical</code>, <code class="inline-code">obsidian</code>, <code class="inline-code">proscript</code>, <code class="inline-code">dynamics</code>).</li>
+<li>  <strong><code class="inline-code">/catalog</code></strong>: Scaffolds and indexes Google Open Knowledge Format (OKF) bundles for long-term codebase memory.</li>
+</ul>
+<h3 id="6-creative-compliance" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">6. Creative & Compliance</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>  <strong><code class="inline-code">/voice</code></strong>: Analyzes typing cadence and extracts linguistic style markers.</li>
+<li>  <strong><code class="inline-code">/copy-write</code></strong>: Technical drafting companion using Profile-Overlay personalization.</li>
+<li>  <strong><code class="inline-code">/google-oss</code></strong>: Runs Google Open Source compliance checks, adds license headers, and validates repo cleanliness.</li>
+<li>  <strong><code class="inline-code">/codelab</code></strong>: Scaffolds interactive, polyglot Google Codelab tutorials.</li>
+<li>  <strong><code class="inline-code">/image-gen</code></strong>: Generates architecture diagrams and blog assets using Gemini Flash Image.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="project-scoped-jit-workflow" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛠️ Project-Scoped JIT Workflow</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Don't pollute your global agent instructions with every framework or tool. Bootstrap domain skills only into repositories that need them:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash"># 1. Navigate to your project directory
+cd ~/code/my-awesome-app
+
+# 2. Bootstrap the required skills
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+
+# 3. Your agent now automatically has access to those skills within this repo!
+</code></pre>
+            </div>
+            
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># 📖 Agent Skill Forge User Guide
+
+A practical handbook for using the **Agent Skill Forge** ecosystem in your everyday development workflows.
+
+---
+
+## 🎯 Global Action Verbs Walkthrough
+
+### 1. Requirements &amp; Intent Engineering
+*   **`/prompt`**: Use whenever you have an underspecified or complex request. The prompt writer conducts a Socratic interview, builds a dependency DAG (`task_graph.json`), and generates modular intent directives.
+*   **`/grill`**: Use when you need to align on a spec quickly. The agent asks strictly **one question at a time**, attaches its best guess/hypothesis, and automatically terminates when 95% confidence is reached, writing a clean `CONTEXT.md`.
+
+### 2. Specification &amp; Planning
+*   **`/spec`** (Autonomous or manual): Generates structured specifications grounded in official documentation. Enforces non-goals, data contracts, and dual links before writing any code.
+*   **`/plan`** (Autonomous or manual): Decomposes specifications into vertical, testable task slices with explicit dependency checkpoints.
+
+### 3. Implementation &amp; Testing
+*   **`/test`** (Autonomous or manual): Enforces Test-Driven Development (TDD) and Prove-It bug reproduction loops. Tests must fail before implementation code is written.
+*   **`/unslop`** (Autonomous or manual): Eliminates AI clichés (*delve*, *testament*, *tapestry*), inlines unnecessary single-use helper functions, removes ghost wrappers, and applies the Laziness Protocol (&quot;Subtract before you add&quot;).
+
+### 4. Verification &amp; Review
+*   **`/verify`** (Autonomous or manual): Runs the Expectation-Grounded Alignment (EGA) engine. Combines deterministic static check scripts with 6-persona blinded judge rubrics and doubt-driven adversarial disproof.
+*   **`/review`** (Autonomous or manual): Conducts a rigorous 5-axis code review across correctness, readability, architecture, security, and performance.
+
+### 5. Documentation &amp; Presentation
+*   **`/docs`**: Generates full SDLC documentation sheets and compiles them into interactive, single-file HTML presentations across 4 premium Stitch themes (`technical`, `obsidian`, `proscript`, `dynamics`).
+*   **`/catalog`**: Scaffolds and indexes Google Open Knowledge Format (OKF) bundles for long-term codebase memory.
+
+### 6. Creative &amp; Compliance
+*   **`/voice`**: Analyzes typing cadence and extracts linguistic style markers.
+*   **`/copy-write`**: Technical drafting companion using Profile-Overlay personalization.
+*   **`/google-oss`**: Runs Google Open Source compliance checks, adds license headers, and validates repo cleanliness.
+*   **`/codelab`**: Scaffolds interactive, polyglot Google Codelab tutorials.
+*   **`/image-gen`**: Generates architecture diagrams and blog assets using Gemini Flash Image.
+
+---
+
+## 🛠️ Project-Scoped JIT Workflow
+
+Don&#x27;t pollute your global agent instructions with every framework or tool. Bootstrap domain skills only into repositories that need them:
+
+```bash
+# 1. Navigate to your project directory
+cd ~/code/my-awesome-app
+
+# 2. Bootstrap the required skills
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+
+# 3. Your agent now automatically has access to those skills within this repo!
+```
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#global-action-verbs-walkthrough" class="sidebar-link text-xs">🎯 Global Action Verbs Walkthrough</a>
+<a href="#1-requirements-intent-engineering" class="sidebar-link text-xs ml-2">1. Requirements & Intent Engineering</a>
+<a href="#2-specification-planning" class="sidebar-link text-xs ml-2">2. Specification & Planning</a>
+<a href="#3-implementation-testing" class="sidebar-link text-xs ml-2">3. Implementation & Testing</a>
+<a href="#4-verification-review" class="sidebar-link text-xs ml-2">4. Verification & Review</a>
+<a href="#5-documentation-presentation" class="sidebar-link text-xs ml-2">5. Documentation & Presentation</a>
+<a href="#6-creative-compliance" class="sidebar-link text-xs ml-2">6. Creative & Compliance</a>
+<a href="#project-scoped-jit-workflow" class="sidebar-link text-xs">🛠️ Project-Scoped JIT Workflow</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>
