@@ -1,51 +1,55 @@
 ---
 name: spec
-description: Spec-driven development and official source grounding engine. Writes structured, source-cited specifications before coding. Auto-invokes when starting features or via `/spec`.
+description: Write grounded specifications with official API doc citations and non-goals before coding.
 ---
 
-# Spec-Driven Development & Source Grounding Engine
+# Spec: Specification & Source Grounding
 
-Initiate spec-driven development to establish a clear, structured, source-cited specification of requirements, architectural constraints, and official documentation citations before writing code.
+Write structured, source-cited specifications before writing implementation code.
 
 ---
 
-## 🎯 When to Use
+## 🎯 Goal
+Align requirements, technical constraints, non-goals, and official API documentation in a clean `SPEC.md`.
 
-- When starting a new project, feature, or significant architectural change.
-- When requirements from the user are vague, ambiguous, or incomplete.
-- When framework or library APIs need verification against official documentation.
-- Do NOT use for simple one-line fixes or trivial spelling/styling corrections.
+---
 
-## Core Process
+## 📋 Step-by-Step Workflow
 
-Begin by understanding what the user wants to build. Ask clarifying questions about:
+1. **Clarify Objective & Personas**: Identify target users, core capabilities, and success criteria.
+2. **Ground Against Official Docs**: Look up external library/framework documentation for official API contracts.
+3. **Define Boundaries & Non-Goals**: Explicitly list what the system will NOT do in this iteration.
+4. **Author `SPEC.md`**: Produce the specification document and save to the project root or `.gemini/specs/`.
+5. **Get Human Approval**: Stop and wait for user confirmation before executing implementation code.
 
-1. The objective and target users.
-2. Core features and acceptance criteria.
-3. Tech stack preferences and constraints.
-4. Known boundaries (what to always do, ask first about, and never do).
+---
 
-Then generate a structured spec covering all six core areas: objective, commands, project structure, code style, testing strategy, and boundaries.
+## 💡 Concrete Example
 
-Save the spec as `SPEC.md` in the project root and confirm with the user before proceeding.
+### Fixture: `SPEC.md`
+```markdown
+# Specification: Webhook Ingestion Engine
 
-## Common Rationalizations
+## 1. Objective
+Ingest Stripe webhook events, verify signatures using official SDK APIs, and record idempotently to PostgreSQL.
 
-| Rationalization | Reality |
-|---|---|
-| "I can start writing code immediately and write the spec later." | Coding without a spec often leads to wrong assumptions, wasted effort, and architectural debt. |
-| "The requirements are simple enough that a spec is overkill." | Even simple requirements have hidden assumptions. Establishing a SPEC.md aligns expectations perfectly. |
+## 2. Official Source Grounding
+* Stripe Webhook Verification: [Stripe Docs](https://docs.stripe.com/webhooks/signatures) -> `stripe.webhooks.constructEvent(payload, header, secret)`.
 
-## Red Flags
+## 3. Explicit Non-Goals
+* No email notification sending inside the webhook handler (handled downstream via Cloud Tasks).
+* No support for unverified webhook test payloads in production mode.
 
-- Creating SPEC.md without asking clarifying questions on ambiguous requirements.
-- Omitting boundaries or testing strategy from the specification document.
-- Starting the implementation phase before the human has reviewed and approved SPEC.md.
+## 4. Acceptance Criteria
+* [ ] Rejects requests with invalid or missing `stripe-signature` header (HTTP 400).
+* [ ] Ignores duplicate event IDs if already recorded in `processed_events` table (HTTP 200).
+* [ ] 100% test coverage for replay attacks and tampered payloads.
+```
 
-## Verification
+---
 
-After completing the spec process, confirm:
-- [ ] Clarifying questions were asked and answered.
-- [ ] A structured spec covering all six core areas is created.
-- [ ] The specification is saved to `SPEC.md` in the project root.
-- [ ] The human has reviewed and approved the spec.
+## 🚫 Hard Constraints
+
+*   **NEVER** write implementation code before the user approves `SPEC.md`.
+*   **NEVER** invent or guess external third-party library signatures—always ground against official docs.
+*   **NEVER** omit the Non-Goals section.

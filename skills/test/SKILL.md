@@ -1,54 +1,64 @@
 ---
 name: test
-description: Enforces Test-Driven Development (TDD) and Prove-It bug reproduction before writing implementation code. Auto-invokes during coding phases or via `/test`.
+description: Enforce Test-Driven Development and Prove-It bug reproduction before writing fixes.
 ---
 
-# Test
+# Test: Test-Driven Development & Prove-It
 
-## Overview
+Write failing tests before writing implementation code. For bug fixes, reproduce the failure with a test first.
 
-Execute test-driven development (TDD) by writing failing tests before implementing functional code. For bug fixes, reproduce the failure with a test first.
+---
 
-## When to Use
+## 🎯 Goal
+Guarantee high code reliability and prevent regressions by adhering to the Red-Green-Refactor loop.
 
-- Use when implementing new features or extending existing codebase functionality.
-- Use when fixing bugs to ensure a regression test exists (Prove-It pattern).
-- Do NOT skip testing unless writing purely static/documentation files.
+---
 
-## Core Process
+## 📋 Step-by-Step Workflow
 
-For new features:
+1. **Write Failing Test (Red)**: Write an automated test describing the expected behavior or reproducing the bug.
+2. **Execute Test to Confirm Failure**: Run the test runner and verify it fails for the exact intended reason.
+3. **Write Minimal Implementation (Green)**: Write only enough code to make the failing test pass.
+4. **Verify Pass**: Re-run the test to confirm it turns green.
+5. **Run Full Regression Suite**: Execute all project tests to ensure zero regressions across the codebase.
 
-1. Write tests that describe the expected behavior (they should FAIL).
-2. Implement the code to make them pass.
-3. Refactor while keeping tests green.
+---
 
-For bug fixes (Prove-It pattern):
+## 💡 Concrete Example
 
-1. Write a test that reproduces the bug (must FAIL).
-2. Confirm the test fails.
-3. Implement the fix.
-4. Confirm the test passes.
-5. Run the full test suite for regressions.
+### Prove-It Bug Fix Example
+**Step 1: Write Reproducing Test (`tests/test_calculator.py`)**
+```python
+def test_division_by_zero_returns_none_instead_of_crashing():
+    # Bug: Currently throws unhandled ZeroDivisionError
+    result = safe_divide(10, 0)
+    assert result is None
+```
 
-For browser-related issues, also invoke `browser-testing-with-devtools` to verify with Chrome DevTools MCP.
+**Step 2: Run test to confirm failure**
+```bash
+pytest tests/test_calculator.py
+# FAILED: ZeroDivisionError: division by zero
+```
 
-## Common Rationalizations
+**Step 3: Implement minimal fix (`src/calculator.py`)**
+```python
+def safe_divide(a: float, b: float) -> float | None:
+    if b == 0:
+        return None
+    return a / b
+```
 
-| Rationalization | Reality |
-|---|---|
-| "Writing tests first is too slow; I will write them after the implementation." | Writing tests first defines clear boundaries and prevents implementing speculative, unneeded features. |
-| "This bug is obvious, so I don't need a reproducing test before fixing it." | Without a reproducing test, you cannot prove your fix actually resolved the root cause or prevent future regressions. |
+**Step 4: Verify test passes**
+```bash
+pytest tests/test_calculator.py
+# 1 passed in 0.02s
+```
 
-## Red Flags
+---
 
-- Writing functional code before a failing test has been created.
-- Submitting code changes without verifying that the entire test suite passes.
-- Mocking complex dependencies heavily instead of using simple stubs or integration tests.
+## 🚫 Hard Constraints
 
-## Verification
-
-After completing the testing process, confirm:
-- [ ] A failing test was successfully written first (to prove behavior or reproduce a bug).
-- [ ] The implementation has been completed and makes all tests pass.
-- [ ] The full test suite runs and completes with a 100% pass rate.
+*   **NEVER** write implementation code before running and seeing the test fail.
+*   **NEVER** weaken or delete existing test assertions to make failing code pass.
+*   **NEVER** skip running the full regression test suite before concluding a task.

@@ -16,3 +16,4 @@ references/*.local.md
 output/
 dist/
 build/
+skills-lock.json

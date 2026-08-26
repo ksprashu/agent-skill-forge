@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Authoring Guide & Best Practices</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Skill Authoring Guide & Best Practices</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="architecture.html" class="sidebar-link">Architecture</a>
+<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
+<a href="skill_authoring_guide.html" class="sidebar-link active">Skill Authoring Guide</a>
+<a href="user_guide.html" class="sidebar-link">User Guide</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="agent-skill-authoring-guide" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Agent Skill Authoring Guide</h1>
+<p class="mb-4 text-[var(--text-secondary)]">An engineering handbook for designing, formatting, and distributing agent skills compatible with Google Antigravity, Gemini CLI, Claude Code, Cursor, and the open <code class="inline-code">skills.sh</code> registry.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="1-the-3-level-progressive-disclosure-architecture" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🏛️ 1. The 3-Level Progressive Disclosure Architecture</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Skills must adhere to a strict 3-level progressive disclosure hierarchy to maximize LLM context window efficiency:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>MERMAID</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-mermaid">graph TD
+    L1[&quot;Level 1: Metadata (YAML Frontmatter)&lt;br&gt;&lt;i&gt;Always in System Context (~50 words)&lt;/i&gt;&quot;] --&gt;|Skill Triggers| L2[&quot;Level 2: SKILL.md Body&lt;br&gt;&lt;i&gt;Loaded into Context on Trigger (&amp;lt;500 lines)&lt;/i&gt;&quot;]
+    L2 --&gt;|Deep Execution| L3[&quot;Level 3: Bundled Resources&lt;br&gt;&lt;i&gt;references/, scripts/, assets/ (Loaded on Demand)&lt;/i&gt;&quot;]
+</code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Level 1: YAML Frontmatter (<code class="inline-code">name</code> + <code class="inline-code">description</code>)</strong>:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Stored in the agent's active system prompt at all times.</li>
+<li><strong>Rule</strong>: Keep it to 1–2 punchy sentences stating <strong>WHAT</strong> the skill does and <strong>WHEN</strong> it triggers.</li>
+<li><strong>Anti-Pattern</strong>: Avoid long multi-paragraph descriptions or speculative fluff.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Level 2: <code class="inline-code">SKILL.md</code> Execution Body</strong>:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Read into context only when the skill is explicitly or semantically invoked.</li>
+<li><strong>Rule</strong>: Keep under 500 lines. Focus on imperative execution steps, concrete fixtures, and hard constraints.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Level 3: Bundled Resources (<code class="inline-code">references/</code>, <code class="inline-code">scripts/</code>, <code class="inline-code">assets/</code>)</strong>:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Heavy reference documentation, AST scripts, or asset templates.</li>
+<li><strong>Rule</strong>: Referenced clearly from <code class="inline-code">SKILL.md</code> with explicit instructions on when to view or execute them.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="2-why-markdown-is-mandatory-for-skill-instructions" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📝 2. Why Markdown is Mandatory for Skill Instructions</h2>
+<p class="mb-4 text-[var(--text-secondary)]">LLMs (including Gemini 3.x, Claude 3.x, and GPT-4o) rely on structural Markdown semantics during attention routing:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li><strong>Heading Hierarchies (<code class="inline-code">#</code>, <code class="inline-code">##</code>, <code class="inline-code">###</code>)</strong>: Define unambiguous semantic boundaries between steps, goals, and constraints.</li>
+<li><strong>Code Fences with Language Identifiers (<code class="inline-code"> </code>`<code class="inline-code">bash </code>, <code class="inline-code"> </code>`<code class="inline-code">json </code>)</strong>: Prevent the model from misinterpreting code examples as conversational instructions.</li>
+<li><strong>Tables</strong>: Present comparative matrices and decision gates with zero ambiguity.</li>
+<li><strong>Token Efficiency</strong>: Markdown carries almost zero syntax overhead compared to XML or JSON while providing clean human and machine readability.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="3-optimal---inline-code-15---structural-template" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📐 3. Optimal <code class="inline-code">SKILL.md</code> Structural Template</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Structure every <code class="inline-code">SKILL.md</code> in the exact sequence frontier models attend to best:</p>
+
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>MARKDOWN</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-markdown">---
+name: your-skill-name
+description: Short, punchy summary of what it does and when it triggers.
+---
+
+# Skill Name
+
+Brief 1-sentence overview of the skill.
+
+---
+
+## 🎯 Goal
+What success looks like in concrete terms.
+
+---
+
+## 📋 Step-by-Step Workflow
+1. **Step 1 (Imperative Action)**: Specific command or inspection.
+2. **Step 2 (Transformation)**: Specific processing or authoring.
+3. **Step 3 (Verification)**: Automated check or assertion.
+
+---
+
+## 💡 Concrete Examples
+### Before / After Diff or Sample Fixture
+Show exact code, JSON, or markdown transformations.
+
+---
+
+## 🚫 Hard Constraints
+* **NEVER** do X.
+* **NEVER** violate Y.
+</code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="4-attribution-clean-context-separation" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">👤 4. Attribution & Clean Context Separation</h2>
+<p class="mb-4 text-[var(--text-secondary)]">To prevent biographical credits or licenses from cluttering the agent's procedural thinking during task execution:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Keep <code class="inline-code">SKILL.md</code> 100% focused on procedural instructions.</li>
+<li>Document original authors, repositories, and licenses inside <code class="inline-code">README.md</code> and <code class="inline-code">catalog.json</code>.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="5-distribution-installation-compatibility" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🚀 5. Distribution & Installation Compatibility</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Skills must support two distribution paths:</p>
+<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Open Registry (<code class="inline-code">skills.sh</code> / <code class="inline-code">npx skills</code>)</strong>:</p>
+   
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">   npx skills add ksprashu/agent-skill-forge --skill &lt;name&gt;
+   </code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Instant Local Symlinking (<code class="inline-code">sync_skills.py</code>)</strong>:</p>
+   
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">   python3 scripts/sync_skills.py --project . --skills &lt;name1&gt;,&lt;name2&gt;
+   </code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="references-further-reading" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📚 References & Further Reading</h2>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li><a href="https://github.com/anthropics/skills" target="_blank" rel="noopener noreferrer" class="external-link">Anthropic Skills Standard & Creator</a></li>
+<li><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link">Addy Osmani Agent Skills</a></li>
+<li><a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link">Matt Pocock Skills Catalog</a></li>
+<li><a href="index.html" class="nav-link-item">Open Knowledge Format (OKF) Specification</a></li>
+</ul>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]">---
+title: &quot;Skill Authoring Guide &amp; Best Practices&quot;
+theme: &quot;technical&quot;
+description: &quot;Authoritative design patterns, progressive disclosure hierarchies, and formatting guidelines for high-performance agent skills.&quot;
+---
+
+# Agent Skill Authoring Guide
+
+An engineering handbook for designing, formatting, and distributing agent skills compatible with Google Antigravity, Gemini CLI, Claude Code, Cursor, and the open `skills.sh` registry.
+
+---
+
+## 🏛️ 1. The 3-Level Progressive Disclosure Architecture
+
+Skills must adhere to a strict 3-level progressive disclosure hierarchy to maximize LLM context window efficiency:
+
+```mermaid
+graph TD
+    L1[&quot;Level 1: Metadata (YAML Frontmatter)&lt;br&gt;&lt;i&gt;Always in System Context (~50 words)&lt;/i&gt;&quot;] --&gt;|Skill Triggers| L2[&quot;Level 2: SKILL.md Body&lt;br&gt;&lt;i&gt;Loaded into Context on Trigger (&amp;lt;500 lines)&lt;/i&gt;&quot;]
+    L2 --&gt;|Deep Execution| L3[&quot;Level 3: Bundled Resources&lt;br&gt;&lt;i&gt;references/, scripts/, assets/ (Loaded on Demand)&lt;/i&gt;&quot;]
+```
+
+1. **Level 1: YAML Frontmatter (`name` + `description`)**:
+   * Stored in the agent&#x27;s active system prompt at all times.
+   * **Rule**: Keep it to 1–2 punchy sentences stating **WHAT** the skill does and **WHEN** it triggers.
+   * **Anti-Pattern**: Avoid long multi-paragraph descriptions or speculative fluff.
+2. **Level 2: `SKILL.md` Execution Body**:
+   * Read into context only when the skill is explicitly or semantically invoked.
+   * **Rule**: Keep under 500 lines. Focus on imperative execution steps, concrete fixtures, and hard constraints.
+3. **Level 3: Bundled Resources (`references/`, `scripts/`, `assets/`)**:
+   * Heavy reference documentation, AST scripts, or asset templates.
+   * **Rule**: Referenced clearly from `SKILL.md` with explicit instructions on when to view or execute them.
+
+---
+
+## 📝 2. Why Markdown is Mandatory for Skill Instructions
+
+LLMs (including Gemini 3.x, Claude 3.x, and GPT-4o) rely on structural Markdown semantics during attention routing:
+
+* **Heading Hierarchies (`#`, `##`, `###`)**: Define unambiguous semantic boundaries between steps, goals, and constraints.
+* **Code Fences with Language Identifiers (` ```bash `, ` ```json `)**: Prevent the model from misinterpreting code examples as conversational instructions.
+* **Tables**: Present comparative matrices and decision gates with zero ambiguity.
+* **Token Efficiency**: Markdown carries almost zero syntax overhead compared to XML or JSON while providing clean human and machine readability.
+
+---
+
+## 📐 3. Optimal `SKILL.md` Structural Template
+
+Structure every `SKILL.md` in the exact sequence frontier models attend to best:
+
+```markdown
+---
+name: your-skill-name
+description: Short, punchy summary of what it does and when it triggers.
+---
+
+# Skill Name
+
+Brief 1-sentence overview of the skill.
+
+---
+
+## 🎯 Goal
+What success looks like in concrete terms.
+
+---
+
+## 📋 Step-by-Step Workflow
+1. **Step 1 (Imperative Action)**: Specific command or inspection.
+2. **Step 2 (Transformation)**: Specific processing or authoring.
+3. **Step 3 (Verification)**: Automated check or assertion.
+
+---
+
+## 💡 Concrete Examples
+### Before / After Diff or Sample Fixture
+Show exact code, JSON, or markdown transformations.
+
+---
+
+## 🚫 Hard Constraints
+* **NEVER** do X.
+* **NEVER** violate Y.
+```
+
+---
+
+## 👤 4. Attribution &amp; Clean Context Separation
+
+To prevent biographical credits or licenses from cluttering the agent&#x27;s procedural thinking during task execution:
+* Keep `SKILL.md` 100% focused on procedural instructions.
+* Document original authors, repositories, and licenses inside `README.md` and `catalog.json`.
+
+---
+
+## 🚀 5. Distribution &amp; Installation Compatibility
+
+Skills must support two distribution paths:
+1. **Open Registry (`skills.sh` / `npx skills`)**:
+   ```bash
+   npx skills add ksprashu/agent-skill-forge --skill &lt;name&gt;
+   ```
+2. **Instant Local Symlinking (`sync_skills.py`)**:
+   ```bash
+   python3 scripts/sync_skills.py --project . --skills &lt;name1&gt;,&lt;name2&gt;
+   ```
+
+---
+
+## 📚 References &amp; Further Reading
+* [Anthropic Skills Standard &amp; Creator](https://github.com/anthropics/skills)
+* [Addy Osmani Agent Skills](https://github.com/addyosmani/agent-skills)
+* [Matt Pocock Skills Catalog](https://github.com/mattpocock/skills)
+* [Open Knowledge Format (OKF) Specification](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md)
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#1-the-3-level-progressive-disclosure-architecture" class="sidebar-link text-xs">🏛️ 1. The 3-Level Progressive Disclosure Architecture</a>
+<a href="#2-why-markdown-is-mandatory-for-skill-instructions" class="sidebar-link text-xs">📝 2. Why Markdown is Mandatory for Skill Instructions</a>
+<a href="#3-optimal---inline-code-15---structural-template" class="sidebar-link text-xs">📐 3. Optimal <!--INLINE_CODE_15--> Structural Template</a>
+<a href="#4-attribution-clean-context-separation" class="sidebar-link text-xs">👤 4. Attribution & Clean Context Separation</a>
+<a href="#5-distribution-installation-compatibility" class="sidebar-link text-xs">🚀 5. Distribution & Installation Compatibility</a>
+<a href="#references-further-reading" class="sidebar-link text-xs">📚 References & Further Reading</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

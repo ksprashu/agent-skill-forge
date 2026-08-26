@@ -1,50 +1,64 @@
 ---
 name: grill
-description: Interactive Socratic interview engine for rapid requirements extraction and assumption stress-testing. Trigger via `/grill`, `/grill-me`, or `/interview` when requirements are underspecified or before committing to an architecture.
+description: Ask 1 question at a time with your best guess to clarify requirements until 95% confident. Trigger via /grill.
 disable-model-invocation: true
 ---
 
-# Socratic Grilling & Requirements Extraction Engine
+# Grill: 1-Question Socratic Alignment
 
-Extract what the user actually needs rather than what they initially asked for. Closes the gap between conventional requests ("build me a dashboard") and true underlying intent through a disciplined, one-question-at-a-time interview.
-
----
-
-## 🎯 When to Use
-
-- When an ask is underspecified ("build feature X" without clear user personas, SLAs, or success metrics).
-- When a user explicitly triggers: `/grill`, `/grill-me`, `/interview`, "stress-test my thinking", or "are we sure?".
-- Before creating a complex specification, architecture doc, or multi-agent task DAG.
-- When two design goals are in tension (simplicity vs flexibility, speed vs thoroughness) and the tradeoff priority is unstated.
+Clarify ambiguous goals through a disciplined, 1-question-at-a-time Socratic interview with attached hypotheses.
 
 ---
 
-## 🔄 The Socratic Grilling Protocol
+## 🎯 Goal
+Extract requirements, non-goals, and constraints from underspecified requests and generate a concise `CONTEXT.md` brief.
 
-### 1. Formulate a Hypothesis with Confidence Score
-Before asking any question, state your current best hypothesis in **one sentence** along with an honest confidence score (0–100%):
+---
 
+## 📋 Step-by-Step Workflow
+
+1. **State Hypothesis & Confidence**: Begin each turn with your 1-sentence understanding and confidence score (0–100%).
+2. **Ask Exactly ONE Question**: Ask 1 high-leverage question, attaching your recommended answer and rationale.
+3. **Check Stop Condition**: When confidence reaches $\ge 95\%$ (or the user says stop), do NOT ask further questions.
+4. **Write `CONTEXT.md`**: Produce a structured summary defining problem statement, non-goals, and verifiable acceptance criteria.
+
+---
+
+## 💡 Concrete Example
+
+### Interaction Turn Example
+```markdown
+HYPOTHESIS: You want an automated latency monitor for your Cloud Run API that alerts when p95 exceeds 500ms.
+CONFIDENCE: 60% — unresolved: destination of the alert payload.
+
+QUESTION: Should the alert send a webhook to Slack, or write structured JSON logs directly to Google Cloud Logging?
+MY GUESS: Google Cloud Logging, because your analytics pipelines already ingest BigQuery logs asynchronously.
 ```
-HYPOTHESIS: You want an automated latency monitor to alert when Cloud Run p95 exceeds 500ms during keynotes.
-CONFIDENCE: ~40% — unresolved: who receives the alert, and what action triggers on failure.
+
+### Final Output Fixture (`CONTEXT.md`)
+```markdown
+# Context Brief: API Latency Monitor
+
+## 1. Problem Statement
+Monitor Cloud Run API p95 latency during peak traffic and trigger alerts when p95 > 500ms for 2 consecutive minutes.
+
+## 2. Non-Goals
+* No SMS / PagerDuty integration in v1.
+* No automatic auto-scaler overriding.
+
+## 3. Selected Decisions
+* Destination: Google Cloud Logging structured JSON sink.
+* Threshold: p95 > 500ms measured over a 60s sliding window.
+
+## 4. Acceptance Criteria
+* [ ] Cloud Run latency metric exporter runs every 15s.
+* [ ] Unit test verifies threshold triggering logic with synthetic metrics.
 ```
 
-### 2. Ask Exactly ONE Question at a Time
-Never present multi-question bulleted questionnaires. Ask a single focused question with your best guess and rationale attached:
+---
 
-```
-Q: Should the alert trigger a webhook to a Slack channel, or write structured JSON logs directly to Cloud Logging for BigQuery GA4 analysis?
-GUESS: Cloud Logging / BigQuery, because your existing analytics pipelines in `codelabs-completion-dash` ingest telemetry asynchronously.
-```
+## 🚫 Hard Constraints
 
-### 3. Stop Condition (95% Confidence)
-Cease interviewing as soon as confidence reaches $\ge 95\%$. Stop asking questions when:
-- You know **who** uses it, **why** now, **what success looks like**, and the **binding constraints**.
-- You can accurately predict the user's answers to the next 3 implementation questions.
-
-### 4. Output: Requirements Brief (`CONTEXT.md`)
-Conclude the interview by generating a concise, structured `CONTEXT.md` summarising:
-1. **Core Problem Statement & Target Personas**
-2. **Explicit Non-Goals & Boundaries**
-3. **Key Tradeoffs & Selected Options**
-4. **Acceptance Criteria & Verifiable SLAs**
+*   **NEVER** ask multiple questions in a single turn. Always ask exactly ONE.
+*   **NEVER** ask open-ended questions without providing your best guess.
+*   **NEVER** continue grilling once confidence reaches 95%.

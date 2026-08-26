@@ -1,6 +1,6 @@
 ---
-name: codelab-creator
-description: End-to-end Google Codelab tutorial authoring, multi-modal instruction generation, and deterministic quality validation. Trigger via `/codelab` or `/codelab-creator` when asked to create a codelab, build a tutorial, or design a step-by-step developer guide.
+name: codelab
+description: Scaffold and validate interactive Google Codelab tutorials. Trigger via /codelab.
 disable-model-invocation: true
 ---
 

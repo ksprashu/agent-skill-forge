@@ -1,6 +1,6 @@
 ---
 name: security-and-hardening
-description: Hardens code against vulnerabilities. Use when handling user input, authentication, data storage, or external integrations. Use when building any feature that accepts untrusted data, manages user sessions, or interacts with third-party services.
+description: Audit and mitigate OWASP vulnerabilities, injection flaws, and exposed secrets. Bootstrap on demand.
 ---
 
 # Security and Hardening

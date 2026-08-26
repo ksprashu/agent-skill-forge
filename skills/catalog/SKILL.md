@@ -1,85 +1,55 @@
 ---
 name: catalog
-description: Scaffolds and maintains Google Open Knowledge Format (OKF) index bundles and progressive disclosure trees. Auto-invokes when documenting codebase concepts or via `/catalog`.
----
-# Google Open Knowledge Format (OKF) Knowledge Catalog Skill
-
-You are now operating under the **Knowledge Catalog** custom skill, specializing in Google's **Open Knowledge Format (OKF)**. Your mandate is to maintain, traverse, and dynamically construct a self-describing, human-readable, and machine-traversable **Knowledge Bundle** under `.gemini/knowledge/` (or the project root) to solve the context-assembly problem for developers and AI agents.
-
+description: Scaffold and index Google OKF progressive disclosure trees for codebase memory.
 ---
 
-## 📂 1. The OKF Bundle Directory Structure
+# Catalog: Open Knowledge Format (OKF) Bundle Manager
 
-An OKF bundle organizes complex workspace intelligence into modular **Concept Documents**. A standard project-level bundle MUST be structured as follows:
-
-```
-.gemini/knowledge/
-├── index.md                      # Required. Table of Contents & Progressive Disclosure Index
-├── log.md                        # Recommended. Chronological changelog of knowledge updates
-├── scout/                        # Environment mapping & system metadata
-│   └── codebase_map.md
-├── analyst/                      # User decisions, visual preferences, and BDD scenarios
-│   └── user_decisions.md
-├── architecture/                 # Component designs, DB models, and API endpoints
-│   └── data_contracts.md
-├── builder/                      # Playbooks, runbooks, and setup documentation
-│   └── local_setup_runbook.md
-├── sentry/                       # Security threat models, audits, and evidence logs
-│   └── secure_threat_model.md
-└── mentor/                       # Explanations of design patterns and practices
-    └── solid_design_patterns.md
-```
+Maintain and traverse self-describing, progressive disclosure knowledge bundles under `.gemini/knowledge/`.
 
 ---
 
-## 📝 2. OKF Concept Document Specification
+## 🎯 Goal
+Preserve long-term architectural decisions, codebase topologies, and runbooks in a structured, searchable knowledge tree.
 
-Every Concept Document is a standard UTF-8 Markdown file containing:
-1.  **YAML Frontmatter Block**: Standardized metadata keys.
-2.  **Markdown Body**: Free-form documentation, claims, and links.
+---
 
-### Mandatory & Recommended Frontmatter Fields:
-```yaml
+## 📋 Step-by-Step Workflow
+
+1. **Scaffold Bundle Structure**: Create `.gemini/knowledge/` with subdirectories (`scout/`, `analyst/`, `architecture/`, `builder/`, `sentry/`).
+2. **Author Concept Documents**: Write focused Markdown docs with YAML frontmatter (`type`, `title`, `description`, `resource`).
+3. **Update Progressive Disclosure Index**: Maintain `.gemini/knowledge/index.md` linking to all concept files.
+4. **Log Updates**: Record modifications chronologically in `.gemini/knowledge/log.md`.
+5. **Validate Integrity**: Run `python3 scripts/verify_okf.py` to ensure valid schemas and clickable links.
+
 ---
-type: <Type name>                  # REQUIRED. (e.g., "BigQuery Table", "API Endpoint", "Scenario", "Threat Model", "Playbook")
-title: <Display name>              # Recommended. Human-readable name. If omitted, derived from filename.
-description: <One-line summary>    # Recommended. Short snippet used in index files or search previews.
-resource: <Canonical URI>          # Recommended. Unique URI/file URL referencing the actual codebase asset.
-tags: [<tag1>, <tag2>, ...]        # Optional. Semantic taxonomy grouping tags.
-timestamp: <ISO 8601 datetime>     # Optional. Modification timestamp.
+
+## 💡 Concrete Example
+
+### Concept Document Fixture (`.gemini/knowledge/architecture/data_contracts.md`)
+```markdown
 ---
-# Concept Title
-Markdown body text...
+type: "Data Contract"
+title: "User Profile Schema"
+description: "Pydantic and SQLite schema definitions for user records."
+resource: "file:///src/models/user.py"
+tags: ["database", "schema", "auth"]
+---
+
+# User Profile Data Contract
+
+Defines the core `User` model attributes and SQLite table constraints.
+
+## Schema Definition
+* `id` (INTEGER PRIMARY KEY)
+* `email` (TEXT UNIQUE NOT NULL)
+* `created_at` (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
 ```
 
 ---
 
-## 🛠️ 3. Deterministic Static Verifier (`verify_okf.py`)
+## 🚫 Hard Constraints
 
-This skill includes a native, machine-verifiable static check script at `scripts/verify_okf.py` to validate concept file structure:
-
-```bash
-python3 skills/knowledge-catalog/scripts/verify_okf.py .gemini/knowledge/scout/codebase_map.md
-```
-
-The script verifies:
-1. YAML frontmatter opening (`---`) and closing markers.
-2. Required keys (`type`, `title`).
-3. Absence of placeholders (`TBD`, `TODO`, `FIXME`).
-
----
-
-## ⚡ 4. Selective Context Grounding (On-Demand RAG)
-
-To prevent prompt-token bloat, never ingest entire documentation logs at once. Follow the **[Selective Grounding Specification](file://$HOME/code/github/skills-knowledge-catalog/skills/knowledge-catalog/references/selective_grounding.md)**:
-1.  **Read Index**: Check `.gemini/knowledge/index.md` first.
-2.  **Filter Concepts**: Identify relevant Concept IDs based on active task goals.
-3.  **Hydrate Context**: Run `view_file` only on target documents.
-
----
-
-## 🚦 5. Guidelines for Prompt Writers & Developers
-
-*   **Zero Placeholders**: Concepts must be fully written out. Do not write "TBD", "To be completed later", or empty files.
-*   **VCS Integrity**: Ensure that `.gemini/knowledge/` is committed to git to bind conceptual "why" directly to "how" in code.
-*   **Tag & Link Consistency**: Concepts can reference other concepts using standard Markdown links (e.g., `[API Spec](file:///.gemini/knowledge/architecture/api_endpoint.md)`).
+*   **NEVER** create concept documents without valid YAML frontmatter.
+*   **NEVER** omit updating `index.md` when adding new concept files.
+*   **NEVER** hardcode private machine paths or credentials in knowledge documents.

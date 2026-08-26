@@ -1,6 +1,6 @@
 ---
 name: prompt
-description: Socratic Grill & Propose prompt optimizer. Decomposes complex tasks into micro-chunked DAG task graphs and coordinates 6-persona pipelines. Trigger via `/prompt` or `/prompt-writer`.
+description: Turn vague requests into clear specs and DAG task graphs. Trigger via /prompt.
 disable-model-invocation: true
 ---
 

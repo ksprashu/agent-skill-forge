@@ -1,6 +1,6 @@
 ---
 name: benchmark-harness
-description: Universal AI Assistant evaluation suite. Runs automated functional verification, artifact evidence audits, and comparative benchmarks across 12 engineering use cases.
+description: Measure code latency, memory allocations, and throughput regressions. Bootstrap on demand.
 ---
 
 # Benchmark Harness Custom Skill: Universal AI Assistant Evaluation Suite
