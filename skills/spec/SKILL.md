@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Write grounded specifications with official API doc citations and non-goals before coding.
+description: Write grounded specifications with official API doc citations and explicit non-goals before executing. Trigger via /spec.
 ---
 
 # Spec: Specification & Source Grounding

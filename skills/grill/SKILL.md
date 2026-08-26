@@ -1,6 +1,6 @@
 ---
 name: grill
-description: Ask 1 question at a time with your best guess to clarify requirements until 95% confident. Trigger via /grill.
+description: Ask 1 question at a time with your best guess to clarify requirements, designs, or decisions until 95% confident. Trigger via /grill.
 disable-model-invocation: true
 ---
 

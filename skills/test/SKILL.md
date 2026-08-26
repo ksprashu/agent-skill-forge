@@ -1,6 +1,6 @@
 ---
 name: test
-description: Enforce Test-Driven Development and Prove-It bug reproduction before writing fixes.
+description: Enforce Test-Driven Development and Prove-It reproduction before implementing features or fixes. Trigger via /test.
 ---
 
 # Test: Test-Driven Development & Prove-It

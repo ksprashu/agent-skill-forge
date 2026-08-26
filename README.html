@@ -253,7 +253,7 @@
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
 <h2 id="quickstart" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🚀 Quickstart</h2>
 <h3 id="1-install-synchronize-global-skills-1-liner" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">1. Install & Synchronize Global Skills (1-Liner)</h3>
-<p class="mb-4 text-[var(--text-secondary)]">Run the installer to link the 15 core universal action verbs into all your AI tools:</p>
+<p class="mb-4 text-[var(--text-secondary)]">Run the installer to link the 16 core universal action verbs into all your AI tools:</p>
 
             <div class="code-container my-4">
                 <div class="code-header">
@@ -276,143 +276,312 @@
             </div>
             
 <h3 id="3-bootstrap-project-specific-skills-on-demand" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">3. Bootstrap Project-Specific Skills on Demand</h3>
-<p class="mb-4 text-[var(--text-secondary)]">Need specialized domain skills for a specific project? Bootstrap them directly into your repo workspace without cluttering global memory:</p>
+<p class="mb-4 text-[var(--text-secondary)]">Need specialized domain skills for a specific project? Bootstrap them directly into your workspace or install via <code class="inline-code">npx skills</code>:</p>
 
             <div class="code-container my-4">
                 <div class="code-header">
                     <span>BASH</span>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
-                <pre><code class="language-bash"># Inside your project directory:
+                <pre><code class="language-bash"># Option A: Fast local symlink bootstrapper
 python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+
+# Option B: Standard npx skills / skills.sh installer
+npx skills add ksprashu/agent-skill-forge --skill frontend-ui-engineering
 </code></pre>
             </div>
             
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="the-15-core-global-action-verbs" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 The 15 Core Global Action Verbs</h2>
-<p class="mb-4 text-[var(--text-secondary)]">These skills cover the entire software engineering lifecycle. They are linked globally across all your agent environments:</p>
+<h2 id="the-16-core-universal-action-verbs" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 The 16 Core Universal Action Verbs</h2>
+<p class="mb-4 text-[var(--text-secondary)]">These 16 skills cover the complete end-to-end engineering lifecycle across code, prose, architectural analysis, tutorials, and visual design:</p>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
-<th>Primary Verb</th>
-<th>Slash Command</th>
-<th>Mode</th>
+<th>Skill</th>
+<th>Triggers & Invocations</th>
+<th>Execution Mode</th>
 <th>What It Does & When to Use</th>
 </tr></thead><tbody>
 <tr>
 <td><strong><code class="inline-code">prompt</code></strong></td>
 <td><code class="inline-code">/prompt</code></td>
 <td>User Slash</td>
-<td>Meta-task intent engineering, Socratic grilling, and DAG task graph generation.</td>
+<td><strong>Meta-Task & Intent Engineering</strong>: Decomposes complex tasks, vague ideas, or multi-step goals into clear intent directives and dependency DAGs (<code class="inline-code">task_graph.json</code>).</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">grill</code></strong></td>
-<td><code class="inline-code">/grill</code></td>
+<td><code class="inline-code">/grill</code>, <code class="inline-code">/grill-me</code>, <code class="inline-code">/interview</code></td>
 <td>User Slash</td>
-<td>Disciplined 1-question Socratic interview with attached hypotheses and 95% confidence stop test.</td>
+<td><strong>Socratic Grilling</strong>: 1-question Socratic interview with attached hypotheses to clarify requirements, architecture, or design tradeoffs until 95% confident.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">spec</code></strong></td>
-<td><code class="inline-code">/spec</code></td>
+<td><code class="inline-code">/spec</code>, auto on new features</td>
 <td>Autonomous</td>
-<td>Gated specifications, non-goals, and official API documentation grounding.</td>
+<td><strong>Specification & Source Grounding</strong>: Writes structured, doc-cited specifications with explicit non-goals before writing code.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">plan</code></strong></td>
-<td><code class="inline-code">/plan</code></td>
+<td><code class="inline-code">/plan</code>, auto after spec</td>
 <td>Autonomous</td>
-<td>Vertical task slicing, dependency DAGs, and checkpointing.</td>
+<td><strong>Task Slicing & Dependency DAGs</strong>: Slices complex features, refactors, or projects into small, vertically sliced tasks with verifiable checkpoints.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">test</code></strong></td>
-<td><code class="inline-code">/test</code></td>
+<td><code class="inline-code">/test</code>, auto during coding</td>
 <td>Autonomous</td>
-<td>Test-Driven Development (TDD) and Prove-It bug reproduction loops.</td>
+<td><strong>Test-Driven Development & Prove-It</strong>: Enforces writing failing tests first to prove bug reproduction and verify new feature behavior.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">verify</code></strong></td>
-<td><code class="inline-code">/verify</code></td>
+<td><code class="inline-code">/verify</code>, <code class="inline-code">/ega</code>, <code class="inline-code">/harness</code></td>
 <td>Autonomous</td>
-<td>Expectation-Grounded Alignment (EGA) static AST/schema verifiers + 6-persona blinded judge rubrics.</td>
+<td><strong>Expectation-Grounded Alignment (EGA)</strong>: Dual-layer verification running deterministic static check scripts and blinded multi-persona dynamic judge rubrics.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">review</code></strong></td>
-<td><code class="inline-code">/review</code></td>
+<td><code class="inline-code">/review</code>, pre-merge</td>
 <td>Autonomous</td>
-<td>5-axis code and architecture review (correctness, readability, architecture, security, performance).</td>
+<td><strong>5-Axis Code & Architecture Review</strong>: Audits changes across correctness, security, performance, architecture, and readability with exact line fixes.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">unslop</code></strong></td>
-<td><code class="inline-code">/unslop</code></td>
-<td>Autonomous</td>
-<td>Anti-AI bloat, Laziness Protocol ("Subtract before you add"), and ghost abstraction elimination.</td>
+<td><code class="inline-code">/unslop</code>, <code class="inline-code">/deslop</code>, <code class="inline-code">/simplify</code></td>
+<td>Auto / Slash</td>
+<td><strong>Universal Anti-Bloat Engine</strong>: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and unnecessary complexity from code, text, analyses, and UI.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">docs</code></strong></td>
-<td><code class="inline-code">/docs</code></td>
+<td><code class="inline-code">/docs</code>, <code class="inline-code">/compile-docs</code></td>
 <td>User Slash</td>
-<td>Full SDLC documentation suite + 4 Stitch themes interactive HTML presentation compilation.</td>
+<td><strong>SDLC Documentation & Stitch Compiler</strong>: Scaffolds standard SDLC doc suites and compiles markdown into interactive 4-theme HTML portals.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">catalog</code></strong></td>
-<td><code class="inline-code">/catalog</code></td>
+<td><code class="inline-code">/catalog</code>, auto on concepts</td>
 <td>Autonomous</td>
-<td>Google Open Knowledge Format (OKF) bundle scaffolding and progressive disclosure trees.</td>
+<td><strong>Open Knowledge Format (OKF)</strong>: Scaffolds and indexes progressive disclosure knowledge bundles (<code class="inline-code">.gemini/knowledge/</code>) for long-term project memory.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">sync</code></strong></td>
-<td><code class="inline-code">/sync</code></td>
+<td><code class="inline-code">/sync</code>, <code class="inline-code">/skill-sync</code></td>
 <td>User Slash</td>
-<td>Canonical symlink manager and project-scoped skill bootstrapper.</td>
+<td><strong>Symlink & JIT Bootstrapper</strong>: Manages symlinks across global agent runtimes and bootstraps domain skills into project workspaces.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">google-oss</code></strong></td>
-<td><code class="inline-code">/google-oss</code></td>
+<td><code class="inline-code">/google-oss</code>, <code class="inline-code">/make-google-oss</code></td>
 <td>User Slash</td>
-<td>Google Open Source compliance, license header checks, and repo sanitization.</td>
+<td><strong>Open Source Compliance</strong>: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">codelab</code></strong></td>
-<td><code class="inline-code">/codelab</code></td>
+<td><code class="inline-code">/codelab</code>, <code class="inline-code">/codelab-creator</code></td>
 <td>User Slash</td>
-<td>Interactive Google Codelab tutorial scaffolding and markdown validation.</td>
+<td><strong>Google Codelab Authoring</strong>: Scaffolds and validates interactive step-by-step developer tutorials and workshops.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">voice</code></strong></td>
-<td><code class="inline-code">/voice</code></td>
+<td><code class="inline-code">/voice</code>, <code class="inline-code">/extract-voice</code></td>
 <td>User Slash</td>
-<td>Linguistic style analysis, typing cadence extraction, and speech profiling.</td>
+<td><strong>Persona & Cadence Profiler</strong>: Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">copy-write</code></strong></td>
-<td><code class="inline-code">/copy-write</code></td>
+<td><code class="inline-code">/copy-write</code>, <code class="inline-code">/copy-write-bara</code></td>
 <td>User Slash</td>
-<td>Technical drafting companion with 3-tier Profile-Overlay personalization.</td>
+<td><strong>Technical Writing Companion</strong>: Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">image-gen</code></strong></td>
 <td><code class="inline-code">/image-gen</code></td>
 <td>User Slash</td>
-<td>Multimodal diagram, infographic, and blog asset generator via Gemini Flash Image.</td>
+<td><strong>Multimodal Asset Generator</strong>: Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image.</td>
 </tr>
 </tbody></table></div>
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
 <h2 id="curated-preferred-skills-project-scoped-jit" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛠️ Curated Preferred Skills (Project-Scoped JIT)</h2>
-<p class="mb-4 text-[var(--text-secondary)]">Specialized engineering skills are stored in <a href="./preferred/" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">preferred/</code></a> and can be installed into any workspace in seconds:</p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>  <strong><code class="inline-code">frontend-ui-engineering</code></strong>: Modern CSS layouts (<code class="inline-code">:has()</code>, container queries, View Transitions API).</li>
-<li>  <strong><code class="inline-code">performance-optimization</code></strong>: Core Web Vitals (CWV), LCP/INP budgets, and memory leak analysis.</li>
-<li>  <strong><code class="inline-code">api-and-interface-design</code></strong>: Hyrum's law, discriminated unions, and idempotent REST contracts.</li>
-<li>  <strong><code class="inline-code">security-and-hardening</code></strong>: Threat modeling, OWASP Top 10 fixes, and CWE sanitization.</li>
-<li>  <strong><code class="inline-code">deprecation-and-migration</code></strong>: Expand/Contract database schema migrations and zero-downtime updates.</li>
-<li>  <strong><code class="inline-code">browser-testing-with-devtools</code></strong>: Headless Chrome DevTools testing, console trapping, and network assertions.</li>
-<li>  <strong><code class="inline-code">observability-and-instrumentation</code></strong>: Structured JSON logs, OpenTelemetry distributed tracing, and metrics.</li>
-<li>  <strong><code class="inline-code">ci-cd-and-automation</code></strong>: GitHub Actions workflows, matrix testing, and automated release gates.</li>
-<li>  <strong><code class="inline-code">debugging-and-error-recovery</code></strong>: Stack trace deconstruction and defensive error isolation.</li>
-<li>  <strong><code class="inline-code">git-workflow-and-versioning</code></strong>: Conventional commits, atomic PRs, and linear Git history.</li>
-<li>  <strong><code class="inline-code">context-engineering</code></strong>: Token context optimization and LLM prompt packing.</li>
-<li>  <strong><code class="inline-code">benchmark-harness</code></strong>: Dual Gemini LLM-as-a-Judge scoring across 12 standardized engineering use cases.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">👉 Check out the full <strong><a href="PREFERRED_SKILLS.html" class="nav-link-item">Preferred Skills Catalog</a></strong> for <code class="inline-code">npx skills</code> commands and documentation links.</p>
+<p class="mb-4 text-[var(--text-secondary)]">Specialized engineering skills are stored in <a href="./preferred/" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">preferred/</code></a> and can be bootstrapped into any workspace in seconds:</p>
+<div class="overflow-x-auto my-4"><table class="rich-table">
+<thead><tr>
+<th>Domain Skill</th>
+<th>Trigger & Scope</th>
+<th>Key Capabilities & Frameworks</th>
+</tr></thead><tbody>
+<tr>
+<td><strong><code class="inline-code">frontend-ui-engineering</code></strong></td>
+<td>Frontend & UI tasks</td>
+<td>Modern CSS (<code class="inline-code">:has()</code>, container queries, View Transitions), accessible components, clean design systems without generic AI aesthetic.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">performance-optimization</code></strong></td>
+<td>Perf audits & optimization</td>
+<td>Core Web Vitals (CWV), LCP/INP budgets, memory leak diagnosis, and backend query optimization.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">api-and-interface-design</code></strong></td>
+<td>API & schema modeling</td>
+<td>Hyrum's law, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">security-and-hardening</code></strong></td>
+<td>Security audits & fixes</td>
+<td>Threat modeling, OWASP Top 10 mitigations, input sanitization, and secret protection.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">deprecation-and-migration</code></strong></td>
+<td>Refactors & migrations</td>
+<td>Expand/Contract database migrations, automated codemods, and zero-downtime upgrades.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">browser-testing-with-devtools</code></strong></td>
+<td>Web testing & automation</td>
+<td>Headless Chrome DevTools testing, console trapping, visual regression checks, and network assertions.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">observability-and-instrumentation</code></strong></td>
+<td>Logging & telemetry</td>
+<td>Structured JSON logs, OpenTelemetry distributed tracing, Prometheus metrics, and alert rules.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">ci-cd-and-automation</code></strong></td>
+<td>Pipelines & workflows</td>
+<td>GitHub Actions workflows, matrix testing, deterministic caching, and automated release gates.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">debugging-and-error-recovery</code></strong></td>
+<td>Error investigation</td>
+<td>Systematic root cause analysis, stack trace deconstruction, and defensive error isolation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">git-workflow-and-versioning</code></strong></td>
+<td>Git & release management</td>
+<td>Conventional commits, atomic PRs, interactive rebase workflows, and semantic versioning tags.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">context-engineering</code></strong></td>
+<td>Context optimization</td>
+<td>Token context window budgeting, prompt packing, and progressive disclosure tree navigation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">benchmark-harness</code></strong></td>
+<td>Benchmarking & evals</td>
+<td>Automated latency, memory allocation, and throughput regression testing with statistical variance checks.</td>
+</tr>
+</tbody></table></div>
+<p class="mb-4 text-[var(--text-secondary)]">👉 Check out the full <strong><a href="PREFERRED_SKILLS.html" class="nav-link-item">Preferred Skills Catalog</a></strong> for <code class="inline-code">npx skills</code> commands and detailed documentation.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="attributions-lineage-matrix-page-at-a-glance" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">👤 Attributions & Lineage Matrix (Page at a Glance)</h2>
+<p class="mb-4 text-[var(--text-secondary)]">We gratefully acknowledge the creators, open-source contributors, and engineering pioneers whose work inspired and shaped the skills in <code class="inline-code">agent-skill-forge</code>:</p>
+<div class="overflow-x-auto my-4"><table class="rich-table">
+<thead><tr>
+<th>Skill / Domain</th>
+<th>Original Creators & Inspirations</th>
+<th>Upstream Repositories / Standards</th>
+<th>Adaptation & Role in <code class="inline-code">agent-skill-forge</code></th>
+</tr></thead><tbody>
+<tr>
+<td><strong><code class="inline-code">unslop</code></strong></td>
+<td><strong>Matt Pocock</strong> & <strong>poteto / Cursor pstack</strong></td>
+<td><a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">mattpocock/skills/deslop</code></a> & <a href="https://github.com/cursor/plugins/tree/main/pstack" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">cursor/plugins/pstack</code></a></td>
+<td>Fused universal anti-bloat engine spanning code, prose, analysis, and visual UI.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">grill</code></strong></td>
+<td><strong>Matt Pocock</strong> & <strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">mattpocock/skills/grill-me-with-docs</code></a> & <a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/interview-me</code></a></td>
+<td>Fused 1-question Socratic alignment protocol with confidence stop gating.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">spec</code></strong></td>
+<td><strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/source-driven-development</code></a></td>
+<td>Source-grounded specification engine with official API doc citations.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">plan</code></strong></td>
+<td><strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/skills/planning</code></a></td>
+<td>Vertical task slicing and dependency DAG checkpointing.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">test</code></strong></td>
+<td><strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/skills/test</code></a></td>
+<td>Test-Driven Development and Prove-It bug reproduction loop.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">review</code></strong></td>
+<td><strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/skills/review</code></a></td>
+<td>5-axis code and architectural review framework.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">prompt</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/prompt</code></a></td>
+<td>Intent engineering, 6-persona framework, and DAG task graph compiler.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">verify</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/verify</code></a></td>
+<td>Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">docs</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/docs</code></a></td>
+<td>Full SDLC documentation scaffolding + Stitch 4-theme interactive HTML compiler.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">catalog</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link">Google Open Knowledge Format (OKF)</a></td>
+<td>Codebase memory and progressive disclosure index tree specification.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">sync</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/sync</code></a></td>
+<td>Multi-runtime symlink synchronizer and JIT workspace bootstrapper.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">google-oss</code></strong></td>
+<td><strong>Google Open Source Programs Office (OSPO)</strong></td>
+<td><a href="https://opensource.google/documentation" target="_blank" rel="noopener noreferrer" class="external-link">Google Open Source Docs</a></td>
+<td>Apache-2.0 compliance, header automation, and repository sanitization.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">codelab</code></strong></td>
+<td><strong>Google Developer Relations</strong></td>
+<td><a href="https://codelabs.developers.google.com/" target="_blank" rel="noopener noreferrer" class="external-link">Google Codelabs</a></td>
+<td>Interactive step-by-step developer tutorial authoring and quality validation.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">voice</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/voice</code></a></td>
+<td>PII-sanitized linguistic style and typing cadence extraction.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">copy-write</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/copy-write</code></a></td>
+<td>Technical prose companion with 3-tier Profile-Overlay voice personalization.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">image-gen</code></strong></td>
+<td><strong>Google DeepMind</strong></td>
+<td><a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" class="external-link">Gemini API Documentation</a></td>
+<td>Multimodal image and diagram generation using Gemini Flash Image.</td>
+</tr>
+<tr>
+<td><strong>Preferred Skills (12)</strong></td>
+<td><strong>Addy Osmani</strong>, <strong>Matt Pocock</strong>, <strong>Cursor</strong>, <strong>Anthropic</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills</code></a>, <a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">mattpocock/skills</code></a>, <a href="https://github.com/anthropics/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">anthropics/skills</code></a></td>
+<td>Curated domain skills for frontend, performance, security, CI/CD, and debugging.</td>
+</tr>
+</tbody></table></div>
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
 <h2 id="profile-overlay-personalization" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛡️ Profile-Overlay Personalization</h2>
 <code class="inline-code">agent-skill-forge</code> uses a **3-tier Profile-Overlay Architecture** so you can personalize tone and voice without leaking private information:
@@ -428,17 +597,18 @@ python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --ski
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
                 <pre><code class="language-txt">agent-skill-forge/
-├── skills/                     # 15 Core Universal Global Action Verbs
-├── preferred/                  # Curated Domain-Specific Skills (JIT)
+├── skills/                     # 16 Core Universal Global Action Verbs
+├── preferred/                  # 12 Curated Domain-Specific Skills (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
 ├── scripts/                    # Installer &amp; Verification Scripts
 │   ├── install.sh              # 1-liner installer
 │   ├── sync_skills.py          # Symlink manager &amp; JIT bootstrapper
 │   └── validate_skills.py      # Frontmatter linter &amp; PII scanner
-├── docs/                       # Full Documentation Suite
+├── docs/                       # Full Documentation Suite &amp; Stitch Portals
+│   └── skill_authoring_guide.md# Official Skill Authoring Guide
 ├── .gemini/knowledge/          # Google OKF Knowledge Bundle
-└── README.md                   # Monorepo Entrypoint
+└── README.md                   # Monorepo Entrypoint &amp; Attribution Matrix
 </code></pre>
             </div>
             
@@ -465,7 +635,7 @@ Built for engineering rigor, token context economy, and zero AI slop.
 ## 🚀 Quickstart
 
 ### 1. Install &amp; Synchronize Global Skills (1-Liner)
-Run the installer to link the 15 core universal action verbs into all your AI tools:
+Run the installer to link the 16 core universal action verbs into all your AI tools:
 ```bash
 bash scripts/install.sh
 ```
@@ -476,57 +646,88 @@ python3 scripts/sync_skills.py
 ```
 
 ### 3. Bootstrap Project-Specific Skills on Demand
-Need specialized domain skills for a specific project? Bootstrap them directly into your repo workspace without cluttering global memory:
+Need specialized domain skills for a specific project? Bootstrap them directly into your workspace or install via `npx skills`:
 ```bash
-# Inside your project directory:
+# Option A: Fast local symlink bootstrapper
 python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
+
+# Option B: Standard npx skills / skills.sh installer
+npx skills add ksprashu/agent-skill-forge --skill frontend-ui-engineering
 ```
 
 ---
 
-## 🌟 The 15 Core Global Action Verbs
+## 🌟 The 16 Core Universal Action Verbs
 
-These skills cover the entire software engineering lifecycle. They are linked globally across all your agent environments:
+These 16 skills cover the complete end-to-end engineering lifecycle across code, prose, architectural analysis, tutorials, and visual design:
 
-| Primary Verb | Slash Command | Mode | What It Does &amp; When to Use |
+| Skill | Triggers &amp; Invocations | Execution Mode | What It Does &amp; When to Use |
 | :--- | :--- | :--- | :--- |
-| **`prompt`** | `/prompt` | User Slash | Meta-task intent engineering, Socratic grilling, and DAG task graph generation. |
-| **`grill`** | `/grill` | User Slash | Disciplined 1-question Socratic interview with attached hypotheses and 95% confidence stop test. |
-| **`spec`** | `/spec` | Autonomous | Gated specifications, non-goals, and official API documentation grounding. |
-| **`plan`** | `/plan` | Autonomous | Vertical task slicing, dependency DAGs, and checkpointing. |
-| **`test`** | `/test` | Autonomous | Test-Driven Development (TDD) and Prove-It bug reproduction loops. |
-| **`verify`** | `/verify` | Autonomous | Expectation-Grounded Alignment (EGA) static AST/schema verifiers + 6-persona blinded judge rubrics. |
-| **`review`** | `/review` | Autonomous | 5-axis code and architecture review (correctness, readability, architecture, security, performance). |
-| **`unslop`** | `/unslop` | Autonomous | Anti-AI bloat, Laziness Protocol (&quot;Subtract before you add&quot;), and ghost abstraction elimination. |
-| **`docs`** | `/docs` | User Slash | Full SDLC documentation suite + 4 Stitch themes interactive HTML presentation compilation. |
-| **`catalog`** | `/catalog` | Autonomous | Google Open Knowledge Format (OKF) bundle scaffolding and progressive disclosure trees. |
-| **`sync`** | `/sync` | User Slash | Canonical symlink manager and project-scoped skill bootstrapper. |
-| **`google-oss`**| `/google-oss` | User Slash | Google Open Source compliance, license header checks, and repo sanitization. |
-| **`codelab`** | `/codelab` | User Slash | Interactive Google Codelab tutorial scaffolding and markdown validation. |
-| **`voice`** | `/voice` | User Slash | Linguistic style analysis, typing cadence extraction, and speech profiling. |
-| **`copy-write`**| `/copy-write` | User Slash | Technical drafting companion with 3-tier Profile-Overlay personalization. |
-| **`image-gen`** | `/image-gen` | User Slash | Multimodal diagram, infographic, and blog asset generator via Gemini Flash Image. |
+| **`prompt`** | `/prompt` | User Slash | **Meta-Task &amp; Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into clear intent directives and dependency DAGs (`task_graph.json`). |
+| **`grill`** | `/grill`, `/grill-me`, `/interview` | User Slash | **Socratic Grilling**: 1-question Socratic interview with attached hypotheses to clarify requirements, architecture, or design tradeoffs until 95% confident. |
+| **`spec`** | `/spec`, auto on new features | Autonomous | **Specification &amp; Source Grounding**: Writes structured, doc-cited specifications with explicit non-goals before writing code. |
+| **`plan`** | `/plan`, auto after spec | Autonomous | **Task Slicing &amp; Dependency DAGs**: Slices complex features, refactors, or projects into small, vertically sliced tasks with verifiable checkpoints. |
+| **`test`** | `/test`, auto during coding | Autonomous | **Test-Driven Development &amp; Prove-It**: Enforces writing failing tests first to prove bug reproduction and verify new feature behavior. |
+| **`verify`** | `/verify`, `/ega`, `/harness` | Autonomous | **Expectation-Grounded Alignment (EGA)**: Dual-layer verification running deterministic static check scripts and blinded multi-persona dynamic judge rubrics. |
+| **`review`** | `/review`, pre-merge | Autonomous | **5-Axis Code &amp; Architecture Review**: Audits changes across correctness, security, performance, architecture, and readability with exact line fixes. |
+| **`unslop`** | `/unslop`, `/deslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and unnecessary complexity from code, text, analyses, and UI. |
+| **`docs`** | `/docs`, `/compile-docs` | User Slash | **SDLC Documentation &amp; Stitch Compiler**: Scaffolds standard SDLC doc suites and compiles markdown into interactive 4-theme HTML portals. |
+| **`catalog`** | `/catalog`, auto on concepts | Autonomous | **Open Knowledge Format (OKF)**: Scaffolds and indexes progressive disclosure knowledge bundles (`.gemini/knowledge/`) for long-term project memory. |
+| **`sync`** | `/sync`, `/skill-sync` | User Slash | **Symlink &amp; JIT Bootstrapper**: Manages symlinks across global agent runtimes and bootstraps domain skills into project workspaces. |
+| **`google-oss`**| `/google-oss`, `/make-google-oss`| User Slash | **Open Source Compliance**: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
+| **`codelab`** | `/codelab`, `/codelab-creator` | User Slash | **Google Codelab Authoring**: Scaffolds and validates interactive step-by-step developer tutorials and workshops. |
+| **`voice`** | `/voice`, `/extract-voice` | User Slash | **Persona &amp; Cadence Profiler**: Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
+| **`copy-write`**| `/copy-write`, `/copy-write-bara`| User Slash | **Technical Writing Companion**: Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization. |
+| **`image-gen`** | `/image-gen` | User Slash | **Multimodal Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
 
 ---
 
 ## 🛠️ Curated Preferred Skills (Project-Scoped JIT)
 
-Specialized engineering skills are stored in [`preferred/`](./preferred/) and can be installed into any workspace in seconds:
+Specialized engineering skills are stored in [`preferred/`](./preferred/) and can be bootstrapped into any workspace in seconds:
 
-*   **`frontend-ui-engineering`**: Modern CSS layouts (`:has()`, container queries, View Transitions API).
-*   **`performance-optimization`**: Core Web Vitals (CWV), LCP/INP budgets, and memory leak analysis.
-*   **`api-and-interface-design`**: Hyrum&#x27;s law, discriminated unions, and idempotent REST contracts.
-*   **`security-and-hardening`**: Threat modeling, OWASP Top 10 fixes, and CWE sanitization.
-*   **`deprecation-and-migration`**: Expand/Contract database schema migrations and zero-downtime updates.
-*   **`browser-testing-with-devtools`**: Headless Chrome DevTools testing, console trapping, and network assertions.
-*   **`observability-and-instrumentation`**: Structured JSON logs, OpenTelemetry distributed tracing, and metrics.
-*   **`ci-cd-and-automation`**: GitHub Actions workflows, matrix testing, and automated release gates.
-*   **`debugging-and-error-recovery`**: Stack trace deconstruction and defensive error isolation.
-*   **`git-workflow-and-versioning`**: Conventional commits, atomic PRs, and linear Git history.
-*   **`context-engineering`**: Token context optimization and LLM prompt packing.
-*   **`benchmark-harness`**: Dual Gemini LLM-as-a-Judge scoring across 12 standardized engineering use cases.
+| Domain Skill | Trigger &amp; Scope | Key Capabilities &amp; Frameworks |
+| :--- | :--- | :--- |
+| **`frontend-ui-engineering`** | Frontend &amp; UI tasks | Modern CSS (`:has()`, container queries, View Transitions), accessible components, clean design systems without generic AI aesthetic. |
+| **`performance-optimization`**| Perf audits &amp; optimization | Core Web Vitals (CWV), LCP/INP budgets, memory leak diagnosis, and backend query optimization. |
+| **`api-and-interface-design`** | API &amp; schema modeling | Hyrum&#x27;s law, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility. |
+| **`security-and-hardening`** | Security audits &amp; fixes | Threat modeling, OWASP Top 10 mitigations, input sanitization, and secret protection. |
+| **`deprecation-and-migration`**| Refactors &amp; migrations | Expand/Contract database migrations, automated codemods, and zero-downtime upgrades. |
+| **`browser-testing-with-devtools`**| Web testing &amp; automation | Headless Chrome DevTools testing, console trapping, visual regression checks, and network assertions. |
+| **`observability-and-instrumentation`**| Logging &amp; telemetry | Structured JSON logs, OpenTelemetry distributed tracing, Prometheus metrics, and alert rules. |
+| **`ci-cd-and-automation`** | Pipelines &amp; workflows | GitHub Actions workflows, matrix testing, deterministic caching, and automated release gates. |
+| **`debugging-and-error-recovery`**| Error investigation | Systematic root cause analysis, stack trace deconstruction, and defensive error isolation. |
+| **`git-workflow-and-versioning`** | Git &amp; release management | Conventional commits, atomic PRs, interactive rebase workflows, and semantic versioning tags. |
+| **`context-engineering`** | Context optimization | Token context window budgeting, prompt packing, and progressive disclosure tree navigation. |
+| **`benchmark-harness`** | Benchmarking &amp; evals | Automated latency, memory allocation, and throughput regression testing with statistical variance checks. |
 
-👉 Check out the full **[Preferred Skills Catalog](./preferred/PREFERRED_SKILLS.md)** for `npx skills` commands and documentation links.
+👉 Check out the full **[Preferred Skills Catalog](./preferred/PREFERRED_SKILLS.md)** for `npx skills` commands and detailed documentation.
+
+---
+
+## 👤 Attributions &amp; Lineage Matrix (Page at a Glance)
+
+We gratefully acknowledge the creators, open-source contributors, and engineering pioneers whose work inspired and shaped the skills in `agent-skill-forge`:
+
+| Skill / Domain | Original Creators &amp; Inspirations | Upstream Repositories / Standards | Adaptation &amp; Role in `agent-skill-forge` |
+| :--- | :--- | :--- | :--- |
+| **`unslop`** | **Matt Pocock** &amp; **poteto / Cursor pstack** | [`mattpocock/skills/deslop`](https://github.com/mattpocock/skills) &amp; [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) | Fused universal anti-bloat engine spanning code, prose, analysis, and visual UI. |
+| **`grill`** | **Matt Pocock** &amp; **Addy Osmani** | [`mattpocock/skills/grill-me-with-docs`](https://github.com/mattpocock/skills) &amp; [`addyosmani/agent-skills/interview-me`](https://github.com/addyosmani/agent-skills) | Fused 1-question Socratic alignment protocol with confidence stop gating. |
+| **`spec`** | **Addy Osmani** | [`addyosmani/agent-skills/source-driven-development`](https://github.com/addyosmani/agent-skills) | Source-grounded specification engine with official API doc citations. |
+| **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
+| **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
+| **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | 5-axis code and architectural review framework. |
+| **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
+| **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
+| **`docs`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/docs`](https://github.com/ksprashu/agent-skill-forge) | Full SDLC documentation scaffolding + Stitch 4-theme interactive HTML compiler. |
+| **`catalog`** | **Prashanth Subrahmanyam** | [Google Open Knowledge Format (OKF)](https://github.com/ksprashu/agent-skill-forge) | Codebase memory and progressive disclosure index tree specification. |
+| **`sync`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/sync`](https://github.com/ksprashu/agent-skill-forge) | Multi-runtime symlink synchronizer and JIT workspace bootstrapper. |
+| **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
+| **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
+| **`voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
+| **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
+| **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
 
 ---
 
@@ -544,17 +745,18 @@ Specialized engineering skills are stored in [`preferred/`](./preferred/) and ca
 
 ```
 agent-skill-forge/
-├── skills/                     # 15 Core Universal Global Action Verbs
-├── preferred/                  # Curated Domain-Specific Skills (JIT)
+├── skills/                     # 16 Core Universal Global Action Verbs
+├── preferred/                  # 12 Curated Domain-Specific Skills (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
 ├── scripts/                    # Installer &amp; Verification Scripts
 │   ├── install.sh              # 1-liner installer
 │   ├── sync_skills.py          # Symlink manager &amp; JIT bootstrapper
 │   └── validate_skills.py      # Frontmatter linter &amp; PII scanner
-├── docs/                       # Full Documentation Suite
+├── docs/                       # Full Documentation Suite &amp; Stitch Portals
+│   └── skill_authoring_guide.md# Official Skill Authoring Guide
 ├── .gemini/knowledge/          # Google OKF Knowledge Bundle
-└── README.md                   # Monorepo Entrypoint
+└── README.md                   # Monorepo Entrypoint &amp; Attribution Matrix
 ```
 
 ---
@@ -574,8 +776,9 @@ Distributed under the **Apache-2.0 License**. All skill definitions are free of 
 <a href="#1-install-synchronize-global-skills-1-liner" class="sidebar-link text-xs ml-2">1. Install & Synchronize Global Skills (1-Liner)</a>
 <a href="#2-verify-your-active-symlinks" class="sidebar-link text-xs ml-2">2. Verify Your Active Symlinks</a>
 <a href="#3-bootstrap-project-specific-skills-on-demand" class="sidebar-link text-xs ml-2">3. Bootstrap Project-Specific Skills on Demand</a>
-<a href="#the-15-core-global-action-verbs" class="sidebar-link text-xs">🌟 The 15 Core Global Action Verbs</a>
+<a href="#the-16-core-universal-action-verbs" class="sidebar-link text-xs">🌟 The 16 Core Universal Action Verbs</a>
 <a href="#curated-preferred-skills-project-scoped-jit" class="sidebar-link text-xs">🛠️ Curated Preferred Skills (Project-Scoped JIT)</a>
+<a href="#attributions-lineage-matrix-page-at-a-glance" class="sidebar-link text-xs">👤 Attributions & Lineage Matrix (Page at a Glance)</a>
 <a href="#profile-overlay-personalization" class="sidebar-link text-xs">🛡️ Profile-Overlay Personalization</a>
 <a href="#monorepo-structure" class="sidebar-link text-xs">📁 Monorepo Structure</a>
 <a href="#license-compliance" class="sidebar-link text-xs">📜 License & Compliance</a>

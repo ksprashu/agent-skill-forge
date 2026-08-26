@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Slice tasks into a dependency DAG with verifiable checkpoints.
+description: Slice complex features, refactors, or projects into a dependency DAG with verifiable checkpoints. Trigger via /plan.
 ---
 
 # Plan: Task Slicing & Dependency DAGs

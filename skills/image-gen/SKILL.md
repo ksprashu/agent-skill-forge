@@ -1,6 +1,6 @@
 ---
 name: image-gen
-description: Generate diagrams and UI assets using Gemini Flash Image. Trigger via /image-gen.
+description: Generate technical diagrams, infographics, and UI graphics using Gemini Flash Image. Trigger via /image-gen.
 disable-model-invocation: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: prompt
-description: Turn vague requests into clear specs and DAG task graphs. Trigger via /prompt.
+description: Turn vague requests, complex tasks, or multi-step ideas into clear specs and DAG task graphs. Trigger via /prompt.
 disable-model-invocation: true
 ---
 

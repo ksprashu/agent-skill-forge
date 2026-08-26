@@ -1,6 +1,6 @@
 ---
 name: sync
-description: Synchronize global agent skill symlinks and bootstrap project skills. Trigger via /sync.
+description: Synchronize global agent skill symlinks and bootstrap project-scoped skills on demand. Trigger via /sync.
 disable-model-invocation: true
 ---
 

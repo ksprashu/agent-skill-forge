@@ -1,6 +1,6 @@
 ---
 name: catalog
-description: Scaffold and index Google OKF progressive disclosure trees for codebase memory.
+description: Scaffold and index Google OKF progressive disclosure trees for codebase and architectural memory. Trigger via /catalog.
 ---
 
 # Catalog: Open Knowledge Format (OKF) Bundle Manager

@@ -1,6 +1,6 @@
 ---
 name: google-oss
-description: Audit repository for Google Open Source compliance and license headers. Trigger via /google-oss.
+description: Audit repositories for Open Source compliance, Apache-2.0 license headers, and clean boundaries. Trigger via /google-oss.
 disable-model-invocation: true
 ---
 

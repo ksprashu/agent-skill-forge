@@ -1,6 +1,6 @@
 ---
 name: codelab
-description: Scaffold and validate interactive Google Codelab tutorials. Trigger via /codelab.
+description: Scaffold and validate interactive technical tutorials, workshops, and developer guides. Trigger via /codelab.
 disable-model-invocation: true
 ---
 

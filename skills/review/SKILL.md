@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review code across correctness, security, performance, architecture, and readability.
+description: Review code, architecture, plans, and diffs across correctness, security, performance, and readability. Trigger via /review.
 ---
 
 # Review: 5-Axis Code & Architecture Review

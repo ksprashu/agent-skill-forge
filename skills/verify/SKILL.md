@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Run static verifier scripts and blinded multi-persona rubrics to prove requirements.
+description: Run deterministic static verifier scripts and blinded multi-persona rubrics to prove requirements. Trigger via /verify.
 ---
 
 # Verify: Dual-Layer Expectation Verification

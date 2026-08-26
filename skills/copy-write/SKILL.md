@@ -1,6 +1,6 @@
 ---
 name: copy-write
-description: Draft technical prose using profile-overlay voice personalization. Trigger via /copy-write.
+description: Draft technical articles, documentation, keynotes, and copy with profile-overlay personalization. Trigger via /copy-write.
 disable-model-invocation: true
 ---
 

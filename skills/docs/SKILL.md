@@ -1,6 +1,6 @@
 ---
 name: docs
-description: Generate SDLC documentation and compile interactive HTML presentations. Trigger via /docs.
+description: Generate full SDLC documentation suites and compile interactive HTML presentations. Trigger via /docs.
 disable-model-invocation: true
 ---
 
