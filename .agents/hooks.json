@@ -1,0 +1,18 @@
+{
+  "continuous-alignment": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python skills/continuous-alignment/scripts/distill_session.py",
+        "timeout": 45
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python skills/continuous-alignment/scripts/sync_agents_rules.py --pulse",
+        "timeout": 15
+      }
+    ]
+  }
+}

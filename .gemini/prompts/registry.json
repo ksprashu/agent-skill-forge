@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "prompts": {
+    "PRMT-C82F": {
+      "id": "PRMT-C82F",
+      "parent_id": null,
+      "title": "Comprehensive Reference-Grounded OKF Knowledgebase Expansion",
+      "status": "COMPLETED",
+      "created_at": "2026-08-27T12:30:00Z",
+      "completed_at": "2026-08-27T12:35:00Z",
+      "tags": ["okf", "knowledgebase", "addy-osmani", "matt-pocock", "superpowers", "codex", "anthropic", "cursor-pstack"],
+      "artifacts": {
+        "prompt": ".gemini/prompts/PRMT-C82F/prompt.md",
+        "task_graph": ".gemini/prompts/PRMT-C82F/task_graph.json",
+        "orchestrator": ".gemini/prompts/PRMT-C82F/orchestrator.md"
+      }
+    },
+    "PRMT-E94A": {
+      "id": "PRMT-E94A",
+      "parent_id": null,
+      "title": "Autonomous Continuous Alignment and Self-Evolving Project Intelligence Skill",
+      "status": "COMPLETED",
+      "created_at": "2026-08-29T12:43:55Z",
+      "completed_at": "2026-08-29T13:09:00Z",
+      "tags": ["alignment", "evolution", "agents-md", "hooks", "lifecycle", "memory", "distillation"],
+      "artifacts": {
+        "prompt": ".gemini/prompts/PRMT-E94A/prompt.md",
+        "task_graph": ".gemini/prompts/PRMT-E94A/task_graph.json",
+        "orchestrator": ".gemini/prompts/PRMT-E94A/orchestrator.md"
+      }
+    }
+  }
+}

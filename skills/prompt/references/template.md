@@ -28,8 +28,15 @@ This is a structural blueprint designed to format highly-optimized, structured p
 </PROMPT_METADATA>
 
 <ROLE>
-Define a highly specialized, expert role-play persona tailored to the task (e.g., "Senior Lead Engineer", "Director of Research"), explicitly bound to an AI Persona or coordinating role under Google Antigravity.
+Define a highly specialized, expert role-play persona tailored to the task (e.g., "Senior Lead Engineer", "Director of Research", "Lead Multi-Agent Systems Architect").
+State clearly that the executing agent manages and orchestrates the implementation under Google Antigravity.
 </ROLE>
+
+<DIRECTIVES>
+1. **Pure Manager Execution**: The executing agent operates as a Pure Manager / Orchestrator on the main thread for multi-component tasks.
+2. **Subagent Delegation**: Dispatch implementation workers and sentries via `invoke_subagent` using the precise parameters defined in `<SUBAGENT_ORCHESTRATION>`.
+3. **No Direct Inline Edits on Multi-Stage Work**: Use worker subagents in isolated workspaces (`Workspace: "branch"`) for code generation, and review/sentry subagents (`Workspace: "share"`) for audits.
+</DIRECTIVES>
 
 <CONTEXT>
 Provide comprehensive context on the objective. Detail:
@@ -38,27 +45,53 @@ Provide comprehensive context on the objective. Detail:
 - The current state of the workspace, active files, or background constraints.
 </CONTEXT>
 
+<DATA_PROVENANCE_AND_CONTRACTS>
+### 1. Data Contracts, Schemas & System Interfaces
+Specify the exact physical datasets, schemas, database tables, API signatures, and file interfaces required for execution:
+- **Input Datasets / Sources**: [e.g., `project.dataset.table_name`, local config paths, or live API endpoints]
+- **Target Schemas / Data Models**: [e.g., Pydantic models, JSON schema definitions, or SQL schema definitions]
+- **Environment Variables & Secrets**: [e.g., required environment keys, parameter names, zero hardcoded tokens]
+
+### 2. Strict Prohibition of Synthetic Heuristics & Mock Metrics
+- Every performance measurement, token count, latency metric, and statistical figure MUST be grounded in real measurements (`time.time()`, `usage_metadata`, actual SQL outputs, or real tool responses).
+- Synthetic heuristic offsets (e.g., `+ 5.0s if vanilla`) or ungrounded mock metrics are STRICTLY PROHIBITED. If simulated data is required for a sandbox run, explicitly flag with `is_simulated: true`.
+</DATA_PROVENANCE_AND_CONTRACTS>
+
 <RESOURCES_AND_KNOWLEDGE_BASES>
-### 1. Required Frameworks, Libraries, & Materials
+### 1. Technology Stack & Frameworks
 Define the precise tools, frameworks, libraries, datasets, methodologies, or standard guidelines required.
 
-### 2. Multi-Agent Context Engineering (MANDATORY SCOUT)
-Specify the execution of specialized background subagents to scour codebases and gather documentation concurrently:
-- **Subagents Coordination**: Spawn three parallel subagents using `invoke_subagent`:
-  - **Codebase Scout**: Indexes files, maps routes/APIs, and writes `scratch/context_engineering/codebase_map.json` matching `codebase_map_schema.json`.
-  - **Web Intelligence Analyst**: Searches the web (`search_web`) for versions/best-practices and writes `scratch/context_engineering/web_intel.json`.
-  - **Docs Crawler**: Queries MCPs (`content7`, `developer-knowledge`) and writes `scratch/context_engineering/docs_crawler.json`.
-- **Hybrid Handoff Protocol**: Subagents write complete granular payloads to disk as the Single Source of Truth, then trigger `send_message` with lightweight notification event headers to Parent.
-- **Cache-Friendly Context Tiering**: Partition context into:
-  - **Static Context Prefix**: Fixed library signatures, Pydantic/JSON schemas, and core guidelines at the top.
-  - **Dynamic Suffix**: User specs, checklist checklist updates, and run variables at the bottom.
-  - **External Reference Links**: Large dumps referenced via file URLs to avoid prompt bloat.
-
-### 3. Required Core Antigravity Skills (Companion Subsystems)
-To govern the stage-by-stage cognitive transitions and structural knowledge formatting:
-- **6-personas**: Integrates the global standalone [6-personas Custom Skill](file:///Users/ksprashanth/.gemini/skills/6-personas/SKILL.md) to structure the implementation stages (Scout, Analyst, Architect, Builder, Sentry, Mentor).
-- **knowledge-catalog**: Enforces the [Knowledge Catalog Custom Skill](file:///Users/ksprashanth/.gemini/skills/knowledge-catalog/SKILL.md) to organize and deliver all stage insights as a standard Google OKF Knowledge Bundle.
+### 2. Live Knowledge Retrieval (MANDATORY SCOUT)
+Specify live knowledge retrieval to ground syntax and avoid hallucinating deprecated APIs:
+- `developer-knowledge`: Search for official library usage and current SDK syntax.
+- `context7`: Query documentation for exact responsive styling, component props, and runtime APIs.
 </RESOURCES_AND_KNOWLEDGE_BASES>
+
+<SUBAGENT_ORCHESTRATION>
+### Mandatory Subagent Tool-Call Payloads
+The executing Manager MUST dispatch parallel worker subagents using the native `invoke_subagent` tool. Follow this standardized payload structure:
+
+```json
+{
+  "Subagents": [
+    {
+      "TypeName": "self",
+      "Role": "Builder - Component Developer",
+      "Model": "inherit",
+      "Workspace": "branch",
+      "Prompt": "/goal Implement the core module in <path>. Adhere strictly to data contracts and PEP8/TypeScript types. Write comprehensive unit tests in tests/test_<name>.py. Ensure all files pass compilation. Send completion signal via send_message when done."
+    },
+    {
+      "TypeName": "research",
+      "Role": "Sentry - Security & A11y Auditor",
+      "Model": "inherit",
+      "Workspace": "share",
+      "Prompt": "/goal Audit the newly generated code in the workspace for vulnerabilities (XSS, SQLi, secret leaks) using run-security-scanner. Verify that all components have proper ARIA attributes and pass contrast checks. Output audit findings in .gemini/knowledge/<SHORT_ID>/sentry/."
+    }
+  ]
+}
+```
+</SUBAGENT_ORCHESTRATION>
 
 <CONSTRAINTS>
 State all development, security, or research restrictions:
@@ -109,54 +142,34 @@ Deconstruct the objective into independent, modular milestones, mapping each to 
 - [ ] **Iterative Loop Engineering Initialization**: Initialize the unit test suite (`pytest`/`jest`) and Gherkin BDD feature specifications (`behave` under `features/`).
 - [ ] Verify environment dependencies and scaffolding. Initialize/read and hydrate execution state from `.gemini/tasks/state_journal.json` and `.gemini/tasks/task.md` to track current run state and enable instant self-resumption.
 
-### Milestone 2: Code Construction & Schema-Enforced Parallelization (Sequence: 2) [Builder]
+### Milestone 2: Code Construction & Native Antigravity Subagent Dispatch [Builder]
 - [ ] Create and style components conforming to the light-theme-first and dark-toggle requirements.
 - [ ] Implement backend routes, APIs, and data parsers.
-- [ ] **Strict Data Contract Definition**: Define a clear, rigid Pydantic/JSON schema for all data shared between parallel subagents inside the workspace (e.g., in a dedicated file like `scratch/schema.json` or as classes in `execute_pipeline.py`).
-- [ ] **Programmatic SDK Parallelization**: Create and execute an asynchronous Python orchestrator script (`execute_pipeline.py`) using the `google-antigravity` SDK to run subagents in parallel with configurable model targets. All agents must enforce strict data contract schemas:
-  - Load model configurations dynamically from environment variables or a fallback settings dictionary, defaulting to different tiers of the fast **Gemini 3.5 Flash** model to optimize cost and latency.
-  - Coordinate subagent inputs/outputs using a shared workspace directory (e.g., `scratch/`) with strict Pydantic model validation on read/write.
-  ```python
-  # execute_pipeline.py - High-speed, schema-enforced, multi-agent orchestrator
-  import asyncio
-  import os
-  from google.antigravity import Agent, LocalAgentConfig, CapabilitiesConfig
-  from pydantic import BaseModel, Field
-
-  # 1. Enforce strict data contract schemas for Inter-Process Communication (IPC)
-  class SubagentResultSchema(BaseModel):
-      module_name: str = Field(..., description="The name of the constructed module")
-      status: str = Field(..., description="Execution status ('success' or 'fail')")
-      output_files: list[str] = Field(default_factory=list, description="List of generated paths")
-
-  # 2. Load configurable model specs (defaulting to Gemini 3.5 Flash tiers)
-  MODELS = {
-      "high": os.getenv("AGY_MODEL_HIGH", "gemini-3.5-flash-high"),
-      "medium": os.getenv("AGY_MODEL_MEDIUM", "gemini-3.5-flash-medium"),
-      "low": os.getenv("AGY_MODEL_LOW", "gemini-3.5-flash-low"),
+- [ ] **Strict Data Contract Definition**: Define a clear, rigid Pydantic/JSON schema for all data shared between parallel subagents inside the workspace (e.g., in `.gemini/knowledge/<SHORT_ID>/architecture/data_contracts.md`).
+- [ ] **MANDATORY Native Antigravity Parallel Subagent Dispatch (`invoke_subagent`)**:
+  - The executing Main Agent operates as a **Pure Manager / Coordinator** and MUST NOT edit code directly on the main thread for multi-component tasks.
+  - Dispatch concurrent specialized worker subagents using the native `invoke_subagent` tool:
+  ```json
+  {
+    "Subagents": [
+      {
+        "TypeName": "self",
+        "Role": "Frontend UI Builder",
+        "Model": "inherit",
+        "Workspace": "branch",
+        "Prompt": "Implement frontend components and responsive styling following the design specs in .gemini/knowledge/<SHORT_ID>/. Run unit tests and send completion notification via send_message."
+      },
+      {
+        "TypeName": "self",
+        "Role": "Backend API Builder",
+        "Model": "inherit",
+        "Workspace": "branch",
+        "Prompt": "Implement backend endpoints, database schemas, and request validators according to data contracts. Run unit tests and send completion notification via send_message."
+      }
+    ]
   }
-
-  async def run_subagent(task_name: str, spec_file: str, model_tier: str):
-      config = LocalAgentConfig(
-          model=MODELS[model_tier],
-          system_instructions=f"You are a specialized subagent executing {task_name}. Conform to all schema constraints.",
-          capabilities=CapabilitiesConfig(allow_file_write=True, allow_command_run=True)
-      )
-      async with Agent(config) as agent:
-          response = await agent.chat(f"Read {spec_file} and execute the task. Output results conforming strictly to the SubagentResultSchema.")
-          await response.wait_for_completion()
-
-  async def main():
-      print(f"Starting pipeline. High: {MODELS['high']}, Medium: {MODELS['medium']}")
-      # Run specialized subagents in parallel using medium tier for construction
-      await asyncio.gather(
-          run_subagent("Frontend Builder", "./scratch/frontend_spec.json", "medium"),
-          run_subagent("Backend Builder", "./scratch/backend_spec.json", "medium")
-      )
-
-  if __name__ == "__main__":
-      asyncio.run(main())
   ```
+- [ ] **Asynchronous Handoff & Merge Verification**: Await `send_message` signals from worker subagents, inspect their generated code in branched workspaces, merge cleanly, and verify that all schemas and unit tests pass.
 
 ### Milestone 3: Security, Quality Audit & State Back-Propagation (Sequence: 3) [Sentry]
 - [ ] Run security scans using the `run-security-scanner` skill and execute dependency checks with the `scan_dependencies` skill.
@@ -231,12 +244,34 @@ Deconstruct the objective into independent, modular milestones, mapping each to 
 8. **Programmatic Evidence Verification**: No task checkbox `[x]` may be marked complete without passing `validate_evidence.py` to confirm physical disk existence and non-empty size for all reported Evidence IDs.
 </CONSTRAINTS>
 
+<DEFINITION_OF_DONE>
+### Mandatory Acceptance Criteria & Artifact Parity
+- [ ] **Physical Code Assets**: All declared implementation files exist on disk with complete functionality, zero "TBD" stubs, and end with `# END OF FILE: <path>`.
+- [ ] **Dual Test Verification**:
+  - `pytest tests/` passes with 100% success.
+  - `behave features/` passes with 100% scenario steps passing.
+- [ ] **Visual & DOM Interactivity**: Frontend rendering verified via Chrome DevTools / headless browser check without layout overlap or unstyled elements.
+- [ ] **Security & Quality**: Zero secrets or high-severity vulnerabilities flagged by `run-security-scanner`.
+- [ ] **Evidence & Documentation**: `.gemini/EVIDENCE.md` ledger populated and verified by `validate_evidence.py`. Walkthrough documentation compiled in `walkthrough.md`.
+</DEFINITION_OF_DONE>
+
 <VERIFICATION_PLAN>
 ### 1. Automated Verification (Builder/Sentry)
-- Specify the exact command-line steps to run tests, validate formats, or build packages.
-  - Command: `[Execution Command]`
+- **Unit & Integration Suite**:
+  ```bash
+  pytest tests/ -v
+  ```
+- **BDD Behavior Specifications**:
+  ```bash
+  behave features/
+  ```
+- **Programmatic Evidence Audit**:
+  ```bash
+  python validate_evidence.py
+  ```
 
 ### 2. Manual, Visual, or Qualitative Audit (Sentry/Mentor)
-- Detail step-by-step how to manually check the results (e.g., using a browser subagent to inspect UI glassmorphism rendering, light/dark theme toggles, cross-checking data files, or verifying citation links).
+- **DOM & Visual Interactivity**: Launch a headless/DevTools browser check to inspect UI components, glassmorphism CSS, light/dark mode toggling, and table nowrap layout rules.
+- **Contract & Spec Parity**: Verify that all dataclasses, API endpoints, and UI tables match the exact specifications defined in `<DATA_PROVENANCE_AND_CONTRACTS>`.
 </VERIFICATION_PLAN>
 ```

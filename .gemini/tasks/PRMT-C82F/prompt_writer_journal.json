@@ -1,0 +1,43 @@
+{
+  "short_id": "PRMT-C82F",
+  "status": "COMPLETED",
+  "current_stage": "Mentor",
+  "checkpoints": {
+    "scout_completed": true,
+    "analyst_completed": true,
+    "architect_completed": true,
+    "builder_completed": true,
+    "sentry_completed": true,
+    "mentor_completed": true
+  },
+  "sources_analyzed": [
+    "/Users/ksprashanth/code/github/agent-skills",
+    "/Users/ksprashanth/code/github/mattpocock-skills",
+    "https://github.com/obra/superpowers",
+    "https://github.com/anthropics/skills",
+    "https://developers.openai.com/codex/plugins",
+    "https://github.com/cursor/plugins"
+  ],
+  "concepts_authored": [
+    "scout/codebase_map.md",
+    "scout/skill_inventory.md",
+    "scout/reference_repos_landscape.md",
+    "analyst/design_decisions.md",
+    "analyst/attribution_matrix.md",
+    "analyst/framework_comparative_analysis.md",
+    "analyst/leading_words_and_heuristics.md",
+    "architecture/data_contracts.md",
+    "architecture/installer_spec.md",
+    "architecture/docs_compiler_pipeline.md",
+    "architecture/profile_overlay_spec.md",
+    "architecture/cross_platform_compatibility_spec.md",
+    "architecture/orchestration_patterns_catalog.md",
+    "builder/runbooks.md",
+    "builder/skill_authoring_guide.md",
+    "builder/grilling_and_interview_engine.md",
+    "sentry/security_and_pii.md",
+    "sentry/oss_compliance_spec.md",
+    "sentry/evaluation_harness_framework.md",
+    "sentry/anti_rationalization_and_guardrails.md"
+  ]
+}

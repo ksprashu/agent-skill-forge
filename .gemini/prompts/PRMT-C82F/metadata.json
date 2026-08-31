@@ -1,0 +1,9 @@
+{
+  "id": "PRMT-C82F",
+  "title": "Comprehensive Reference-Grounded OKF Knowledgebase Expansion",
+  "description": "Systematic synthesis of architectural patterns, cognitive linguistics, multi-agent orchestration, and eval frameworks from Addy Osmani, Matt Pocock, Superpowers, Anthropic, Codex, and Cursor pstack.",
+  "created_at": "2026-08-27T12:30:00Z",
+  "author": "Antigravity Prompt-Writer",
+  "status": "COMPLETED",
+  "target_directory": ".gemini/knowledge/"
+}

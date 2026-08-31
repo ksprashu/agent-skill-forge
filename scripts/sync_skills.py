@@ -63,6 +63,8 @@ CORE_SKILLS = {
     'voice': os.path.join(CORE_SKILLS_DIR, 'voice'),
     'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
+    'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
+    'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
 }
 
 # Backward-Compatible Aliases
@@ -80,6 +82,7 @@ ALIASES = {
     'copy-write-bara': 'copy-write',
     'image-gen-expert': 'image-gen',
     'extract-human-voice': 'voice',
+    'evolve': 'align',
 }
 
 

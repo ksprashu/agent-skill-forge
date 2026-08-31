@@ -1,0 +1,115 @@
+{
+  "version": "1.0.0",
+  "short_id": "PRMT-C82F",
+  "goal": "Enrich the Agent Skill Forge OKF knowledgebase with deep architectural insights from Addy Osmani, Matt Pocock, Superpowers, Anthropic, Codex, and Cursor pstack.",
+  "nodes": [
+    {
+      "id": "task_01_scout_landscape",
+      "title": "Reference Repositories Landscape Analysis",
+      "subagent_role": "Codebase & Ecosystem Researcher",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "spec"],
+      "dependencies": [],
+      "output_file": ".gemini/knowledge/scout/reference_repos_landscape.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/scout/reference_repos_landscape.md"
+    },
+    {
+      "id": "task_02_analyst_comparative",
+      "title": "Framework Comparative Matrix & Tradeoffs",
+      "subagent_role": "Architectural Analyst",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "review"],
+      "dependencies": ["task_01_scout_landscape"],
+      "output_file": ".gemini/knowledge/analyst/framework_comparative_analysis.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/analyst/framework_comparative_analysis.md"
+    },
+    {
+      "id": "task_03_analyst_leading_words",
+      "title": "Leading Words & Cognitive Linguistics in Skill Design",
+      "subagent_role": "Prompt & Linguistics Engineer",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "unslop"],
+      "dependencies": ["task_01_scout_landscape"],
+      "output_file": ".gemini/knowledge/analyst/leading_words_and_heuristics.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/analyst/leading_words_and_heuristics.md"
+    },
+    {
+      "id": "task_04_arch_cross_platform",
+      "title": "Cross-Platform Interoperability Specification",
+      "subagent_role": "Systems Architect",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "spec"],
+      "dependencies": ["task_02_analyst_comparative"],
+      "output_file": ".gemini/knowledge/architecture/cross_platform_compatibility_spec.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/architecture/cross_platform_compatibility_spec.md"
+    },
+    {
+      "id": "task_05_arch_orchestration",
+      "title": "Multi-Agent Orchestration Patterns Catalog",
+      "subagent_role": "Multi-Agent Systems Architect",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "spec"],
+      "dependencies": ["task_02_analyst_comparative"],
+      "output_file": ".gemini/knowledge/architecture/orchestration_patterns_catalog.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/architecture/orchestration_patterns_catalog.md"
+    },
+    {
+      "id": "task_06_builder_grilling",
+      "title": "Socratic Grilling & Branch-Walking Engine",
+      "subagent_role": "Interaction Design Engineer",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "spec"],
+      "dependencies": ["task_03_analyst_leading_words"],
+      "output_file": ".gemini/knowledge/builder/grilling_and_interview_engine.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/builder/grilling_and_interview_engine.md"
+    },
+    {
+      "id": "task_07_sentry_evals",
+      "title": "3-Tier Evaluation Harness Framework",
+      "subagent_role": "Verification & QA Architect",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "test", "expectation-harness"],
+      "dependencies": ["task_04_arch_cross_platform"],
+      "output_file": ".gemini/knowledge/sentry/evaluation_harness_framework.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/sentry/evaluation_harness_framework.md"
+    },
+    {
+      "id": "task_08_sentry_anti_rationalization",
+      "title": "Anti-Rationalization Matrix & Prove-It Guardrails",
+      "subagent_role": "Sentry & Security Engineer",
+      "model": "inherit",
+      "workspace": "branch",
+      "subagent_skills": ["catalog", "review"],
+      "dependencies": ["task_05_arch_orchestration"],
+      "output_file": ".gemini/knowledge/sentry/anti_rationalization_and_guardrails.md",
+      "verification_gate": "python3 skills/catalog/scripts/verify_okf.py .gemini/knowledge/sentry/anti_rationalization_and_guardrails.md"
+    },
+    {
+      "id": "task_09_master_index_sync",
+      "title": "Master Progressive Disclosure Tree & OKF Index Verification",
+      "subagent_role": "Documentation Compiler",
+      "model": "inherit",
+      "workspace": "share",
+      "subagent_skills": ["catalog", "documentation", "compile-docs"],
+      "dependencies": [
+        "task_01_scout_landscape",
+        "task_02_analyst_comparative",
+        "task_03_analyst_leading_words",
+        "task_04_arch_cross_platform",
+        "task_05_arch_orchestration",
+        "task_06_builder_grilling",
+        "task_07_sentry_evals",
+        "task_08_sentry_anti_rationalization"
+      ],
+      "output_file": ".gemini/knowledge/index.md",
+      "verification_gate": "python3 skills/docs/scripts/compile_docs.py --dir ./docs"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContinuousAlignmentMemoryRecord",
+  "description": "Schema for distilled agent memories and workspace invariants",
+  "type": "object",
+  "required": [
+    "memory_id",
+    "timestamp",
+    "category",
+    "scope",
+    "statement",
+    "rationale",
+    "confidence"
+  ],
+  "properties": {
+    "memory_id": {
+      "type": "string",
+      "pattern": "^MEM-[A-Z0-9]{4,8}$",
+      "description": "Unique deterministic identifier for the memory item"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the insight was distilled"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "command",
+        "constraint",
+        "architecture",
+        "troubleshooting",
+        "user_preference"
+      ],
+      "description": "Taxonomy of the extracted knowledge"
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["root", "path_scoped"],
+      "description": "Whether this rule applies globally or to a specific path glob"
+    },
+    "target_path_glob": {
+      "type": ["string", "null"],
+      "description": "Glob pattern specifying when path-scoped rules apply (e.g. 'skills/docs/**')"
+    },
+    "statement": {
+      "type": "string",
+      "description": "Actionable, imperative rule or invariant statement"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Why this rule exists, grounded in transcript evidence or error resolution"
+    },
+    "source_conversation_id": {
+      "type": "string",
+      "description": "Antigravity conversation ID where the insight originated"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence score of the distillation (must be >= 0.8 for auto-merging)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "deprecated", "superseded"],
+      "default": "active"
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "description": "Memory ID of a superseded or contradicted rule"
+    }
+  }
+}

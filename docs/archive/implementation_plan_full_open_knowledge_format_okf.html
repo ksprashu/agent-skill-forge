@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-[#121212]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan: Full Open Knowledge Format (OKF) Knowledgebase • Google India Summit 2026</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html {
+            font-size: 16px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
+            });
+        });
+    </script>
+</head>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
+        </div>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+        <div class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">Implementation Plan: Full Open Knowledge Format (OKF) Knowledgebase</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                <p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Build a comprehensive, deterministic, progressive disclosure knowledge base for the <strong class="text-white font-bold font-headings">Agent Skill Forge</strong> monorepo under <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/</code> following the Open Knowledge Format (OKF) specification and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">catalog</code> skill standards.</p>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">User Review Required</h2>
+
+
+        <div class="border-l-4 p-4 rounded-xl my-6 border-blue-500 bg-blue-950/10 text-blue-200/90 flex items-start space-x-3.5 shadow-lg border border-white/5">
+            <svg class="w-5 h-5 text-blue-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div class="flex-1 space-y-1">
+                <span class="text-xs font-console font-black tracking-widest uppercase text-white/50">NOTE</span>
+                <p class="text-base md:text-lg leading-relaxed"><br/>All concept files will strictly adhere to the OKF YAML frontmatter schema (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">title</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">description</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">resource</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">tags</code>), include deterministic clickable file links (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">file:///...</code>), and pass <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">verify_okf.py</code> validation with 0 errors and zero PII.</p>
+            </div>
+        </div>
+        
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">Proposed Knowledgebase Architecture</h2>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">The knowledgebase will be organized into 5 progressive disclosure domains:</p>
+
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('.gemini/knowledge/%0A%E2%94%9C%E2%94%80%E2%94%80%20index.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Master%20Progressive%20Disclosure%20Tree%20%26%20Concept%20Lookup%20Table%0A%E2%94%9C%E2%94%80%E2%94%80%20log.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Chronological%20Knowledge%20Log%0A%E2%94%82%0A%E2%94%9C%E2%94%80%E2%94%80%20scout/%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%F0%9F%97%BA%EF%B8%8F%20Codebase%20Topology%20%26%20Inventories%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20codebase_map.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Monorepo%20directory%20tree%2C%20layout%20%26%20subsystem%20boundaries%0A%E2%94%82%20%20%20%E2%94%94%E2%94%80%E2%94%80%20skill_inventory.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Full%20taxonomy%20of%2016%20core%20verbs%20%2B%2012%20preferred%20domain%20skills%0A%E2%94%82%0A%E2%94%9C%E2%94%80%E2%94%80%20analyst/%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%F0%9F%93%8A%20Design%20Decisions%20%26%20Tradeoffs%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20design_decisions.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%202-Tier%20architecture%2C%20token%20economy%2C%201-word%20verbs%20%26%20laziness%0A%E2%94%82%20%20%20%E2%94%94%E2%94%80%E2%94%80%20attribution_matrix.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Upstream%20lineage%2C%20creator%20credits%20%26%20adaptation%20models%0A%E2%94%82%0A%E2%94%9C%E2%94%80%E2%94%80%20architecture/%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%F0%9F%93%90%20Contracts%2C%20Schemas%20%26%20Pipelines%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20data_contracts.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20SKILL.md%20YAML%20frontmatter%20schema%20%26%20slash%20command%20gating%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20installer_spec.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Symlink%20orchestrator%20across%205%20agent%20hubs%20%26%20JIT%20bootstrapper%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20docs_compiler_pipeline.md%20%20%20%20%20%20%20%20%20%20%20%20%23%20Stitch%204-theme%20HTML%20documentation%20compiler%20architecture%0A%E2%94%82%20%20%20%E2%94%94%E2%94%80%E2%94%80%20profile_overlay_spec.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%203-Tier%20personality%20resolution%20engine%20%26%20PII%20isolation%0A%E2%94%82%0A%E2%94%9C%E2%94%80%E2%94%80%20builder/%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%F0%9F%94%A8%20Operations%2C%20Runbooks%20%26%20Authoring%0A%E2%94%82%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20runbooks.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Developer%20runbooks%20for%20validation%2C%20syncing%20%26%20compilation%0A%E2%94%82%20%20%20%E2%94%94%E2%94%80%E2%94%80%20skill_authoring_guide.md%20%20%20%20%20%20%20%20%20%20%20%20%20%23%203-Level%20progressive%20disclosure%20authoring%20handbook%0A%E2%94%82%0A%E2%94%94%E2%94%80%E2%94%80%20sentry/%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20%F0%9F%9B%A1%EF%B8%8F%20Security%2C%20Compliance%20%26%20Quality%0A%20%20%20%20%E2%94%9C%E2%94%80%E2%94%80%20security_and_pii.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Zero-PII%20sanitization%20patterns%20%26%20regex%20guardrails%0A%20%20%20%20%E2%94%94%E2%94%80%E2%94%80%20oss_compliance_spec.md%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Google%20Open%20Source%20/%20Apache-2.0%20compliance%20%26%20SPDX%20headers%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>.gemini/knowledge/
+├── index.md                                 # Master Progressive Disclosure Tree &amp; Concept Lookup Table
+├── log.md                                   # Chronological Knowledge Log
+│
+├── scout/                                   # 🗺️ Codebase Topology &amp; Inventories
+│   ├── codebase_map.md                      # Monorepo directory tree, layout &amp; subsystem boundaries
+│   └── skill_inventory.md                   # Full taxonomy of 16 core verbs + 12 preferred domain skills
+│
+├── analyst/                                 # 📊 Design Decisions &amp; Tradeoffs
+│   ├── design_decisions.md                  # 2-Tier architecture, token economy, 1-word verbs &amp; laziness
+│   └── attribution_matrix.md                # Upstream lineage, creator credits &amp; adaptation models
+│
+├── architecture/                            # 📐 Contracts, Schemas &amp; Pipelines
+│   ├── data_contracts.md                    # SKILL.md YAML frontmatter schema &amp; slash command gating
+│   ├── installer_spec.md                    # Symlink orchestrator across 5 agent hubs &amp; JIT bootstrapper
+│   ├── docs_compiler_pipeline.md            # Stitch 4-theme HTML documentation compiler architecture
+│   └── profile_overlay_spec.md              # 3-Tier personality resolution engine &amp; PII isolation
+│
+├── builder/                                 # 🔨 Operations, Runbooks &amp; Authoring
+│   ├── runbooks.md                          # Developer runbooks for validation, syncing &amp; compilation
+│   └── skill_authoring_guide.md             # 3-Level progressive disclosure authoring handbook
+│
+└── sentry/                                  # 🛡️ Security, Compliance &amp; Quality
+    ├── security_and_pii.md                  # Zero-PII sanitization patterns &amp; regex guardrails
+    └── oss_compliance_spec.md               # Google Open Source / Apache-2.0 compliance &amp; SPDX headers
+</code></pre>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">Detailed File Specifications</h2>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>1. Index & Navigation</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="index.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">index.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Comprehensive progressive disclosure tree linking all 12 concept documents.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Searchable Concept Matrix (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Concept ID</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Concept Title</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Type</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">File Path</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Grounding Scope</code>).</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="log.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">log.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Chronological update history logging genesis and full OKF knowledgebase expansion.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>2. Scout Subsystem</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="codebase_map.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">codebase_map.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Codebase Map"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Full monorepo directory layout, subsystem descriptions, and path references.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="skill_inventory.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skill_inventory.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Comprehensive taxonomy of all 16 core universal action verbs (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">prompt</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">grill</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">spec</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">plan</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">test</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">verify</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">review</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">unslop</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">docs</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">catalog</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">sync</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">google-oss</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">codelab</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">voice</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">copy-write</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">image-gen</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Complete directory of all 12 preferred domain skills in <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">preferred/</code>.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Aliases, execution modes (Autonomous vs. Slash command), and trigger signatures.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>3. Analyst Subsystem</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="design_decisions.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">design_decisions.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Design Decision"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">In-depth rationale: 2-tier architecture (Global vs Project-Scoped JIT), Token context economics, 1-word action verbs, Laziness Protocol ("Subtract before you add"), and Profile-Overlay isolation.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="attribution_matrix.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">attribution_matrix.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Upstream lineage and creator attribution (Matt Pocock, Addy Osmani, Anthropic, Cursor, Google OSPO, DeepMind).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Monorepo consolidation lineage and adaptation models.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>4. Architecture Subsystem</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="data_contracts.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">data_contracts.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Data Contract"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Formal schema for <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">SKILL.md</code> frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">name</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">description</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">disable-model-invocation</code>), structural rules, subfolder contracts (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">references/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">scripts/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">assets/</code>).</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="installer_spec.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">installer_spec.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Architecture Spec"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Multi-runtime directory matrix (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.agents/skills/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/skills/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/config/skills/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.claude/skills/</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/antigravity-cli/skills/</code>), symlink resolution, prune/fix algorithms, and JIT workspace bootstrapping.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="docs_compiler_pipeline.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">docs_compiler_pipeline.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Documentation compiler architecture (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">compile_docs.py</code>), 4 Stitch themes (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">technical</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">obsidian</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">proscript</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">dynamics</code>), AST markdown regex parsing, single-page bundle emission, responsive CSS rules.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="profile_overlay_spec.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">profile_overlay_spec.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">3-tier personality resolution engine (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">*.local.md</code> -> <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/personas/default/</code> -> <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">*.template.md</code>) and Zero-PII fallback flow.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>5. Builder Subsystem</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="runbooks.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">runbooks.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Runbook"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Executable developer runbooks for skill validation, symlink synchronization, project bootstrapping, doc compilation, and OKF verification.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="skill_authoring_guide.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skill_authoring_guide.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Authoring guide for building new skills: 3-level progressive disclosure hierarchy, markdown formatting rules, token budget limits, and presubmit verification checklist.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>6. Sentry Subsystem</span></h3>
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[MODIFY] <a href="security_and_pii.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">security_and_pii.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Valid OKF frontmatter (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">type: "Security Policy"</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Zero-PII sanitization patterns, dynamic user lookups (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">getpass.getuser()</code>), regex audit tests, gitignore isolation rules.</span>
+                </li>
+                </ul>
+
+<h4 class="text-sm md:text-base font-headings font-bold text-zinc-400 uppercase tracking-widest mt-5 mb-1.5">[NEW] <a href="oss_compliance_spec.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">oss_compliance_spec.md</a></h4>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">Google Open Source / Apache-2.0 licensing rules, SPDX headers, repository cleanliness audits, and copyright notice automation.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">Verification Plan</h2>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Automated Static Verification</span></h3>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">OKF Schema & Link Verifier</strong>:</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">   Run <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">python3 skills/catalog/scripts/verify_okf.py</code> across all concept files in <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/**/*.md</code>.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Skill Validation & PII Audit</strong>:</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">   Run <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">python3 scripts/validate_skills.py</code> to ensure zero PII leaks and clean frontmatter.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">HTML Documentation Compilation</strong>:</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">   Run <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">python3 skills/docs/scripts/compile_docs.py --dir ./docs</code> and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">python3 skills/docs/scripts/compile_docs.py --file ./README.md</code> to ensure all doc portals build cleanly.</p>
+
+            </div>
+        </div>
+        
+        <footer class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
+
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

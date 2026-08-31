@@ -25,48 +25,48 @@ This is a **Meta-Task** (intent-writing & topology design). To ensure maximum pe
 
 ---
 
-## 🔀 Dynamic Dual-Mode Architecture: Lightweight vs. Heavyweight Execution
+## 🔀 Dynamic Dual-Mode Architecture: Lightweight vs. Heavyweight Prompt Decks
 
-The `prompt-writer` skill automatically classifies incoming user requests (or respects explicit user override keywords) to select between a fast, low-overhead **Lightweight Mode** and a deep, multi-stage **Heavyweight Mode**:
+The `prompt-writer` skill automatically classifies incoming user requests (or respects explicit user override keywords) to select between a fast, focused **Lightweight Mode** (single-file rewritten prompt) and a deep, multi-stage **Heavyweight Mode** (modular orchestration deck):
 
 ```mermaid
 flowchart TD
     UserInput["User Request / Prompt"] --> ModeRouter{"Mode Router & Keyword Filter"}
     
-    ModeRouter -->|"Override: 'execute', 'implement', 'quick', 'fix' OR Simple Task"| LightMode["⚡ Lightweight Mode"]
-    ModeRouter -->|"Override: 'plan', 'think', 'architect', 'deep' OR Complex Task"| HeavyMode["🧠 Heavyweight Mode"]
+    ModeRouter -->|"Override: '--light', 'quick', 'fix' OR Focused Task"| LightMode["⚡ Lightweight Mode"]
+    ModeRouter -->|"Override: '--heavy', 'plan', 'think', 'architect' OR Complex Task"| HeavyMode["🧠 Heavyweight Mode"]
 
-    subgraph LightModeWorkflow["⚡ Lightweight Workflow"]
-        LightMode --> FastInspect["Inline Workspace Check"]
-        FastInspect --> FastPrompt["Concise Directive Assembly"]
-        FastPrompt --> DirectExec["Direct Execution / Quick Task Patch"]
+    subgraph LightModeWorkflow["⚡ Lightweight Workflow (Single-File Rewritten Prompt)"]
+        LightMode --> FastScout["Parallel Scout Subagents (Codebase + Docs)"]
+        FastScout --> FastPrompt["Concise Directive Assembly (prompt.md)"]
+        FastPrompt --> FastPresent["Present rewritten_prompt_<ID>.md with 'Proceed' Hook"]
     end
 
-    subgraph HeavyModeWorkflow["🧠 Heavyweight Workflow"]
-        HeavyMode --> SubagentCrawl["3-Subagent Scout Crawl"]
-        SubagentCrawl --> SocraticGrill["Socratic Interview (ask_question)"]
-        SocraticGrill --> XMLPrompt["Exhaustive BDD & OKF Prompt Deck"]
-        XMLPrompt --> UserApproval["Present rewritten_prompt_<ID>.md Artifact"]
-        UserApproval --> GoalExec["Execute via /goal or 'Proceed' Button"]
+    subgraph HeavyModeWorkflow["🧠 Heavyweight Workflow (Modular Orchestration Deck)"]
+        HeavyMode --> SubagentCrawl["3-Subagent Scout Crawl (Codebase, Web, Docs)"]
+        SubagentCrawl --> SocraticGrill["Socratic Interview (ask_question 1-at-a-time)"]
+        SocraticGrill --> XMLPrompt["Exhaustive Modular Deck Assembly (.gemini/prompts/ID/)"]
+        XMLPrompt --> UserApproval["Present rewritten_prompt_<ID>.md with 'Proceed' Hook"]
+        UserApproval --> GoalExec["Execution Harness via /goal or 'Proceed' Button"]
     end
 ```
 
-### 1. ⚡ Lightweight Mode (`--light`, `--direct`, `execute`, `implement`, `quick`, `fix`, `do`)
-- **When to Use**: Localized bug fixes, single-file updates, quick documentation edits, simple evaluations, or when explicit lightweight keywords (`execute`, `implement`, `quick`, `fix`, `do`) are detected.
+### 1. ⚡ Lightweight Mode (`--light`, `--direct`, `quick`, `fix`)
+- **When to Use**: Localized bug fixes, single-file updates, quick documentation edits, or when explicit lightweight keywords (`--light`, `quick`, `fix`) are detected.
 - **Workflow**:
-  1. **Zero Socratic Overhead**: Bypasses the 6-persona interview completely.
-  2. **Direct/Fast Prompting**: Assembles a concise, targeted instruction set without spawning background crawler subagents or generating heavy OKF knowledge bundles.
-  3. **No Goal/Planning Overhead**: Bypasses global `implementation_plan.md` / `task.md` creation. Executes the task directly or applies a localized patch in a single pass.
+  1. **Fast Parallel Scouting**: Spawns parallel background scouts (`TypeName: "research"`) to quickly locate file paths and library signatures without blocking.
+  2. **Zero Socratic Overhead**: Bypasses the extended 6-persona interview to deliver immediate turnaround.
+  3. **Concise Single-File Directive (`prompt.md`)**: Assembles a razor-sharp, self-contained rewritten prompt that embeds concrete context, strict constraints, and explicit subagent directives, ready for user review and execution via the **"Proceed"** button. (Does NOT mutate target workspace code during prompt authoring).
 
 ### 2. 🧠 Heavyweight Mode (`--heavy`, `--deep`, `plan`, `think`, `architect`, `investigate`, `/goal`)
-- **When to Use**: Deep investigative tasks, new feature architectures, multi-file refactors, security audits, or when explicit heavyweight keywords (`plan`, `think`, `architect`, `deep`, `investigate`, `/goal`) are detected.
+- **When to Use**: Deep investigative tasks, new feature architectures, multi-file refactors, security audits, or when explicit heavyweight keywords (`--heavy`, `plan`, `think`, `architect`, `deep`, `investigate`, `/goal`) are detected.
 - **Workflow & Modular Deck Assembly**:
-  1. **3-Subagent Scout Crawl**: Spawns parallel subagents for codebase indexing, web research, and docs scraping.
+  1. **3-Subagent Scout Crawl**: Spawns parallel subagents (`TypeName: "research"`) for codebase indexing, web research, and docs scraping.
   2. **Stateful Socratic Grill**: Uses `ask_question` (1 question at a time) to disambiguate intent, resolve gaps, and provide technical recommendations.
   3. **Modular Orchestration Deck Assembly (Intent-Driven DAG Graph)**: `prompt-writer` generates a **Modular Orchestration Deck** under `.gemini/prompts/<SHORT_ID>/`:
      - `task_graph.json`: Machine-readable DAG mapping atomic logical task nodes, dependencies, parallelization opportunities, subagent roles, model tiers, and blocking verification criteria.
-     - `orchestrator.md`: Directives for the **Pure Manager Thread** (prohibiting direct code edits, enforcing subagent worker dispatch via `/goal`, Sentry verification, and sign-off).
-     - `tasks/task_01_<name>.md`, `tasks/task_02_<name>.md`: Atomic, single-responsibility **Intent Directives** (specifying goals, requirements, constraints, and acceptance criteria—leaving low-level implementation planning to the subagent's thinking harness).
+     - `orchestrator.md`: Directives for the **Pure Manager Thread** (prohibiting direct code edits, enforcing worker subagent dispatch via `invoke_subagent` / `/goal`, Sentry verification, and sign-off).
+     - `tasks/task_01_<name>.md`, `tasks/task_02_<name>.md`: Atomic, single-responsibility **Intent Directives** (specifying goals, requirements, constraints, and acceptance criteria).
   4. **User Approval & Execution Hook**: Saves `rewritten_prompt_<SHORT_ID>.md` with an interactive summary diagram and a **"Proceed"** execution button. Upon launch, the Manager thread executes nodes by invoking subagents with `/goal` prompts.
 
 
@@ -142,7 +142,6 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
 
 ### 1. 🎓 The Scout Stage (Short ID Generation, AGY Capability Discovery, Catalog Ingestion & Registry Init)
 *   **Generate Short ID**: Generate a unique `SHORT_ID` (e.g., `PRMT-8F21`). If this is a revision of an existing prompt, capture `PARENT_SHORT_ID`.
-*   **Workspace Mapping**: Ingest the user's initial prompt and inspect the active workspace. Execute `list_dir` or `find` to map the workspace's structure.
 *   **Antigravity Native Capability Grounding**: Consult the built-in **[Antigravity Guide Skill](file://$HOME/.gemini/antigravity/builtin/skills/antigravity_guide/SKILL.md)** and its subdocs (`references/app.md`, `references/cli.md`, `references/ide.md`, `references/sdk.md`) in preference to discover available native AGY features (`/goal`, `/schedule`, `/grill-me`, `/browser`, `/learn`, artifacts, workspace isolation). Fall back to live documentation URLs (`https://antigravity.google/docs`) only when querying unreleased or specialized platform APIs.
 *   **Curated Catalog Ingestion & LLM Intelligent Skill Selection**: 
     1. Read the curated **[Preferred Skills Catalog](file://$HOME/code/github/skills-prompt-writer/skills/prompt-writer/references/PREFERRED_SKILLS.md)**.
@@ -153,10 +152,43 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
        python3 ~/.agents/skills/prompt-writer/scripts/skills_bootstrapper.py --project . --skills <skill_1>,<skill_2>,<skill_3>
        ```
 *   **Initialize State, Registry & Namespaced OKF Bundle**: Create or hydrate `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md`, `.gemini/tasks/<SHORT_ID>/prompt_writer_journal.json`, sync `.gemini/prompts/registry.json`, and scaffold the namespaced OKF Knowledge Bundle at `.gemini/knowledge/<SHORT_ID>/` with a default `index.md` and `log.md` following **[Knowledge Catalog](file://$HOME/code/github/skills-knowledge-catalog/skills/knowledge-catalog/SKILL.md)**.
-*   **Spawn Concurrent Subagents**: Trigger automated context engineering by launching three parallel, specialized background subagents using `invoke_subagent` (all with `Model: "inherit"`):
-    *   **Codebase Scout**: Indexes folder paths, detects dependencies, maps HTTP route endpoints, and writes an OKF Concept Document `scout/codebase_map.md` (type: `Reference`).
-    *   **Web Intelligence Analyst**: Searches the web for latest versions, release notes, and best-practices, writing `scout/web_intel.md` (type: `Reference`).
-    *   **Docs Crawler**: Queries local/global MCP documentation servers, writing `scout/docs_crawler.md` (type: `Reference`).
+*   **MANDATORY Parallel Subagent Scout Crawl (`invoke_subagent`)**:
+    > [!IMPORTANT]
+    > **Zero Inline Exploration Trap**: Do NOT perform deep inline searches, grep loops, or single-threaded code reading on the main thread during the Scout phase. You MUST immediately launch the 3 specialized background subagents concurrently using `invoke_subagent`.
+    >
+    > **Native Subagent Types Rule**:
+    > - Standard built-in types are **`"research"`** (read-only exploration tools) and **`"self"`** (full read/write/edit tools).
+    > - NEVER use undeclared custom TypeNames (such as `code_architect`) without calling `define_subagent` first.
+    > - Use `TypeName: "research"` for all context-gathering scouts.
+
+    Execute the single `invoke_subagent` tool call with the following 3 parallel workers:
+    ```json
+    {
+      "Subagents": [
+        {
+          "TypeName": "research",
+          "Role": "Codebase Scout",
+          "Model": "inherit",
+          "Workspace": "share",
+          "Prompt": "Perform workspace indexing. Scan folder structure, parse package manifests (package.json, pyproject.toml, go.mod), locate active HTTP routes/endpoints and data models. Write results to .gemini/knowledge/<SHORT_ID>/scout/codebase_map.md and send completion notification via send_message."
+        },
+        {
+          "TypeName": "research",
+          "Role": "Web Intelligence Analyst",
+          "Model": "inherit",
+          "Workspace": "share",
+          "Prompt": "Search the web for the latest stable versions, release notes, deprecation warnings, and architectural best practices for the target libraries and frameworks. Write findings to .gemini/knowledge/<SHORT_ID>/scout/web_intel.md and send completion notification via send_message."
+        },
+        {
+          "TypeName": "research",
+          "Role": "Docs Crawler",
+          "Model": "inherit",
+          "Workspace": "share",
+          "Prompt": "Query available MCP documentation servers (content7, developer-knowledge, context7) to extract official API signatures, Pydantic/JSON schemas, and code contracts. Write schemas to .gemini/knowledge/<SHORT_ID>/scout/docs_crawler.md and send completion notification via send_message."
+        }
+      ]
+    }
+    ```
 *   **Event-Driven Message Handoffs**: Await incoming lightweight event-notification triggers via the `send_message` tool from the background subagents. Once notifications are received, read and verify their completed OKF Concept Document payloads on disk.
 *   **Update State & Registry**: Check off the "Scout Stage" in `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md` and update `prompt_writer_journal.json` and `registry.json`.
 
@@ -177,7 +209,7 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
 ### 3. 📐 The Architect Stage (Intent Topology, Task Graph & Dream Sequence Weaving)
 *   **Domain Classification & Template Selection**: Classify the prompt's primary domain (`coding`, `ui_design`, `security`, `research`, `verification`) and select the appropriate pipeline template from `references/dag_templates/`. Refer to **[DAG Orchestration Specification](file://$HOME/code/github/skills-prompt-writer/skills/prompt-writer/references/dag_orchestration.md)**.
 *   **Deconstruct Objective into an Intent-Driven Task Graph (`task_graph.json`)**:
-    - Identify logical atomic task units, dependencies, parallelization opportunities, subagent roles (`subagent_role`), workspace isolation (`Workspace: "branch"` for code edits, `"share"` for read-only audits), and blocking `verification_gate` criteria.
+    - Identify logical atomic task units, dependencies, parallelization opportunities, subagent roles (`subagent_role`), valid Antigravity `TypeName`s (`"self"` for code-generating workers, `"research"` for read-only scouts/auditors), workspace isolation (`Workspace: "branch"` for code edits, `"share"` for read-only audits), and blocking `verification_gate` criteria.
     - **Subagent Model Configuration**: Standardize on `Model: "inherit"` across all subagents to adhere to AGY's unified session model.
     - **Curated Skill Weaving**: Explicitly bind and assign the selected curated skills to each subagent node in `task_graph.json` (`subagent_skills: ["<skill_1>", "<skill_2>"]`) so each worker subagent loads its domain-specific lifecycle instructions (e.g., `spec` for specifications, `test` for TDD, `review` for sentry audits, `documentation` for portal generation).
     - **Intent-First Principle**: Focus strictly on *what* needs to be accomplished, inputs/outputs, boundaries, and acceptance criteria. Do NOT write step-by-step implementation code or file-by-file execution scripts during prompt generation.
@@ -186,18 +218,49 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
 *   **In-Flight Dream Sequence & Dynamic DAG Evolution Protocol**:
     - **Never-Satisfied Orchestration Rule**: Direct that completion of initial implementation nodes MUST NOT conclude the DAG execution.
     - **In-Flight Dream Checkpoints**: Inject explicit **Retrospective & Critique Nodes** (`retrospective_checkpoints`) into `task_graph.json` at strategic intervals, following **[Dream Sequence Specification](file://$HOME/code/github/skills-prompt-writer/skills/prompt-writer/references/dream_sequence.md)**:
-      1. *Critique Dispatch*: Manager dispatches a specialized **Sentry/Reviewer Subagent** (equipped with `review`, `expectation-harness`, and `doubt-driven-development`) tasked strictly with adversarial code review, static analysis (`verify_okf.py`), and gap detection against original intent.
+      1. *Critique Dispatch*: Manager dispatches a specialized **Sentry/Reviewer Subagent** (`TypeName: "research"`, equipped with `review`, `expectation-harness`, and `doubt-driven-development`) tasked strictly with adversarial code review, static analysis (`verify_okf.py`), and gap detection against original intent.
       2. *Dynamic DAG Evolution*: If the Reviewer identifies scope for improvement, optimization, or missing edge-case handling, the Manager receives the structured improvement proposal and dynamically appends new child task nodes (`task_XX_evolution_step1`, `task_XX_evolution_step2`) to `task_graph.json`.
-      3. *Recursive Refinement*: The Manager dispatches workers for the newly appended evolution nodes via `/goal`, followed by a subsequent Retrospective Cycle. The Manager is never satisfied until a Retrospective Pass explicitly returns `STATUS: OPTIMAL / ZERO_GAPS`.
+      3. *Recursive Refinement*: The Manager dispatches workers for the newly appended evolution nodes via `invoke_subagent` / `/goal`, followed by a subsequent Retrospective Cycle. The Manager is never satisfied until a Retrospective Pass explicitly returns `STATUS: OPTIMAL / ZERO_GAPS`.
 *   **Strict Data Contract & Schema Enforcement**: Define centralized schema models (Pydantic classes or JSON schemas) for all data exchanged between parallel subagents. Save contracts as an OKF Concept Document under `.gemini/knowledge/<SHORT_ID>/architecture/data_contracts.md` (type: `Data Contract`).
 *   **Update State**: Check off the "Architect Stage" in `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md` and save system architecture configurations.
 
 ### 4. 🛠️ The Builder Stage (Modular Orchestration Deck Assembly & Skill Directives)
 *   **Action**: Generate the complete Modular Orchestration Deck under `.gemini/prompts/<SHORT_ID>/`:
     1.  **`task_graph.json`**: Machine-readable DAG schema defining node goals, dependencies, subagent roles (`Model: "inherit"`), verification gates, attached `subagent_skills`, and explicit `retrospective_checkpoints`.
-    2.  **`orchestrator.md`**: Directives for the **Pure Manager Thread** (instructing the Manager to invoke subagents via `/goal`, enforce subagent skill loading, execute dream retrospective cycles, dynamically evolve `task_graph.json` upon review findings, and require explicit `ZERO_GAPS` sign-off).
+    2.  **`orchestrator.md`**: Directives for the **Pure Manager Thread** (instructing the Manager to invoke subagents via `invoke_subagent` / `/goal`, enforce subagent skill loading, execute dream retrospective cycles, dynamically evolve `task_graph.json` upon review findings, and require explicit `ZERO_GAPS` sign-off).
     3.  **`tasks/task_01_<name>.md`, `tasks/task_02_<name>.md`**: Write dedicated **Intent Specification Prompts** for both implementation nodes and retrospective/critique nodes, citing the required skill rules (e.g., TDD/BDD via `test`, documentation via `compile-docs`).
-    4.  **`prompt.md`**: Unified compiled entrypoint referencing the deck.
+    4.  **`prompt.md`**: Unified compiled entrypoint containing explicit `<SUBAGENT_ORCHESTRATION>` tool-call directives.
+
+*   **🚨 THE 5 INVARIANT PILLARS OF EVERY GENERATED PROMPT DECK**:
+    > [!IMPORTANT]
+    > **Strict Prohibition of Passive PRD Summaries**:
+    > Every prompt generated by `prompt-writer` (`prompt.md` and `rewritten_prompt_<SHORT_ID>.md`) **MUST NEVER** be a passive summary, bulleted brief, or descriptive PRD. It **MUST** be an **executable, imperative instruction deck** ready for instant execution by Google Antigravity upon clicking "Proceed" or issuing `/goal`.
+    >
+    > Every generated prompt MUST strictly embed all **5 Invariant Pillars**:
+    >
+    > 1. **Imperative Pure Manager Role & Directives (`<ROLE>`, `<DIRECTIVES>`)**:
+    >    - Explicitly commands the executing agent to operate as a Pure Manager / Orchestrator.
+    >    - Strictly prohibits the main thread from doing inline code edits on multi-component tasks.
+    >    - Enforces dispatching workers via `invoke_subagent` and `/goal`.
+    >
+    > 2. **Data Grounding, Contracts & Provenance (`<DATA_PROVENANCE_AND_CONTRACTS>`)**:
+    >    - Explicitly specifies input sources (e.g. BigQuery datasets, table schemas, file paths, API contracts, environment parameters).
+    >    - Strictly bans ungrounded claims, invented library parameters, or hardcoded mock metrics.
+    >
+    > 3. **Mandatory `<SUBAGENT_ORCHESTRATION>` JSON Tool Payloads**:
+    >    - Contains complete, valid JSON tool-call payloads for `invoke_subagent` for EVERY phase of the DAG:
+    >      - `TypeName: "self"` (for implementation tasks in `Workspace: "branch"`)
+    >      - `TypeName: "research"` (for audits, scouting, and verification in `Workspace: "share"`)
+    >      - `Model: "inherit"` (standardized across all subagents)
+    >
+    > 4. **Dual Test Suite & Sentry Quality Gates (`<VERIFICATION_GATES_AND_SENTRY>`)**:
+    >    - Enforces executable commands for BOTH unit/integration tests (`pytest` / `jest`) AND BDD feature specs (`behave` Gherkin under `features/`).
+    >    - Headless DOM interactivity/visual verification via Chrome DevTools.
+    >    - Programmatic evidence validation (`validate_evidence.py`) against `.gemini/EVIDENCE.md`.
+    >
+    > 5. **Definitive Definition of Done (DoD) & 100% Artifact Parity (`<DEFINITION_OF_DONE>`)**:
+    >    - Itemized file paths with concrete acceptance criteria and `# END OF FILE: <path>` markers.
+    >    - Zero stubs, zero "TBD" placeholders, zero unhandled errors.
 
 *   **State-Journal & OKF Blueprint Integration**: Embed the JSON schema for `.gemini/tasks/<SHORT_ID>/state_journal.json`, `task.md`, and the blueprint for `.gemini/knowledge/<SHORT_ID>/`.
 *   **Modern Web Guidance & Design Aesthetics**: If building web interfaces or documentation, mandate following **[Modern Web Guidance Skill](file://$HOME/.gemini/config/plugins/modern-web-guidance-plugin/skills/modern-web-guidance/SKILL.md)** and invoking **[Documentation Custom Skill](file://$HOME/code/github/skills-documentation/skills/documentation/SKILL.md)** for HTML portal compilation.
@@ -229,16 +292,17 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
 
 ### 6. 🏫 The Mentor Stage (Pedagogical Delivery, Non-Blocking Async Handoff & OKF Compilation)
 *   **Action**:
-    1. Save the primary prompt to `.gemini/prompts/<SHORT_ID>/prompt.md`.
+    1. Save the primary compiled prompt to `.gemini/prompts/<SHORT_ID>/prompt.md`.
     2. Save the user-facing artifact as `rewritten_prompt_<SHORT_ID>.md` (e.g. `rewritten_prompt_PRMT-8F21.md`) inside the conversation's brain artifacts directory (i.e. `<appDataDir>/brain/<conversation-id>/rewritten_prompt_<SHORT_ID>.md`) and maintain `rewritten_prompt.md` as an active alias/symlink.
+       - **MANDATORY ARTIFACT CONTENT**: `rewritten_prompt_<SHORT_ID>.md` must NEVER be a passive summary or high-level outline. It MUST contain the complete, executable instruction deck with all 5 Invariant Pillars (`<ROLE>`, `<DATA_PROVENANCE_AND_CONTRACTS>`, `<SUBAGENT_ORCHESTRATION>`, `<VERIFICATION_GATES_AND_SENTRY>`, and `<DEFINITION_OF_DONE>`).
     3. Update `.gemini/prompts/registry.json` setting status to `QUEUED` or `READY`.
 *   **Execution Hook**: Provide `ArtifactMetadata` with `request_feedback: true` and `user_facing: true` when writing the file so Antigravity renders the **"Proceed"** button for instant execution.
 *   **Non-Blocking Asynchronous Execution Handoff**: When the user approves the prompt or clicks "Proceed", trigger execution asynchronously without blocking the user from issuing subsequent `/prompt-writer` requests:
-    *   Launch execution in the background using `invoke_subagent` or `python scripts/execute_pipeline.py --prompt-ids <SHORT_ID>`.
+    *   Launch execution in the background using `invoke_subagent` with the Pure Manager instructions.
     *   Return control immediately to the user with a confirmation message: `"Prompt <SHORT_ID> is now executing in the background. You can issue a new prompt request immediately."`
 *   **Mandatory Antigravity Execution Harness**: The executing background agent MUST strictly integrate with the **Antigravity Planning, Walkthrough, & OKF Harness**:
     1.  **Reactivate codebase-level Planning Mode**: Do NOT skip planning. Use `.gemini/prompts/<SHORT_ID>/prompt.md` as primary specification. Author a fresh codebase-level `implementation_plan.md` and `task.md` under `.gemini/tasks/<SHORT_ID>/`.
-    2.  **Execute & Checklist Checkpoints**: Perform the code changes according to the plan, continuously syncing progress checkboxes.
+    2.  **Execute via Parallel Subagents**: Dispatch atomic tasks to parallel workers via `invoke_subagent`, continuously syncing progress checkboxes.
     3.  **Compile Namespaced OKF Knowledge Bundle**: Compile all stage-by-stage insights, schemas, threat models, and playbooks as concept files inside `.gemini/knowledge/<SHORT_ID>/`. Rebuild `.gemini/knowledge/<SHORT_ID>/index.md`.
     4.  **Asynchronous Memory Consolidation (Agent Dreaming)**: Post-execution, run an offline background sweep to clean up workspace clutter, reflect on procedural lessons, and permanently promote durable insights to `.gemini/knowledge/MEMORY.md`.
     5.  **Antigravity Automated Verification Walkthrough**: Once implementation is complete, generate a comprehensive report `walkthrough.md` or `.gemini/tasks/<SHORT_ID>/walkthrough.md` displaying verified features, Evidence IDs, and links to the OKF Knowledge Bundle index.

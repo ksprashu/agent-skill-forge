@@ -46,6 +46,7 @@ The `task_graph.json` file dictates task execution order, workspace isolation, m
       "name": "Scan Workspace Vulnerabilities",
       "template": "security_scan",
       "prompt_file": "tasks/task_01_scan.md",
+      "type_name": "research",
       "subagent_role": "Auditor - Vulnerability Scanner",
       "subagent_skills": ["review", "security-and-hardening"],
       "model_tier": "inherit",
@@ -53,6 +54,7 @@ The `task_graph.json` file dictates task execution order, workspace isolation, m
       "dependencies": [],
       "status": "PENDING",
       "verification_gate": {
+        "type_name": "research",
         "verifier_role": "Sentry - Security Gatekeeper",
         "verifier_prompt": "Audit the scan outputs in .gemini/knowledge/PRMT-8F21/scout/scans.json. Verify zero unhandled high-severity errors.",
         "blocking_criteria": [
@@ -66,6 +68,7 @@ The `task_graph.json` file dictates task execution order, workspace isolation, m
       "name": "Write Security Patch for Module A",
       "template": "coding_patch",
       "prompt_file": "tasks/task_02_patch_a.md",
+      "type_name": "self",
       "subagent_role": "Producer - Secure Patch Writer",
       "subagent_skills": ["spec", "source-driven-development", "security-and-hardening", "test"],
       "model_tier": "inherit",
@@ -73,6 +76,7 @@ The `task_graph.json` file dictates task execution order, workspace isolation, m
       "dependencies": ["task_01"],
       "status": "PENDING",
       "verification_gate": {
+        "type_name": "research",
         "verifier_role": "Sentry - PoC Verifier",
         "verifier_prompt": "Run run_poc on patched Module A in branch workspace. Verify zero exploits.",
         "blocking_criteria": [

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementation Plan</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Implementation Plan</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
+<a href="VISION.html" class="sidebar-link">Vision</a>
+<a href="architecture.html" class="sidebar-link">Architecture</a>
+<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
+<a href="implementation_plan.html" class="sidebar-link active">Implementation Plan</a>
+<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
+<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
+<a href="user_guide.html" class="sidebar-link">User Guide</a>
+<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="implementation-plan-continuous-alignment-self-evolving-project-intelligence" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Implementation Plan: Continuous Alignment & Self-Evolving Project Intelligence</h1>
+<p class="mb-4 text-[var(--text-secondary)]">Build and deploy the <code class="inline-code">continuous-alignment</code> skill and Antigravity lifecycle hooks (<code class="inline-code">hooks.json</code>) to establish a self-evolving project intelligence system that distills transcripts, maintains <code class="inline-code">AGENTS.md</code> under a 200-line budget, updates living ADRs, and synchronizes strategic roadmaps.</p>
+<h2 id="user-review-required" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">User Review Required</h2>
+<p class="mb-4 text-[var(--text-secondary)]">> [!IMPORTANT]</p>
+<p class="mb-4 text-[var(--text-secondary)]">> <strong>Hook Configuration</strong>: The project <code class="inline-code">.agents/hooks.json</code> will register a <code class="inline-code">Stop</code> hook (<code class="inline-code">distill_session.py</code>) and a <code class="inline-code">PreInvocation</code> hook (<code class="inline-code">sync_agents_rules.py --pulse</code>). The <code class="inline-code">Stop</code> hook runs synchronously in the subshell on every agent turn completion. Execution is designed to take < 150ms with zero third-party dependencies.</p>
+<p class="mb-4 text-[var(--text-secondary)]">> [!NOTE]</p>
+<p class="mb-4 text-[var(--text-secondary)]">> <strong>200-Line Budget Limit</strong>: Root <code class="inline-code">AGENTS.md</code> is strictly capped at 200 lines to prevent token budget waste and attention dilution. Rules specific to subdirectories (e.g. <code class="inline-code">skills/docs/</code>) will automatically spill over to <code class="inline-code">.agents/rules/&lt;subsystem&gt;.md</code>.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="proposed-changes" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Proposed Changes</h2>
+<h3 id="core-engine-scripts---inline-code-12" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Core Engine & Scripts (<code class="inline-code">skills/continuous-alignment/</code>)</h3>
+<h4 id="new-skill-md-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-skill-md" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="SKILL.html" class="nav-link-item">SKILL.md</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Primary skill definition with YAML frontmatter (<code class="inline-code">name: continuous-alignment</code>), <code class="inline-code">/align</code>, <code class="inline-code">/evolve</code>, and <code class="inline-code">/prune-memory</code> commands, and step-by-step alignment playbooks.</li>
+</ul>
+<h4 id="new-distill-session-py-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-scripts-distill-session-py" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="distill_session.html" class="nav-link-item">distill_session.py</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Handles Antigravity <code class="inline-code">Stop</code> lifecycle event on <code class="inline-code">stdin</code>.</li>
+<li>Reads <code class="inline-code">transcriptPath</code> JSONL logs, extracts verified architectural decisions, constraints, error resolutions, and command patterns.</li>
+<li>Serializes deduplicated memory entries into <code class="inline-code">.gemini/knowledge/memories.jsonl</code>.</li>
+</ul>
+<h4 id="new-sync-agents-rules-py-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-scripts-sync-agents-rules-py" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="sync_agents_rules.html" class="nav-link-item">sync_agents_rules.py</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Consolidates extracted memories into <code class="inline-code">AGENTS.md</code> and <code class="inline-code">.agents/rules/*.md</code>.</li>
+<li>Enforces 200-line budget cap, handles conflict invalidation, and provides <code class="inline-code">--pulse</code> for <code class="inline-code">PreInvocation</code> hooks.</li>
+</ul>
+<h4 id="new-compile-roadmap-py-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-scripts-compile-roadmap-py" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="compile_roadmap.html" class="nav-link-item">compile_roadmap.py</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Compiles active milestones into <code class="inline-code">docs/ROADMAP.md</code> and <code class="inline-code">docs/VISION.md</code>.</li>
+<li>Generates MADR decision records in <code class="inline-code">.gemini/knowledge/ADRs/</code>.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h3 id="project-configuration-hooks" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Project Configuration & Hooks</h3>
+<h4 id="new-agents-hooks-json-file-users-ksprashanth-code-github-agent-skill-forge-agents-hooks-json" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="hooks.html" class="nav-link-item">.agents/hooks.json</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Configures <code class="inline-code">Stop</code> and <code class="inline-code">PreInvocation</code> hooks for the workspace.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h3 id="verification-test-suite" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Verification & Test Suite</h3>
+<h4 id="new-test-distill-py-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-tests-test-distill-py" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="test_distill.html" class="nav-link-item">test_distill.py</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Pytest unit tests for transcript JSONL parsing, rule deduplication, and error resolution extraction.</li>
+</ul>
+<h4 id="new-test-sync-rules-py-file-users-ksprashanth-code-github-agent-skill-forge-skills-continuous-alignment-tests-test-sync-rules-py" class="font-semibold mt-4 mb-2 text-[var(--text-primary)]">[NEW] <a href="test_sync_rules.html" class="nav-link-item">test_sync_rules.py</a></h4>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Pytest unit tests for 200-line budget enforcement, path-scoped rule spillover, and rule invalidation.</li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="verification-plan" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Verification Plan</h2>
+<h3 id="automated-tests" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Automated Tests</h3>
+<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Pytest Unit Suite</strong>:</p>
+   
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">   pytest skills/continuous-alignment/tests/ -v
+   </code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Skill Linter & PII Audit</strong>:</p>
+   
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">   python scripts/validate_skills.py
+   </code></pre>
+            </div>
+            
+<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Simulated Hook Ingestion</strong>:</p>
+   
+            <div class="code-container my-4">
+                <div class="code-header">
+                    <span>BASH</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-bash">   echo &#x27;{&quot;conversationId&quot;: &quot;test&quot;, &quot;workspacePaths&quot;: [&quot;/Users/ksprashanth/code/github/agent-skill-forge&quot;], &quot;transcriptPath&quot;: &quot;skills/continuous-alignment/tests/fixtures/sample_transcript.jsonl&quot;}&#x27; | python skills/continuous-alignment/scripts/distill_session.py
+   </code></pre>
+            </div>
+            
+<h3 id="manual-verification" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Manual Verification</h3>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Execute <code class="inline-code">/align</code> command to verify manual alignment reporting.</li>
+<li>Validate generated <code class="inline-code">AGENTS.md</code> line count is <= 200 lines.</li>
+</ul>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Implementation Plan: Continuous Alignment &amp; Self-Evolving Project Intelligence
+
+Build and deploy the `continuous-alignment` skill and Antigravity lifecycle hooks (`hooks.json`) to establish a self-evolving project intelligence system that distills transcripts, maintains `AGENTS.md` under a 200-line budget, updates living ADRs, and synchronizes strategic roadmaps.
+
+## User Review Required
+
+&gt; [!IMPORTANT]
+&gt; **Hook Configuration**: The project `.agents/hooks.json` will register a `Stop` hook (`distill_session.py`) and a `PreInvocation` hook (`sync_agents_rules.py --pulse`). The `Stop` hook runs synchronously in the subshell on every agent turn completion. Execution is designed to take &lt; 150ms with zero third-party dependencies.
+
+&gt; [!NOTE]
+&gt; **200-Line Budget Limit**: Root `AGENTS.md` is strictly capped at 200 lines to prevent token budget waste and attention dilution. Rules specific to subdirectories (e.g. `skills/docs/`) will automatically spill over to `.agents/rules/&lt;subsystem&gt;.md`.
+
+---
+
+## Proposed Changes
+
+### Core Engine &amp; Scripts (`skills/continuous-alignment/`)
+
+#### [NEW] [SKILL.md](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/SKILL.md)
+- Primary skill definition with YAML frontmatter (`name: continuous-alignment`), `/align`, `/evolve`, and `/prune-memory` commands, and step-by-step alignment playbooks.
+
+#### [NEW] [distill_session.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/distill_session.py)
+- Handles Antigravity `Stop` lifecycle event on `stdin`.
+- Reads `transcriptPath` JSONL logs, extracts verified architectural decisions, constraints, error resolutions, and command patterns.
+- Serializes deduplicated memory entries into `.gemini/knowledge/memories.jsonl`.
+
+#### [NEW] [sync_agents_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/sync_agents_rules.py)
+- Consolidates extracted memories into `AGENTS.md` and `.agents/rules/*.md`.
+- Enforces 200-line budget cap, handles conflict invalidation, and provides `--pulse` for `PreInvocation` hooks.
+
+#### [NEW] [compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/compile_roadmap.py)
+- Compiles active milestones into `docs/ROADMAP.md` and `docs/VISION.md`.
+- Generates MADR decision records in `.gemini/knowledge/ADRs/`.
+
+---
+
+### Project Configuration &amp; Hooks
+
+#### [NEW] [.agents/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.agents/hooks.json)
+- Configures `Stop` and `PreInvocation` hooks for the workspace.
+
+---
+
+### Verification &amp; Test Suite
+
+#### [NEW] [test_distill.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_distill.py)
+- Pytest unit tests for transcript JSONL parsing, rule deduplication, and error resolution extraction.
+
+#### [NEW] [test_sync_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_sync_rules.py)
+- Pytest unit tests for 200-line budget enforcement, path-scoped rule spillover, and rule invalidation.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+1. **Pytest Unit Suite**:
+   ```bash
+   pytest skills/continuous-alignment/tests/ -v
+   ```
+2. **Skill Linter &amp; PII Audit**:
+   ```bash
+   python scripts/validate_skills.py
+   ```
+3. **Simulated Hook Ingestion**:
+   ```bash
+   echo &#x27;{&quot;conversationId&quot;: &quot;test&quot;, &quot;workspacePaths&quot;: [&quot;/Users/ksprashanth/code/github/agent-skill-forge&quot;], &quot;transcriptPath&quot;: &quot;skills/continuous-alignment/tests/fixtures/sample_transcript.jsonl&quot;}&#x27; | python skills/continuous-alignment/scripts/distill_session.py
+   ```
+
+### Manual Verification
+- Execute `/align` command to verify manual alignment reporting.
+- Validate generated `AGENTS.md` line count is &lt;= 200 lines.
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#user-review-required" class="sidebar-link text-xs">User Review Required</a>
+<a href="#proposed-changes" class="sidebar-link text-xs">Proposed Changes</a>
+<a href="#core-engine-scripts---inline-code-12" class="sidebar-link text-xs ml-2">Core Engine & Scripts (<!--INLINE_CODE_12-->)</a>
+<a href="#project-configuration-hooks" class="sidebar-link text-xs ml-2">Project Configuration & Hooks</a>
+<a href="#verification-test-suite" class="sidebar-link text-xs ml-2">Verification & Test Suite</a>
+<a href="#verification-plan" class="sidebar-link text-xs">Verification Plan</a>
+<a href="#automated-tests" class="sidebar-link text-xs ml-2">Automated Tests</a>
+<a href="#manual-verification" class="sidebar-link text-xs ml-2">Manual Verification</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

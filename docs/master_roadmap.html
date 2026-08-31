@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Roadmap</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Master Roadmap</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
+<a href="VISION.html" class="sidebar-link">Vision</a>
+<a href="architecture.html" class="sidebar-link">Architecture</a>
+<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
+<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
+<a href="master_roadmap.html" class="sidebar-link active">Master Roadmap</a>
+<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
+<a href="user_guide.html" class="sidebar-link">User Guide</a>
+<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="project-roadmap-dynamic-feature-ledger" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Project Roadmap & Dynamic Feature Ledger</h1>
+<p class="mb-4 text-[var(--text-secondary)]">Welcome to the Master Project Roadmap and Chronological Feature Ledger. This portal consolidates all completed core keynote milestones alongside the dynamic custom extension branches developed by our agentic fleet.</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="1-project-health-status" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">1. Project Health Status</h2>
+<p class="mb-4 text-[var(--text-secondary)]">::: grid-3</p>
+<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Core Keynote Trunk</h4>- Status: **100% Operational**
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Scenes: <strong>Scene 1 to Scene 6</strong></li>
+<li>SLA Compliance: <strong>Sub-150ms</strong></div></li>
+</ul>
+<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Active Feature Branches</h4>- Active: **Docs Sync & Archiving**
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>Status: <strong>90% Complete</strong></li>
+<li>Hook Status: <strong>Stop Event Active</strong></div></li>
+</ul>
+<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Extension Backlog</h4>- Proposed Ideas: **3 Features**
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li>High-Impact: <strong>Spatial plot, Rule Tuner</strong></li>
+<li>Status: <strong>Ready for Planning</strong></div></li>
+</ul>
+<p class="mb-4 text-[var(--text-secondary)]">:::</p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="2-chronological-milestones-ledger" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">2. Chronological Milestones Ledger</h2>
+<div class="overflow-x-auto my-4"><table class="rich-table">
+<thead><tr>
+<th>Milestone Area</th>
+<th>Class / Type</th>
+<th>Completion Status</th>
+<th>Deliverables & Artifacts</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Scene 1: Chatbot</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>Raw ungrounded Gemini gaffe sandbox</td>
+</tr>
+<tr>
+<td><strong>Scene 2: Commute</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>Calendar MCP & Google Maps grounding tools</td>
+</tr>
+<tr>
+<td><strong>Scene 3: Wardrobe</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>AlloyDB pgvector styling similarity</td>
+</tr>
+<tr>
+<td><strong>Scene 4: Florist</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>Model Armor prompt injection input guardrails</td>
+</tr>
+<tr>
+<td><strong>Scene 5: Pet Sitter</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>Model Armor PII redaction and secure logs</td>
+</tr>
+<tr>
+<td><strong>Scene 6: Showstopper</strong></td>
+<td>Core Keynote Trunk</td>
+<td>[badge:emerald:100% Completed]</td>
+<td>Diner Black bilateral multi-agent seating negotiation</td>
+</tr>
+<tr>
+<td><strong>Docs Sync Skill</strong></td>
+<td>Active Feature Branch</td>
+<td>[badge:indigo:90% In Progress]</td>
+<td>Automatic Stop event hook, auto-archiver, HTML timelines</td>
+</tr>
+<tr>
+<td><strong>Rule-Tuning Panel</strong></td>
+<td>Extension Backlog</td>
+<td>[badge:slate:0% Pending]</td>
+<td>Model Armor toggles for live stage demonstrations</td>
+</tr>
+<tr>
+<td><strong>Spatial Scatter Plot</strong></td>
+<td>Extension Backlog</td>
+<td>[badge:slate:0% Pending]</td>
+<td>AlloyDB cluster visualizations in SVG</td>
+</tr>
+<tr>
+<td><strong>DB Mode Controller</strong></td>
+<td>Extension Backlog</td>
+<td>[badge:slate:0% Pending]</td>
+<td>Settings pane to hot-swap DB_MODE</td>
+</tr>
+</tbody></table></div>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="3-historic-plan-archives" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">3. Historic Plan Archives</h2>
+<p class="mb-4 text-[var(--text-secondary)]">All historic implementation plans and active checklists are preserved inside our documentation vault:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li><a href="archive/implementation_plan_automated_documentation_sync.html" target="_blank" rel="noopener noreferrer" class="external-link">Docs-Sync Skill Plan</a> & <a href="archive/task_automated_documentation_sync.html" target="_blank" rel="noopener noreferrer" class="external-link">Docs-Sync Active Checklist</a></li>
+</ul>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Project Roadmap &amp; Dynamic Feature Ledger
+
+Welcome to the Master Project Roadmap and Chronological Feature Ledger. This portal consolidates all completed core keynote milestones alongside the dynamic custom extension branches developed by our agentic fleet.
+
+---
+
+## 1. Project Health Status
+
+::: grid-3
+::: card
+### Core Keynote Trunk
+- Status: **100% Operational**
+- Scenes: **Scene 1 to Scene 6**
+- SLA Compliance: **Sub-150ms**
+:::
+::: card
+### Active Feature Branches
+- Active: **Docs Sync &amp; Archiving**
+- Status: **90% Complete**
+- Hook Status: **Stop Event Active**
+:::
+::: card
+### Extension Backlog
+- Proposed Ideas: **3 Features**
+- High-Impact: **Spatial plot, Rule Tuner**
+- Status: **Ready for Planning**
+:::
+:::
+
+---
+
+## 2. Chronological Milestones Ledger
+
+| Milestone Area | Class / Type | Completion Status | Deliverables &amp; Artifacts |
+| :--- | :--- | :--- | :--- |
+| **Scene 1: Chatbot** | Core Keynote Trunk | [badge:emerald:100% Completed] | Raw ungrounded Gemini gaffe sandbox |
+| **Scene 2: Commute** | Core Keynote Trunk | [badge:emerald:100% Completed] | Calendar MCP &amp; Google Maps grounding tools |
+| **Scene 3: Wardrobe** | Core Keynote Trunk | [badge:emerald:100% Completed] | AlloyDB pgvector styling similarity |
+| **Scene 4: Florist** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor prompt injection input guardrails |
+| **Scene 5: Pet Sitter** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor PII redaction and secure logs |
+| **Scene 6: Showstopper**| Core Keynote Trunk | [badge:emerald:100% Completed] | Diner Black bilateral multi-agent seating negotiation |
+| **Docs Sync Skill** | Active Feature Branch | [badge:indigo:90% In Progress] | Automatic Stop event hook, auto-archiver, HTML timelines |
+| **Rule-Tuning Panel** | Extension Backlog | [badge:slate:0% Pending] | Model Armor toggles for live stage demonstrations |
+| **Spatial Scatter Plot**| Extension Backlog | [badge:slate:0% Pending] | AlloyDB cluster visualizations in SVG |
+| **DB Mode Controller**| Extension Backlog | [badge:slate:0% Pending] | Settings pane to hot-swap DB_MODE |
+
+---
+
+## 3. Historic Plan Archives
+
+All historic implementation plans and active checklists are preserved inside our documentation vault:
+* [Docs-Sync Skill Plan](archive/implementation_plan_automated_documentation_sync.html) &amp; [Docs-Sync Active Checklist](archive/task_automated_documentation_sync.html)
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#1-project-health-status" class="sidebar-link text-xs">1. Project Health Status</a>
+<a href="#2-chronological-milestones-ledger" class="sidebar-link text-xs">2. Chronological Milestones Ledger</a>
+<a href="#3-historic-plan-archives" class="sidebar-link text-xs">3. Historic Plan Archives</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

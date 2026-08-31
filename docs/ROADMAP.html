@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" class="technical">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        
+        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
+        :root {
+            --bg-canvas: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --color-primary: #1e40af;
+            --color-accent: #2563eb;
+            --color-accent-glow: rgba(37, 99, 235, 0.08);
+            --border-color: #e2e8f0;
+            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --rounding: 8px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --header-bg: #ffffff;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr) 200px;
+            gap: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 24px;
+        }
+        @media(max-width: 1100px) {
+            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
+            .toc-bar { display: none; }
+        }
+        @media(max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 16px; }
+            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
+        }
+        .sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+            padding-right: 20px;
+        }
+        .toc-bar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+        .prose-content {
+            min-width: 0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            box-shadow: var(--shadow-sm);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+    
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+        }
+        
+        .header-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tab-btn {
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-alt);
+        }
+        .tab-btn.tab-active {
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .external-link, .nav-link-item {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 500;
+        }
+        
+        .rich-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            border-radius: var(--rounding);
+            border: 1px solid var(--border-color);
+        }
+        .rich-table th {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .rich-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .rich-table th:first-child, .rich-table td:first-child {
+            white-space: nowrap !important;
+        }
+        
+        .code-container {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: var(--rounding);
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+        }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .inline-code {
+            background-color: var(--bg-surface-alt);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            color: var(--color-accent);
+            border: 1px solid var(--border-color);
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 6px 10px;
+            border-radius: var(--rounding);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: var(--bg-surface-alt);
+            color: var(--text-primary);
+        }
+        .sidebar-link.active {
+            background-color: var(--color-accent-glow);
+            color: var(--color-accent);
+            font-weight: 600;
+            border-left: 3px solid var(--color-accent);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-bar">
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-[var(--text-primary)]">Roadmap</span>
+        </div>
+        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
+            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
+            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <aside class="sidebar">
+            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+            </div>
+            <nav>
+                <a href="ROADMAP.html" class="sidebar-link active">Roadmap</a>
+<a href="VISION.html" class="sidebar-link">Vision</a>
+<a href="architecture.html" class="sidebar-link">Architecture</a>
+<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
+<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
+<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
+<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
+<a href="user_guide.html" class="sidebar-link">User Guide</a>
+<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
+            </nav>
+        </aside>
+
+        <main class="prose-content">
+            <div id="ui-view">
+                <article class="glass-panel">
+                    <h1 id="project-strategic-roadmap" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Project Strategic Roadmap</h1>
+<p class="mb-4 text-[var(--text-secondary)]">> [!NOTE]</p>
+<p class="mb-4 text-[var(--text-secondary)]">> Living roadmap compiled continuously by <code class="inline-code">continuous-alignment</code> engine.</p>
+<p class="mb-4 text-[var(--text-secondary)]"><svg class="w-full max-w-2xl my-6 rounded-xl border border-slate-700/60 bg-slate-900/90 shadow-2xl p-4" viewBox="0 0 760 385" fill="none" xmlns="http://www.w3.org/2000/svg"></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <defs></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1"></p>
+<p class="mb-4 text-[var(--text-secondary)]">      <stop offset="0%" stop-color="#38bdf8"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">      <stop offset="100%" stop-color="#818cf8"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    </linearGradient></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </defs></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <line x1="80" y1="40" x2="80" y2="345" stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 6"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <g transform="translate(0, 50)"></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="10" fill="#0f172a" stroke="#10b981" stroke-width="3"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="4" fill="#10b981"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <rect x="110" y="-20" width="60" height="20" rx="4" fill="#064e3b"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="140" y="-6" fill="#6ee7b7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">DONE</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="-5" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="600">M1: 4-Tier Memory & Hook Protocol Spec</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="14" fill="#94a3b8" font-size="11" font-family="sans-serif">Schemas and contracts for transcript distillation and budgeting</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </g></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <g transform="translate(0, 110)"></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="10" fill="#0f172a" stroke="#10b981" stroke-width="3"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="4" fill="#10b981"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <rect x="110" y="-20" width="60" height="20" rx="4" fill="#064e3b"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="140" y="-6" fill="#6ee7b7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">DONE</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="-5" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="600">M2: Stop Hook & Distillation Engine</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="14" fill="#94a3b8" font-size="11" font-family="sans-serif">Sub-second transcript parser and deduplicating memory writer</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </g></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <g transform="translate(0, 170)"></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="10" fill="#0f172a" stroke="#10b981" stroke-width="3"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="4" fill="#10b981"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <rect x="110" y="-20" width="60" height="20" rx="4" fill="#064e3b"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="140" y="-6" fill="#6ee7b7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">DONE</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="-5" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="600">M3: AGENTS.md 200-Line Budget Enforcer</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="14" fill="#94a3b8" font-size="11" font-family="sans-serif">Semantic rule merge, conflict invalidation, and path-rule spillover</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </g></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <g transform="translate(0, 230)"></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="10" fill="#0f172a" stroke="#10b981" stroke-width="3"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="4" fill="#10b981"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <rect x="110" y="-20" width="60" height="20" rx="4" fill="#064e3b"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="140" y="-6" fill="#6ee7b7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">DONE</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="-5" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="600">M4: Living ADR & Roadmap Compiler</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="14" fill="#94a3b8" font-size="11" font-family="sans-serif">Automated MADR tracking and SVG visual timeline compilation</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </g></p>
+<p class="mb-4 text-[var(--text-secondary)]">  <g transform="translate(0, 290)"></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="10" fill="#0f172a" stroke="#10b981" stroke-width="3"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <circle cx="80" cy="0" r="4" fill="#10b981"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <rect x="110" y="-20" width="60" height="20" rx="4" fill="#064e3b"/></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="140" y="-6" fill="#6ee7b7" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">DONE</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="-5" fill="#f8fafc" font-size="14" font-family="sans-serif" font-weight="600">M5: Full Verification & Skill Integration</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">    <text x="180" y="14" fill="#94a3b8" font-size="11" font-family="sans-serif">Pytest harness, validate_skills.py passing, and live hook registration</text></p>
+<p class="mb-4 text-[var(--text-secondary)]">  </g></p>
+<p class="mb-4 text-[var(--text-secondary)]"></svg></p>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="active-milestone-breakdown" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Active Milestone Breakdown</h2>
+<h3 id="1-milestone-tracking" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">1. Milestone Tracking</h3>
+<div class="overflow-x-auto my-4"><table class="rich-table">
+<thead><tr>
+<th>Milestone</th>
+<th>Status</th>
+<th>Description</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M1: Spec & Protocol</strong></td>
+<td><code class="inline-code">Completed</code></td>
+<td>Memory schema and Antigravity hook contracts</td>
+</tr>
+<tr>
+<td><strong>M2: Distillation Engine</strong></td>
+<td><code class="inline-code">Completed</code></td>
+<td>Zero-dependency transcript parser (< 150ms)</td>
+</tr>
+<tr>
+<td><strong>M3: Rule Sync & Budgeting</strong></td>
+<td><code class="inline-code">Completed</code></td>
+<td>200-line budget limit and path-scoped rules</td>
+</tr>
+<tr>
+<td><strong>M4: Living ADR Compiler</strong></td>
+<td><code class="inline-code">Completed</code></td>
+<td>MADR template generation and SVG branching timeline</td>
+</tr>
+<tr>
+<td><strong>M5: Verification & Deploy</strong></td>
+<td><code class="inline-code">Completed</code></td>
+<td>Pytest test suite and zero-lint skill validation</td>
+</tr>
+</tbody></table></div>
+<p class="mb-4 text-[var(--text-secondary)]">---</p>
+<h2 id="architectural-decision-records-living-adrs" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Architectural Decision Records (Living ADRs)</h2>
+<p class="mb-4 text-[var(--text-secondary)]">Currently recorded architectural decisions in <code class="inline-code">.gemini/knowledge/ADRs/</code>:</p>
+<ul class="list-disc pl-5 my-3 space-y-1">
+<li><strong><a href="ADR-001-flat_file_memory_store.html" class="nav-link-item">ADR-001: Flat-File JSONL Storage for Session Memory Distillation</a></strong> (<code class="inline-code">Accepted</code>)</li>
+</ul>
+                </article>
+            </div>
+
+            <div id="markdown-view" class="hidden">
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
+                        <span class="text-sm font-bold">Raw Markdown Source</span>
+                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
+                    </div>
+                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Project Strategic Roadmap
+
+&gt; [!NOTE]
+&gt; Living roadmap compiled continuously by `continuous-alignment` engine.
+
+&lt;svg class=&quot;w-full max-w-2xl my-6 rounded-xl border border-slate-700/60 bg-slate-900/90 shadow-2xl p-4&quot; viewBox=&quot;0 0 760 385&quot; fill=&quot;none&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+  &lt;defs&gt;
+    &lt;linearGradient id=&quot;lineGrad&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;&gt;
+      &lt;stop offset=&quot;0%&quot; stop-color=&quot;#38bdf8&quot;/&gt;
+      &lt;stop offset=&quot;100%&quot; stop-color=&quot;#818cf8&quot;/&gt;
+    &lt;/linearGradient&gt;
+  &lt;/defs&gt;
+  &lt;line x1=&quot;80&quot; y1=&quot;40&quot; x2=&quot;80&quot; y2=&quot;345&quot; stroke=&quot;url(#lineGrad)&quot; stroke-width=&quot;4&quot; stroke-linecap=&quot;round&quot; stroke-dasharray=&quot;6 6&quot;/&gt;
+  &lt;g transform=&quot;translate(0, 50)&quot;&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;10&quot; fill=&quot;#0f172a&quot; stroke=&quot;#10b981&quot; stroke-width=&quot;3&quot;/&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;4&quot; fill=&quot;#10b981&quot;/&gt;
+    &lt;rect x=&quot;110&quot; y=&quot;-20&quot; width=&quot;60&quot; height=&quot;20&quot; rx=&quot;4&quot; fill=&quot;#064e3b&quot;/&gt;
+    &lt;text x=&quot;140&quot; y=&quot;-6&quot; fill=&quot;#6ee7b7&quot; font-size=&quot;10&quot; font-family=&quot;monospace&quot; font-weight=&quot;bold&quot; text-anchor=&quot;middle&quot;&gt;DONE&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;-5&quot; fill=&quot;#f8fafc&quot; font-size=&quot;14&quot; font-family=&quot;sans-serif&quot; font-weight=&quot;600&quot;&gt;M1: 4-Tier Memory &amp; Hook Protocol Spec&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;14&quot; fill=&quot;#94a3b8&quot; font-size=&quot;11&quot; font-family=&quot;sans-serif&quot;&gt;Schemas and contracts for transcript distillation and budgeting&lt;/text&gt;
+  &lt;/g&gt;
+  &lt;g transform=&quot;translate(0, 110)&quot;&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;10&quot; fill=&quot;#0f172a&quot; stroke=&quot;#10b981&quot; stroke-width=&quot;3&quot;/&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;4&quot; fill=&quot;#10b981&quot;/&gt;
+    &lt;rect x=&quot;110&quot; y=&quot;-20&quot; width=&quot;60&quot; height=&quot;20&quot; rx=&quot;4&quot; fill=&quot;#064e3b&quot;/&gt;
+    &lt;text x=&quot;140&quot; y=&quot;-6&quot; fill=&quot;#6ee7b7&quot; font-size=&quot;10&quot; font-family=&quot;monospace&quot; font-weight=&quot;bold&quot; text-anchor=&quot;middle&quot;&gt;DONE&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;-5&quot; fill=&quot;#f8fafc&quot; font-size=&quot;14&quot; font-family=&quot;sans-serif&quot; font-weight=&quot;600&quot;&gt;M2: Stop Hook &amp; Distillation Engine&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;14&quot; fill=&quot;#94a3b8&quot; font-size=&quot;11&quot; font-family=&quot;sans-serif&quot;&gt;Sub-second transcript parser and deduplicating memory writer&lt;/text&gt;
+  &lt;/g&gt;
+  &lt;g transform=&quot;translate(0, 170)&quot;&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;10&quot; fill=&quot;#0f172a&quot; stroke=&quot;#10b981&quot; stroke-width=&quot;3&quot;/&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;4&quot; fill=&quot;#10b981&quot;/&gt;
+    &lt;rect x=&quot;110&quot; y=&quot;-20&quot; width=&quot;60&quot; height=&quot;20&quot; rx=&quot;4&quot; fill=&quot;#064e3b&quot;/&gt;
+    &lt;text x=&quot;140&quot; y=&quot;-6&quot; fill=&quot;#6ee7b7&quot; font-size=&quot;10&quot; font-family=&quot;monospace&quot; font-weight=&quot;bold&quot; text-anchor=&quot;middle&quot;&gt;DONE&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;-5&quot; fill=&quot;#f8fafc&quot; font-size=&quot;14&quot; font-family=&quot;sans-serif&quot; font-weight=&quot;600&quot;&gt;M3: AGENTS.md 200-Line Budget Enforcer&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;14&quot; fill=&quot;#94a3b8&quot; font-size=&quot;11&quot; font-family=&quot;sans-serif&quot;&gt;Semantic rule merge, conflict invalidation, and path-rule spillover&lt;/text&gt;
+  &lt;/g&gt;
+  &lt;g transform=&quot;translate(0, 230)&quot;&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;10&quot; fill=&quot;#0f172a&quot; stroke=&quot;#10b981&quot; stroke-width=&quot;3&quot;/&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;4&quot; fill=&quot;#10b981&quot;/&gt;
+    &lt;rect x=&quot;110&quot; y=&quot;-20&quot; width=&quot;60&quot; height=&quot;20&quot; rx=&quot;4&quot; fill=&quot;#064e3b&quot;/&gt;
+    &lt;text x=&quot;140&quot; y=&quot;-6&quot; fill=&quot;#6ee7b7&quot; font-size=&quot;10&quot; font-family=&quot;monospace&quot; font-weight=&quot;bold&quot; text-anchor=&quot;middle&quot;&gt;DONE&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;-5&quot; fill=&quot;#f8fafc&quot; font-size=&quot;14&quot; font-family=&quot;sans-serif&quot; font-weight=&quot;600&quot;&gt;M4: Living ADR &amp; Roadmap Compiler&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;14&quot; fill=&quot;#94a3b8&quot; font-size=&quot;11&quot; font-family=&quot;sans-serif&quot;&gt;Automated MADR tracking and SVG visual timeline compilation&lt;/text&gt;
+  &lt;/g&gt;
+  &lt;g transform=&quot;translate(0, 290)&quot;&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;10&quot; fill=&quot;#0f172a&quot; stroke=&quot;#10b981&quot; stroke-width=&quot;3&quot;/&gt;
+    &lt;circle cx=&quot;80&quot; cy=&quot;0&quot; r=&quot;4&quot; fill=&quot;#10b981&quot;/&gt;
+    &lt;rect x=&quot;110&quot; y=&quot;-20&quot; width=&quot;60&quot; height=&quot;20&quot; rx=&quot;4&quot; fill=&quot;#064e3b&quot;/&gt;
+    &lt;text x=&quot;140&quot; y=&quot;-6&quot; fill=&quot;#6ee7b7&quot; font-size=&quot;10&quot; font-family=&quot;monospace&quot; font-weight=&quot;bold&quot; text-anchor=&quot;middle&quot;&gt;DONE&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;-5&quot; fill=&quot;#f8fafc&quot; font-size=&quot;14&quot; font-family=&quot;sans-serif&quot; font-weight=&quot;600&quot;&gt;M5: Full Verification &amp; Skill Integration&lt;/text&gt;
+    &lt;text x=&quot;180&quot; y=&quot;14&quot; fill=&quot;#94a3b8&quot; font-size=&quot;11&quot; font-family=&quot;sans-serif&quot;&gt;Pytest harness, validate_skills.py passing, and live hook registration&lt;/text&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;
+
+---
+
+## Active Milestone Breakdown
+
+### 1. Milestone Tracking
+| Milestone | Status | Description |
+| :--- | :--- | :--- |
+| **M1: Spec &amp; Protocol** | `Completed` | Memory schema and Antigravity hook contracts |
+| **M2: Distillation Engine** | `Completed` | Zero-dependency transcript parser (&lt; 150ms) |
+| **M3: Rule Sync &amp; Budgeting** | `Completed` | 200-line budget limit and path-scoped rules |
+| **M4: Living ADR Compiler** | `Completed` | MADR template generation and SVG branching timeline |
+| **M5: Verification &amp; Deploy** | `Completed` | Pytest test suite and zero-lint skill validation |
+
+---
+
+## Architectural Decision Records (Living ADRs)
+Currently recorded architectural decisions in `.gemini/knowledge/ADRs/`:
+
+- **[ADR-001: Flat-File JSONL Storage for Session Memory Distillation](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/ADRs/ADR-001-flat_file_memory_store.md)** (`Accepted`)
+</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="toc-bar">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
+            <nav class="mt-3 space-y-1">
+                <a href="#active-milestone-breakdown" class="sidebar-link text-xs">Active Milestone Breakdown</a>
+<a href="#1-milestone-tracking" class="sidebar-link text-xs ml-2">1. Milestone Tracking</a>
+<a href="#architectural-decision-records-living-adrs" class="sidebar-link text-xs">Architectural Decision Records (Living ADRs)</a>
+            </nav>
+        </aside>
+
+    </div>
+
+    <script>
+        function showView(view) {
+            const ui = document.getElementById('ui-view');
+            const md = document.getElementById('markdown-view');
+            const btnUi = document.getElementById('btn-ui-view');
+            const btnMd = document.getElementById('btn-md-view');
+            
+            if (view === 'ui') {
+                ui.classList.remove('hidden');
+                md.classList.add('hidden');
+                btnUi.classList.add('tab-active');
+                btnMd.classList.remove('tab-active');
+            } else {
+                ui.classList.add('hidden');
+                md.classList.remove('hidden');
+                btnUi.classList.remove('tab-active');
+                btnMd.classList.add('tab-active');
+            }
+        }
+
+        function copyCode(btn) {
+            const pre = btn.closest('.code-container').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+
+        function copyRawMarkdown(btn) {
+            const code = document.querySelector('#markdown-view code');
+            navigator.clipboard.writeText(code.innerText).then(() => {
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy", 1500);
+            });
+        }
+    </script>
+</body>
+</html>

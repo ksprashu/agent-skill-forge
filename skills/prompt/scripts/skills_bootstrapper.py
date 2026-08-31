@@ -29,7 +29,9 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 GITHUB_DIR = os.path.expanduser('~/code/github')
-REFERENCES_CATALOG = os.path.expanduser('~/code/github/skills-prompt-writer/skills/prompt-writer/references/PREFERRED_SKILLS.md')
+_LOCAL_CATALOG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'references', 'PREFERRED_SKILLS.md'))
+_FALLBACK_CATALOG = os.path.expanduser('~/code/github/agent-skill-forge/skills/prompt/references/PREFERRED_SKILLS.md')
+REFERENCES_CATALOG = _LOCAL_CATALOG if os.path.exists(_LOCAL_CATALOG) else _FALLBACK_CATALOG
 
 
 def discover_canonical_skills() -> Dict[str, str]:
