@@ -1,468 +1,359 @@
 <!DOCTYPE html>
-<html lang="en" class="technical">
+<html lang="en" class="dark h-full bg-[#121212]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Roadmap</title>
+    <title>Project Roadmap & Dynamic Feature Ledger • Google India Summit 2026</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
-        
-        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
-        :root {
-            --bg-canvas: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-surface-alt: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --color-primary: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-glow: rgba(37, 99, 235, 0.08);
-            --border-color: #e2e8f0;
-            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --rounding: 8px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --header-bg: #ffffff;
-        }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-        .main-container {
-            display: grid;
-            grid-template-columns: 240px minmax(0, 1fr) 200px;
-            gap: 28px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 24px;
-        }
-        @media(max-width: 1100px) {
-            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
-            .toc-bar { display: none; }
-        }
-        @media(max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; padding: 16px; }
-            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
-        }
-        .sidebar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 20px;
-        }
-        .toc-bar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
-        }
-        .prose-content {
-            min-width: 0;
-            line-height: 1.7;
-            font-size: 15px;
-        }
-        .glass-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            box-shadow: var(--shadow-sm);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-    
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
+        html {
+            font-size: 16px;
         }
         
-        .header-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-        
-        .tab-btn {
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-surface-alt);
-        }
-        .tab-btn.tab-active {
-            background: var(--color-accent-glow);
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .external-link, .nav-link-item {
-            color: var(--color-accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            font-weight: 500;
-        }
-        
-        .rich-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            border-radius: var(--rounding);
-            border: 1px solid var(--border-color);
-        }
-        .rich-table th {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .rich-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        .rich-table th:first-child, .rich-table td:first-child {
-            white-space: nowrap !important;
-        }
-        
-        .code-container {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            overflow: hidden;
-            color: #f8fafc;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 14px;
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .copy-btn {
+        .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.7rem;
         }
-        pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
         }
-        code {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-        .inline-code {
-            background-color: var(--bg-surface-alt);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
         
-        .sidebar-link {
-            display: block;
-            padding: 6px 10px;
-            border-radius: var(--rounding);
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 2px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link:hover {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background-color: var(--color-accent-glow);
-            color: var(--color-accent);
-            font-weight: 600;
-            border-left: 3px solid var(--color-accent);
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
     </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
+            });
+        });
+    </script>
 </head>
-<body>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
 
-    <header class="header-bar">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-[var(--text-primary)]">Master Roadmap</span>
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-white font-bold bg-white/10">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
         </div>
-        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
-            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
-            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
         </div>
     </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
 
-    <div class="main-container">
+        <div class="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">Project Roadmap & Dynamic Feature Ledger</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                
+    <div class="flex flex-col items-center justify-center bg-[#0d101b]/35 border border-white/5 rounded-3xl p-6.5 my-6 shadow-2xl backdrop-blur-md w-full overflow-hidden">
+        <div class="text-xs font-console font-black tracking-widest text-electric-teal uppercase mb-6 flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse"></span>
+            <span>Interactive Multi-Branch Project Roadmap</span>
+        </div>
+        <div class="w-full overflow-x-auto custom-scrollbar pb-4 flex justify-center">
+            <svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0">
+                <style>
+                    .glow-line {{
+                        filter: drop-shadow(0px 0px 4px rgba(11, 230, 179, 0.4));
+                    }}
+                    .glow-line-indigo {{
+                        filter: drop-shadow(0px 0px 4px rgba(99, 102, 241, 0.4));
+                    }}
+                    .pulse-circle {{
+                        animation: pulse 2s infinite;
+                    }}
+                    @keyframes pulse {{
+                        0% {{ r: 6; opacity: 1; }}
+                        50% {{ r: 12; opacity: 0.4; }}
+                        100% {{ r: 6; opacity: 0; }}
+                    }}
+                    .dash-pulse {{
+                        stroke-dasharray: 8, 4;
+                        animation: dash 30s linear infinite;
+                    }}
+                    @keyframes dash {{
+                        to {{ stroke-dashoffset: -1000; }}
+                    }}
+                    .node-label {{
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 10px;
+                        font-weight: 800;
+                        fill: #cbd5e1;
+                    }}
+                    .node-sublabel {{
+                        font-family: 'Fira Code', monospace;
+                        font-size: 8px;
+                        font-weight: 600;
+                        fill: #94a3b8;
+                    }}
+                </style>
+                
+                <!-- Definition of Gradients -->
+                <defs>
+                    <linearGradient id="trunk-grad" x1="0" y1="240" x2="640" y2="240" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#10b981" />
+                        <stop offset="100%" stop-color="#0be6b3" />
+                    </linearGradient>
+                    <linearGradient id="branch-doc-grad" x1="460" y1="240" x2="520" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#0be6b3" />
+                        <stop offset="100%" stop-color="#6366f1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Connection Lines (Trunk and Branches) -->
+                <!-- Main Core Trunk (Scene 1 -> 6) -->
+                <path d="M 60 240 L 460 240" stroke="url(#trunk-grad)" stroke-width="4" stroke-linecap="round" class="glow-line" />
+                
+                <!-- Branch: Docs Sync (In Progress) -->
+                <path d="M 460 240 Q 490 140 520 100" stroke="url(#branch-doc-grad)" stroke-width="3" stroke-linecap="round" class="glow-line-indigo dash-pulse" />
+                
+                <!-- Branch: Model Armor Rules (Pending) -->
+                <path d="M 300 240 Q 300 160 300 80" stroke="#1e293b" stroke-width="2" stroke-dasharray="4, 4" stroke-linecap="round" />
+                
+                <!-- Branch: Spatial Scatter Plot (Pending) -->
+                <path d="M 220 240 Q 220 320 220 370" stroke="#1e293b" stroke-width="2" stroke-dasharray="4, 4" stroke-linecap="round" />
+
+                <!-- Branch: DB Control Panel (Pending) -->
+                <path d="M 460 240 Q 490 320 520 360" stroke="#1e293b" stroke-width="2" stroke-dasharray="4, 4" stroke-linecap="round" />
+
+                <!-- Animated energy pulses along active paths -->
+                <circle cx="480" cy="170" r="4" fill="#6366f1">
+                    <animateMotion dur="4s" repeatCount="indefinite" path="M 460 240 Q 490 140 520 100" />
+                </circle>
+
+                <!-- Core Nodes (1 to 6) -->
+                <!-- Scene 1 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 1: Chatbot', 'Ungrounded Gemini agent', '100% Completed', 'Core', 'scenarios/scene_1_chatbot/agent.py')">
+                    <circle cx="60" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="60" cy="240" r="5" fill="#10b981" />
+                    <text x="60" y="265" text-anchor="middle" class="node-label">SCENE 1</text>
+                    <text x="60" y="278" text-anchor="middle" class="node-sublabel">Chatbot</text>
+                </g>
+
+                <!-- Scene 2 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 2: Grounded Commute', 'ADK agent with Calendar MCP and Maps API grounding', '100% Completed', 'Core', 'scenarios/scene_2_grounding/agent.py')">
+                    <circle cx="140" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="140" cy="240" r="5" fill="#10b981" />
+                    <text x="140" y="265" text-anchor="middle" class="node-label">SCENE 2</text>
+                    <text x="140" y="278" text-anchor="middle" class="node-sublabel">Commute</text>
+                </g>
+
+                <!-- Scene 3 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 3: Wardrobe similarity match', 'AlloyDB pgvector and GCS styling Lookbooks matching', '100% Completed', 'Core', 'scenarios/scene_3_wardrobe/agent.py')">
+                    <circle cx="220" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="220" cy="240" r="5" fill="#10b981" />
+                    <text x="220" y="265" text-anchor="middle" class="node-label">SCENE 3</text>
+                    <text x="220" y="278" text-anchor="middle" class="node-sublabel">Wardrobe</text>
+                </g>
+
+                <!-- Scene 4 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 4: Florist Order Guardrails', 'Model Armor prompt injection blocking', '100% Completed', 'Core', 'scenarios/scene_4_florist/agent.py')">
+                    <circle cx="300" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="300" cy="240" r="5" fill="#10b981" />
+                    <text x="300" y="265" text-anchor="middle" class="node-label">SCENE 4</text>
+                    <text x="300" y="278" text-anchor="middle" class="node-sublabel">Florist</text>
+                </g>
+
+                <!-- Scene 5 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 5: Pet Sitter Privacy', 'Model Armor PII logging redaction scanner', '100% Completed', 'Core', 'scenarios/scene_5_petsitter/agent.py')">
+                    <circle cx="380" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="380" cy="240" r="5" fill="#10b981" />
+                    <text x="380" y="265" text-anchor="middle" class="node-label">SCENE 5</text>
+                    <text x="380" y="278" text-anchor="middle" class="node-sublabel">Pet Sitter</text>
+                </g>
+
+                <!-- Scene 6 -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Scene 6: Showstopper Negotiator', 'ADK multi-agent billing negotiation and Diner Black VIP dining', '100% Completed', 'Core', 'scenarios/scene_6_showstopper/agent.py')">
+                    <circle cx="460" cy="240" r="8" fill="#0d101b" stroke="#10b981" stroke-width="3" />
+                    <circle cx="460" cy="240" r="5" fill="#10b981" />
+                    <text x="460" y="265" text-anchor="middle" class="node-label">SCENE 6</text>
+                    <text x="460" y="278" text-anchor="middle" class="node-sublabel">Showstopper</text>
+                </g>
+
+                <!-- Branch Nodes -->
+                <!-- Docs Sync Skill (In Progress) -->
+                <g class="cursor-pointer" onclick="showNodeDetails('Active Skill: Docs Sync & Auto-Archiver', 'Automated document sync on agent Stop lifecycle hook with HTML compilation', '90% Completed', 'In_Progress', 'skills/docs-sync/SKILL.md')">
+                    <circle cx="520" cy="100" r="10" fill="#0d101b" stroke="#6366f1" stroke-width="3" />
+                    <circle cx="520" cy="100" r="6" fill="#6366f1" />
+                    <circle cx="520" cy="100" r="6" fill="transparent" stroke="#6366f1" stroke-width="1.5" class="pulse-circle" />
+                    <text x="520" y="80" text-anchor="middle" class="node-label" style="fill: #818cf8;">ACTIVE BRANCH</text>
+                    <text x="520" y="91" text-anchor="middle" class="node-sublabel" style="fill: #a5b4fc;">Docs Sync Skill</text>
+                </g>
+
+                <!-- Model Armor Rules Tuning (Pending) -->
+                <g class="cursor-pointer opacity-40 hover:opacity-100 transition" onclick="showNodeDetails('Post-MVP Task 2: Model Armor Rule Tuning Panel', 'Enable/disable prompt injection blockers live on stage to compare gags', '0% Pending', 'Extension', 'Post-MVP Idea')">
+                    <circle cx="300" cy="80" r="6" fill="#0d101b" stroke="#475569" stroke-width="2" />
+                    <circle cx="300" cy="80" r="3" fill="#475569" />
+                    <text x="300" y="65" text-anchor="middle" class="node-label">RULE TUNER</text>
+                    <text x="300" y="105" text-anchor="middle" class="node-sublabel">Pending Branch</text>
+                </g>
+
+                <!-- AlloyDB Scatter Plot (Pending) -->
+                <g class="cursor-pointer opacity-40 hover:opacity-100 transition" onclick="showNodeDetails('Post-MVP Task 3: AlloyDB pgvector Scatter-Plot', 'Interactive SVG spatial clustering represent AlloyDB similarity lookup', '0% Pending', 'Extension', 'Post-MVP Idea')">
+                    <circle cx="220" cy="370" r="6" fill="#0d101b" stroke="#475569" stroke-width="2" />
+                    <circle cx="220" cy="370" r="3" fill="#475569" />
+                    <text x="220" y="395" text-anchor="middle" class="node-label">VECTOR SCATTER</text>
+                    <text x="220" y="350" text-anchor="middle" class="node-sublabel">Pending Branch</text>
+                </g>
+
+                <!-- DB Control Panel (Pending) -->
+                <g class="cursor-pointer opacity-40 hover:opacity-100 transition" onclick="showNodeDetails('Post-MVP Task 1: Live DB Config Control Panel', 'Toggle DB_MODE and test GCP client credentials live on stage with status check', '0% Pending', 'Extension', 'Post-MVP Idea')">
+                    <circle cx="520" cy="360" r="6" fill="#0d101b" stroke="#475569" stroke-width="2" />
+                    <circle cx="520" cy="360" r="3" fill="#475569" />
+                    <text x="520" y="385" text-anchor="middle" class="node-label">DB CONTROL</text>
+                    <text x="520" y="340" text-anchor="middle" class="node-sublabel">Pending Branch</text>
+                </g>
+            </svg>
+        </div>
         
-        <aside class="sidebar">
-            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
+        <!-- Live Node Details Panel inside roadmap.html -->
+        <div id="roadmap-details-card" class="mt-6 border-t border-white/5 pt-5 w-full max-w-xl flex flex-col md:flex-row gap-4 justify-between bg-white/[0.005] border border-white/5 rounded-2xl p-4">
+            <div>
+                <span id="roadmap-node-type" class="px-2 py-0.5 rounded-full text-[10px] font-console font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/15">ACTIVE CORE TRUNK</span>
+                <h4 id="roadmap-node-title" class="text-sm font-headings font-extrabold text-white mt-2">Scene 6: Showstopper Negotiator</h4>
+                <p id="roadmap-node-desc" class="text-xs text-zinc-400 leading-relaxed mt-1">ADK multi-agent billing negotiation and Diner Black VIP dining</p>
             </div>
-            <nav>
-                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
-<a href="VISION.html" class="sidebar-link">Vision</a>
-<a href="architecture.html" class="sidebar-link">Architecture</a>
-<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
-<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
-<a href="master_roadmap.html" class="sidebar-link active">Master Roadmap</a>
-<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
-<a href="user_guide.html" class="sidebar-link">User Guide</a>
-<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
-            </nav>
-        </aside>
-
-        <main class="prose-content">
-            <div id="ui-view">
-                <article class="glass-panel">
-                    <h1 id="project-roadmap-dynamic-feature-ledger" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Project Roadmap & Dynamic Feature Ledger</h1>
-<p class="mb-4 text-[var(--text-secondary)]">Welcome to the Master Project Roadmap and Chronological Feature Ledger. This portal consolidates all completed core keynote milestones alongside the dynamic custom extension branches developed by our agentic fleet.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="1-project-health-status" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">1. Project Health Status</h2>
-<p class="mb-4 text-[var(--text-secondary)]">::: grid-3</p>
-<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Core Keynote Trunk</h4>- Status: **100% Operational**
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>Scenes: <strong>Scene 1 to Scene 6</strong></li>
-<li>SLA Compliance: <strong>Sub-150ms</strong></div></li>
-</ul>
-<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Active Feature Branches</h4>- Active: **Docs Sync & Archiving**
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>Status: <strong>90% Complete</strong></li>
-<li>Hook Status: <strong>Stop Event Active</strong></div></li>
-</ul>
-<div class="bg-[var(--bg-surface-alt)] border border-[var(--border-color)] p-5 rounded-lg my-4"><h4 class="text-base font-bold mb-2 text-[var(--text-primary)]">### Extension Backlog</h4>- Proposed Ideas: **3 Features**
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>High-Impact: <strong>Spatial plot, Rule Tuner</strong></li>
-<li>Status: <strong>Ready for Planning</strong></div></li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">:::</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="2-chronological-milestones-ledger" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">2. Chronological Milestones Ledger</h2>
-<div class="overflow-x-auto my-4"><table class="rich-table">
-<thead><tr>
-<th>Milestone Area</th>
-<th>Class / Type</th>
-<th>Completion Status</th>
-<th>Deliverables & Artifacts</th>
-</tr></thead><tbody>
-<tr>
-<td><strong>Scene 1: Chatbot</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>Raw ungrounded Gemini gaffe sandbox</td>
-</tr>
-<tr>
-<td><strong>Scene 2: Commute</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>Calendar MCP & Google Maps grounding tools</td>
-</tr>
-<tr>
-<td><strong>Scene 3: Wardrobe</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>AlloyDB pgvector styling similarity</td>
-</tr>
-<tr>
-<td><strong>Scene 4: Florist</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>Model Armor prompt injection input guardrails</td>
-</tr>
-<tr>
-<td><strong>Scene 5: Pet Sitter</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>Model Armor PII redaction and secure logs</td>
-</tr>
-<tr>
-<td><strong>Scene 6: Showstopper</strong></td>
-<td>Core Keynote Trunk</td>
-<td>[badge:emerald:100% Completed]</td>
-<td>Diner Black bilateral multi-agent seating negotiation</td>
-</tr>
-<tr>
-<td><strong>Docs Sync Skill</strong></td>
-<td>Active Feature Branch</td>
-<td>[badge:indigo:90% In Progress]</td>
-<td>Automatic Stop event hook, auto-archiver, HTML timelines</td>
-</tr>
-<tr>
-<td><strong>Rule-Tuning Panel</strong></td>
-<td>Extension Backlog</td>
-<td>[badge:slate:0% Pending]</td>
-<td>Model Armor toggles for live stage demonstrations</td>
-</tr>
-<tr>
-<td><strong>Spatial Scatter Plot</strong></td>
-<td>Extension Backlog</td>
-<td>[badge:slate:0% Pending]</td>
-<td>AlloyDB cluster visualizations in SVG</td>
-</tr>
-<tr>
-<td><strong>DB Mode Controller</strong></td>
-<td>Extension Backlog</td>
-<td>[badge:slate:0% Pending]</td>
-<td>Settings pane to hot-swap DB_MODE</td>
-</tr>
-</tbody></table></div>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="3-historic-plan-archives" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">3. Historic Plan Archives</h2>
-<p class="mb-4 text-[var(--text-secondary)]">All historic implementation plans and active checklists are preserved inside our documentation vault:</p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="archive/implementation_plan_automated_documentation_sync.html" target="_blank" rel="noopener noreferrer" class="external-link">Docs-Sync Skill Plan</a> & <a href="archive/task_automated_documentation_sync.html" target="_blank" rel="noopener noreferrer" class="external-link">Docs-Sync Active Checklist</a></li>
-</ul>
-                </article>
+            <div class="flex flex-col justify-between items-end shrink-0 text-right">
+                <span id="roadmap-node-status" class="text-xs font-console font-black text-electric-teal">100% COMPLETED</span>
+                <p id="roadmap-node-file" class="text-[10px] text-zinc-500 mt-2 font-console">scenarios/scene_6_showstopper/agent.py</p>
             </div>
-
-            <div id="markdown-view" class="hidden">
-                <div class="glass-panel">
-                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
-                        <span class="text-sm font-bold">Raw Markdown Source</span>
-                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
-                    </div>
-                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Project Roadmap &amp; Dynamic Feature Ledger
-
-Welcome to the Master Project Roadmap and Chronological Feature Ledger. This portal consolidates all completed core keynote milestones alongside the dynamic custom extension branches developed by our agentic fleet.
-
----
-
-## 1. Project Health Status
-
-::: grid-3
-::: card
-### Core Keynote Trunk
-- Status: **100% Operational**
-- Scenes: **Scene 1 to Scene 6**
-- SLA Compliance: **Sub-150ms**
-:::
-::: card
-### Active Feature Branches
-- Active: **Docs Sync &amp; Archiving**
-- Status: **90% Complete**
-- Hook Status: **Stop Event Active**
-:::
-::: card
-### Extension Backlog
-- Proposed Ideas: **3 Features**
-- High-Impact: **Spatial plot, Rule Tuner**
-- Status: **Ready for Planning**
-:::
-:::
-
----
-
-## 2. Chronological Milestones Ledger
-
-| Milestone Area | Class / Type | Completion Status | Deliverables &amp; Artifacts |
-| :--- | :--- | :--- | :--- |
-| **Scene 1: Chatbot** | Core Keynote Trunk | [badge:emerald:100% Completed] | Raw ungrounded Gemini gaffe sandbox |
-| **Scene 2: Commute** | Core Keynote Trunk | [badge:emerald:100% Completed] | Calendar MCP &amp; Google Maps grounding tools |
-| **Scene 3: Wardrobe** | Core Keynote Trunk | [badge:emerald:100% Completed] | AlloyDB pgvector styling similarity |
-| **Scene 4: Florist** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor prompt injection input guardrails |
-| **Scene 5: Pet Sitter** | Core Keynote Trunk | [badge:emerald:100% Completed] | Model Armor PII redaction and secure logs |
-| **Scene 6: Showstopper**| Core Keynote Trunk | [badge:emerald:100% Completed] | Diner Black bilateral multi-agent seating negotiation |
-| **Docs Sync Skill** | Active Feature Branch | [badge:indigo:90% In Progress] | Automatic Stop event hook, auto-archiver, HTML timelines |
-| **Rule-Tuning Panel** | Extension Backlog | [badge:slate:0% Pending] | Model Armor toggles for live stage demonstrations |
-| **Spatial Scatter Plot**| Extension Backlog | [badge:slate:0% Pending] | AlloyDB cluster visualizations in SVG |
-| **DB Mode Controller**| Extension Backlog | [badge:slate:0% Pending] | Settings pane to hot-swap DB_MODE |
-
----
-
-## 3. Historic Plan Archives
-
-All historic implementation plans and active checklists are preserved inside our documentation vault:
-* [Docs-Sync Skill Plan](archive/implementation_plan_automated_documentation_sync.html) &amp; [Docs-Sync Active Checklist](archive/task_automated_documentation_sync.html)
-</code></pre>
-                </div>
-            </div>
-        </main>
-
-        <aside class="toc-bar">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
-            <nav class="mt-3 space-y-1">
-                <a href="#1-project-health-status" class="sidebar-link text-xs">1. Project Health Status</a>
-<a href="#2-chronological-milestones-ledger" class="sidebar-link text-xs">2. Chronological Milestones Ledger</a>
-<a href="#3-historic-plan-archives" class="sidebar-link text-xs">3. Historic Plan Archives</a>
-            </nav>
-        </aside>
-
+        </div>
     </div>
 
     <script>
-        function showView(view) {
-            const ui = document.getElementById('ui-view');
-            const md = document.getElementById('markdown-view');
-            const btnUi = document.getElementById('btn-ui-view');
-            const btnMd = document.getElementById('btn-md-view');
+        function showNodeDetails(title, desc, status, type, file) {{
+            document.getElementById('roadmap-node-title').innerText = title;
+            document.getElementById('roadmap-node-desc').innerText = desc;
+            document.getElementById('roadmap-node-status').innerText = status;
+            document.getElementById('roadmap-node-file').innerText = file;
             
-            if (view === 'ui') {
-                ui.classList.remove('hidden');
-                md.classList.add('hidden');
-                btnUi.classList.add('tab-active');
-                btnMd.classList.remove('tab-active');
-            } else {
-                ui.classList.add('hidden');
-                md.classList.remove('hidden');
-                btnUi.classList.remove('tab-active');
-                btnMd.classList.add('tab-active');
-            }
-        }
+            const typeSpan = document.getElementById('roadmap-node-type');
+            if (type === 'Core') {{
+                typeSpan.className = "px-2 py-0.5 rounded-full text-[10px] font-console font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/15";
+                typeSpan.innerText = "ACTIVE CORE TRUNK";
+                document.getElementById('roadmap-node-status').className = "text-xs font-console font-black text-emerald-400";
+            }} else if (type === 'In_Progress') {{
+                typeSpan.className = "px-2 py-0.5 rounded-full text-[10px] font-console font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 animate-pulse";
+                typeSpan.innerText = "ACTIVE FEATURE BRANCH";
+                document.getElementById('roadmap-node-status').className = "text-xs font-console font-black text-indigo-400 animate-pulse";
+            }} else {{
+                typeSpan.className = "px-2 py-0.5 rounded-full text-[10px] font-console font-bold uppercase tracking-wider bg-slate-500/10 text-slate-400 border border-slate-500/15";
+                typeSpan.innerText = "PENDING EXTENSION BRANCH";
+                document.getElementById('roadmap-node-status').className = "text-xs font-console font-black text-slate-500";
+            }}
+        }}
+    </script>
+    
+    <div class="space-y-6">
+        {parsed_body}
+    </div>
+    
+            </div>
+        </div>
+        
+        <footer class="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
 
-        function copyCode(btn) {
-            const pre = btn.closest('.code-container').querySelector('code');
-            navigator.clipboard.writeText(pre.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
-        }
-
-        function copyRawMarkdown(btn) {
-            const code = document.querySelector('#markdown-view code');
-            navigator.clipboard.writeText(code.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
         }
     </script>
 </body>

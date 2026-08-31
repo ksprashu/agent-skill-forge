@@ -1,923 +1,671 @@
 <!DOCTYPE html>
-<html lang="en" class="technical">
+<html lang="en" class="dark h-full bg-[#121212]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Skill Forge User Guide</title>
+    <title>📖 Agent Skill Forge User Guide • Google India Summit 2026</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        
-        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
-        :root {
-            --bg-canvas: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-surface-alt: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --color-primary: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-glow: rgba(37, 99, 235, 0.08);
-            --border-color: #e2e8f0;
-            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --rounding: 8px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --header-bg: #ffffff;
-        }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-        .main-container {
-            display: grid;
-            grid-template-columns: 240px minmax(0, 1fr) 200px;
-            gap: 28px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 24px;
-        }
-        @media(max-width: 1100px) {
-            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
-            .toc-bar { display: none; }
-        }
-        @media(max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; padding: 16px; }
-            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
-        }
-        .sidebar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 20px;
-        }
-        .toc-bar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
-        }
-        .prose-content {
-            min-width: 0;
-            line-height: 1.7;
-            font-size: 15px;
-        }
-        .glass-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            box-shadow: var(--shadow-sm);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-    
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-        }
-        
-        .header-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .tab-btn {
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-surface-alt);
-        }
-        .tab-btn.tab-active {
-            background: var(--color-accent-glow);
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .external-link, .nav-link-item {
-            color: var(--color-accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            font-weight: 500;
-        }
-        
-        .rich-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            border-radius: var(--rounding);
-            border: 1px solid var(--border-color);
-        }
-        .rich-table th {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .rich-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        .rich-table th:first-child, .rich-table td:first-child {
-            white-space: nowrap !important;
-        }
-        
-        .code-container {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            overflow: hidden;
-            color: #f8fafc;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 14px;
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .copy-btn {
-            background: transparent;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.7rem;
-        }
-        pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
-        }
-        code {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-        .inline-code {
-            background-color: var(--bg-surface-alt);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .sidebar-link {
-            display: block;
-            padding: 6px 10px;
-            border-radius: var(--rounding);
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 2px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link:hover {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background-color: var(--color-accent-glow);
-            color: var(--color-accent);
-            font-weight: 600;
-            border-left: 3px solid var(--color-accent);
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header-bar">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-[var(--text-primary)]">Agent Skill Forge User Guide</span>
-        </div>
-        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
-            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
-            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        
-        <aside class="sidebar">
-            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
-            </div>
-            <nav>
-                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
-<a href="VISION.html" class="sidebar-link">Vision</a>
-<a href="architecture.html" class="sidebar-link">Architecture</a>
-<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
-<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
-<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
-<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
-<a href="user_guide.html" class="sidebar-link active">User Guide</a>
-<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
-            </nav>
-        </aside>
-
-        <main class="prose-content">
-            <div id="ui-view">
-                <article class="glass-panel">
-                    <h1 id="agent-skill-forge-user-guide" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">📖 Agent Skill Forge User Guide</h1>
-<p class="mb-4 text-[var(--text-secondary)]">A comprehensive, zero-slop operational framework for orchestrating <strong>Agent Skill Forge</strong> across <strong>Google Antigravity</strong>, <strong>Claude Code</strong>, <strong>Gemini CLI</strong>, and agentic AI coding assistants.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="1-architecture-global-universal-verbs-vs-project-scoped-jit" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🏛️ 1. Architecture: Global Universal Verbs vs. Project-Scoped JIT</h2>
-<p class="mb-4 text-[var(--text-secondary)]">To maximize agent efficiency and prevent context window exhaustion, Agent Skill Forge organizes skills into two distinct tiers:</p>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Global Universal Action Verbs (17 Core Skills)</strong>: Always available across all workspaces. These cover the meta-orchestration, core software development lifecycle (SDLC), content creation, and compliance.</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Curated Preferred Domain Skills (12 Specialized JIT Skills)</strong>: Bootstrapped <strong>Just-In-Time (JIT)</strong> directly into project workspaces (<code class="inline-code">.gemini/skills/</code> and <code class="inline-code">.agents/skills/</code>). They provide deep domain expertise (e.g., CSS architecture, security hardening, distributed tracing) without polluting global context memory.</p>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>TXT</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-txt">                                  ┌────────────────────────────────────────┐
-                                  │   GLOBAL UNIVERSAL ACTION VERBS (17)   │
-                                  │    Always in memory / All Workspaces   │
-                                  └───────────────────┬────────────────────┘
-                                                      │
-                       ┌──────────────────────────────┼──────────────────────────────┐
-                       │                              │                              │
-        ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐
-        │  1. Meta-Orchestration     │ │     2. Core SDLC Engine     │ │   3. Publishing &amp; Comms    │
-        │  • /prompt                 │ │  • /spec                   │ │  • /docs                   │
-        │  • /grill                  │ │  • /plan                   │ │  • /google-oss             │
-        │  • /align                  │ │  • /test                   │ │  • /codelab                │
-        │  • /catalog                │ │  • /unslop                 │ │  • /voice                  │
-        │  • /sync                   │ │  • /verify                 │ │  • /copy-write             │
-        │                            │ │  • /review                 │ │  • /image-gen              │
-        └────────────────────────────┘ └──────────────┬─────────────┘ └────────────────────────────┘
-                                                      │
-                                                      │ Injects on-demand
-                                                      ▼
-                                  ┌────────────────────────────────────────┐
-                                  │   CURATED PREFERRED DOMAIN SKILLS (12) │
-                                  │    Project-Scoped JIT (.gemini/skills) │
-                                  ├────────────────────────────────────────┤
-                                  │  • frontend-ui-engineering             │
-                                  │  • performance-optimization            │
-                                  │  • api-and-interface-design            │
-                                  │  • security-and-hardening              │
-                                  │  • deprecation-and-migration           │
-                                  │  • browser-testing-with-devtools       │
-                                  │  • observability-and-instrumentation   │
-                                  │  • ci-cd-and-automation                │
-                                  │  • debugging-and-error-recovery        │
-                                  │  • git-workflow-and-versioning         │
-                                  │  • context-engineering                 │
-                                  │  • benchmark-harness                   │
-                                  └────────────────────────────────────────┘
-</code></pre>
-            </div>
-            
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="2-the-17-global-universal-action-verbs" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 2. The 17 Global Universal Action Verbs</h2>
-<h3 id="tier-1-meta-orchestration-project-intelligence" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Tier 1: Meta-Orchestration & Project Intelligence</h3>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>  <strong><code class="inline-code">/prompt</code></strong> (<code class="inline-code">skills/prompt</code>): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (<code class="inline-code">task_graph.json</code>). Implements dynamic dual-mode switching (Lightweight vs Heavyweight).</li>
-<li>  <strong><code class="inline-code">/grill</code></strong> (<code class="inline-code">skills/grill</code>): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing for as many rounds as necessary until all ambiguities are resolved and the specification is 100% fleshed out.</li>
-<li>  <strong><code class="inline-code">/align</code></strong> (<code class="inline-code">skills/continuous-alignment</code>): Distills conversation session transcripts into a strict 200-line <code class="inline-code">AGENTS.md</code> budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.</li>
-<li>  <strong><code class="inline-code">/catalog</code></strong> (<code class="inline-code">skills/catalog</code>): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (<code class="inline-code">.gemini/knowledge/</code>) for durable codebase memory.</li>
-<li>  <strong><code class="inline-code">/sync</code></strong> (<code class="inline-code">skills/sync</code>): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.</li>
-</ul>
-<h3 id="tier-2-core-sdlc-execution-engine" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Tier 2: Core SDLC Execution Engine</h3>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>  <strong><code class="inline-code">/spec</code></strong> (<code class="inline-code">skills/spec</code>): Writes source-grounded specifications with official API doc citations, interface data contracts, and explicit non-goals before generating code.</li>
-<li>  <strong><code class="inline-code">/plan</code></strong> (<code class="inline-code">skills/plan</code>): Slices specifications into vertically testable task units with dependency DAG checkpoints.</li>
-<li>  <strong><code class="inline-code">/test</code></strong> (<code class="inline-code">skills/test</code>): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.</li>
-<li>  <strong><code class="inline-code">/unslop</code></strong> (<code class="inline-code">skills/unslop</code>): Universal anti-bloat engine. Strips AI boilerplate, defensive wrapper clutter, sterile filler words, and dead abstractions across code, prose, analyses, and UI.</li>
-<li>  <strong><code class="inline-code">/verify</code></strong> (<code class="inline-code">skills/verify</code>): Expectation-Grounded Alignment (EGA). Executes deterministic static check scripts alongside blinded multi-persona dynamic LLM judge rubrics.</li>
-<li>  <strong><code class="inline-code">/review</code></strong> (<code class="inline-code">skills/review</code>): Conducts 5-axis code reviews (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation diffs.</li>
-</ul>
-<h3 id="tier-3-comms-visuals-publishing-open-source" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Tier 3: Comms, Visuals, Publishing & Open Source</h3>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li>  <strong><code class="inline-code">/docs</code></strong> (<code class="inline-code">skills/docs</code>): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals (<code class="inline-code">technical</code>, <code class="inline-code">obsidian</code>, <code class="inline-code">proscript</code>, <code class="inline-code">dynamics</code>).</li>
-<li>  <strong><code class="inline-code">/google-oss</code></strong> (<code class="inline-code">skills/google-oss</code>): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.</li>
-<li>  <strong><code class="inline-code">/codelab</code></strong> (<code class="inline-code">skills/codelab</code>): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops.</li>
-<li>  <strong><code class="inline-code">/voice</code></strong> (<code class="inline-code">skills/voice</code>): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence.</li>
-<li>  <strong><code class="inline-code">/copy-write</code></strong> (<code class="inline-code">skills/copy-write</code>): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (<code class="inline-code">.local.md</code> > <code class="inline-code">~/.gemini/personas/</code> > <code class="inline-code">.template.md</code>).</li>
-<li>  <strong><code class="inline-code">/image-gen</code></strong> (<code class="inline-code">skills/image-gen</code>): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="3-the-universal-engineering-flow-order-of-execution" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🔄 3. The Universal Engineering Flow & Order of Execution</h2>
-<p class="mb-4 text-[var(--text-secondary)]">For any substantive engineering, refactoring, or feature development task, invoke skills in this strict sequence:</p>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>TXT</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-txt">[1. /prompt]  ────────► Decompose intent, select model tier &amp; generate DAG
-      │
-[2. /grill]   ────────► Clarify open questions 1-by-1 until 95% confident
-      │
-[3. /spec]    ────────► Ground in official docs, define data contracts &amp; non-goals
-      │
-[4. /plan]    ────────► Slice into vertical tasks with verification checkpoints
-      │
-[5. /sync]    ────────► Bootstrap required JIT domain skills into workspace
-      │
-┌─────▼────────────────────────────────────────────────────────┐
-│                   THE TDD EXECUTION LOOP                     │
-│                                                              │
-│  [6. /test]   ──► Write failing &quot;Prove-It&quot; test first        │
-│        │                                                     │
-│  [Implement]  ──► Write minimal implementation               │
-│        │                                                     │
-│  [7. /unslop] ──► Strip AI wrapper clutter &amp; sterile bloat   │
-└─────┬────────────────────────────────────────────────────────┘
-      │
-[8. /verify]  ────────► Run static verifier scripts &amp; blinded judge rubrics
-      │
-[9. /review]  ────────► 5-Axis audit (Correctness, Security, Perf, Arch, Style)
-      │
-[10. /docs]   ────────► Scaffold SDLC docs &amp; compile standalone HTML portal
-      │
-[11. /align]  ────────► Distill session learnings into AGENTS.md &amp; living ADRs
-</code></pre>
-            </div>
-            
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="4-step-by-step-flow-rationale-why-this-order-matters" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📋 4. Step-by-Step Flow Rationale: Why This Order Matters</h2>
-<div class="overflow-x-auto my-4"><table class="rich-table">
-<thead><tr>
-<th>Sequence</th>
-<th>Skill / Gate</th>
-<th>Why It Must Run at This Exact Stage</th>
-</tr></thead><tbody>
-<tr>
-<td><strong>Step 1</strong></td>
-<td><strong><code class="inline-code">/prompt</code></strong></td>
-<td><strong>Prevents wrong-direction execution.</strong> Formulates intent directives, establishes Manager-worker roles, and determines whether lightweight or heavyweight execution is required.</td>
-</tr>
-<tr>
-<td><strong>Step 2</strong></td>
-<td><strong><code class="inline-code">/grill</code></strong></td>
-<td><strong>Eliminates all implicit assumptions.</strong> Asks as many questions as necessary—iteratively and strictly <em>one question at a time</em> with attached hypotheses—until all architectural, data, UX, and security ambiguities are 100% resolved and the spec is completely fleshed out.</td>
-</tr>
-<tr>
-<td><strong>Step 3</strong></td>
-<td><strong><code class="inline-code">/spec</code></strong></td>
-<td><strong>Prevents hallucinated APIs.</strong> Grounds interfaces in official documentation citations and sets explicit Non-Goals to avoid scope creep.</td>
-</tr>
-<tr>
-<td><strong>Step 4</strong></td>
-<td><strong><code class="inline-code">/plan</code></strong></td>
-<td><strong>Enforces incremental verifiability.</strong> Slices work into small, vertically testable tasks so every component has an isolated pass/fail checkpoint.</td>
-</tr>
-<tr>
-<td><strong>Step 5</strong></td>
-<td><strong><code class="inline-code">/sync</code> (JIT)</strong></td>
-<td><strong>Loads domain rules on demand.</strong> Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory.</td>
-</tr>
-<tr>
-<td><strong>Step 6</strong></td>
-<td><strong><code class="inline-code">/test</code></strong></td>
-<td><strong>Guarantees correctness by construction.</strong> For bugs, writing the failing test first proves reproduction. For new features, it defines expected behavior upfront.</td>
-</tr>
-<tr>
-<td><strong>Step 7</strong></td>
-<td><strong><code class="inline-code">/unslop</code></strong></td>
-<td><strong>Strips AI tells before review.</strong> Inlines redundant single-use helpers, removes defensive wrapper bloat, and eliminates sterile comments while the code diff is fresh.</td>
-</tr>
-<tr>
-<td><strong>Step 8</strong></td>
-<td><strong><code class="inline-code">/verify</code></strong></td>
-<td><strong>Dual-layer deterministic proof.</strong> Runs static deterministic check scripts (<code class="inline-code">verify_okf.py</code>) combined with multi-persona blinded LLM judge rubrics.</td>
-</tr>
-<tr>
-<td><strong>Step 9</strong></td>
-<td><strong><code class="inline-code">/review</code></strong></td>
-<td><strong>Adversarial gate before commit.</strong> Evaluates diffs across 5 axes (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation.</td>
-</tr>
-<tr>
-<td><strong>Step 10</strong></td>
-<td><strong><code class="inline-code">/docs</code> & <code class="inline-code">/catalog</code></strong></td>
-<td><strong>Preserves codebase memory.</strong> Documents architecture in the Google Open Knowledge Format (<code class="inline-code">.gemini/knowledge/</code>) and compiles 4-theme standalone HTML portals.</td>
-</tr>
-<tr>
-<td><strong>Step 11</strong></td>
-<td><strong><code class="inline-code">/align</code></strong></td>
-<td><strong>Keeps agent memory hot & lean.</strong> Summarizes transcript learnings into the 200-line <code class="inline-code">AGENTS.md</code> budget, records living ADRs, and updates project roadmaps.</td>
-</tr>
-</tbody></table></div>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="5-specialized-sub-workflows" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🎨 5. Specialized Sub-Workflows</h2>
-<h3 id="a-the-content-prose-codelab-pipeline" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">A. The Content, Prose & Codelab Pipeline</h3>
-<p class="mb-4 text-[var(--text-secondary)]">Used when authoring documentation, tutorials, technical blogs, or developer keynotes:</p>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong><code class="inline-code">/voice</code></strong>: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong><code class="inline-code">/copy-write</code></strong> or <strong><code class="inline-code">/codelab</code></strong>: Generates drafts using the 3-tier Profile-Overlay system (<code class="inline-code">.local.md</code> > <code class="inline-code">~/.gemini/personas/</code> > <code class="inline-code">.template.md</code>).</p>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong><code class="inline-code">/image-gen</code></strong>: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.</p>
-<p class="mb-4 text-[var(--text-secondary)]">4. <strong><code class="inline-code">/unslop</code></strong>: Eliminates AI filler words (<em>"delve"</em>, <em>"leverage"</em>, <em>"testament"</em>, <em>"in conclusion"</em>).</p>
-<p class="mb-4 text-[var(--text-secondary)]">5. <strong><code class="inline-code">/docs</code></strong>: Compiles the markdown documentation into an interactive, self-contained single-page HTML portal.</p>
-<p class="mb-4 text-[var(--text-secondary)]">6. <strong><code class="inline-code">/google-oss</code></strong>: Verifies Apache-2.0 headers and cleans internal company paths before publication.</p>
-<h3 id="b-the-fast-tactical-bugfix-flow" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">B. The Fast Tactical Bugfix Flow</h3>
-<p class="mb-4 text-[var(--text-secondary)]">Used for urgent hotfixes, regression debugging, or localized patches:</p>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong><code class="inline-code">debugging-and-error-recovery</code></strong> (JIT): Deconstructs the stack trace and isolates the minimal reproduction script.</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong><code class="inline-code">/test</code></strong>: Writes a failing "Prove-It" unit or integration test reproducing the exact failure.</p>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Apply Minimal Fix</strong>: Implements the smallest patch that makes the test pass.</p>
-<p class="mb-4 text-[var(--text-secondary)]">4. <strong><code class="inline-code">/unslop</code></strong>: Cleans up temporary debug wrappers, verbose logging, and trailing comments.</p>
-<p class="mb-4 text-[var(--text-secondary)]">5. <strong><code class="inline-code">/review</code></strong>: Audits the diff for potential side effects and regressions.</p>
-<p class="mb-4 text-[var(--text-secondary)]">6. <strong><code class="inline-code">git-workflow-and-versioning</code></strong> (JIT): Formulates an atomic conventional commit (<code class="inline-code">fix: &lt;description&gt;</code>).</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="6-curated-preferred-skills-on-demand-jit-catalog" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)</h2>
-<p class="mb-4 text-[var(--text-secondary)]">Specialized engineering skills should <strong>never</strong> be permanently installed in global scope. Instead, bootstrap them on demand into your workspace:</p>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>BASH</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-bash"># Method 1: Local Monorepo Sync (Instant Symlinks)
-python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills &lt;skill-1&gt;,&lt;skill-2&gt;
-
-# Method 2: Global npx skills Registry (Zero Config)
-npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
-</code></pre>
-            </div>
-            
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h3 id="complete-preferred-domain-skills-matrix" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Complete Preferred Domain Skills Matrix</h3>
-<div class="overflow-x-auto my-4"><table class="rich-table">
-<thead><tr>
-<th>Domain Skill</th>
-<th>When to Invoke & Initialize</th>
-<th>What It Enforces / Key Capabilities</th>
-</tr></thead><tbody>
-<tr>
-<td><strong><code class="inline-code">frontend-ui-engineering</code></strong></td>
-<td>Web frontend, UI component, or stylesheet development.</td>
-<td>Modern CSS (<code class="inline-code">:has()</code>, container queries, subgrid, View Transitions API), semantic HTML, accessible ARIA patterns, zero generic AI aesthetics.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">performance-optimization</code></strong></td>
-<td>Slow response times, high LCP/INP, memory leaks, or heavy bundle sizes.</td>
-<td>Core Web Vitals (CWV) budgets, layout thrashing elimination, query plan optimization, memory leak tracing.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">api-and-interface-design</code></strong></td>
-<td>Designing REST, GraphQL, gRPC, or TypeScript interfaces.</td>
-<td>Discriminated unions, Hyrum's Law mitigation, idempotency keys, backward-compatible evolutions.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">security-and-hardening</code></strong></td>
-<td>Authentication, authorization, public endpoints, or input processing.</td>
-<td>Threat modeling, OWASP Top 10 mitigations, input sanitization, secret scrubbing, boundary validation.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">deprecation-and-migration</code></strong></td>
-<td>Refactoring legacy APIs, database migrations, or breaking upgrades.</td>
-<td>Expand/Contract migration patterns, zero-downtime schema changes, automated codemods, dual-write bridges.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">browser-testing-with-devtools</code></strong></td>
-<td>E2E web verification, DOM inspection, visual regressions.</td>
-<td>Headless Chrome DevTools testing, console exception trapping, visual snapshot validation, network stubbing.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">observability-and-instrumentation</code></strong></td>
-<td>Production services, microservices, background queues.</td>
-<td>Structured JSON logs, OpenTelemetry distributed traces, Prometheus metrics (RED/USE methods), alert rules.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">ci-cd-and-automation</code></strong></td>
-<td>Setting up repositories, CI presubmits, release pipelines.</td>
-<td>Multi-platform GitHub Actions workflows, matrix testing, deterministic caching, semantic release tagging.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">debugging-and-error-recovery</code></strong></td>
-<td>Production crashes, unhandled stack traces, complex regressions.</td>
-<td>Systematic root cause analysis, stack trace isolation, minimal reproducible test cases, defensive boundaries.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">git-workflow-and-versioning</code></strong></td>
-<td>Branch management, PR preparation, release tagging.</td>
-<td>Conventional commits (<code class="inline-code">feat:</code>, <code class="inline-code">fix:</code>), atomic PR slicing, interactive rebase, SemVer release automation.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">context-engineering</code></strong></td>
-<td>Complex multi-agent prompts, large token budgets, LLM reasoning pipelines.</td>
-<td>Context window optimization, prompt compression, memory eviction, token economy budgeting.</td>
-</tr>
-<tr>
-<td><strong><code class="inline-code">benchmark-harness</code></strong></td>
-<td>Evaluating AI agent workflows, latency regressions, or benchmark runs.</td>
-<td>Automated execution of 12 SWE benchmark use cases, artifact verification, Dual Gemini LLM-as-a-Judge scoring.</td>
-</tr>
-</tbody></table></div>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="7-decision-matrix-which-skill-to-invoke-when" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🎯 7. Decision Matrix: Which Skill to Invoke When</h2>
-<div class="overflow-x-auto my-4"><table class="rich-table">
-<thead><tr>
-<th>User Scenario / Trigger</th>
-<th>Skill Invocations & Action</th>
-</tr></thead><tbody>
-<tr>
-<td>Vague request, complex multi-file task, or new architecture</td>
-<td>Invoke <code class="inline-code">/prompt</code></td>
-</tr>
-<tr>
-<td>Unclear requirements, design trade-offs, or multiple choices</td>
-<td>Invoke <code class="inline-code">/grill</code></td>
-</tr>
-<tr>
-<td>Defining new API interfaces, endpoints, or data models</td>
-<td>Invoke <code class="inline-code">/spec</code> & <code class="inline-code">api-and-interface-design</code></td>
-</tr>
-<tr>
-<td>Creating a multi-step refactoring or implementation roadmap</td>
-<td>Invoke <code class="inline-code">/plan</code></td>
-</tr>
-<tr>
-<td>Writing code or fixing a bug</td>
-<td>Invoke <code class="inline-code">/test</code> (Prove-It TDD loop)</td>
-</tr>
-<tr>
-<td>Cleaning verbose code, repetitive wrappers, or AI filler</td>
-<td>Invoke <code class="inline-code">/unslop</code></td>
-</tr>
-<tr>
-<td>Auditing code quality, security, or regressions</td>
-<td>Invoke <code class="inline-code">/verify</code> & <code class="inline-code">/review</code></td>
-</tr>
-<tr>
-<td>Scaffolding SDLC doc suite or compiling HTML presentations</td>
-<td>Invoke <code class="inline-code">/docs</code> & <code class="inline-code">compile_docs.py</code></td>
-</tr>
-<tr>
-<td>Extracting developer voice or drafting technical prose</td>
-<td>Invoke <code class="inline-code">/voice</code> & <code class="inline-code">/copy-write</code></td>
-</tr>
-<tr>
-<td>Creating step-by-step developer workshops or codelabs</td>
-<td>Invoke <code class="inline-code">/codelab</code></td>
-</tr>
-<tr>
-<td>Verifying OSS license compliance and cleaning company paths</td>
-<td>Invoke <code class="inline-code">/google-oss</code></td>
-</tr>
-<tr>
-<td>Maintaining project vision, rules budget, and living ADRs</td>
-<td>Invoke <code class="inline-code">/align</code> (<code class="inline-code">continuous-alignment</code>)</td>
-</tr>
-<tr>
-<td>Adding UI components, styles, or responsive layouts</td>
-<td>Bootstrap JIT: <code class="inline-code">frontend-ui-engineering</code></td>
-</tr>
-<tr>
-<td>Optimizing database queries, bundle size, or CWV (LCP/INP)</td>
-<td>Bootstrap JIT: <code class="inline-code">performance-optimization</code></td>
-</tr>
-<tr>
-<td>Building secure auth flows or remediating OWASP/CWE issues</td>
-<td>Bootstrap JIT: <code class="inline-code">security-and-hardening</code></td>
-</tr>
-<tr>
-<td>Setting up GitHub Actions, test presubmits, or release CI</td>
-<td>Bootstrap JIT: <code class="inline-code">ci-cd-and-automation</code></td>
-</tr>
-</tbody></table></div>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="8-the-5-invariant-best-practices" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">💡 8. The 5 Invariant Best Practices</h2>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Never Skip the <code class="inline-code">/test</code> Prove-It Step</strong>: For bug fixes, reproduction <em>is</em> the proof. Write the failing test before changing a single line of application logic.</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Run <code class="inline-code">/unslop</code> Before <code class="inline-code">/review</code></strong>: Always de-slop generated code and documentation before running reviews. It strips trivial helper wrappers and verbose comments that distract from architectural review.</p>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Keep <code class="inline-code">AGENTS.md</code> Under 200 Lines</strong>: Use <code class="inline-code">/align</code> regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.</p>
-<p class="mb-4 text-[var(--text-secondary)]">4. <strong>Use Profile-Overlays for Authentic Voice</strong>: Store personal stylistic preferences in <code class="inline-code">references/*.local.md</code> (gitignored). The <code class="inline-code">copy-write</code> and <code class="inline-code">codelab</code> skills automatically layer this over baseline templates without exposing private data.</p>
-<p class="mb-4 text-[var(--text-secondary)]">5. <strong>Always Bootstrap Project-Scoped</strong>: Never symlink domain skills (like <code class="inline-code">frontend-ui-engineering</code> or <code class="inline-code">security-and-hardening</code>) into global directories. Use <code class="inline-code">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills &lt;name&gt;</code> to keep workspace dependencies isolated and reproducible.</p>
-                </article>
-            </div>
-
-            <div id="markdown-view" class="hidden">
-                <div class="glass-panel">
-                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
-                        <span class="text-sm font-bold">Raw Markdown Source</span>
-                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
-                    </div>
-                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]">---
-title: &quot;Agent Skill Forge User Guide&quot;
-description: &quot;Comprehensive operational framework, execution flow, and JIT preferred domain skills guide for AI agents.&quot;
-theme: &quot;technical&quot;
----
-
-# 📖 Agent Skill Forge User Guide
-
-A comprehensive, zero-slop operational framework for orchestrating **Agent Skill Forge** across **Google Antigravity**, **Claude Code**, **Gemini CLI**, and agentic AI coding assistants.
-
----
-
-## 🏛️ 1. Architecture: Global Universal Verbs vs. Project-Scoped JIT
-
-To maximize agent efficiency and prevent context window exhaustion, Agent Skill Forge organizes skills into two distinct tiers:
-
-1. **Global Universal Action Verbs (17 Core Skills)**: Always available across all workspaces. These cover the meta-orchestration, core software development lifecycle (SDLC), content creation, and compliance.
-2. **Curated Preferred Domain Skills (12 Specialized JIT Skills)**: Bootstrapped **Just-In-Time (JIT)** directly into project workspaces (`.gemini/skills/` and `.agents/skills/`). They provide deep domain expertise (e.g., CSS architecture, security hardening, distributed tracing) without polluting global context memory.
-
-```
-                                  ┌────────────────────────────────────────┐
-                                  │   GLOBAL UNIVERSAL ACTION VERBS (17)   │
-                                  │    Always in memory / All Workspaces   │
-                                  └───────────────────┬────────────────────┘
-                                                      │
-                       ┌──────────────────────────────┼──────────────────────────────┐
-                       │                              │                              │
-        ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐
-        │  1. Meta-Orchestration     │ │     2. Core SDLC Engine     │ │   3. Publishing &amp; Comms    │
-        │  • /prompt                 │ │  • /spec                   │ │  • /docs                   │
-        │  • /grill                  │ │  • /plan                   │ │  • /google-oss             │
-        │  • /align                  │ │  • /test                   │ │  • /codelab                │
-        │  • /catalog                │ │  • /unslop                 │ │  • /voice                  │
-        │  • /sync                   │ │  • /verify                 │ │  • /copy-write             │
-        │                            │ │  • /review                 │ │  • /image-gen              │
-        └────────────────────────────┘ └──────────────┬─────────────┘ └────────────────────────────┘
-                                                      │
-                                                      │ Injects on-demand
-                                                      ▼
-                                  ┌────────────────────────────────────────┐
-                                  │   CURATED PREFERRED DOMAIN SKILLS (12) │
-                                  │    Project-Scoped JIT (.gemini/skills) │
-                                  ├────────────────────────────────────────┤
-                                  │  • frontend-ui-engineering             │
-                                  │  • performance-optimization            │
-                                  │  • api-and-interface-design            │
-                                  │  • security-and-hardening              │
-                                  │  • deprecation-and-migration           │
-                                  │  • browser-testing-with-devtools       │
-                                  │  • observability-and-instrumentation   │
-                                  │  • ci-cd-and-automation                │
-                                  │  • debugging-and-error-recovery        │
-                                  │  • git-workflow-and-versioning         │
-                                  │  • context-engineering                 │
-                                  │  • benchmark-harness                   │
-                                  └────────────────────────────────────────┘
-```
-
----
-
-## 🌟 2. The 17 Global Universal Action Verbs
-
-### Tier 1: Meta-Orchestration &amp; Project Intelligence
-*   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`). Implements dynamic dual-mode switching (Lightweight vs Heavyweight).
-*   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing for as many rounds as necessary until all ambiguities are resolved and the specification is 100% fleshed out.
-*   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
-*   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
-*   **`/sync`** (`skills/sync`): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.
-
-### Tier 2: Core SDLC Execution Engine
-*   **`/spec`** (`skills/spec`): Writes source-grounded specifications with official API doc citations, interface data contracts, and explicit non-goals before generating code.
-*   **`/plan`** (`skills/plan`): Slices specifications into vertically testable task units with dependency DAG checkpoints.
-*   **`/test`** (`skills/test`): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.
-*   **`/unslop`** (`skills/unslop`): Universal anti-bloat engine. Strips AI boilerplate, defensive wrapper clutter, sterile filler words, and dead abstractions across code, prose, analyses, and UI.
-*   **`/verify`** (`skills/verify`): Expectation-Grounded Alignment (EGA). Executes deterministic static check scripts alongside blinded multi-persona dynamic LLM judge rubrics.
-*   **`/review`** (`skills/review`): Conducts 5-axis code reviews (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation diffs.
-
-### Tier 3: Comms, Visuals, Publishing &amp; Open Source
-*   **`/docs`** (`skills/docs`): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals (`technical`, `obsidian`, `proscript`, `dynamics`).
-*   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
-*   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops.
-*   **`/voice`** (`skills/voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence.
-*   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` &gt; `~/.gemini/personas/` &gt; `.template.md`).
-*   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
-
----
-
-## 🔄 3. The Universal Engineering Flow &amp; Order of Execution
-
-For any substantive engineering, refactoring, or feature development task, invoke skills in this strict sequence:
-
-```
-[1. /prompt]  ────────► Decompose intent, select model tier &amp; generate DAG
-      │
-[2. /grill]   ────────► Clarify open questions 1-by-1 until 95% confident
-      │
-[3. /spec]    ────────► Ground in official docs, define data contracts &amp; non-goals
-      │
-[4. /plan]    ────────► Slice into vertical tasks with verification checkpoints
-      │
-[5. /sync]    ────────► Bootstrap required JIT domain skills into workspace
-      │
-┌─────▼────────────────────────────────────────────────────────┐
-│                   THE TDD EXECUTION LOOP                     │
-│                                                              │
-│  [6. /test]   ──► Write failing &quot;Prove-It&quot; test first        │
-│        │                                                     │
-│  [Implement]  ──► Write minimal implementation               │
-│        │                                                     │
-│  [7. /unslop] ──► Strip AI wrapper clutter &amp; sterile bloat   │
-└─────┬────────────────────────────────────────────────────────┘
-      │
-[8. /verify]  ────────► Run static verifier scripts &amp; blinded judge rubrics
-      │
-[9. /review]  ────────► 5-Axis audit (Correctness, Security, Perf, Arch, Style)
-      │
-[10. /docs]   ────────► Scaffold SDLC docs &amp; compile standalone HTML portal
-      │
-[11. /align]  ────────► Distill session learnings into AGENTS.md &amp; living ADRs
-```
-
----
-
-## 📋 4. Step-by-Step Flow Rationale: Why This Order Matters
-
-| Sequence | Skill / Gate | Why It Must Run at This Exact Stage |
-| :--- | :--- | :--- |
-| **Step 1** | **`/prompt`** | **Prevents wrong-direction execution.** Formulates intent directives, establishes Manager-worker roles, and determines whether lightweight or heavyweight execution is required. |
-| **Step 2** | **`/grill`** | **Eliminates all implicit assumptions.** Asks as many questions as necessary—iteratively and strictly *one question at a time* with attached hypotheses—until all architectural, data, UX, and security ambiguities are 100% resolved and the spec is completely fleshed out. |
-| **Step 3** | **`/spec`** | **Prevents hallucinated APIs.** Grounds interfaces in official documentation citations and sets explicit Non-Goals to avoid scope creep. |
-| **Step 4** | **`/plan`** | **Enforces incremental verifiability.** Slices work into small, vertically testable tasks so every component has an isolated pass/fail checkpoint. |
-| **Step 5** | **`/sync` (JIT)** | **Loads domain rules on demand.** Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory. |
-| **Step 6** | **`/test`** | **Guarantees correctness by construction.** For bugs, writing the failing test first proves reproduction. For new features, it defines expected behavior upfront. |
-| **Step 7** | **`/unslop`** | **Strips AI tells before review.** Inlines redundant single-use helpers, removes defensive wrapper bloat, and eliminates sterile comments while the code diff is fresh. |
-| **Step 8** | **`/verify`** | **Dual-layer deterministic proof.** Runs static deterministic check scripts (`verify_okf.py`) combined with multi-persona blinded LLM judge rubrics. |
-| **Step 9** | **`/review`** | **Adversarial gate before commit.** Evaluates diffs across 5 axes (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation. |
-| **Step 10**| **`/docs` &amp; `/catalog`** | **Preserves codebase memory.** Documents architecture in the Google Open Knowledge Format (`.gemini/knowledge/`) and compiles 4-theme standalone HTML portals. |
-| **Step 11**| **`/align`** | **Keeps agent memory hot &amp; lean.** Summarizes transcript learnings into the 200-line `AGENTS.md` budget, records living ADRs, and updates project roadmaps. |
-
----
-
-## 🎨 5. Specialized Sub-Workflows
-
-### A. The Content, Prose &amp; Codelab Pipeline
-Used when authoring documentation, tutorials, technical blogs, or developer keynotes:
-1. **`/voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
-2. **`/copy-write`** or **`/codelab`**: Generates drafts using the 3-tier Profile-Overlay system (`.local.md` &gt; `~/.gemini/personas/` &gt; `.template.md`).
-3. **`/image-gen`**: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.
-4. **`/unslop`**: Eliminates AI filler words (*&quot;delve&quot;*, *&quot;leverage&quot;*, *&quot;testament&quot;*, *&quot;in conclusion&quot;*).
-5. **`/docs`**: Compiles the markdown documentation into an interactive, self-contained single-page HTML portal.
-6. **`/google-oss`**: Verifies Apache-2.0 headers and cleans internal company paths before publication.
-
-### B. The Fast Tactical Bugfix Flow
-Used for urgent hotfixes, regression debugging, or localized patches:
-1. **`debugging-and-error-recovery`** (JIT): Deconstructs the stack trace and isolates the minimal reproduction script.
-2. **`/test`**: Writes a failing &quot;Prove-It&quot; unit or integration test reproducing the exact failure.
-3. **Apply Minimal Fix**: Implements the smallest patch that makes the test pass.
-4. **`/unslop`**: Cleans up temporary debug wrappers, verbose logging, and trailing comments.
-5. **`/review`**: Audits the diff for potential side effects and regressions.
-6. **`git-workflow-and-versioning`** (JIT): Formulates an atomic conventional commit (`fix: &lt;description&gt;`).
-
----
-
-## 📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)
-
-Specialized engineering skills should **never** be permanently installed in global scope. Instead, bootstrap them on demand into your workspace:
-
-```bash
-# Method 1: Local Monorepo Sync (Instant Symlinks)
-python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills &lt;skill-1&gt;,&lt;skill-2&gt;
-
-# Method 2: Global npx skills Registry (Zero Config)
-npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
-```
-
----
-
-### Complete Preferred Domain Skills Matrix
-
-| Domain Skill | When to Invoke &amp; Initialize | What It Enforces / Key Capabilities |
-| :--- | :--- | :--- |
-| **`frontend-ui-engineering`** | Web frontend, UI component, or stylesheet development. | Modern CSS (`:has()`, container queries, subgrid, View Transitions API), semantic HTML, accessible ARIA patterns, zero generic AI aesthetics. |
-| **`performance-optimization`** | Slow response times, high LCP/INP, memory leaks, or heavy bundle sizes. | Core Web Vitals (CWV) budgets, layout thrashing elimination, query plan optimization, memory leak tracing. |
-| **`api-and-interface-design`** | Designing REST, GraphQL, gRPC, or TypeScript interfaces. | Discriminated unions, Hyrum&#x27;s Law mitigation, idempotency keys, backward-compatible evolutions. |
-| **`security-and-hardening`** | Authentication, authorization, public endpoints, or input processing. | Threat modeling, OWASP Top 10 mitigations, input sanitization, secret scrubbing, boundary validation. |
-| **`deprecation-and-migration`** | Refactoring legacy APIs, database migrations, or breaking upgrades. | Expand/Contract migration patterns, zero-downtime schema changes, automated codemods, dual-write bridges. |
-| **`browser-testing-with-devtools`** | E2E web verification, DOM inspection, visual regressions. | Headless Chrome DevTools testing, console exception trapping, visual snapshot validation, network stubbing. |
-| **`observability-and-instrumentation`** | Production services, microservices, background queues. | Structured JSON logs, OpenTelemetry distributed traces, Prometheus metrics (RED/USE methods), alert rules. |
-| **`ci-cd-and-automation`** | Setting up repositories, CI presubmits, release pipelines. | Multi-platform GitHub Actions workflows, matrix testing, deterministic caching, semantic release tagging. |
-| **`debugging-and-error-recovery`** | Production crashes, unhandled stack traces, complex regressions. | Systematic root cause analysis, stack trace isolation, minimal reproducible test cases, defensive boundaries. |
-| **`git-workflow-and-versioning`** | Branch management, PR preparation, release tagging. | Conventional commits (`feat:`, `fix:`), atomic PR slicing, interactive rebase, SemVer release automation. |
-| **`context-engineering`** | Complex multi-agent prompts, large token budgets, LLM reasoning pipelines. | Context window optimization, prompt compression, memory eviction, token economy budgeting. |
-| **`benchmark-harness`** | Evaluating AI agent workflows, latency regressions, or benchmark runs. | Automated execution of 12 SWE benchmark use cases, artifact verification, Dual Gemini LLM-as-a-Judge scoring. |
-
----
-
-## 🎯 7. Decision Matrix: Which Skill to Invoke When
-
-| User Scenario / Trigger | Skill Invocations &amp; Action |
-| :--- | :--- |
-| Vague request, complex multi-file task, or new architecture | Invoke `/prompt` |
-| Unclear requirements, design trade-offs, or multiple choices | Invoke `/grill` |
-| Defining new API interfaces, endpoints, or data models | Invoke `/spec` &amp; `api-and-interface-design` |
-| Creating a multi-step refactoring or implementation roadmap | Invoke `/plan` |
-| Writing code or fixing a bug | Invoke `/test` (Prove-It TDD loop) |
-| Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
-| Auditing code quality, security, or regressions | Invoke `/verify` &amp; `/review` |
-| Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` &amp; `compile_docs.py` |
-| Extracting developer voice or drafting technical prose | Invoke `/voice` &amp; `/copy-write` |
-| Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
-| Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
-| Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
-| Adding UI components, styles, or responsive layouts | Bootstrap JIT: `frontend-ui-engineering` |
-| Optimizing database queries, bundle size, or CWV (LCP/INP) | Bootstrap JIT: `performance-optimization` |
-| Building secure auth flows or remediating OWASP/CWE issues | Bootstrap JIT: `security-and-hardening` |
-| Setting up GitHub Actions, test presubmits, or release CI | Bootstrap JIT: `ci-cd-and-automation` |
-
----
-
-## 💡 8. The 5 Invariant Best Practices
-
-1. **Never Skip the `/test` Prove-It Step**: For bug fixes, reproduction *is* the proof. Write the failing test before changing a single line of application logic.
-2. **Run `/unslop` Before `/review`**: Always de-slop generated code and documentation before running reviews. It strips trivial helper wrappers and verbose comments that distract from architectural review.
-3. **Keep `AGENTS.md` Under 200 Lines**: Use `/align` regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.
-4. **Use Profile-Overlays for Authentic Voice**: Store personal stylistic preferences in `references/*.local.md` (gitignored). The `copy-write` and `codelab` skills automatically layer this over baseline templates without exposing private data.
-5. **Always Bootstrap Project-Scoped**: Never symlink domain skills (like `frontend-ui-engineering` or `security-and-hardening`) into global directories. Use `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills &lt;name&gt;` to keep workspace dependencies isolated and reproducible.
-
-</code></pre>
-                </div>
-            </div>
-        </main>
-
-        <aside class="toc-bar">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
-            <nav class="mt-3 space-y-1">
-                <a href="#1-architecture-global-universal-verbs-vs-project-scoped-jit" class="sidebar-link text-xs">🏛️ 1. Architecture: Global Universal Verbs vs. Project-Scoped JIT</a>
-<a href="#2-the-17-global-universal-action-verbs" class="sidebar-link text-xs">🌟 2. The 17 Global Universal Action Verbs</a>
-<a href="#tier-1-meta-orchestration-project-intelligence" class="sidebar-link text-xs ml-2">Tier 1: Meta-Orchestration & Project Intelligence</a>
-<a href="#tier-2-core-sdlc-execution-engine" class="sidebar-link text-xs ml-2">Tier 2: Core SDLC Execution Engine</a>
-<a href="#tier-3-comms-visuals-publishing-open-source" class="sidebar-link text-xs ml-2">Tier 3: Comms, Visuals, Publishing & Open Source</a>
-<a href="#3-the-universal-engineering-flow-order-of-execution" class="sidebar-link text-xs">🔄 3. The Universal Engineering Flow & Order of Execution</a>
-<a href="#4-step-by-step-flow-rationale-why-this-order-matters" class="sidebar-link text-xs">📋 4. Step-by-Step Flow Rationale: Why This Order Matters</a>
-<a href="#5-specialized-sub-workflows" class="sidebar-link text-xs">🎨 5. Specialized Sub-Workflows</a>
-<a href="#a-the-content-prose-codelab-pipeline" class="sidebar-link text-xs ml-2">A. The Content, Prose & Codelab Pipeline</a>
-<a href="#b-the-fast-tactical-bugfix-flow" class="sidebar-link text-xs ml-2">B. The Fast Tactical Bugfix Flow</a>
-<a href="#6-curated-preferred-skills-on-demand-jit-catalog" class="sidebar-link text-xs">📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)</a>
-<a href="#complete-preferred-domain-skills-matrix" class="sidebar-link text-xs ml-2">Complete Preferred Domain Skills Matrix</a>
-<a href="#7-decision-matrix-which-skill-to-invoke-when" class="sidebar-link text-xs">🎯 7. Decision Matrix: Which Skill to Invoke When</a>
-<a href="#8-the-5-invariant-best-practices" class="sidebar-link text-xs">💡 8. The 5 Invariant Best Practices</a>
-            </nav>
-        </aside>
-
-    </div>
-
     <script>
-        function showView(view) {
-            const ui = document.getElementById('ui-view');
-            const md = document.getElementById('markdown-view');
-            const btnUi = document.getElementById('btn-ui-view');
-            const btnMd = document.getElementById('btn-md-view');
-            
-            if (view === 'ui') {
-                ui.classList.remove('hidden');
-                md.classList.add('hidden');
-                btnUi.classList.add('tab-active');
-                btnMd.classList.remove('tab-active');
-            } else {
-                ui.classList.add('hidden');
-                md.classList.remove('hidden');
-                btnUi.classList.remove('tab-active');
-                btnMd.classList.add('tab-active');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
             }
         }
-
-        function copyCode(btn) {
-            const pre = btn.closest('.code-container').querySelector('code');
-            navigator.clipboard.writeText(pre.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
+    </script>
+    
+    <style>
+        html {
+            font-size: 16px;
         }
-
-        function copyRawMarkdown(btn) {
-            const code = document.querySelector('#markdown-view code');
-            navigator.clipboard.writeText(code.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
             });
+        });
+    </script>
+</head>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-white font-bold bg-white/10">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
+        </div>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+        <div class="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">📖 Agent Skill Forge User Guide</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                
+    <!-- Cockpit Diagnostic Row -->
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <!-- Live Connection Mode Controller -->
+        <div class="glass-panel border border-white/5 rounded-3xl p-5 flex flex-col justify-between bg-[#0a0c14]/40">
+            <div>
+                <span class="text-xs font-console font-black text-zinc-500 uppercase tracking-widest">Simulation controller</span>
+                <h4 class="text-xs font-headings font-extrabold text-white mt-1.5">Database Operation Mode</h4>
+                <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Toggle the simulated environment state in the header bar dynamically.</p>
+            </div>
+            <div class="flex items-center space-x-2 mt-4">
+                <button onclick="toggleSimulatedMode('gcp')" id="sim-btn-gcp" class="flex-1 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-console font-black text-xs tracking-wider transition hover:bg-emerald-500/25">GCP CLOUD</button>
+                <button onclick="toggleSimulatedMode('mock')" id="sim-btn-mock" class="flex-1 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-400 font-console font-black text-xs tracking-wider transition hover:bg-white/10">MOCK LOCAL</button>
+            </div>
+        </div>
+        
+        <!-- Dynamic Connection Latency and Ping Test -->
+        <div class="glass-panel border border-white/5 rounded-3xl p-5 flex flex-col justify-between bg-[#0a0c14]/40 col-span-2">
+            <div>
+                <span class="text-xs font-console font-black text-zinc-500 uppercase tracking-widest">Diagnostic probe</span>
+                <h4 class="text-xs font-headings font-extrabold text-white mt-1.5">Active Resource Pings</h4>
+                <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Scan connections and verify response latency parameters across stage clusters.</p>
+            </div>
+            
+            <!-- Connection Pings Status -->
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-3">
+                <div class="flex items-center justify-between text-xs font-console">
+                    <span class="text-zinc-500">Firestore coords:</span>
+                    <span id="ping-db" class="text-emerald-400 font-bold">READY (12ms)</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-console">
+                    <span class="text-zinc-500">WebSocket voice:</span>
+                    <span id="ping-voice" class="text-emerald-400 font-bold">READY (15ms)</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-console">
+                    <span class="text-zinc-500">AlloyDB pgvector:</span>
+                    <span id="ping-vector" class="text-emerald-400 font-bold">READY (22ms)</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-console">
+                    <span class="text-zinc-500">Cloud Storage:</span>
+                    <span id="ping-gcs" class="text-emerald-400 font-bold">READY (8ms)</span>
+                </div>
+            </div>
+            
+            <button onclick="runGuideDiagnostics(this)" class="mt-4 py-2 w-full rounded-xl bg-neon-indigo text-white border border-neon-indigo/30 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)] transition duration-300 font-headings font-extrabold text-xs">Run Live Diagnostic Scan ⚡</button>
+        </div>
+    </div>
+    
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        
+        <!-- Left vertical navbar -->
+        <div class="lg:sticky lg:top-8 space-y-1.5 bg-[#090b11]/30 border border-white/5 rounded-3xl p-5 shadow-xl">
+            <span class="text-xs font-console font-black tracking-widest text-zinc-500 uppercase px-3.5">OPERATIONAL MANUAL</span>
+            <div class="space-y-1 mt-3">
+                
+        <button onclick="showGuideTab('1-architecture-global-universal-verbs-vs-project-scoped-jit')" id="tab-btn-guide-1-architecture-global-universal-verbs-vs-project-scoped-jit" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-electric-teal bg-electric-teal/10 text-white font-bold">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>🏛️ 1. Architecture: Global Universal Verbs vs. Project-Scoped JIT</span>
+        </button>
+        
+        <button onclick="showGuideTab('2-the-17-global-universal-action-verbs')" id="tab-btn-guide-2-the-17-global-universal-action-verbs" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>🌟 2. The 17 Global Universal Action Verbs</span>
+        </button>
+        
+        <button onclick="showGuideTab('3-the-universal-engineering-flow-order-of-execution')" id="tab-btn-guide-3-the-universal-engineering-flow-order-of-execution" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>🔄 3. The Universal Engineering Flow & Order of Execution</span>
+        </button>
+        
+        <button onclick="showGuideTab('4-step-by-step-flow-rationale-why-this-order-matters')" id="tab-btn-guide-4-step-by-step-flow-rationale-why-this-order-matters" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>📋 4. Step-by-Step Flow Rationale: Why This Order Matters</span>
+        </button>
+        
+        <button onclick="showGuideTab('5-specialized-sub-workflows')" id="tab-btn-guide-5-specialized-sub-workflows" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>🎨 5. Specialized Sub-Workflows</span>
+        </button>
+        
+        <button onclick="showGuideTab('6-curated-preferred-skills-on-demand-jit-catalog')" id="tab-btn-guide-6-curated-preferred-skills-on-demand-jit-catalog" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)</span>
+        </button>
+        
+        <button onclick="showGuideTab('7-decision-matrix-which-skill-to-invoke-when')" id="tab-btn-guide-7-decision-matrix-which-skill-to-invoke-when" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>🎯 7. Decision Matrix: Which Skill to Invoke When</span>
+        </button>
+        
+        <button onclick="showGuideTab('8-the-5-invariant-best-practices')" id="tab-btn-guide-8-the-5-invariant-best-practices" class="guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings border-transparent text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200">
+            <div class="shrink-0 mt-0.5"><svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <span>💡 8. The 5 Invariant Best Practices</span>
+        </button>
+        
+            </div>
+        </div>
+        
+        <!-- Right content pane -->
+        <div class="lg:col-span-3 glass-panel border border-white/5 rounded-3xl p-8.5 shadow-2xl relative bg-[#090c15]/20 min-h-[500px]">
+            <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-electric-teal/[0.015] rounded-full blur-3xl -z-10"></div>
+            
+        <div id="pane-guide-1-architecture-global-universal-verbs-vs-project-scoped-jit" class="guide-pane space-y-5 ">
+            
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">To maximize agent efficiency and prevent context window exhaustion, Agent Skill Forge organizes skills into two distinct tiers:</p>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">Global Universal Action Verbs (17 Core Skills)</strong>: Always available across all workspaces. These cover the meta-orchestration, core software development lifecycle (SDLC), content creation, and compliance.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Curated Preferred Domain Skills (12 Specialized JIT Skills)</strong>: Bootstrapped <strong class="text-white font-bold font-headings">Just-In-Time (JIT)</strong> directly into project workspaces (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/skills/</code> and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.agents/skills/</code>). They provide deep domain expertise (e.g., CSS architecture, security hardening, distributed tracing) without polluting global context memory.</p>
+
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20GLOBAL%20UNIVERSAL%20ACTION%20VERBS%20%2817%29%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20Always%20in%20memory%20/%20All%20Workspaces%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%AC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%BC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%20%20%20%20%20%20%20%20%E2%94%82%20%201.%20Meta-Orchestration%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%20%20%202.%20Core%20SDLC%20Engine%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%203.%20Publishing%20%26%20Comms%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20/prompt%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/spec%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/docs%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20/grill%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/plan%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/google-oss%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20/align%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/test%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/codelab%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20/catalog%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/unslop%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/voice%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20/sync%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/verify%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/copy-write%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/review%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%E2%94%82%20%20%E2%80%A2%20/image-gen%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%20%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%AC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%20%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20Injects%20on-demand%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%96%BC%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20CURATED%20PREFERRED%20DOMAIN%20SKILLS%20%2812%29%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20Project-Scoped%20JIT%20%28.gemini/skills%29%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%9C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%A4%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20frontend-ui-engineering%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20performance-optimization%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20api-and-interface-design%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20security-and-hardening%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20deprecation-and-migration%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20browser-testing-with-devtools%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20observability-and-instrumentation%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20ci-cd-and-automation%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20debugging-and-error-recovery%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20git-workflow-and-versioning%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20context-engineering%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%20%20%E2%80%A2%20benchmark-harness%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>                                  ┌────────────────────────────────────────┐
+                                  │   GLOBAL UNIVERSAL ACTION VERBS (17)   │
+                                  │    Always in memory / All Workspaces   │
+                                  └───────────────────┬────────────────────┘
+                                                      │
+                       ┌──────────────────────────────┼──────────────────────────────┐
+                       │                              │                              │
+        ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐
+        │  1. Meta-Orchestration     │ │     2. Core SDLC Engine     │ │   3. Publishing &amp; Comms    │
+        │  • /prompt                 │ │  • /spec                   │ │  • /docs                   │
+        │  • /grill                  │ │  • /plan                   │ │  • /google-oss             │
+        │  • /align                  │ │  • /test                   │ │  • /codelab                │
+        │  • /catalog                │ │  • /unslop                 │ │  • /voice                  │
+        │  • /sync                   │ │  • /verify                 │ │  • /copy-write             │
+        │                            │ │  • /review                 │ │  • /image-gen              │
+        └────────────────────────────┘ └──────────────┬─────────────┘ └────────────────────────────┘
+                                                      │
+                                                      │ Injects on-demand
+                                                      ▼
+                                  ┌────────────────────────────────────────┐
+                                  │   CURATED PREFERRED DOMAIN SKILLS (12) │
+                                  │    Project-Scoped JIT (.gemini/skills) │
+                                  ├────────────────────────────────────────┤
+                                  │  • frontend-ui-engineering             │
+                                  │  • performance-optimization            │
+                                  │  • api-and-interface-design            │
+                                  │  • security-and-hardening              │
+                                  │  • deprecation-and-migration           │
+                                  │  • browser-testing-with-devtools       │
+                                  │  • observability-and-instrumentation   │
+                                  │  • ci-cd-and-automation                │
+                                  │  • debugging-and-error-recovery        │
+                                  │  • git-workflow-and-versioning         │
+                                  │  • context-engineering                 │
+                                  │  • benchmark-harness                   │
+                                  └────────────────────────────────────────┘
+</code></pre>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-2-the-17-global-universal-action-verbs" class="guide-pane space-y-5 hidden">
+            
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Tier 1: Meta-Orchestration & Project Intelligence</span></h3>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/prompt</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/prompt</code>): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">task_graph.json</code>). Implements dynamic dual-mode switching (Lightweight vs Heavyweight).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/grill</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/grill</code>): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing for as many rounds as necessary until all ambiguities are resolved and the specification is 100% fleshed out.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/align</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/continuous-alignment</code>): Distills conversation session transcripts into a strict 200-line <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">AGENTS.md</code> budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/catalog</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/catalog</code>): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/</code>) for durable codebase memory.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/sync</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/sync</code>): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.</span>
+                </li>
+                </ul>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Tier 2: Core SDLC Execution Engine</span></h3>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/spec</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/spec</code>): Writes source-grounded specifications with official API doc citations, interface data contracts, and explicit non-goals before generating code.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/plan</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/plan</code>): Slices specifications into vertically testable task units with dependency DAG checkpoints.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/test</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/test</code>): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/unslop</code>): Universal anti-bloat engine. Strips AI boilerplate, defensive wrapper clutter, sterile filler words, and dead abstractions across code, prose, analyses, and UI.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/verify</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/verify</code>): Expectation-Grounded Alignment (EGA). Executes deterministic static check scripts alongside blinded multi-persona dynamic LLM judge rubrics.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/review</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/review</code>): Conducts 5-axis code reviews (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation diffs.</span>
+                </li>
+                </ul>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Tier 3: Comms, Visuals, Publishing & Open Source</span></h3>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/docs</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/docs</code>): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">technical</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">obsidian</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">proscript</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">dynamics</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/google-oss</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/google-oss</code>): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/codelab</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/codelab</code>): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/voice</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/voice</code>): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/copy-write</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/copy-write</code>): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.local.md</code> > <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/personas/</code> > <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.template.md</code>).</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed">  <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/image-gen</code></strong> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">skills/image-gen</code>): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.</span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-3-the-universal-engineering-flow-order-of-execution" class="guide-pane space-y-5 hidden">
+            
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">For any substantive engineering, refactoring, or feature development task, invoke skills in this strict sequence:</p>
+
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('%5B1.%20/prompt%5D%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Decompose%20intent%2C%20select%20model%20tier%20%26%20generate%20DAG%0A%20%20%20%20%20%20%E2%94%82%0A%5B2.%20/grill%5D%20%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Clarify%20open%20questions%201-by-1%20until%2095%25%20confident%0A%20%20%20%20%20%20%E2%94%82%0A%5B3.%20/spec%5D%20%20%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Ground%20in%20official%20docs%2C%20define%20data%20contracts%20%26%20non-goals%0A%20%20%20%20%20%20%E2%94%82%0A%5B4.%20/plan%5D%20%20%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Slice%20into%20vertical%20tasks%20with%20verification%20checkpoints%0A%20%20%20%20%20%20%E2%94%82%0A%5B5.%20/sync%5D%20%20%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Bootstrap%20required%20JIT%20domain%20skills%20into%20workspace%0A%20%20%20%20%20%20%E2%94%82%0A%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20THE%20TDD%20EXECUTION%20LOOP%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%5B6.%20/test%5D%20%20%20%E2%94%80%E2%94%80%E2%96%BA%20Write%20failing%20%22Prove-It%22%20test%20first%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%5BImplement%5D%20%20%E2%94%80%E2%94%80%E2%96%BA%20Write%20minimal%20implementation%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20%20%20%20%20%20%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%5B7.%20/unslop%5D%20%E2%94%80%E2%94%80%E2%96%BA%20Strip%20AI%20wrapper%20clutter%20%26%20sterile%20bloat%20%20%20%E2%94%82%0A%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%AC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A%20%20%20%20%20%20%E2%94%82%0A%5B8.%20/verify%5D%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Run%20static%20verifier%20scripts%20%26%20blinded%20judge%20rubrics%0A%20%20%20%20%20%20%E2%94%82%0A%5B9.%20/review%5D%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%205-Axis%20audit%20%28Correctness%2C%20Security%2C%20Perf%2C%20Arch%2C%20Style%29%0A%20%20%20%20%20%20%E2%94%82%0A%5B10.%20/docs%5D%20%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Scaffold%20SDLC%20docs%20%26%20compile%20standalone%20HTML%20portal%0A%20%20%20%20%20%20%E2%94%82%0A%5B11.%20/align%5D%20%20%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%96%BA%20Distill%20session%20learnings%20into%20AGENTS.md%20%26%20living%20ADRs%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>[1. /prompt]  ────────► Decompose intent, select model tier &amp; generate DAG
+      │
+[2. /grill]   ────────► Clarify open questions 1-by-1 until 95% confident
+      │
+[3. /spec]    ────────► Ground in official docs, define data contracts &amp; non-goals
+      │
+[4. /plan]    ────────► Slice into vertical tasks with verification checkpoints
+      │
+[5. /sync]    ────────► Bootstrap required JIT domain skills into workspace
+      │
+┌─────▼────────────────────────────────────────────────────────┐
+│                   THE TDD EXECUTION LOOP                     │
+│                                                              │
+│  [6. /test]   ──► Write failing "Prove-It" test first        │
+│        │                                                     │
+│  [Implement]  ──► Write minimal implementation               │
+│        │                                                     │
+│  [7. /unslop] ──► Strip AI wrapper clutter &amp; sterile bloat   │
+└─────┬────────────────────────────────────────────────────────┘
+      │
+[8. /verify]  ────────► Run static verifier scripts &amp; blinded judge rubrics
+      │
+[9. /review]  ────────► 5-Axis audit (Correctness, Security, Perf, Arch, Style)
+      │
+[10. /docs]   ────────► Scaffold SDLC docs &amp; compile standalone HTML portal
+      │
+[11. /align]  ────────► Distill session learnings into AGENTS.md &amp; living ADRs
+</code></pre>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-4-step-by-step-flow-rationale-why-this-order-matters" class="guide-pane space-y-5 hidden">
+            
+
+
+        <div class="overflow-x-auto my-6 border border-white/5 rounded-2xl bg-white/[0.005] shadow-xl backdrop-blur-md">
+            <table class="min-w-full divide-y divide-white/5 text-sm">
+                <thead class="bg-white/[0.015]">
+                    <tr class="divide-x divide-white/5"><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Sequence</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Skill / Gate</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Why It Must Run at This Exact Stage</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    <tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 1</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/prompt</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Prevents wrong-direction execution.</strong> Formulates intent directives, establishes Manager-worker roles, and determines whether lightweight or heavyweight execution is required.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 2</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/grill</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Eliminates all implicit assumptions.</strong> Asks as many questions as necessary—iteratively and strictly *one question at a time* with attached hypotheses—until all architectural, data, UX, and security ambiguities are 100% resolved and the spec is completely fleshed out.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 3</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/spec</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Prevents hallucinated APIs.</strong> Grounds interfaces in official documentation citations and sets explicit Non-Goals to avoid scope creep.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 4</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/plan</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Enforces incremental verifiability.</strong> Slices work into small, vertically testable tasks so every component has an isolated pass/fail checkpoint.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 5</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/sync</code> (JIT)</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Loads domain rules on demand.</strong> Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 6</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/test</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Guarantees correctness by construction.</strong> For bugs, writing the failing test first proves reproduction. For new features, it defines expected behavior upfront.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 7</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Strips AI tells before review.</strong> Inlines redundant single-use helpers, removes defensive wrapper bloat, and eliminates sterile comments while the code diff is fresh.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 8</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/verify</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Dual-layer deterministic proof.</strong> Runs static deterministic check scripts (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">verify_okf.py</code>) combined with multi-persona blinded LLM judge rubrics.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 9</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/review</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Adversarial gate before commit.</strong> Evaluates diffs across 5 axes (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 10</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/docs</code> & <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/catalog</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Preserves codebase memory.</strong> Documents architecture in the Google Open Knowledge Format (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/</code>) and compiles 4-theme standalone HTML portals.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Step 11</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/align</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><strong class="text-white font-bold font-headings">Keeps agent memory hot & lean.</strong> Summarizes transcript learnings into the 200-line <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">AGENTS.md</code> budget, records living ADRs, and updates project roadmaps.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-5-specialized-sub-workflows" class="guide-pane space-y-5 hidden">
+            
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>A. The Content, Prose & Codelab Pipeline</span></h3>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Used when authoring documentation, tutorials, technical blogs, or developer keynotes:</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/voice</code></strong>: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/copy-write</code></strong> or <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/codelab</code></strong>: Generates drafts using the 3-tier Profile-Overlay system (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.local.md</code> > <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/personas/</code> > <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.template.md</code>).</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/image-gen</code></strong>: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">4. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code></strong>: Eliminates AI filler words (*"delve"*, *"leverage"*, *"testament"*, *"in conclusion"*).</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">5. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/docs</code></strong>: Compiles the markdown documentation into an interactive, self-contained single-page HTML portal.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">6. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/google-oss</code></strong>: Verifies Apache-2.0 headers and cleans internal company paths before publication.</p>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>B. The Fast Tactical Bugfix Flow</span></h3>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Used for urgent hotfixes, regression debugging, or localized patches:</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">debugging-and-error-recovery</code></strong> (JIT): Deconstructs the stack trace and isolates the minimal reproduction script.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/test</code></strong>: Writes a failing "Prove-It" unit or integration test reproducing the exact failure.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">Apply Minimal Fix</strong>: Implements the smallest patch that makes the test pass.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">4. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code></strong>: Cleans up temporary debug wrappers, verbose logging, and trailing comments.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">5. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/review</code></strong>: Audits the diff for potential side effects and regressions.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">6. <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">git-workflow-and-versioning</code></strong> (JIT): Formulates an atomic conventional commit (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">fix: <description></code>).</p>
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-6-curated-preferred-skills-on-demand-jit-catalog" class="guide-pane space-y-5 hidden">
+            
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Specialized engineering skills should <strong class="text-white font-bold font-headings">never</strong> be permanently installed in global scope. Instead, bootstrap them on demand into your workspace:</p>
+
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">bash code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('%23%20Method%201%3A%20Local%20Monorepo%20Sync%20%28Instant%20Symlinks%29%0Apython3%20~/code/github/agent-skill-forge/scripts/sync_skills.py%20--project%20.%20--skills%20%3Cskill-1%3E%2C%3Cskill-2%3E%0A%0A%23%20Method%202%3A%20Global%20npx%20skills%20Registry%20%28Zero%20Config%29%0Anpx%20skills%20add%20ksprashu/agent-skill-forge%20--skill%20%3Cskill-name%3E%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code># Method 1: Local Monorepo Sync (Instant Symlinks)
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills &lt;skill-1&gt;,&lt;skill-2&gt;
+
+# Method 2: Global npx skills Registry (Zero Config)
+npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
+</code></pre>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Complete Preferred Domain Skills Matrix</span></h3>
+
+
+        <div class="overflow-x-auto my-6 border border-white/5 rounded-2xl bg-white/[0.005] shadow-xl backdrop-blur-md">
+            <table class="min-w-full divide-y divide-white/5 text-sm">
+                <thead class="bg-white/[0.015]">
+                    <tr class="divide-x divide-white/5"><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Domain Skill</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">When to Invoke & Initialize</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">What It Enforces / Key Capabilities</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    <tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">frontend-ui-engineering</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Web frontend, UI component, or stylesheet development.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Modern CSS (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">:has()</code>, container queries, subgrid, View Transitions API), semantic HTML, accessible ARIA patterns, zero generic AI aesthetics.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">performance-optimization</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Slow response times, high LCP/INP, memory leaks, or heavy bundle sizes.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Core Web Vitals (CWV) budgets, layout thrashing elimination, query plan optimization, memory leak tracing.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">api-and-interface-design</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Designing REST, GraphQL, gRPC, or TypeScript interfaces.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Discriminated unions, Hyrum's Law mitigation, idempotency keys, backward-compatible evolutions.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">security-and-hardening</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Authentication, authorization, public endpoints, or input processing.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Threat modeling, OWASP Top 10 mitigations, input sanitization, secret scrubbing, boundary validation.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">deprecation-and-migration</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Refactoring legacy APIs, database migrations, or breaking upgrades.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Expand/Contract migration patterns, zero-downtime schema changes, automated codemods, dual-write bridges.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">browser-testing-with-devtools</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">E2E web verification, DOM inspection, visual regressions.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Headless Chrome DevTools testing, console exception trapping, visual snapshot validation, network stubbing.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">observability-and-instrumentation</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Production services, microservices, background queues.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Structured JSON logs, OpenTelemetry distributed traces, Prometheus metrics (RED/USE methods), alert rules.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">ci-cd-and-automation</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Setting up repositories, CI presubmits, release pipelines.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Multi-platform GitHub Actions workflows, matrix testing, deterministic caching, semantic release tagging.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">debugging-and-error-recovery</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Production crashes, unhandled stack traces, complex regressions.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Systematic root cause analysis, stack trace isolation, minimal reproducible test cases, defensive boundaries.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">git-workflow-and-versioning</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Branch management, PR preparation, release tagging.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Conventional commits (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">feat:</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">fix:</code>), atomic PR slicing, interactive rebase, SemVer release automation.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">context-engineering</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Complex multi-agent prompts, large token budgets, LLM reasoning pipelines.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Context window optimization, prompt compression, memory eviction, token economy budgeting.</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">benchmark-harness</code></strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Evaluating AI agent workflows, latency regressions, or benchmark runs.</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Automated execution of 12 SWE benchmark use cases, artifact verification, Dual Gemini LLM-as-a-Judge scoring.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-7-decision-matrix-which-skill-to-invoke-when" class="guide-pane space-y-5 hidden">
+            
+
+
+        <div class="overflow-x-auto my-6 border border-white/5 rounded-2xl bg-white/[0.005] shadow-xl backdrop-blur-md">
+            <table class="min-w-full divide-y divide-white/5 text-sm">
+                <thead class="bg-white/[0.015]">
+                    <tr class="divide-x divide-white/5"><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">User Scenario / Trigger</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Skill Invocations & Action</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    <tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Vague request, complex multi-file task, or new architecture</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/prompt</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Unclear requirements, design trade-offs, or multiple choices</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/grill</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Defining new API interfaces, endpoints, or data models</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/spec</code> & <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">api-and-interface-design</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Creating a multi-step refactoring or implementation roadmap</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/plan</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Writing code or fixing a bug</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/test</code> (Prove-It TDD loop)</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Cleaning verbose code, repetitive wrappers, or AI filler</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Auditing code quality, security, or regressions</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/verify</code> & <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/review</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Scaffolding SDLC doc suite or compiling HTML presentations</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/docs</code> & <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">compile_docs.py</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Extracting developer voice or drafting technical prose</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/voice</code> & <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/copy-write</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Creating step-by-step developer workshops or codelabs</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/codelab</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Verifying OSS license compliance and cleaning company paths</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/google-oss</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Maintaining project vision, rules budget, and living ADRs</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Invoke <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/align</code> (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">continuous-alignment</code>)</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Adding UI components, styles, or responsive layouts</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Bootstrap JIT: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">frontend-ui-engineering</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Optimizing database queries, bundle size, or CWV (LCP/INP)</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Bootstrap JIT: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">performance-optimization</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Building secure auth flows or remediating OWASP/CWE issues</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Bootstrap JIT: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">security-and-hardening</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings">Setting up GitHub Actions, test presubmits, or release CI</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Bootstrap JIT: <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">ci-cd-and-automation</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+<hr class="border-white/5 my-8" />
+        </div>
+        
+        <div id="pane-guide-8-the-5-invariant-best-practices" class="guide-pane space-y-5 hidden">
+            
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">Never Skip the <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/test</code> Prove-It Step</strong>: For bug fixes, reproduction *is* the proof. Write the failing test before changing a single line of application logic.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Run <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/unslop</code> Before <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/review</code></strong>: Always de-slop generated code and documentation before running reviews. It strips trivial helper wrappers and verbose comments that distract from architectural review.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">Keep <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">AGENTS.md</code> Under 200 Lines</strong>: Use <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/align</code> regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">4. <strong class="text-white font-bold font-headings">Use Profile-Overlays for Authentic Voice</strong>: Store personal stylistic preferences in <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">references/*.local.md</code> (gitignored). The <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">copy-write</code> and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">codelab</code> skills automatically layer this over baseline templates without exposing private data.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">5. <strong class="text-white font-bold font-headings">Always Bootstrap Project-Scoped</strong>: Never symlink domain skills (like <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">frontend-ui-engineering</code> or <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">security-and-hardening</code>) into global directories. Use <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills <name></code> to keep workspace dependencies isolated and reproducible.</p>
+
+
+        </div>
+        
+        </div>
+        
+    </div>
+    
+    <script>
+        function showGuideTab(slug) {
+            document.querySelectorAll('.guide-pane').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.guide-tab-btn').forEach(btn => {
+                btn.className = "guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 border-transparent rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings text-zinc-400 hover:bg-white/[0.01] hover:text-zinc-200";
+            });
+            
+            document.getElementById('pane-guide-' + slug).classList.remove('hidden');
+            const abtn = document.getElementById('tab-btn-guide-' + slug);
+            if (abtn) {
+                abtn.className = "guide-tab-btn w-full text-left pl-3.5 pr-2.5 py-3.5 border-l-4 border-electric-teal rounded-r-xl transition flex items-start space-x-3 text-sm md:text-base font-bold font-headings bg-electric-teal/10 text-white font-bold";
+            }
+        }
+        
+        function toggleSimulatedMode(mode) {
+            const headerBadge = document.querySelector('header span.text-neon-indigo, header span.text-emerald-400, header div.inline-flex');
+            
+            const btnGcp = document.getElementById('sim-btn-gcp');
+            const btnMock = document.getElementById('sim-btn-mock');
+            
+            if (mode === 'gcp') {
+                btnGcp.className = "flex-1 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-console font-black text-xs tracking-wider transition hover:bg-emerald-500/25";
+                btnMock.className = "flex-1 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-400 font-console font-black text-xs tracking-wider transition hover:bg-white/10";
+                
+                // Update global text on header top bar (simulated)
+                document.querySelector('header span.text-electric-teal').innerText = "24 MAY 2026 (LIVE GCP CONNECT)";
+                document.querySelector('header span.text-electric-teal').className = "text-emerald-400";
+            } else {
+                btnMock.className = "flex-1 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 font-console font-black text-xs tracking-wider transition hover:bg-amber-500/25";
+                btnGcp.className = "flex-1 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-400 font-console font-black text-xs tracking-wider transition hover:bg-white/10";
+                
+                document.querySelector('header span.text-emerald-400, header span.text-electric-teal').innerText = "24 MAY 2026 (MOCK FALLBACK)";
+                document.querySelector('header span.text-emerald-400, header span.text-electric-teal').className = "text-amber-500";
+            }
+        }
+        
+        function runGuideDiagnostics(btn) {
+            const origText = btn.innerHTML;
+            btn.innerHTML = `
+                <svg class="w-4.5 h-4.5 text-white animate-spin mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+            `;
+            
+            const db = document.getElementById('ping-db');
+            const voice = document.getElementById('ping-voice');
+            const vec = document.getElementById('ping-vector');
+            const gcs = document.getElementById('ping-gcs');
+            
+            db.innerText = "SCANNING..."; db.className = "text-amber-400 animate-pulse font-bold";
+            voice.innerText = "SCANNING..."; voice.className = "text-amber-400 animate-pulse font-bold";
+            vec.innerText = "SCANNING..."; vec.className = "text-amber-400 animate-pulse font-bold";
+            gcs.innerText = "SCANNING..."; gcs.className = "text-amber-400 animate-pulse font-bold";
+            
+            setTimeout(() => {
+                db.innerText = "ONLINE (9ms)"; db.className = "text-emerald-400 font-bold";
+                voice.innerText = "ONLINE (12ms)"; voice.className = "text-emerald-400 font-bold";
+                vec.innerText = "ONLINE (18ms)"; vec.className = "text-emerald-400 font-bold";
+                gcs.innerText = "ONLINE (6ms)"; gcs.className = "text-emerald-400 font-bold";
+                btn.innerHTML = "Diagnostics Successful ✓";
+                btn.className = "mt-4 py-2 w-full rounded-xl bg-emerald-500 text-white border border-emerald-400 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition duration-300 font-headings font-extrabold text-xs";
+                
+                setTimeout(() => {
+                    btn.innerHTML = origText;
+                    btn.className = "mt-4 py-2 w-full rounded-xl bg-neon-indigo text-white border border-neon-indigo/30 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)] transition duration-300 font-headings font-extrabold text-xs";
+                }, 2000);
+            }, 1500);
+        }
+    </script>
+    
+            </div>
+        </div>
+        
+        <footer class="max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
+
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
         }
     </script>
 </body>

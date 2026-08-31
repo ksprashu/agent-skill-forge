@@ -1,532 +1,294 @@
 <!DOCTYPE html>
-<html lang="en" class="technical">
+<html lang="en" class="dark h-full bg-[#121212]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monorepo Architecture & Design</title>
+    <title>🏛️ Monorepo Architecture & Design • Google India Summit 2026</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        
-        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
-        :root {
-            --bg-canvas: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-surface-alt: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --color-primary: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-glow: rgba(37, 99, 235, 0.08);
-            --border-color: #e2e8f0;
-            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --rounding: 8px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --header-bg: #ffffff;
-        }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-        .main-container {
-            display: grid;
-            grid-template-columns: 240px minmax(0, 1fr) 200px;
-            gap: 28px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 24px;
-        }
-        @media(max-width: 1100px) {
-            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
-            .toc-bar { display: none; }
-        }
-        @media(max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; padding: 16px; }
-            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
-        }
-        .sidebar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 20px;
-        }
-        .toc-bar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
-        }
-        .prose-content {
-            min-width: 0;
-            line-height: 1.7;
-            font-size: 15px;
-        }
-        .glass-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            box-shadow: var(--shadow-sm);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-    
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-        }
-        
-        .header-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .tab-btn {
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-surface-alt);
-        }
-        .tab-btn.tab-active {
-            background: var(--color-accent-glow);
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .external-link, .nav-link-item {
-            color: var(--color-accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            font-weight: 500;
-        }
-        
-        .rich-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            border-radius: var(--rounding);
-            border: 1px solid var(--border-color);
-        }
-        .rich-table th {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .rich-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        .rich-table th:first-child, .rich-table td:first-child {
-            white-space: nowrap !important;
-        }
-        
-        .code-container {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            overflow: hidden;
-            color: #f8fafc;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 14px;
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .copy-btn {
-            background: transparent;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.7rem;
-        }
-        pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
-        }
-        code {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-        .inline-code {
-            background-color: var(--bg-surface-alt);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .sidebar-link {
-            display: block;
-            padding: 6px 10px;
-            border-radius: var(--rounding);
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 2px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link:hover {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background-color: var(--color-accent-glow);
-            color: var(--color-accent);
-            font-weight: 600;
-            border-left: 3px solid var(--color-accent);
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header-bar">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-[var(--text-primary)]">Monorepo Architecture & Design</span>
-        </div>
-        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
-            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
-            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        
-        <aside class="sidebar">
-            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
-            </div>
-            <nav>
-                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
-<a href="VISION.html" class="sidebar-link">Vision</a>
-<a href="architecture.html" class="sidebar-link active">Architecture</a>
-<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
-<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
-<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
-<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
-<a href="user_guide.html" class="sidebar-link">User Guide</a>
-<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
-            </nav>
-        </aside>
-
-        <main class="prose-content">
-            <div id="ui-view">
-                <article class="glass-panel">
-                    <h1 id="monorepo-architecture-design" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">🏛️ Monorepo Architecture & Design</h1>
-<p class="mb-4 text-[var(--text-secondary)]">Comprehensive architectural specifications for <strong>Agent Skill Forge</strong>, detailing the 2-tier scoping engine, cross-platform compatibility layers, multi-agent fan-out orchestration, and evaluation harnesses.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="1-the-2-tier-skill-architecture" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 1. The 2-Tier Skill Architecture</h2>
-<p class="mb-4 text-[var(--text-secondary)]">Agent Skill Forge splits skills into two distinct tiers to balance discovery speed with context window conservation:</p>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>TXT</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-txt">┌────────────────────────────────────────────────────────────────────────┐
-│                        TIER 1: GLOBAL LIFECYCLE                        │
-│   prompt · grill · spec · plan · test · verify · review · unslop       │
-│   docs · catalog · sync · google-oss · codelab · voice · copy-write    │
-│   image-gen                                                            │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                                   ▼ On-Demand JIT Bootstrap
-┌────────────────────────────────────────────────────────────────────────┐
-│                      TIER 2: PROJECT-SCOPED DOMAIN                     │
-│   frontend-ui · perf-opt · api-design · security · migrations · devtools│
-│   observability · ci-cd · debugging · git-workflow · context · bench   │
-└────────────────────────────────────────────────────────────────────────┘
-</code></pre>
-            </div>
-            
-<h3 id="architectural-benefits" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Architectural Benefits:</h3>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Token Window Economy</strong>: Modern LLM agents inject active skill descriptions into their system prompts on every turn. Restricting global scope to 16 core verbs keeps token overhead minimal ($\le 800$ tokens total) and inference latency low.</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Elimination of Semantic Collisions</strong>: Clear, distinctive 1-word verbs eliminate intent ambiguity between overlapping commands.</p>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Domain Purity</strong>: A backend Python microservice doesn't need CSS <code class="inline-code">:has()</code> rules in its agent context, and a frontend Next.js app doesn't need PostgreSQL WAL tuning instructions.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="2-cross-platform-interoperability-engine" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🔌 2. Cross-Platform Interoperability Engine</h2>
-<p class="mb-4 text-[var(--text-secondary)]">Skills in Agent Skill Forge conform to the universal <code class="inline-code">SKILL.md</code> frontmatter standard, enabling seamless multi-runtime operation without file duplication:</p>
-<div class="overflow-x-auto my-4"><table class="rich-table">
-<thead><tr>
-<th>Runtime Environment</th>
-<th>Discovery Mechanism</th>
-<th>Skill Directory</th>
-<th>Policy Location</th>
-</tr></thead><tbody>
-<tr>
-<td><strong>Google Antigravity IDE</strong></td>
-<td>Skills Hub & Customizations</td>
-<td><code class="inline-code">~/.gemini/config/skills/</code></td>
-<td><code class="inline-code">.gemini/rules/</code> / Global Rules</td>
-</tr>
-<tr>
-<td><strong>Claude Code</strong></td>
-<td>Native Plugin Manifest (<code class="inline-code">plugin.json</code>)</td>
-<td><code class="inline-code">~/.claude/skills/</code></td>
-<td><code class="inline-code">CLAUDE.md</code></td>
-</tr>
-<tr>
-<td><strong>Gemini CLI</strong></td>
-<td>Workspace Skills Hub</td>
-<td><code class="inline-code">~/.gemini/skills/</code></td>
-<td><code class="inline-code">GEMINI.md</code></td>
-</tr>
-<tr>
-<td><strong>Cursor IDE</strong></td>
-<td>Cursor Agent Auto-Discovery</td>
-<td><code class="inline-code">.cursor/skills/&lt;name&gt;/SKILL.md</code></td>
-<td><code class="inline-code">.cursor/rules/*.mdc</code></td>
-</tr>
-<tr>
-<td><strong>OpenAI Codex / Operator</strong></td>
-<td>Codex Marketplace Plugin</td>
-<td><code class="inline-code">~/.codex/plugins/</code> or <code class="inline-code">.codex-plugin/</code></td>
-<td><code class="inline-code">AGENTS.md</code></td>
-</tr>
-<tr>
-<td><strong>OpenCode / Windsurf</strong></td>
-<td>Open Agent Standard Hub</td>
-<td><code class="inline-code">~/.agents/skills/</code></td>
-<td><code class="inline-code">AGENTS.md</code></td>
-</tr>
-</tbody></table></div>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="3-profile-overlay-personalization" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛡️ 3. Profile-Overlay Personalization</h2>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>MERMAID</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-mermaid">flowchart TD
-    Req[&quot;Writing Request (/copy-write)&quot;] --&gt; L1{&quot;1. Check Local Override\n(references/*.local.md)&quot;}
-    L1 -- &quot;Found (Gitignored)&quot; --&gt; ApplyLocal[&quot;Apply Private User Persona&quot;]
-    L1 -- &quot;Not Found&quot; --&gt; L2{&quot;2. Check Home Profile\n(~/.gemini/personas/default/)&quot;}
-    L2 -- &quot;Found&quot; --&gt; ApplyHome[&quot;Apply User System Persona&quot;]
-    L2 -- &quot;Not Found&quot; --&gt; L3[&quot;3. Fallback to Open Source Template\n(references/*.template.md)&quot;]
-    ApplyLocal --&gt; Draft[&quot;Draft Content&quot;]
-    ApplyHome --&gt; Draft
-    L3 --&gt; Draft
-</code></pre>
-            </div>
-            
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="4-3-tier-evaluation-verification-harness" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🧪 4. 3-Tier Evaluation & Verification Harness</h2>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>MERMAID</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-mermaid">flowchart LR
-    T1[&quot;Tier 1: Static Syntax\n• YAML Frontmatter\n• Zero-PII Audit\n• py_compile/tsc&quot;] --&gt; T2[&quot;Tier 2: Routing Linter\n• Query Trigger Density\n• Semantic Collision\n• Token Budget (&lt;1024)&quot;]
-    T2 --&gt; T3[&quot;Tier 3: Behavioral Grader\n• Spec Checkpoints\n• TDD Red-Green Trace\n• Anti-Rationalization&quot;]
-</code></pre>
-            </div>
-            
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="5-open-knowledge-format-okf-subsystem" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🧠 5. Open Knowledge Format (OKF) Subsystem</h2>
-<p class="mb-4 text-[var(--text-secondary)]">Architectural memory is maintained under <a href="index.html" class="nav-link-item"><code class="inline-code">.gemini/knowledge/</code></a> across 5 specialized subtrees:</p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><strong><code class="inline-code">scout/</code></strong>: Codebase topology, skill directory, ecosystem landscape.</li>
-<li><strong><code class="inline-code">analyst/</code></strong>: Design decisions, attribution matrix, comparative benchmarks, leading words linguistics.</li>
-<li><strong><code class="inline-code">architecture/</code></strong>: Frontmatter schemas, installer specs, compiler pipelines, orchestration catalogs.</li>
-<li><strong><code class="inline-code">builder/</code></strong>: Runbooks, authoring handbooks, Socratic grilling engines.</li>
-<li><strong><code class="inline-code">sentry/</code></strong>: Zero-PII policies, OSS compliance, 3-tier eval harnesses, anti-rationalization guardrails.</li>
-</ul>
-                </article>
-            </div>
-
-            <div id="markdown-view" class="hidden">
-                <div class="glass-panel">
-                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
-                        <span class="text-sm font-bold">Raw Markdown Source</span>
-                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
-                    </div>
-                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]">---
-title: &quot;Monorepo Architecture &amp; Design&quot;
-theme: &quot;technical&quot;
-description: &quot;Core architectural specifications for 2-tier skill scoping, multi-runtime interoperability, 3-tier evals, and profile overlays.&quot;
----
-
-# 🏛️ Monorepo Architecture &amp; Design
-
-Comprehensive architectural specifications for **Agent Skill Forge**, detailing the 2-tier scoping engine, cross-platform compatibility layers, multi-agent fan-out orchestration, and evaluation harnesses.
-
----
-
-## 🌟 1. The 2-Tier Skill Architecture
-
-Agent Skill Forge splits skills into two distinct tiers to balance discovery speed with context window conservation:
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        TIER 1: GLOBAL LIFECYCLE                        │
-│   prompt · grill · spec · plan · test · verify · review · unslop       │
-│   docs · catalog · sync · google-oss · codelab · voice · copy-write    │
-│   image-gen                                                            │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                                   ▼ On-Demand JIT Bootstrap
-┌────────────────────────────────────────────────────────────────────────┐
-│                      TIER 2: PROJECT-SCOPED DOMAIN                     │
-│   frontend-ui · perf-opt · api-design · security · migrations · devtools│
-│   observability · ci-cd · debugging · git-workflow · context · bench   │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### Architectural Benefits:
-1. **Token Window Economy**: Modern LLM agents inject active skill descriptions into their system prompts on every turn. Restricting global scope to 16 core verbs keeps token overhead minimal ($\le 800$ tokens total) and inference latency low.
-2. **Elimination of Semantic Collisions**: Clear, distinctive 1-word verbs eliminate intent ambiguity between overlapping commands.
-3. **Domain Purity**: A backend Python microservice doesn&#x27;t need CSS `:has()` rules in its agent context, and a frontend Next.js app doesn&#x27;t need PostgreSQL WAL tuning instructions.
-
----
-
-## 🔌 2. Cross-Platform Interoperability Engine
-
-Skills in Agent Skill Forge conform to the universal `SKILL.md` frontmatter standard, enabling seamless multi-runtime operation without file duplication:
-
-| Runtime Environment | Discovery Mechanism | Skill Directory | Policy Location |
-| :--- | :--- | :--- | :--- |
-| **Google Antigravity IDE** | Skills Hub &amp; Customizations | `~/.gemini/config/skills/` | `.gemini/rules/` / Global Rules |
-| **Claude Code** | Native Plugin Manifest (`plugin.json`) | `~/.claude/skills/` | `CLAUDE.md` |
-| **Gemini CLI** | Workspace Skills Hub | `~/.gemini/skills/` | `GEMINI.md` |
-| **Cursor IDE** | Cursor Agent Auto-Discovery | `.cursor/skills/&lt;name&gt;/SKILL.md` | `.cursor/rules/*.mdc` |
-| **OpenAI Codex / Operator** | Codex Marketplace Plugin | `~/.codex/plugins/` or `.codex-plugin/` | `AGENTS.md` |
-| **OpenCode / Windsurf** | Open Agent Standard Hub | `~/.agents/skills/` | `AGENTS.md` |
-
----
-
-## 🛡️ 3. Profile-Overlay Personalization
-
-```mermaid
-flowchart TD
-    Req[&quot;Writing Request (/copy-write)&quot;] --&gt; L1{&quot;1. Check Local Override\n(references/*.local.md)&quot;}
-    L1 -- &quot;Found (Gitignored)&quot; --&gt; ApplyLocal[&quot;Apply Private User Persona&quot;]
-    L1 -- &quot;Not Found&quot; --&gt; L2{&quot;2. Check Home Profile\n(~/.gemini/personas/default/)&quot;}
-    L2 -- &quot;Found&quot; --&gt; ApplyHome[&quot;Apply User System Persona&quot;]
-    L2 -- &quot;Not Found&quot; --&gt; L3[&quot;3. Fallback to Open Source Template\n(references/*.template.md)&quot;]
-    ApplyLocal --&gt; Draft[&quot;Draft Content&quot;]
-    ApplyHome --&gt; Draft
-    L3 --&gt; Draft
-```
-
----
-
-## 🧪 4. 3-Tier Evaluation &amp; Verification Harness
-
-```mermaid
-flowchart LR
-    T1[&quot;Tier 1: Static Syntax\n• YAML Frontmatter\n• Zero-PII Audit\n• py_compile/tsc&quot;] --&gt; T2[&quot;Tier 2: Routing Linter\n• Query Trigger Density\n• Semantic Collision\n• Token Budget (&lt;1024)&quot;]
-    T2 --&gt; T3[&quot;Tier 3: Behavioral Grader\n• Spec Checkpoints\n• TDD Red-Green Trace\n• Anti-Rationalization&quot;]
-```
-
----
-
-## 🧠 5. Open Knowledge Format (OKF) Subsystem
-
-Architectural memory is maintained under [`.gemini/knowledge/`](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md) across 5 specialized subtrees:
-- **`scout/`**: Codebase topology, skill directory, ecosystem landscape.
-- **`analyst/`**: Design decisions, attribution matrix, comparative benchmarks, leading words linguistics.
-- **`architecture/`**: Frontmatter schemas, installer specs, compiler pipelines, orchestration catalogs.
-- **`builder/`**: Runbooks, authoring handbooks, Socratic grilling engines.
-- **`sentry/`**: Zero-PII policies, OSS compliance, 3-tier eval harnesses, anti-rationalization guardrails.
-</code></pre>
-                </div>
-            </div>
-        </main>
-
-        <aside class="toc-bar">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
-            <nav class="mt-3 space-y-1">
-                <a href="#1-the-2-tier-skill-architecture" class="sidebar-link text-xs">🌟 1. The 2-Tier Skill Architecture</a>
-<a href="#architectural-benefits" class="sidebar-link text-xs ml-2">Architectural Benefits:</a>
-<a href="#2-cross-platform-interoperability-engine" class="sidebar-link text-xs">🔌 2. Cross-Platform Interoperability Engine</a>
-<a href="#3-profile-overlay-personalization" class="sidebar-link text-xs">🛡️ 3. Profile-Overlay Personalization</a>
-<a href="#4-3-tier-evaluation-verification-harness" class="sidebar-link text-xs">🧪 4. 3-Tier Evaluation & Verification Harness</a>
-<a href="#5-open-knowledge-format-okf-subsystem" class="sidebar-link text-xs">🧠 5. Open Knowledge Format (OKF) Subsystem</a>
-            </nav>
-        </aside>
-
-    </div>
-
     <script>
-        function showView(view) {
-            const ui = document.getElementById('ui-view');
-            const md = document.getElementById('markdown-view');
-            const btnUi = document.getElementById('btn-ui-view');
-            const btnMd = document.getElementById('btn-md-view');
-            
-            if (view === 'ui') {
-                ui.classList.remove('hidden');
-                md.classList.add('hidden');
-                btnUi.classList.add('tab-active');
-                btnMd.classList.remove('tab-active');
-            } else {
-                ui.classList.add('hidden');
-                md.classList.remove('hidden');
-                btnUi.classList.remove('tab-active');
-                btnMd.classList.add('tab-active');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
             }
         }
-
-        function copyCode(btn) {
-            const pre = btn.closest('.code-container').querySelector('code');
-            navigator.clipboard.writeText(pre.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
+    </script>
+    
+    <style>
+        html {
+            font-size: 16px;
         }
-
-        function copyRawMarkdown(btn) {
-            const code = document.querySelector('#markdown-view code');
-            navigator.clipboard.writeText(code.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
             });
+        });
+    </script>
+</head>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
+        </div>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+        <div class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">🏛️ Monorepo Architecture & Design</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                <hr class="border-white/5 my-8" />
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">title: "Monorepo Architecture & Design"</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">theme: "technical"</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">description: "Core architectural specifications for 2-tier skill scoping, multi-runtime interoperability, 3-tier evals, and profile overlays."</p>
+<hr class="border-white/5 my-8" />
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Comprehensive architectural specifications for <strong class="text-white font-bold font-headings">Agent Skill Forge</strong>, detailing the 2-tier scoping engine, cross-platform compatibility layers, multi-agent fan-out orchestration, and evaluation harnesses.</p>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🌟 1. The 2-Tier Skill Architecture</h2>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Agent Skill Forge splits skills into two distinct tiers to balance discovery speed with context window conservation:</p>
+
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20TIER%201%3A%20GLOBAL%20LIFECYCLE%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20prompt%20%C2%B7%20grill%20%C2%B7%20spec%20%C2%B7%20plan%20%C2%B7%20test%20%C2%B7%20verify%20%C2%B7%20review%20%C2%B7%20unslop%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20docs%20%C2%B7%20catalog%20%C2%B7%20sync%20%C2%B7%20google-oss%20%C2%B7%20codelab%20%C2%B7%20voice%20%C2%B7%20copy-write%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20image-gen%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%AC%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%96%BC%20On-Demand%20JIT%20Bootstrap%0A%E2%94%8C%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%90%0A%E2%94%82%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20TIER%202%3A%20PROJECT-SCOPED%20DOMAIN%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E2%94%82%0A%E2%94%82%20%20%20frontend-ui%20%C2%B7%20perf-opt%20%C2%B7%20api-design%20%C2%B7%20security%20%C2%B7%20migrations%20%C2%B7%20devtools%E2%94%82%0A%E2%94%82%20%20%20observability%20%C2%B7%20ci-cd%20%C2%B7%20debugging%20%C2%B7%20git-workflow%20%C2%B7%20context%20%C2%B7%20bench%20%20%20%E2%94%82%0A%E2%94%94%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%80%E2%94%98%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>┌────────────────────────────────────────────────────────────────────────┐
+│                        TIER 1: GLOBAL LIFECYCLE                        │
+│   prompt · grill · spec · plan · test · verify · review · unslop       │
+│   docs · catalog · sync · google-oss · codelab · voice · copy-write    │
+│   image-gen                                                            │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼ On-Demand JIT Bootstrap
+┌────────────────────────────────────────────────────────────────────────┐
+│                      TIER 2: PROJECT-SCOPED DOMAIN                     │
+│   frontend-ui · perf-opt · api-design · security · migrations · devtools│
+│   observability · ci-cd · debugging · git-workflow · context · bench   │
+└────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+            </div>
+            
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Architectural Benefits:</span></h3>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">Token Window Economy</strong>: Modern LLM agents inject active skill descriptions into their system prompts on every turn. Restricting global scope to 16 core verbs keeps token overhead minimal ($\le 800$ tokens total) and inference latency low.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Elimination of Semantic Collisions</strong>: Clear, distinctive 1-word verbs eliminate intent ambiguity between overlapping commands.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">Domain Purity</strong>: A backend Python microservice doesn't need CSS <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">:has()</code> rules in its agent context, and a frontend Next.js app doesn't need PostgreSQL WAL tuning instructions.</p>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🔌 2. Cross-Platform Interoperability Engine</h2>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Skills in Agent Skill Forge conform to the universal <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">SKILL.md</code> frontmatter standard, enabling seamless multi-runtime operation without file duplication:</p>
+
+
+        <div class="overflow-x-auto my-6 border border-white/5 rounded-2xl bg-white/[0.005] shadow-xl backdrop-blur-md">
+            <table class="min-w-full divide-y divide-white/5 text-sm">
+                <thead class="bg-white/[0.015]">
+                    <tr class="divide-x divide-white/5"><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Runtime Environment</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Discovery Mechanism</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Skill Directory</th><th class="px-4 py-3 text-left text-xs font-console font-bold uppercase tracking-widest text-white border-b border-white/5">Policy Location</th></tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    <tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Google Antigravity IDE</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Skills Hub & Customizations</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/config/skills/</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/rules/</code> / Global Rules</td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Claude Code</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Native Plugin Manifest (<code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">plugin.json</code>)</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.claude/skills/</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">CLAUDE.md</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Gemini CLI</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Workspace Skills Hub</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.gemini/skills/</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">GEMINI.md</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">Cursor IDE</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Cursor Agent Auto-Discovery</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.cursor/skills/<name>/SKILL.md</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.cursor/rules/*.mdc</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">OpenAI Codex / Operator</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Codex Marketplace Plugin</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.codex/plugins/</code> or <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.codex-plugin/</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">AGENTS.md</code></td></tr><tr class="hover:bg-white/[0.01] transition divide-x divide-white/5"><td class="px-4 py-3 text-white font-semibold font-headings"><strong class="text-white font-bold font-headings">OpenCode / Windsurf</strong></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans">Open Agent Standard Hub</td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">~/.agents/skills/</code></td><td class="px-4 py-3 text-zinc-300/90 leading-relaxed font-sans"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">AGENTS.md</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🛡️ 3. Profile-Overlay Personalization</h2>
+
+
+            <div class="flex flex-col items-center justify-center bg-[#0d101b]/35 border border-white/5 rounded-3xl p-6.5 my-6 shadow-2xl backdrop-blur-md w-full overflow-hidden">
+                <div class="text-xs font-console font-black tracking-widest text-zinc-500 uppercase mb-4 flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse"></span>
+                    <span>Interactive Flow Chart Diagram</span>
+                </div>
+                <div class="mermaid w-full text-center flex justify-center text-sm text-zinc-300">
+flowchart TD
+    Req["Writing Request (/copy-write)"] --> L1{"1. Check Local Override\n(references/*.local.md)"}
+    L1 -- "Found (Gitignored)" --> ApplyLocal["Apply Private User Persona"]
+    L1 -- "Not Found" --> L2{"2. Check Home Profile\n(~/.gemini/personas/default/)"}
+    L2 -- "Found" --> ApplyHome["Apply User System Persona"]
+    L2 -- "Not Found" --> L3["3. Fallback to Open Source Template\n(references/*.template.md)"]
+    ApplyLocal --> Draft["Draft Content"]
+    ApplyHome --> Draft
+    L3 --> Draft
+
+                </div>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🧪 4. 3-Tier Evaluation & Verification Harness</h2>
+
+
+            <div class="flex flex-col items-center justify-center bg-[#0d101b]/35 border border-white/5 rounded-3xl p-6.5 my-6 shadow-2xl backdrop-blur-md w-full overflow-hidden">
+                <div class="text-xs font-console font-black tracking-widest text-zinc-500 uppercase mb-4 flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse"></span>
+                    <span>Interactive Flow Chart Diagram</span>
+                </div>
+                <div class="mermaid w-full text-center flex justify-center text-sm text-zinc-300">
+flowchart LR
+    T1["Tier 1: Static Syntax\n• YAML Frontmatter\n• Zero-PII Audit\n• py_compile/tsc"] --> T2["Tier 2: Routing Linter\n• Query Trigger Density\n• Semantic Collision\n• Token Budget (<1024)"]
+    T2 --> T3["Tier 3: Behavioral Grader\n• Spec Checkpoints\n• TDD Red-Green Trace\n• Anti-Rationalization"]
+
+                </div>
+            </div>
+            
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">🧠 5. Open Knowledge Format (OKF) Subsystem</h2>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Architectural memory is maintained under <a href="index.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/</code></a> across 5 specialized subtrees:</p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">scout/</code></strong>: Codebase topology, skill directory, ecosystem landscape.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">analyst/</code></strong>: Design decisions, attribution matrix, comparative benchmarks, leading words linguistics.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">architecture/</code></strong>: Frontmatter schemas, installer specs, compiler pipelines, orchestration catalogs.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">builder/</code></strong>: Runbooks, authoring handbooks, Socratic grilling engines.</span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">sentry/</code></strong>: Zero-PII policies, OSS compliance, 3-tier eval harnesses, anti-rationalization guardrails.</span>
+                </li>
+                </ul>
+
+            </div>
+        </div>
+        
+        <footer class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
+
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
         }
     </script>
 </body>

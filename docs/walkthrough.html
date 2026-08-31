@@ -1,518 +1,339 @@
 <!DOCTYPE html>
-<html lang="en" class="technical">
+<html lang="en" class="dark h-full bg-[#121212]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Walkthrough</title>
+    <title>Walkthrough: Continuous Alignment & Self-Evolving Project Intelligence • Google India Summit 2026</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        
-        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
-        :root {
-            --bg-canvas: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-surface-alt: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --color-primary: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-glow: rgba(37, 99, 235, 0.08);
-            --border-color: #e2e8f0;
-            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --rounding: 8px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --header-bg: #ffffff;
-        }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-        .main-container {
-            display: grid;
-            grid-template-columns: 240px minmax(0, 1fr) 200px;
-            gap: 28px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 24px;
-        }
-        @media(max-width: 1100px) {
-            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
-            .toc-bar { display: none; }
-        }
-        @media(max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; padding: 16px; }
-            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
-        }
-        .sidebar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 20px;
-        }
-        .toc-bar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
-        }
-        .prose-content {
-            min-width: 0;
-            line-height: 1.7;
-            font-size: 15px;
-        }
-        .glass-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            box-shadow: var(--shadow-sm);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-    
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-        }
-        
-        .header-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .tab-btn {
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-surface-alt);
-        }
-        .tab-btn.tab-active {
-            background: var(--color-accent-glow);
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .external-link, .nav-link-item {
-            color: var(--color-accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            font-weight: 500;
-        }
-        
-        .rich-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            border-radius: var(--rounding);
-            border: 1px solid var(--border-color);
-        }
-        .rich-table th {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .rich-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        .rich-table th:first-child, .rich-table td:first-child {
-            white-space: nowrap !important;
-        }
-        
-        .code-container {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            overflow: hidden;
-            color: #f8fafc;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 14px;
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .copy-btn {
-            background: transparent;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.7rem;
-        }
-        pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
-        }
-        code {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-        .inline-code {
-            background-color: var(--bg-surface-alt);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .sidebar-link {
-            display: block;
-            padding: 6px 10px;
-            border-radius: var(--rounding);
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 2px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link:hover {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background-color: var(--color-accent-glow);
-            color: var(--color-accent);
-            font-weight: 600;
-            border-left: 3px solid var(--color-accent);
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header-bar">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-[var(--text-primary)]">Walkthrough</span>
-        </div>
-        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
-            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
-            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        
-        <aside class="sidebar">
-            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
-            </div>
-            <nav>
-                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
-<a href="VISION.html" class="sidebar-link">Vision</a>
-<a href="architecture.html" class="sidebar-link">Architecture</a>
-<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
-<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
-<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
-<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
-<a href="user_guide.html" class="sidebar-link">User Guide</a>
-<a href="walkthrough.html" class="sidebar-link active">Walkthrough</a>
-            </nav>
-        </aside>
-
-        <main class="prose-content">
-            <div id="ui-view">
-                <article class="glass-panel">
-                    <h1 id="walkthrough-continuous-alignment-self-evolving-project-intelligence" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Walkthrough: Continuous Alignment & Self-Evolving Project Intelligence</h1>
-<p class="mb-4 text-[var(--text-secondary)]">Successfully implemented and verified the <strong><code class="inline-code">continuous-alignment</code></strong> skill, Antigravity lifecycle hooks, 4-tier memory architecture, distillation scripts, and automated test suite under <strong><code class="inline-code">PRMT-E94A</code></strong>.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="1-accomplishments-architecture" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">1. Accomplishments & Architecture</h2>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>MERMAID</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-mermaid">graph TD
-    subgraph Execution Loop
-        A[Agent Interaction] --&gt;|Turn Completes| B[Antigravity Stop Hook]
-    end
-
-    subgraph Memory Distillation Pipeline
-        B --&gt;|Pipes stdin payload| C[distill_session.py]
-        C --&gt;|Parse transcript.jsonl| D[Extract Invariants &amp; Decisions]
-        D --&gt;|Append Deduplicated Rules| E[.gemini/knowledge/memories.jsonl]
-    end
-
-    subgraph 4-Tier Memory Hierarchy
-        E --&gt; F[sync_agents_rules.py]
-        F --&gt;|Max 200 lines| G[Tier 1: AGENTS.md / GEMINI.md]
-        F --&gt;|Spillover Scope| H[Tier 2: .agents/rules/*.md]
-        E --&gt; I[compile_roadmap.py]
-        I --&gt;|Milestones &amp; SVGs| J[Tier 3: docs/VISION.md &amp; ROADMAP.md]
-        I --&gt;|MADR Templates| K[Tier 4: .gemini/knowledge/ADRs/]
-    end
-</code></pre>
-            </div>
-            
-<h3 id="components-delivered" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Components Delivered</h3>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Skill Definition & Commands</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="SKILL.html" class="nav-link-item">skills/continuous-alignment/SKILL.md</a>: Comprehensive skill manual with <code class="inline-code">/align</code>, <code class="inline-code">/evolve</code>, and <code class="inline-code">/prune-memory</code> commands.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Turn-Completion Distillation Engine</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="distill_session.html" class="nav-link-item">skills/continuous-alignment/scripts/distill_session.py</a>: Sub-second (< 15ms) transcript parser with secret redaction and semantic deduplication.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Rule Synchronization & 200-Line Budget Enforcer</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="sync_agents_rules.html" class="nav-link-item">skills/continuous-alignment/scripts/sync_agents_rules.py</a>: Atomic updater enforcing a strict 200-line limit on root <a href="AGENTS.html" class="nav-link-item">AGENTS.md</a>, routing subsystem rules to <code class="inline-code">.agents/rules/</code>.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">4. <strong>Living ADR & Roadmap Compiler</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="compile_roadmap.html" class="nav-link-item">skills/continuous-alignment/scripts/compile_roadmap.py</a>: Compiles MADRs in <code class="inline-code">.gemini/knowledge/ADRs/</code> and updates <a href="ROADMAP.html" class="nav-link-item">docs/ROADMAP.md</a> with SVG branching timelines.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">5. <strong>Antigravity Lifecycle Hook Manifests</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="hooks.html" class="nav-link-item">.agents/hooks.json</a> & <a href="hooks.html" class="nav-link-item">.gemini/hooks.json</a>: Configured <code class="inline-code">Stop</code> and <code class="inline-code">PreInvocation</code> event triggers.</li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">6. <strong>Comprehensive Test Suite</strong></p>
-<ul class="list-disc pl-5 my-3 space-y-1">
-<li><a href="test_distill.html" class="nav-link-item">skills/continuous-alignment/tests/test_distill.py</a></li>
-<li><a href="test_sync_rules.html" class="nav-link-item">skills/continuous-alignment/tests/test_sync_rules.py</a></li>
-<li><a href="test_compile_roadmap.html" class="nav-link-item">skills/continuous-alignment/tests/test_compile_roadmap.py</a></li>
-</ul>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="2-verification-results" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">2. Verification Results</h2>
-<h3 id="unit-tests" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Unit Tests</h3>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>BASH</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-bash">python3 -m unittest discover -s skills/continuous-alignment/tests -v
-</code></pre>
-            </div>
-            
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>TXT</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-txt">test_compile_vision_and_roadmap_end_to_end ... ok
-test_create_and_load_madr_record ... ok
-test_generate_roadmap_svg ... ok
-test_compute_memory_id_deterministic ... ok
-test_distill_session_end_to_end ... ok
-test_extract_command_invariants ... ok
-test_extract_user_constraints ... ok
-test_sanitize_text_redacts_keys_and_pii ... ok
-test_path_scoped_rule_spillover ... ok
-test_superseded_rules_are_ignored ... ok
-test_sync_rules_creates_agents_md ... ok
-
-Ran 11 tests in 0.014s -&gt; OK (100% Pass)
-</code></pre>
-            </div>
-            
-<h3 id="skill-linter-pii-audit" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">Skill Linter & PII Audit</h3>
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>BASH</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-bash">python scripts/validate_skills.py
-</code></pre>
-            </div>
-            
-
-            <div class="code-container my-4">
-                <div class="code-header">
-                    <span>TXT</span>
-                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                </div>
-                <pre><code class="language-txt">Validated 17 Core Skills and 12 Preferred Skills.
-Total Skills: 29
-All skills passed validation with 0 PII leaks and clean frontmatter!
-</code></pre>
-            </div>
-            
-                </article>
-            </div>
-
-            <div id="markdown-view" class="hidden">
-                <div class="glass-panel">
-                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
-                        <span class="text-sm font-bold">Raw Markdown Source</span>
-                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
-                    </div>
-                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Walkthrough: Continuous Alignment &amp; Self-Evolving Project Intelligence
-
-Successfully implemented and verified the **`continuous-alignment`** skill, Antigravity lifecycle hooks, 4-tier memory architecture, distillation scripts, and automated test suite under **`PRMT-E94A`**.
-
----
-
-## 1. Accomplishments &amp; Architecture
-
-```mermaid
-graph TD
-    subgraph Execution Loop
-        A[Agent Interaction] --&gt;|Turn Completes| B[Antigravity Stop Hook]
-    end
-
-    subgraph Memory Distillation Pipeline
-        B --&gt;|Pipes stdin payload| C[distill_session.py]
-        C --&gt;|Parse transcript.jsonl| D[Extract Invariants &amp; Decisions]
-        D --&gt;|Append Deduplicated Rules| E[.gemini/knowledge/memories.jsonl]
-    end
-
-    subgraph 4-Tier Memory Hierarchy
-        E --&gt; F[sync_agents_rules.py]
-        F --&gt;|Max 200 lines| G[Tier 1: AGENTS.md / GEMINI.md]
-        F --&gt;|Spillover Scope| H[Tier 2: .agents/rules/*.md]
-        E --&gt; I[compile_roadmap.py]
-        I --&gt;|Milestones &amp; SVGs| J[Tier 3: docs/VISION.md &amp; ROADMAP.md]
-        I --&gt;|MADR Templates| K[Tier 4: .gemini/knowledge/ADRs/]
-    end
-```
-
-### Components Delivered
-
-1. **Skill Definition &amp; Commands**
-   - [skills/continuous-alignment/SKILL.md](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/SKILL.md): Comprehensive skill manual with `/align`, `/evolve`, and `/prune-memory` commands.
-2. **Turn-Completion Distillation Engine**
-   - [skills/continuous-alignment/scripts/distill_session.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/distill_session.py): Sub-second (&lt; 15ms) transcript parser with secret redaction and semantic deduplication.
-3. **Rule Synchronization &amp; 200-Line Budget Enforcer**
-   - [skills/continuous-alignment/scripts/sync_agents_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/sync_agents_rules.py): Atomic updater enforcing a strict 200-line limit on root [AGENTS.md](file:///Users/ksprashanth/code/github/agent-skill-forge/AGENTS.md), routing subsystem rules to `.agents/rules/`.
-4. **Living ADR &amp; Roadmap Compiler**
-   - [skills/continuous-alignment/scripts/compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/compile_roadmap.py): Compiles MADRs in `.gemini/knowledge/ADRs/` and updates [docs/ROADMAP.md](file:///Users/ksprashanth/code/github/agent-skill-forge/docs/ROADMAP.md) with SVG branching timelines.
-5. **Antigravity Lifecycle Hook Manifests**
-   - [.agents/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.agents/hooks.json) &amp; [.gemini/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/hooks.json): Configured `Stop` and `PreInvocation` event triggers.
-6. **Comprehensive Test Suite**
-   - [skills/continuous-alignment/tests/test_distill.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_distill.py)
-   - [skills/continuous-alignment/tests/test_sync_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_sync_rules.py)
-   - [skills/continuous-alignment/tests/test_compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_compile_roadmap.py)
-
----
-
-## 2. Verification Results
-
-### Unit Tests
-```bash
-python3 -m unittest discover -s skills/continuous-alignment/tests -v
-```
-```
-test_compile_vision_and_roadmap_end_to_end ... ok
-test_create_and_load_madr_record ... ok
-test_generate_roadmap_svg ... ok
-test_compute_memory_id_deterministic ... ok
-test_distill_session_end_to_end ... ok
-test_extract_command_invariants ... ok
-test_extract_user_constraints ... ok
-test_sanitize_text_redacts_keys_and_pii ... ok
-test_path_scoped_rule_spillover ... ok
-test_superseded_rules_are_ignored ... ok
-test_sync_rules_creates_agents_md ... ok
-
-Ran 11 tests in 0.014s -&gt; OK (100% Pass)
-```
-
-### Skill Linter &amp; PII Audit
-```bash
-python scripts/validate_skills.py
-```
-```
-Validated 17 Core Skills and 12 Preferred Skills.
-Total Skills: 29
-All skills passed validation with 0 PII leaks and clean frontmatter!
-```
-</code></pre>
-                </div>
-            </div>
-        </main>
-
-        <aside class="toc-bar">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
-            <nav class="mt-3 space-y-1">
-                <a href="#1-accomplishments-architecture" class="sidebar-link text-xs">1. Accomplishments & Architecture</a>
-<a href="#components-delivered" class="sidebar-link text-xs ml-2">Components Delivered</a>
-<a href="#2-verification-results" class="sidebar-link text-xs">2. Verification Results</a>
-<a href="#unit-tests" class="sidebar-link text-xs ml-2">Unit Tests</a>
-<a href="#skill-linter-pii-audit" class="sidebar-link text-xs ml-2">Skill Linter & PII Audit</a>
-            </nav>
-        </aside>
-
-    </div>
-
     <script>
-        function showView(view) {
-            const ui = document.getElementById('ui-view');
-            const md = document.getElementById('markdown-view');
-            const btnUi = document.getElementById('btn-ui-view');
-            const btnMd = document.getElementById('btn-md-view');
-            
-            if (view === 'ui') {
-                ui.classList.remove('hidden');
-                md.classList.add('hidden');
-                btnUi.classList.add('tab-active');
-                btnMd.classList.remove('tab-active');
-            } else {
-                ui.classList.add('hidden');
-                md.classList.remove('hidden');
-                btnUi.classList.remove('tab-active');
-                btnMd.classList.add('tab-active');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
             }
         }
-
-        function copyCode(btn) {
-            const pre = btn.closest('.code-container').querySelector('code');
-            navigator.clipboard.writeText(pre.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
+    </script>
+    
+    <style>
+        html {
+            font-size: 16px;
         }
-
-        function copyRawMarkdown(btn) {
-            const code = document.querySelector('#markdown-view code');
-            navigator.clipboard.writeText(code.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
             });
+        });
+    </script>
+</head>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
+        </div>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+        <div class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">Walkthrough: Continuous Alignment & Self-Evolving Project Intelligence</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                <p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">Successfully implemented and verified the <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">continuous-alignment</code></strong> skill, Antigravity lifecycle hooks, 4-tier memory architecture, distillation scripts, and automated test suite under <strong class="text-white font-bold font-headings"><code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">PRMT-E94A</code></strong>.</p>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">1. Accomplishments & Architecture</h2>
+
+
+            <div class="flex flex-col items-center justify-center bg-[#0d101b]/35 border border-white/5 rounded-3xl p-6.5 my-6 shadow-2xl backdrop-blur-md w-full overflow-hidden">
+                <div class="text-xs font-console font-black tracking-widest text-zinc-500 uppercase mb-4 flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-electric-teal animate-pulse"></span>
+                    <span>Interactive Flow Chart Diagram</span>
+                </div>
+                <div class="mermaid w-full text-center flex justify-center text-sm text-zinc-300">
+graph TD
+    subgraph Execution Loop
+        A[Agent Interaction] -->|Turn Completes| B[Antigravity Stop Hook]
+    end
+
+    subgraph Memory Distillation Pipeline
+        B -->|Pipes stdin payload| C[distill_session.py]
+        C -->|Parse transcript.jsonl| D[Extract Invariants & Decisions]
+        D -->|Append Deduplicated Rules| E[.gemini/knowledge/memories.jsonl]
+    end
+
+    subgraph 4-Tier Memory Hierarchy
+        E --> F[sync_agents_rules.py]
+        F -->|Max 200 lines| G[Tier 1: AGENTS.md / GEMINI.md]
+        F -->|Spillover Scope| H[Tier 2: .agents/rules/*.md]
+        E --> I[compile_roadmap.py]
+        I -->|Milestones & SVGs| J[Tier 3: docs/VISION.md & ROADMAP.md]
+        I -->|MADR Templates| K[Tier 4: .gemini/knowledge/ADRs/]
+    end
+
+                </div>
+            </div>
+            
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Components Delivered</span></h3>
+
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">Skill Definition & Commands</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="SKILL.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/SKILL.md</a>: Comprehensive skill manual with <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/align</code>, <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/evolve</code>, and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">/prune-memory</code> commands.</span>
+                </li>
+                </ul>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Turn-Completion Distillation Engine</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="distill_session.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/scripts/distill_session.py</a>: Sub-second (< 15ms) transcript parser with secret redaction and semantic deduplication.</span>
+                </li>
+                </ul>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">Rule Synchronization & 200-Line Budget Enforcer</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="sync_agents_rules.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/scripts/sync_agents_rules.py</a>: Atomic updater enforcing a strict 200-line limit on root <a href="AGENTS.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">AGENTS.md</a>, routing subsystem rules to <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.agents/rules/</code>.</span>
+                </li>
+                </ul>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">4. <strong class="text-white font-bold font-headings">Living ADR & Roadmap Compiler</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="compile_roadmap.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/scripts/compile_roadmap.py</a>: Compiles MADRs in <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">.gemini/knowledge/ADRs/</code> and updates <a href="ROADMAP.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">docs/ROADMAP.md</a> with SVG branching timelines.</span>
+                </li>
+                </ul>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">5. <strong class="text-white font-bold font-headings">Antigravity Lifecycle Hook Manifests</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="hooks.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">.agents/hooks.json</a> & <a href="hooks.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">.gemini/hooks.json</a>: Configured <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">Stop</code> and <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">PreInvocation</code> event triggers.</span>
+                </li>
+                </ul>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">6. <strong class="text-white font-bold font-headings">Comprehensive Test Suite</strong></p>
+<ul class="space-y-2.5 my-4 pl-1">
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="test_distill.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/tests/test_distill.py</a></span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="test_sync_rules.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/tests/test_sync_rules.py</a></span>
+                </li>
+                
+                <li class="flex items-start space-x-3 text-zinc-300 font-sans text-base md:text-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neon-indigo shrink-0 mt-2"></span>
+                    <span class="leading-relaxed"><a href="test_compile_roadmap.html" class="text-electric-teal hover:text-white underline decoration-electric-teal/40 hover:decoration-white font-semibold transition duration-200">skills/continuous-alignment/tests/test_compile_roadmap.py</a></span>
+                </li>
+                </ul>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">2. Verification Results</h2>
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Unit Tests</span></h3>
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">bash code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('python3%20-m%20unittest%20discover%20-s%20skills/continuous-alignment/tests%20-v%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>python3 -m unittest discover -s skills/continuous-alignment/tests -v
+</code></pre>
+            </div>
+            
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('test_compile_vision_and_roadmap_end_to_end%20...%20ok%0Atest_create_and_load_madr_record%20...%20ok%0Atest_generate_roadmap_svg%20...%20ok%0Atest_compute_memory_id_deterministic%20...%20ok%0Atest_distill_session_end_to_end%20...%20ok%0Atest_extract_command_invariants%20...%20ok%0Atest_extract_user_constraints%20...%20ok%0Atest_sanitize_text_redacts_keys_and_pii%20...%20ok%0Atest_path_scoped_rule_spillover%20...%20ok%0Atest_superseded_rules_are_ignored%20...%20ok%0Atest_sync_rules_creates_agents_md%20...%20ok%0A%0ARan%2011%20tests%20in%200.014s%20-%3E%20OK%20%28100%25%20Pass%29%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>test_compile_vision_and_roadmap_end_to_end ... ok
+test_create_and_load_madr_record ... ok
+test_generate_roadmap_svg ... ok
+test_compute_memory_id_deterministic ... ok
+test_distill_session_end_to_end ... ok
+test_extract_command_invariants ... ok
+test_extract_user_constraints ... ok
+test_sanitize_text_redacts_keys_and_pii ... ok
+test_path_scoped_rule_spillover ... ok
+test_superseded_rules_are_ignored ... ok
+test_sync_rules_creates_agents_md ... ok
+
+Ran 11 tests in 0.014s -&gt; OK (100% Pass)
+</code></pre>
+            </div>
+            
+
+<h3 class="text-lg md:text-xl font-headings font-semibold text-white mt-6 mb-2.5 flex items-center space-x-2"><span class="w-1.5 h-1.5 rounded-full bg-electric-teal shrink-0"></span><span>Skill Linter & PII Audit</span></h3>
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">bash code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('python%20scripts/validate_skills.py%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>python scripts/validate_skills.py
+</code></pre>
+            </div>
+            
+
+            <div class="rounded-2xl overflow-hidden border border-white/5 bg-[#080b13] my-6 font-console text-xs relative group shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between px-4 py-2.5 bg-[#0d101b] border-b border-white/5">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 shadow-[0_0_6px_rgba(234,179,8,0.4)]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 shadow-[0_0_6px_rgba(34,197,94,0.4)]"></span>
+                        <span class="text-xs text-muted-slate font-console font-black pl-2 tracking-widest uppercase">txt code terminal</span>
+                    </div>
+                    <button onclick="navigator.clipboard.writeText(decodeURIComponent('Validated%2017%20Core%20Skills%20and%2012%20Preferred%20Skills.%0ATotal%20Skills%3A%2029%0AAll%20skills%20passed%20validation%20with%200%20PII%20leaks%20and%20clean%20frontmatter%21%0A')); showCopiedToast(this);" class="text-xs font-console font-bold text-muted-slate hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-md transition duration-200 border border-white/5 flex items-center space-x-1 group-hover:border-white/10">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="p-4 overflow-x-auto text-zinc-300 leading-relaxed font-console text-xs md:text-sm max-h-[420px] custom-scrollbar"><code>Validated 17 Core Skills and 12 Preferred Skills.
+Total Skills: 29
+All skills passed validation with 0 PII leaks and clean frontmatter!
+</code></pre>
+            </div>
+            
+
+            </div>
+        </div>
+        
+        <footer class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
+
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
         }
     </script>
 </body>

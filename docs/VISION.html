@@ -1,339 +1,165 @@
 <!DOCTYPE html>
-<html lang="en" class="technical">
+<html lang="en" class="dark h-full bg-[#121212]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vision</title>
+    <title>Project Vision & North Star • Google India Summit 2026</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        
-        /* TECHNICAL DOCUMENTATION THEME (Clean Light) */
-        :root {
-            --bg-canvas: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-surface-alt: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --color-primary: #1e40af;
-            --color-accent: #2563eb;
-            --color-accent-glow: rgba(37, 99, 235, 0.08);
-            --border-color: #e2e8f0;
-            --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --rounding: 8px;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --header-bg: #ffffff;
-        }
-        body {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-        .main-container {
-            display: grid;
-            grid-template-columns: 240px minmax(0, 1fr) 200px;
-            gap: 28px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 24px;
-        }
-        @media(max-width: 1100px) {
-            .main-container { grid-template-columns: 220px minmax(0, 1fr); }
-            .toc-bar { display: none; }
-        }
-        @media(max-width: 768px) {
-            .main-container { grid-template-columns: 1fr; padding: 16px; }
-            .sidebar { position: relative; top: 0; height: auto; border-right: none; padding-right: 0; margin-bottom: 20px; }
-        }
-        .sidebar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-right: 1px solid var(--border-color);
-            padding-right: 20px;
-        }
-        .toc-bar {
-            position: sticky;
-            top: 76px;
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-            border-left: 1px solid var(--border-color);
-            padding-left: 20px;
-        }
-        .prose-content {
-            min-width: 0;
-            line-height: 1.7;
-            font-size: 15px;
-        }
-        .glass-panel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            box-shadow: var(--shadow-sm);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
-    
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-        }
-        
-        .header-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .tab-btn {
-            padding: 5px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: all 0.15s ease;
-        }
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-surface-alt);
-        }
-        .tab-btn.tab-active {
-            background: var(--color-accent-glow);
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .external-link, .nav-link-item {
-            color: var(--color-accent);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            font-weight: 500;
-        }
-        
-        .rich-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            border-radius: var(--rounding);
-            border: 1px solid var(--border-color);
-        }
-        .rich-table th {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-            font-weight: 600;
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .rich-table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-        .rich-table th:first-child, .rich-table td:first-child {
-            white-space: nowrap !important;
-        }
-        
-        .code-container {
-            background-color: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: var(--rounding);
-            overflow: hidden;
-            color: #f8fafc;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 14px;
-            background-color: #020617;
-            border-bottom: 1px solid #1e293b;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-        .copy-btn {
-            background: transparent;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #cbd5e1;
-            font-size: 0.7rem;
-        }
-        pre {
-            margin: 0;
-            padding: 16px;
-            overflow-x: auto;
-        }
-        code {
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-        .inline-code {
-            background-color: var(--bg-surface-alt);
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85em;
-            color: var(--color-accent);
-            border: 1px solid var(--border-color);
-        }
-        
-        .sidebar-link {
-            display: block;
-            padding: 6px 10px;
-            border-radius: var(--rounding);
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 2px;
-            text-decoration: none;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link:hover {
-            background-color: var(--bg-surface-alt);
-            color: var(--text-primary);
-        }
-        .sidebar-link.active {
-            background-color: var(--color-accent-glow);
-            color: var(--color-accent);
-            font-weight: 600;
-            border-left: 3px solid var(--color-accent);
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header-bar">
-        <div class="flex items-center gap-2">
-            <span class="text-sm font-bold text-[var(--text-primary)]">Vision</span>
-        </div>
-        <div class="flex gap-1 bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-md p-0.5">
-            <button id="btn-ui-view" onclick="showView('ui')" class="tab-btn tab-active">🖥️ Reading View</button>
-            <button id="btn-md-view" onclick="showView('md')" class="tab-btn">📄 Markdown Source</button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        
-        <aside class="sidebar">
-            <div class="pb-3 border-b border-[var(--border-color)] mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Navigation</span>
-            </div>
-            <nav>
-                <a href="ROADMAP.html" class="sidebar-link">Roadmap</a>
-<a href="VISION.html" class="sidebar-link active">Vision</a>
-<a href="architecture.html" class="sidebar-link">Architecture</a>
-<a href="catalog_reference.html" class="sidebar-link">Catalog Reference</a>
-<a href="implementation_plan.html" class="sidebar-link">Implementation Plan</a>
-<a href="master_roadmap.html" class="sidebar-link">Master Roadmap</a>
-<a href="skill_authoring_guide.html" class="sidebar-link">Skill Authoring Guide</a>
-<a href="user_guide.html" class="sidebar-link">User Guide</a>
-<a href="walkthrough.html" class="sidebar-link">Walkthrough</a>
-            </nav>
-        </aside>
-
-        <main class="prose-content">
-            <div id="ui-view">
-                <article class="glass-panel">
-                    <h1 id="project-vision-north-star" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">Project Vision & North Star</h1>
-<h2 id="executive-vision" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Executive Vision</h2>
-<p class="mb-4 text-[var(--text-secondary)]">To establish <code class="inline-code">agent-skill-forge</code> as a zero-drift, self-evolving autonomous engineering ecosystem where agent instructions, path-scoped rules, living ADRs, and roadmap visualizers maintain continuous, automated alignment with real-world code evolution.</p>
-<p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="core-pillars" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">Core Pillars</h2>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong>Zero Attention Dilution</strong>: Ruthless token budgeting keeping root instructions compact ($\le 200$ lines).</p>
-<p class="mb-4 text-[var(--text-secondary)]">2. <strong>Cognitive Consolidation</strong>: Converting transient session transcripts into durable semantic memories.</p>
-<p class="mb-4 text-[var(--text-secondary)]">3. <strong>Living Documentation</strong>: Architectural records that evolve with code rather than rotting in forgotten folders.</p>
-<p class="mb-4 text-[var(--text-secondary)]">4. <strong>Instant Verification</strong>: Sub-second deterministic hooks that guard against drift without slowing down development turns.</p>
-                </article>
-            </div>
-
-            <div id="markdown-view" class="hidden">
-                <div class="glass-panel">
-                    <div class="flex justify-between items-center pb-2 border-b border-[var(--border-color)] mb-4">
-                        <span class="text-sm font-bold">Raw Markdown Source</span>
-                        <button onclick="copyRawMarkdown(this)" class="copy-btn">Copy</button>
-                    </div>
-                    <pre class="bg-[#020617] border border-[#1e293b] rounded-md p-4 overflow-x-auto"><code class="language-markdown text-[#f8fafc]"># Project Vision &amp; North Star
-
-## Executive Vision
-To establish `agent-skill-forge` as a zero-drift, self-evolving autonomous engineering ecosystem where agent instructions, path-scoped rules, living ADRs, and roadmap visualizers maintain continuous, automated alignment with real-world code evolution.
-
----
-
-## Core Pillars
-1. **Zero Attention Dilution**: Ruthless token budgeting keeping root instructions compact ($\le 200$ lines).
-2. **Cognitive Consolidation**: Converting transient session transcripts into durable semantic memories.
-3. **Living Documentation**: Architectural records that evolve with code rather than rotting in forgotten folders.
-4. **Instant Verification**: Sub-second deterministic hooks that guard against drift without slowing down development turns.
-</code></pre>
-                </div>
-            </div>
-        </main>
-
-        <aside class="toc-bar">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
-            <nav class="mt-3 space-y-1">
-                <a href="#executive-vision" class="sidebar-link text-xs">Executive Vision</a>
-<a href="#core-pillars" class="sidebar-link text-xs">Core Pillars</a>
-            </nav>
-        </aside>
-
-    </div>
-
     <script>
-        function showView(view) {
-            const ui = document.getElementById('ui-view');
-            const md = document.getElementById('markdown-view');
-            const btnUi = document.getElementById('btn-ui-view');
-            const btnMd = document.getElementById('btn-md-view');
-            
-            if (view === 'ui') {
-                ui.classList.remove('hidden');
-                md.classList.add('hidden');
-                btnUi.classList.add('tab-active');
-                btnMd.classList.remove('tab-active');
-            } else {
-                ui.classList.add('hidden');
-                md.classList.remove('hidden');
-                btnUi.classList.remove('tab-active');
-                btnMd.classList.add('tab-active');
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'google-blue': '#A8C7FA',
+                        'surface-100': '#1E1E1E',
+                        'surface-200': '#2A2A2A',
+                        'safety-green': '#10b981',
+                        'muted-slate': '#94a3b8',
+                        'electric-teal': '#0be6b3',
+                        'neon-indigo': '#A8C7FA',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        headings: ['Outfit', 'sans-serif'],
+                        console: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
             }
         }
-
-        function copyCode(btn) {
-            const pre = btn.closest('.code-container').querySelector('code');
-            navigator.clipboard.writeText(pre.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
-            });
+    </script>
+    
+    <style>
+        html {
+            font-size: 16px;
         }
-
-        function copyRawMarkdown(btn) {
-            const code = document.querySelector('#markdown-view code');
-            navigator.clipboard.writeText(code.innerText).then(() => {
-                btn.innerText = "Copied!";
-                setTimeout(() => btn.innerText = "Copy", 1500);
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#121212',
+                    primaryColor: '#A8C7FA',
+                    primaryTextColor: '#ffffff',
+                    lineColor: '#94a3b8',
+                }
             });
+        });
+    </script>
+</head>
+<body class="h-full font-sans text-zinc-300 flex flex-col overflow-hidden selection:bg-google-blue/30 selection:text-white bg-[#121212]">
+
+    <div id="toast" class="fixed top-5 right-5 transform translate-y-[-100px] opacity-0 transition-all duration-300 bg-emerald-500 text-white font-headings font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2.5 z-50">
+        <span class="text-xs">Copied to Clipboard!</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="h-16 border-b border-white/10 px-6 flex items-center justify-between shrink-0 glass-panel sticky top-0 z-40">
+        <div class="flex items-center space-x-6 min-w-0">
+            <div class="flex items-center space-x-2 shrink-0">
+                <div class="w-3 h-3 rounded-full bg-google-blue animate-pulse"></div>
+                <span class="text-sm font-headings font-extrabold tracking-wide text-white uppercase">Google Keynote</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-1 pl-4 border-l border-white/10">
+                
+        <a href="user_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            User & Demo Guide
+        </a>
+        
+        <a href="deployment_guide.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Enterprise Deployment
+        </a>
+        
+        <a href="master_roadmap.html" class="px-3 py-1.5 rounded-lg text-sm font-sans transition duration-200 text-zinc-400 hover:text-white hover:bg-white/5">
+            Project Roadmap & History
+        </a>
+        
+            </nav>
+        </div>
+        <div class="flex items-center space-x-4 shrink-0">
+            <span class="text-xs font-console text-zinc-400">DOCS_SYNC <span class="text-emerald-400 font-bold">ONLINE</span></span>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative">
+        <!-- Subtle Glow Background -->
+        <div class="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-google-blue/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+        <div class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 leading-relaxed pt-12 pb-24 animate-fade-in-up relative z-10">
+            <h1 class="text-3xl md:text-5xl font-headings font-black tracking-tight text-white mb-4">Project Vision & North Star</h1>
+            <div class="h-1 w-20 bg-google-blue rounded-full mb-10"></div>
+            
+            <div class="space-y-6">
+                <h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">Executive Vision</h2>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">To establish <code class="bg-white/5 border border-white/5 text-pink-400 font-console text-xs md:text-sm px-1.5 py-0.5 rounded">agent-skill-forge</code> as a zero-drift, self-evolving autonomous engineering ecosystem where agent instructions, path-scoped rules, living ADRs, and roadmap visualizers maintain continuous, automated alignment with real-world code evolution.</p>
+
+<hr class="border-white/5 my-8" />
+<h2 class="text-xl md:text-2xl font-headings font-bold text-neon-indigo border-l-4 border-neon-indigo pl-3 mt-8 mb-3.5 uppercase tracking-wider">Core Pillars</h2>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">1. <strong class="text-white font-bold font-headings">Zero Attention Dilution</strong>: Ruthless token budgeting keeping root instructions compact ($\le 200$ lines).</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">2. <strong class="text-white font-bold font-headings">Cognitive Consolidation</strong>: Converting transient session transcripts into durable semantic memories.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">3. <strong class="text-white font-bold font-headings">Living Documentation</strong>: Architectural records that evolve with code rather than rotting in forgotten folders.</p>
+<p class="text-base md:text-lg leading-relaxed text-zinc-200/90 font-sans my-4">4. <strong class="text-white font-bold font-headings">Instant Verification</strong>: Sub-second deterministic hooks that guard against drift without slowing down development turns.</p>
+
+            </div>
+        </div>
+        
+        <footer class="max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-8 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 mx-auto px-8 relative z-10">
+            <p>© 2026 Google India Summit • Developed on stage live with Antigravity</p>
+            <a href="https://ai.google.dev/gemini-api/docs" target="_blank" class="hover:text-white transition mt-2 md:mt-0">Gemini Live API Docs ➔</a>
+        </footer>
+    </main>
+
+    <script>
+        function showCopiedToast(btn) {
+            const toast = document.getElementById('toast');
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-100px)';
+                toast.style.opacity = '0';
+            }, 2000);
         }
     </script>
 </body>
