@@ -62,7 +62,7 @@ To maximize agent efficiency and prevent context window exhaustion, Agent Skill 
 
 ### Tier 1: Meta-Orchestration & Project Intelligence
 *   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`). Implements dynamic dual-mode switching (Lightweight vs Heavyweight).
-*   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses to resolve ambiguity until 95% confidence is reached.
+*   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing for as many rounds as necessary until all ambiguities are resolved and the specification is 100% fleshed out.
 *   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
 *   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
 *   **`/sync`** (`skills/sync`): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.
@@ -126,7 +126,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 | Sequence | Skill / Gate | Why It Must Run at This Exact Stage |
 | :--- | :--- | :--- |
 | **Step 1** | **`/prompt`** | **Prevents wrong-direction execution.** Formulates intent directives, establishes Manager-worker roles, and determines whether lightweight or heavyweight execution is required. |
-| **Step 2** | **`/grill`** | **Eliminates implicit assumptions.** Asking questions *one at a time* with attached hypotheses resolves ambiguities before any code or configuration is touched. |
+| **Step 2** | **`/grill`** | **Eliminates all implicit assumptions.** Asks as many questions as necessary—iteratively and strictly *one question at a time* with attached hypotheses—until all architectural, data, UX, and security ambiguities are 100% resolved and the spec is completely fleshed out. |
 | **Step 3** | **`/spec`** | **Prevents hallucinated APIs.** Grounds interfaces in official documentation citations and sets explicit Non-Goals to avoid scope creep. |
 | **Step 4** | **`/plan`** | **Enforces incremental verifiability.** Slices work into small, vertically testable tasks so every component has an isolated pass/fail checkpoint. |
 | **Step 5** | **`/sync` (JIT)** | **Loads domain rules on demand.** Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory. |
