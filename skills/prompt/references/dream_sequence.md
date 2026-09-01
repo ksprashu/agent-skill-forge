@@ -1,6 +1,6 @@
-# 🌙 Dream Sequence Protocol: Retrospective Intelligence & Continuous Evolution
+# 🌙 Dream Sequence Protocol: Dialectical Evolution & Continuous Memory
 
-The **Dream Sequence** is a dual-loop reflection and synthesis mechanism designed to prevent AI complacency, eliminate subtle edge-case gaps, and ensure lifelong learning across agent sessions.
+The **Dream Sequence** is a dual-loop reflection, synthesis, and mutation mechanism designed to prevent AI complacency, eliminate subtle edge-case gaps, and ensure lifelong learning across agent sessions.
 
 ---
 
@@ -8,73 +8,58 @@ The **Dream Sequence** is a dual-loop reflection and synthesis mechanism designe
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                           IN-FLIGHT DREAM LOOP (During Task DAG)                         │
+│                      LOOP A: IN-FLIGHT DIALECTICAL EVOLUTION (Task Runtime)              │
 │                                                                                         │
-│   [ Implementation Nodes ] ──► [ Retrospective Checkpoint ]                             │
-│                                           │                                             │
-│                                           ▼ (Adversarial Audit & Gap Analysis)          │
-│                              ┌─────────────────────────┐                                │
-│                              │ Gaps / Flaws Detected?   │──► [ Append Evolution Nodes ] │
-│                              └────────────┬────────────┘           │                    │
-│                                           │ (ZERO_GAPS)            ▼                    │
-│                                           ▼            [ Re-execute & Re-evaluate ]     │
-│                               [ Verification Passed ]                                   │
-└───────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                            │
-                                            ▼
+│   [ Producer / Builder ] ──► [ Challenger Stress Probe ]                                │
+│                                      │                                                  │
+│                                      ▼ (Adversarial Breach / Friction Detected?)        │
+│                       ┌───────────────────────────────┐                                 │
+│                       │ Breach / Broken Assumption?   │──► [ Synthesizer Arbitrates ]   │
+│                       └──────────────┬────────────────┘          │                      │
+│                                      │ (Zero Breaches)           ▼                      │
+│                                      ▼                 [ Mutate Living Blueprint ]      │
+│                       [ Forensic Proof Audit ]                   │                      │
+│                                      │                           ▼                      │
+│                                      ▼ (Exit Code 0 & Hashed) [ Re-execute & Re-probe ] │
+│                           [ Node Verified ]                                             │
+└──────────────────────────────────────┬──────────────────────────────────────────────────┘
+                                       │
+                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                      CROSS-SESSION DREAM SEQUENCE (Offline Memory Consolidation)        │
+│                   LOOP B: CROSS-SESSION DREAM SEQUENCE (Offline Memory Ingestion)       │
 │                                                                                         │
-│  1. Ingest Transcripts:  <appDataDir>/brain/<id>/.system_generated/logs/transcript.jsonl│
-│  2. Telemetry Extract:   User corrections, tool failure patterns, repetitive commands   │
-│  3. OKF Synthesis:       Compile findings into .gemini/knowledge/ concept docs           │
-│  4. Rule Consolidation:  Update AGENTS.md, CLAUDE.md, and skill definitions via /learn   │
+│  1. Ingest Transcripts:  <appDataDir>/brain/<id>/.system_generated/logs/transcript.jsonl │
+│  2. Telemetry Extract:   User corrections, tool failures, mutation trigger patterns     │
+│  3. Pattern Crystal:     Promote successful bespoke blueprints to pattern library       │
+│  4. Rule Consolidation:  Update AGENTS.md, CLAUDE.md, and skills via continuous-alignment │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ⚡ 2. Loop A: In-Flight Dream Cycle (Self-Evolving Task DAG)
+## ⚡ 2. Loop A: In-Flight Dialectical Evolution (Self-Evolving Task DAG)
 
 During execution of a `task_graph.json`, the Manager thread enforces the **Never-Satisfied Orchestration Rule**:
 
-### Step 1: Retrospective Checkpoint Trigger
-At key integration milestones (e.g. post-core-logic, post-integration, post-test), the Manager dispatches a specialized **Sentry / Critic Subagent** via `/goal`:
-- **Role**: Sentry - Adversarial Reviewer & Critic
-- **Attached Skills**: `review`, `expectation-harness`, `doubt-driven-development`
+### Step 1: Challenger Adversarial Probe
+When the Producer completes an implementation node, the Manager launches a specialized **Challenger Subagent**:
+- **Role**: `Challenger - Adversarial Fuzzer & Stress Tester`
+- **Attached Skills**: `review`, `test`, `security-and-hardening`
 - **Model**: `inherit`
-- **Directive**: Adversarially challenge the implementation against the original intent specification in `.gemini/prompts/<SHORT_ID>/prompt.md`.
+- **Directive**: Actively attempt to break the implementation with boundary fuzzing, race conditions, memory leaks, or unhandled exceptions.
 
-### Step 2: Gap & Friction Analysis
-The Critic executes:
-1. **Static Spec Compliance**: Runs `verify_okf.py` on all concept docs and verifies zero placeholder text (`TODO`, `TBD`).
-2. **Behavioral Edge Cases**: Probes error handling, network failure recovery, concurrency races, and validation boundaries.
-3. **5-Axis Review**: Correctness, readability, architecture, security, and performance.
+### Step 2: Synthesizer Arbitration & Blueprint Mutation
+If the Challenger detects a failure or architectural friction:
+1. The **Synthesizer / Arbiter** evaluates the root cause and updates the data contract in `.gemini/knowledge/<SHORT_ID>/architecture/data_contracts.md`.
+2. The Manager **mutates the Living Blueprint**, appending dedicated remediation nodes (`task_XX_mutation_remediate`) and incrementing `mutation_generation`.
+3. Execution re-runs the remediation node followed by a fresh Challenger re-probe.
 
-### Step 3: Dynamic DAG Evolution
-- If flaws are found, the Critic returns a structured proposal:
-  ```json
-  {
-    "status": "GAPS_IDENTIFIED",
-    "gaps": [
-      "Missing exponential backoff on HTTP 429 retries",
-      "Table cell text wrapping in markdown views"
-    ],
-    "evolution_tasks": [
-      {
-        "id": "task_04_evolution_retry_backoff",
-        "name": "Implement exponential jitter backoff in client SDK",
-        "subagent_role": "Backend Engineer",
-        "subagent_skills": ["source-driven-development", "test"]
-      }
-    ]
-  }
-  ```
-- The Manager **dynamically appends** these new child nodes to `task_graph.json` and dispatches worker subagents to resolve them.
-- Execution loop repeats until the Critic explicitly returns:
-  ```
-  STATUS: OPTIMAL / ZERO_GAPS
-  ```
+### Step 3: Forensic Proof & Anti-Mock Sign-off
+Once the Challenger confirms zero breaches:
+1. The **Forensic Auditor** executes tests on the physical disk environment.
+2. The Auditor parses the test AST to ensure assertions are grounded in real execution rather than synthetic mocks.
+3. Raw execution logs and SHA-256 evidence hashes are recorded in `.gemini/EVIDENCE.md`.
+4. The node transitions to `VERIFIED`.
 
 ---
 
@@ -89,17 +74,18 @@ Session logs are located at:
 The Dream parser extracts:
 - `USER_INPUT` steps where user corrected the agent or clarified intent.
 - `PLANNER_RESPONSE` steps where tool errors or command retries occurred.
-- Repetitive command chains that can be automated as standalone custom skills.
+- In-flight mutation patterns that successfully resolved novel bugs.
 
-### Step 2: Knowledge Distillation
+### Step 2: Knowledge Distillation & Pattern Crystallization
 Extracted insights are converted into standard **OKF Concept Documents** under `.gemini/knowledge/`:
 - `scout/codebase_map.md` (Updated dependencies and endpoints)
 - `analyst/user_decisions.md` (Codified user preferences, UI styling rules, CLI aliases)
 - `sentry/secure_threat_model.md` (Discovered failure modes and mitigations)
+- `patterns/crystallized_patterns.json` (Novel bespoke blueprints saved for future reuse)
 
 ### Step 3: Rule & Skill Upgrades
 - High-confidence global habits are written to `~/.gemini/config/AGENTS.md` and `~/.claude/CLAUDE.md`.
-- As Antigravity introduces new platform features (e.g. updated slash commands, hooks, auxiliary panes), the Dream cycle integrates these features into `prompt-writer` references, ensuring prompt generation never becomes stale.
+- Living architectural patterns are indexed via `catalog` and synced via `continuous-alignment`.
 
 ---
 
@@ -107,8 +93,8 @@ Extracted insights are converted into standard **OKF Concept Documents** under `
 
 | Native AGY Feature | Role in Dream Sequence |
 | :--- | :--- |
-| **`/goal`** | Dispatches the Critic subagent with an autonomous objective that doesn't terminate until verification is solid. |
-| **`invoke_subagent`** | Spawns isolated Critic in `Workspace: "share"` to audit files without risking accidental overwrites. |
+| **`/goal`** | Dispatches Challenger and Forensic Auditor subagents with autonomous non-terminating objectives. |
+| **`invoke_subagent`** | Spawns isolated workers in `Workspace: "branch"` and auditors in `Workspace: "share"`. |
 | **`verify_okf.py`** | Machine-verifiable gate verifying documentation and knowledge completeness. |
 | **`/learn`** | User-facing slash command to manually promote a Dream insight into permanent memory. |
-| **Artifacts (`walkthrough.md`)** | Embeds diffs, test logs, and retrospective summaries for user transparency. |
+| **Artifacts (`walkthrough.md`)** | Embeds diffs, forensic evidence logs, and retrospective summaries for user transparency. |
