@@ -129,14 +129,34 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
 
 > [!IMPORTANT]
 > **Pure Meta-Orchestration Principle**: `prompt-writer` is a **Meta-Orchestrator**, not a domain practitioner. It does NOT redefine how specifications, testing, security, or documentation should be written. Instead, it systematically **composes, delegates to, and weaves** the authoritative global skills into the generated prompt deck:
-> - **Specification & Interface Contracts** ➔ Delegated to **[Spec Custom Skill](file://$HOME/code/github/agent-skills/skills/spec/SKILL.md)** and **[Source-Driven Development](file://$HOME/code/github/agent-skills/skills/source-driven-development/SKILL.md)**
-> - **Knowledge Bundles & Concept Docs** ➔ Delegated to **[Knowledge Catalog Custom Skill](file://$HOME/code/github/skills-knowledge-catalog/skills/knowledge-catalog/SKILL.md)**
-> - **Task Decomposition & Dependency DAGs** ➔ Delegated to **[Planning Custom Skill](file://$HOME/code/github/agent-skills/skills/planning/SKILL.md)**
-> - **Verification & TDD Loops** ➔ Delegated to **[Test Custom Skill](file://$HOME/code/github/agent-skills/skills/test/SKILL.md)** and **[Expectation Harness](file://$HOME/code/github/skills-expectation-harness/skills/expectation-harness/SKILL.md)**
-> - **Adversarial Audits & Security** ➔ Delegated to **[Review Custom Skill](file://$HOME/code/github/agent-skills/skills/review/SKILL.md)** and **[Security & Hardening](file://$HOME/code/github/agent-skills/skills/security-and-hardening/SKILL.md)**
-> - **Documentation & Presentation Portals** ➔ Delegated to **[Documentation Custom Skill](file://$HOME/code/github/skills-documentation/skills/documentation/SKILL.md)** and **[Compile Docs](file://$HOME/code/github/skills-prompt-writer/skills/compile-docs/SKILL.md)**
-> - **Personal Voice & Copywriting** ➔ Delegated to **[Copy-Write-Bara](file://$HOME/code/github/copy-write-bara/SKILL.md)**
-> - **Visuals & Diagram Assets** ➔ Delegated to **[Image-Gen-Expert](file://$HOME/code/github/skills-image-gen-expert/skills/image-gen-expert/SKILL.md)**
+>
+> 1. **Interactive Slash-Command-Driven Skills** (Triggered via `[<label>](slashCommand;<cmd>)`):
+>    - **Specification & Contracts** ➔ Delegated to `spec` via `[/spec](slashCommand;spec)`
+>    - **Task DAG Decomposition** ➔ Delegated to `plan` via `[/plan](slashCommand;plan)`
+>    - **Verification & TDD Loops** ➔ Delegated to `test` via `[/test](slashCommand;test)`
+>    - **Deterministic Static Verifiers** ➔ Delegated to `verify` via `[/verify](slashCommand;verify)`
+>    - **Adversarial Audits & Code Review** ➔ Delegated to `review` via `[/review](slashCommand;review)`
+>    - **Knowledge Bundles & Cataloging** ➔ Delegated to `catalog` via `[/catalog](slashCommand;catalog)`
+>    - **Socratic Clarification & Grilling** ➔ Delegated to `grill` via `[/grill](slashCommand;grill)` or native `[/grill-me](slashCommand;grill-me)`
+>    - **Documentation Portals & Guides** ➔ Delegated to `docs` via `[/docs](slashCommand;docs)` and `codelab` via `[/codelab](slashCommand;codelab)`
+>    - **Living Alignment & Rules** ➔ Delegated to `continuous-alignment` via `[/align](slashCommand;align)` or `[/evolve](slashCommand;evolve)`
+>    - **Personal Voice & Copywriting** ➔ Delegated to `copy-write` via `[/copy-write](slashCommand;copy-write)`
+>    - **Diagrams & Visual Assets** ➔ Delegated to `image-gen` via `[/image-gen](slashCommand;image-gen)`
+>    - **Boilerplate Stripping & Slop Cleanup** ➔ Delegated to `unslop` via `[/unslop](slashCommand;unslop)`
+>    - **Autonomous Execution Harness** ➔ Triggered via native Antigravity `[/goal](slashCommand;goal)`
+>
+> 2. **Contextual / Bootstrapped Domain Skills** (Loaded directly into subagent context via `subagent_skills: [...]`, no slash command required):
+>    - **API & Interface Design** (`api-and-interface-design`): REST, GraphQL, TypeScript contracts
+>    - **Security & Hardening** (`security-and-hardening`): Threat modeling, vulnerability scanning, OWASP
+>    - **Frontend UI Engineering** (`frontend-ui-engineering`): Responsive, accessible UI components
+>    - **Observability & Telemetry** (`observability-and-instrumentation`): OpenTelemetry traces, Prometheus metrics
+>    - **Performance Optimization** (`performance-optimization`): Web vitals, backend latencies, profiling
+>    - **Browser DevTools Automation** (`browser-testing-with-devtools`): Headless DOM & visual testing
+>    - **CI/CD & Automation** (`ci-cd-and-automation`): GitHub Actions workflows
+>    - **Context Engineering** (`context-engineering`): Token budget efficiency
+>    - **Debugging & Error Recovery** (`debugging-and-error-recovery`): Crash analysis and triage
+>    - **Deprecation & Migration** (`deprecation-and-migration`): Automated codemods
+>    - **Git Workflow & Versioning** (`git-workflow-and-versioning`): Atomic commits & semantic tags
 
 ---
 
@@ -263,6 +283,10 @@ When analyzing, refining, and drafting the user's prompt, you MUST adopt the app
     >    - Zero stubs, zero "TBD" placeholders, zero unhandled errors.
 
 *   **State-Journal & OKF Blueprint Integration**: Embed the JSON schema for `.gemini/tasks/<SHORT_ID>/state_journal.json`, `task.md`, and the blueprint for `.gemini/knowledge/<SHORT_ID>/`.
+*   **Antigravity Slash Command Linking Protocol**:
+    - In Google Antigravity, slash commands MUST be linked using the markdown hyperlink scheme: `[<label>](slashCommand;<command_name>)` (e.g., `[/goal](slashCommand;goal)`, `[/prompt](slashCommand;prompt)`, `[/plan](slashCommand;plan)`, `[/verify](slashCommand;verify)`).
+    - **Plain-text Ban in Launchpads**: Raw text `/goal` or `/prompt` is inert plain text and will NOT trigger interactive directives or clickable action chips in the Antigravity UI.
+    - All generated prompt decks (`prompt.md` and `rewritten_prompt_<SHORT_ID>.md`) MUST provide an **Interactive Execution Launchpad** with `[<label>](slashCommand;<command_name>)` triggers for launching each phase or re-prompting.
 *   **Modern Web Guidance & Design Aesthetics**: If building web interfaces or documentation, mandate following **[Modern Web Guidance Skill](file://$HOME/.gemini/config/plugins/modern-web-guidance-plugin/skills/modern-web-guidance/SKILL.md)** and invoking **[Documentation Custom Skill](file://$HOME/code/github/skills-documentation/skills/documentation/SKILL.md)** for HTML portal compilation.
 *   **Update State**: Check off the "Builder Stage" in `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md` and save the drafted prompt structure.
 

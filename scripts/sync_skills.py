@@ -34,6 +34,13 @@ import argparse
 import shutil
 import json
 
+if sys.platform == 'win32':
+    import io
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'buffer'):
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 CORE_SKILLS_DIR = os.path.join(REPO_ROOT, 'skills')
@@ -86,6 +93,65 @@ ALIASES = {
 }
 
 
+def is_link(path):
+    """Check if path is a symlink or Windows junction."""
+    if os.path.islink(path):
+        return True
+    if sys.platform == 'win32' and hasattr(os.path, 'isjunction') and os.path.isjunction(path):
+        return True
+    return False
+
+
+def remove_link(path):
+    """Remove a symlink or junction safely without deleting target contents."""
+    os.unlink(path)
+
+
+def remove_path_or_link(path):
+    """Safely remove a file, symlink, junction, or directory."""
+    if is_link(path):
+        remove_link(path)
+    elif os.path.isdir(path):
+        shutil.rmtree(path)
+    elif os.path.exists(path):
+        os.remove(path)
+
+
+def create_link(src_path, target_link, copy_mode=False):
+    """Create a directory symlink, Windows junction, or physical copy."""
+    if copy_mode:
+        if os.path.exists(target_link) or is_link(target_link):
+            remove_path_or_link(target_link)
+        shutil.copytree(src_path, target_link)
+        return
+
+    if sys.platform == 'win32':
+        try:
+            os.symlink(src_path, target_link, target_is_directory=True)
+        except OSError:
+            import _winapi
+            _winapi.CreateJunction(src_path, target_link)
+    else:
+        os.symlink(src_path, target_link)
+
+
+def is_same_link_target(target_link, src_path):
+    """Check if target_link resolves or points to src_path."""
+    try:
+        if os.path.exists(target_link) and os.path.exists(src_path):
+            if os.path.samefile(target_link, src_path):
+                return True
+    except OSError:
+        pass
+    try:
+        dst = os.readlink(target_link)
+        if sys.platform == 'win32' and dst.startswith('\\\\?\\'):
+            dst = dst[4:]
+        return os.path.abspath(dst) == os.path.abspath(src_path)
+    except OSError:
+        return False
+
+
 def discover_all_skills():
     """Discover all core and preferred skills in the monorepo."""
     all_skills = {}
@@ -111,14 +177,14 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False):
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
-        if os.path.islink(item_path):
+        if is_link(item_path):
             target_exists = os.path.exists(item_path)
             is_allowed = item in allowed_skills or item in ALIASES
             if not target_exists or not is_allowed:
                 reason = "BROKEN" if not target_exists else "NON-GLOBAL / STALE"
                 print(f"  [{reason}] {item} in {skills_dir}")
                 if prune:
-                    os.unlink(item_path)
+                    remove_link(item_path)
                     print(f"    -> Removed: {item_path}")
         elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES:
             print(f"  [NON-GLOBAL DIR] {item} in {skills_dir}")
@@ -127,7 +193,28 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False):
                 print(f"    -> Removed directory: {item_path}")
 
 
-def sync_global_skills(prune=False, fix=False):
+def sync_skills_json(fix=False):
+    """Register canonical skills directories in global skills.json configs."""
+    configs = [
+        os.path.expanduser('~/.gemini/config/skills.json'),
+        os.path.expanduser('~/.agents/skills.json'),
+    ]
+    data = {
+        "entries": [
+            {"path": CORE_SKILLS_DIR.replace('\\', '/')},
+            {"path": PREFERRED_SKILLS_DIR.replace('\\', '/')}
+        ]
+    }
+    for cfg in configs:
+        cfg_dir = os.path.dirname(cfg)
+        os.makedirs(cfg_dir, exist_ok=True)
+        if fix:
+            with open(cfg, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2)
+            print(f"  [JSON CONFIG] Generated {cfg}")
+
+
+def sync_global_skills(prune=False, fix=False, copy_mode=False):
     """Synchronize core global skills into global agent directories."""
     print("=" * 65)
     print("🚀 Agent Skill Forge — Global Symlink Synchronizer")
@@ -160,34 +247,43 @@ def sync_global_skills(prune=False, fix=False):
             if not os.path.exists(src_path):
                 continue
             target_link = os.path.join(target_dir, name)
-            if not os.path.exists(target_link) and not os.path.islink(target_link):
+            if not os.path.exists(target_link) and not is_link(target_link):
                 print(f"  [MISSING] {name}")
                 if fix:
-                    os.symlink(src_path, target_link)
-                    print(f"    -> Linked {target_link} -> {src_path}")
-            elif os.path.islink(target_link):
-                try:
-                    link_dst = os.readlink(target_link)
-                    if not os.path.exists(target_link) or link_dst != src_path:
-                        print(f"  [REPOINT LINK] {name} ({link_dst}) -> {src_path}")
-                        if fix:
-                            os.unlink(target_link)
-                            os.symlink(src_path, target_link)
-                            print(f"    -> Repointed link to {src_path}")
-                    else:
-                        print(f"  [OK] {name}")
-                except OSError:
-                    pass
+                    create_link(src_path, target_link, copy_mode=copy_mode)
+                    action = "Copied" if copy_mode else "Linked"
+                    print(f"    -> {action} {target_link} -> {src_path}")
+            elif is_link(target_link):
+                if copy_mode:
+                    if fix:
+                        remove_link(target_link)
+                        create_link(src_path, target_link, copy_mode=True)
+                        print(f"    -> Converted junction to physical copy: {target_link}")
+                elif not is_same_link_target(target_link, src_path):
+                    try:
+                        link_dst = os.readlink(target_link)
+                    except OSError:
+                        link_dst = "unknown"
+                    print(f"  [REPOINT LINK] {name} ({link_dst}) -> {src_path}")
+                    if fix:
+                        remove_link(target_link)
+                        create_link(src_path, target_link, copy_mode=False)
+                        print(f"    -> Repointed link to {src_path}")
+                else:
+                    print(f"  [OK] {name}")
             elif os.path.isdir(target_link):
-                if fix:
+                if not copy_mode and fix:
                     shutil.rmtree(target_link)
-                    os.symlink(src_path, target_link)
+                    create_link(src_path, target_link, copy_mode=False)
                     print(f"    -> Replaced directory with symlink {target_link} -> {src_path}")
                 else:
-                    print(f"  [DIR (NEEDS SYMLINK)] {name}")
+                    print(f"  [OK] {name} (directory)")
+
+    print("\n--- Auditing JSON Configuration Registries ---")
+    sync_skills_json(fix=fix)
 
 
-def bootstrap_project_skills(project_dir, skill_names, fix=False):
+def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=False):
     """Bootstrap specific preferred or core skills into a project directory."""
     project_dir = os.path.abspath(os.path.expanduser(project_dir))
     if not os.path.exists(project_dir):
@@ -216,11 +312,11 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False):
         src_path = skill_info['path']
         for target_dir in [project_gemini_skills, project_agents_skills]:
             target_link = os.path.join(target_dir, skill)
-            if not os.path.exists(target_link) and not os.path.islink(target_link):
+            if not os.path.exists(target_link) and not is_link(target_link):
                 print(f"  [BOOTSTRAP] {skill} ({skill_info['type']}) -> {target_link}")
                 if fix:
-                    os.symlink(src_path, target_link)
-                    print(f"    -> Created symlink to {src_path}")
+                    create_link(src_path, target_link, copy_mode=copy_mode)
+                    print(f"    -> Created entry to {src_path}")
             else:
                 print(f"  [ALREADY PRESENT] {skill} in {target_dir}")
 
@@ -229,6 +325,7 @@ def main():
     parser = argparse.ArgumentParser(description="Agent Skill Forge - Symlink Manager & On-Demand Bootstrapper")
     parser.add_argument('--fix', action='store_true', help="Automatically create or repoint missing symlinks")
     parser.add_argument('--prune', action='store_true', help="Remove stale, broken, or non-global symlinks")
+    parser.add_argument('--copy', action='store_true', help="Use physical directory copying instead of symlinks/junctions")
     parser.add_argument('--project', type=str, help="Target project workspace for JIT skill bootstrapping")
     parser.add_argument('--skills', type=str, help="Comma-separated skill names to bootstrap into the project")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
@@ -253,10 +350,10 @@ def main():
             print("Error: --skills must be provided when using --project (e.g. --skills frontend-ui-engineering,security-and-hardening)")
             sys.exit(1)
         skill_names = [s.strip() for s in args.skills.split(',')]
-        bootstrap_project_skills(args.project, skill_names, fix=args.fix)
+        bootstrap_project_skills(args.project, skill_names, fix=args.fix, copy_mode=args.copy)
         return
 
-    sync_global_skills(prune=args.prune, fix=args.fix)
+    sync_global_skills(prune=args.prune, fix=args.fix, copy_mode=args.copy)
 
 
 if __name__ == '__main__':

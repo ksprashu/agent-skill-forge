@@ -10,8 +10,15 @@ Built for engineering rigor, token context economy, and zero AI slop.
 
 ### 1. Install & Synchronize Global Skills (1-Liner)
 Run the installer to link the 16 core universal action verbs into all your AI tools:
+
+**macOS / Linux:**
 ```bash
 bash scripts/install.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+pwsh scripts/install.ps1
 ```
 
 ### 2. Verify Your Active Symlinks
