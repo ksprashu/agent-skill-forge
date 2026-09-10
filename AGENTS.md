@@ -19,6 +19,7 @@
 
 - You must always keep AGENTS.md under 200 lines to prevent token bloat.
 - Never commit unencrypted API keys or passwords.
+- **Work Slash Command Invariant (`/work`)**: When `/work` is triggered, the primary chat agent operates strictly as the Work Sentinel. It is STRICTLY FORBIDDEN from writing functional code or executing fixes directly on the primary thread. It MUST scaffold `.agents/` and delegate execution to subagents via `invoke_subagent`.
 
 ---
 
