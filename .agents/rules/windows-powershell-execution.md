@@ -29,3 +29,9 @@ description: Mandatory operational invariants for executing Python and shell com
 ## 4. Antigravity System Protection Boundaries
 - Direct `read_file`, `list_dir`, and `grep_search` on root `~/.gemini/antigravity` and `~/.gemini/antigravity/brain` trigger hardcoded system protection boundary errors.
 - Query individual nested conversation paths or run targeted PowerShell queries.
+
+## 5. Antigravity Permission Engine & Project Configuration Hierarchy
+- **Project Isolation Precedence**: Antigravity checks the active project file (`~/.gemini/config/projects/<id>.json`) before falling back to global settings (`~/.gemini/config/config.json`). If a project file exists, its `settings` and `permissionGrants` must be synchronized to prevent shadowing global grants.
+- **Explicit Binary Wildcards**: Antigravity token matching on commands requires explicit coverage for the exact binary invoked. Use `command(python3.12*)`, `command(python3.12 *)`, and `command(python3.12 **)` in addition to generic python rules.
+- **Zero Global Write Invariant**: No global `write_file` grants must exist. All file writes outside the workspace require interactive user consent.
+
