@@ -143,6 +143,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
 >    - **Personal Voice & Copywriting** ➔ Delegated to `copy-write` via `[/copy-write](slashCommand;copy-write)`
 >    - **Diagrams & Visual Assets** ➔ Delegated to `image-gen` via `[/image-gen](slashCommand;image-gen)`
 >    - **Boilerplate Stripping & Slop Cleanup** ➔ Delegated to `unslop` via `[/unslop](slashCommand;unslop)`
+>    - **Autonomous Multi-Agent Swarm** ➔ Delegated to native swarm engine via `[/work](slashCommand;work)`
 >    - **Autonomous Execution Harness** ➔ Triggered via native Antigravity `[/goal](slashCommand;goal)`
 >
 > 2. **Contextual / Bootstrapped Domain Skills** (Loaded directly into subagent context via `subagent_skills: [...]`):
@@ -219,6 +220,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
     > 2. **Data Grounding, Contracts & Provenance (`<DATA_PROVENANCE_AND_CONTRACTS>`)**:
     >    - Explicitly specifies physical input sources (schemas, tables, file paths, API contracts).
     >    - Strictly bans ungrounded claims, invented parameters, or hardcoded mock metrics.
+    >    - **Environment & Tool Scoping Invariant**: For external services (e.g. Supabase, Neon, Vercel, Cloud Run), explicitly mandate **Project-Scoped Plugins** (`.agents/plugins/<name>/mcp_config.json`) or **CLI-First Execution** (`npx`, `gcloud`, SDKs). Strictly prohibit assuming or mandating ambient global MCP configurations.
     >
     > 3. **Mandatory `<SUBAGENT_ORCHESTRATION>` JSON Tool Payloads (Adversarial Quartet)**:
     >    - Contains complete, valid JSON tool-call payloads for `invoke_subagent` for EVERY phase of the DAG:
@@ -257,9 +259,8 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
 
 ### 6. 🏫 The Mentor Stage (Delivery, Non-Blocking Async Handoff & Pattern Crystallization)
 *   **Action**:
-    1. Save compiled prompt to `.gemini/prompts/<SHORT_ID>/prompt.md`.
-    2. Save the user-facing artifact as `rewritten_prompt_<SHORT_ID>.md` inside `<appDataDir>/brain/<conversation-id>/rewritten_prompt_<SHORT_ID>.md`.
-       - **MANDATORY ARTIFACT CONTENT**: `rewritten_prompt_<SHORT_ID>.md` must NEVER be a passive summary. It MUST contain the complete, executable instruction deck with all 5 Invariant Pillars.
+    1. Save compiled prompt and intermediate blueprints to `<appDataDir>/brain/<conversation-id>/scratch/prompts/<SHORT_ID>/prompt.md` (or workspace `.gemini/prompts/<SHORT_ID>/` if an active workspace exists).
+    2. Save the user-facing artifact as `rewritten_prompt_<SHORT_ID>.md` strictly inside `<appDataDir>/brain/<conversation-id>/rewritten_prompt_<SHORT_ID>.md`. Note: Only user-facing deliverables in the conversation brain root may include `ArtifactMetadata`.
     3. Update `.gemini/prompts/registry.json` setting status to `READY`.
 *   **Execution Hook**: Provide `ArtifactMetadata` with `request_feedback: true` and `user_facing: true` when writing the artifact so Antigravity renders the **"Proceed"** button for instant execution.
 *   **Non-Blocking Asynchronous Execution Handoff**: When the user approves or clicks "Proceed", launch execution asynchronously via `invoke_subagent` with Pure Manager instructions.

@@ -17,20 +17,26 @@ Identify defects, security flaws, performance regressions, and architectural inc
 ## 📋 Step-by-Step Workflow
 
 1. **Inspect Diff**: Review staged changes (`git diff --staged`) or recent commits.
-2. **Audit 5 Axes**:
-   - **Correctness**: Logic bugs, off-by-one errors, missing error handling.
-   - **Security**: SQL injection, XSS, unvalidated inputs, exposed secrets.
-   - **Performance**: N+1 queries, memory leaks, unindexed database filters.
-   - **Architecture**: Boundary violations, circular dependencies, coupling.
-   - **Readability**: Obscure naming, redundant abstractions, code slop.
-3. **Categorize Findings**: Group as **Critical** (blocking), **Important** (should fix), or **Suggestion** (optional).
-4. **Provide Exact File:Line References**: Include actionable drop-in code fixes.
+2. **Audit 5 Engineering Axes**:
+   - **Correctness**: Logic bugs, off-by-one errors, missing error handling, nullability crashes.
+   - **Security**: SQL injection, XSS, unvalidated inputs, exposed secrets, missing auth gates.
+   - **Performance**: N+1 queries, memory leaks, unindexed database filters, runaway loops.
+   - **Architecture**: Boundary violations, circular dependencies, coupling, interface mismatches.
+   - **Readability & Slop**: Obscure naming, redundant single-use abstractions, AI boilerplate.
+3. **Execute Empirical Challenger Mode (Adversarial Stress Testing)**:
+   - In addition to static review, write and execute concrete adversarial tests targeting edge cases:
+     - **Cross-Tenant / Boundary Isolation**: Assert that unauthorized actors or foreign tenants cannot access or mutate private resources.
+     - **Concurrency & Race Conditions**: Assert idempotency and integrity under burst traffic.
+     - **Rate Limiting & Evasion**: Assert that brute-force attacks are rejected (e.g. HTTP 429).
+     - **Malformed Payloads**: Assert graceful validation errors on corrupt input structures.
+4. **Categorize Findings**: Group as **Critical** (blocking), **Important** (should fix), or **Suggestion** (optional).
+5. **Provide Exact File:Line References & Test Repros**: Include drop-in fixes and runnable failure reproduction scripts.
 
 ---
 
-## 💡 Concrete Example
+## 💡 Concrete Examples
 
-### Fixture: Review Report
+### 1. Fixture: Static Review Report
 ```markdown
 # Code Review Findings
 
@@ -46,10 +52,27 @@ Identify defects, security flaws, performance regressions, and architectural inc
 *   [`src/utils/format.ts:L12`](file:///src/utils/format.ts#L12): Inline single-use helper `formatDateString`.
 ```
 
+### 2. Fixture: Adversarial Challenger Test Suite (`test/challenger.test.ts`)
+```typescript
+import { describe, it, expect } from 'vitest';
+import { executeCheckIn } from '../src/services/checkin';
+
+describe('Challenger: Cross-Tenant Isolation Challenge', () => {
+  it('strictly rejects check-in if worker tenant does not match checkpoint tenant', async () => {
+    const foreignWorkerSession = { tenantId: 'tenant_beta', workerId: 'w_02' };
+    const targetCheckpoint = { tenantId: 'tenant_alpha', checkpointId: 'cp_01' };
+
+    await expect(executeCheckIn(foreignWorkerSession, targetCheckpoint))
+      .rejects.toThrow('Cross-tenant check-in prohibited: HTTP 403');
+  });
+});
+```
+
 ---
 
 ## 🚫 Hard Constraints
 
 *   **NEVER** approve changes with unresolved Critical findings.
 *   **NEVER** give vague approval ("looks good") without auditing all five axes.
+*   **NEVER** claim code works without running empirical tests when operating as Challenger.
 *   **NEVER** omit file paths and line numbers from recommendations.

@@ -17,16 +17,19 @@ Structure implementation into independent, incrementally testable vertical slice
 ## 📋 Step-by-Step Workflow
 
 1. **Read-Only Inspection**: Inspect existing `SPEC.md` or context without writing implementation code.
-2. **Slice Vertically**: Design tasks that deliver an end-to-end slice of functionality (schema + logic + test) rather than horizontal layers (all schemas first, all APIs second).
-3. **Map Dependencies**: Order tasks so prerequisites execute first.
-4. **Define Verifiable Checkpoints**: Every task must have an automated command to prove completion.
-5. **Output Artifact**: Save the execution plan to `tasks/plan.md` and actionable checkboxes to `tasks/todo.md`.
+2. **Environment & Tool Scoping**: If the task requires external services (databases, cloud deployment), plan prerequisite setup to scaffold project-level plugins in `.agents/plugins/` or configure local environment variables/CLIs rather than global tools.
+3. **Select Execution Topology**:
+   - **Single-Agent Slice Mode**: For self-contained tasks, design end-to-end vertical slices (schema + logic + test) touching 3–5 related files. Save to `tasks/plan.md` and `tasks/todo.md`.
+   - **Multi-Agent Work Swarm Mode**: For large initiatives, rearchitectures, or multi-stage systems, decompose into staged milestones for the autonomous Work engine. Save master architecture to `.agents/orchestrator/PROJECT.md`.
+4. **Map Feature Inventory & Dependencies**: Catalog features ($F_1 \dots F_n$) mapped to user requirements and sequence milestones ($M_1 \dots M_k$) with barrier gates.
+5. **Define Subagent & Adversary Matrix**: For each milestone, assign parallel Explorers, Worker implementers, and Adversarial Committee members (Reviewer, Challenger, Forensic Auditor).
+6. **Define Verifiable Checkpoints**: Every task/milestone must have an automated, objective command or verifier script to prove completion.
 
 ---
 
-## 💡 Concrete Example
+## 💡 Concrete Examples
 
-### Fixture: `tasks/plan.md`
+### 1. Single-Agent Fixture: `tasks/plan.md`
 ```markdown
 # Implementation Plan: User Authentication
 
@@ -44,10 +47,31 @@ Structure implementation into independent, incrementally testable vertical slice
 - Run `npm test` or `pytest` to ensure all Phase 1-2 tests pass before building frontend UI.
 ```
 
+### 2. Multi-Agent Work Swarm Fixture: `.agents/orchestrator/PROJECT.md`
+```markdown
+# Project Master Plan: CheckInn Rearchitecture
+
+## Feature Inventory
+| ID | Feature Name | Description | Milestone | Ref Requirements |
+|----|--------------|-------------|-----------|------------------|
+| F1 | Clean Multi-Tenant Schema | Supabase PostgreSQL + Drizzle ORM | M1 | R1 |
+| F2 | RBAC & QR Checkin Gate | Multi-persona routing & physical scanner | M2 | R2 |
+| F3 | Observability & Audit Logs | Centralized JSON logger & sensitive scrubber | M3 | R3 |
+
+## Staged Milestones & Agent Matrix
+| # | Name | Explorer Swarm | Worker | Adversarial Gate | Status |
+|---|------|----------------|--------|------------------|--------|
+| M1 | Multi-Tenant DB Schema | DB & Migration Explorers | Schema Worker | Reviewer + SQL Injection Challenger + Auditor | DONE |
+| M2 | Persona Auth & Routing | Session & QR Explorers | Auth Worker | Reviewer + Tenant Isolation Challenger + Auditor | PENDING |
+| M3 | Observability & Health | Metrics Explorer | Logging Worker | Reviewer + Sensitive Scrubber Challenger + Auditor | PENDING |
+```
+
 ---
 
 ## 🚫 Hard Constraints
 
 *   **NEVER** modify or create functional source code during the planning phase.
 *   **NEVER** plan horizontal slices (e.g. "write all database tables across all 10 features").
-*   **NEVER** create tasks touching more than 3–5 related files.
+*   **NEVER** create tasks touching more than 3–5 related files in single-agent mode.
+*   **NEVER** assume global MCP servers—plan project-level plugins under `.agents/plugins/` or local CLI/env configurations for external service dependencies.
+*   **NEVER** advance milestones in Work Swarm mode without passing the Adversarial Committee gate.

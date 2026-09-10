@@ -63,9 +63,13 @@ Inspect the active workspace invariants and recommended commands injected before
 python skills/continuous-alignment/scripts/sync_agents_rules.py --pulse
 ```
 
+### 4. Multi-Agent Work Swarm Milestone Distillation
+When executing under the `work` skill, each completed milestone emits an adversarial review and auditor `handoff.md`. The continuous alignment engine automatically distills architectural decisions, verified interface contracts, and negative constraints into living MADRs (`.gemini/knowledge/ADRs/`) and path-scoped rules (`.agents/rules/*.md`), ensuring cross-generation coherence across Orchestrator successions.
+
 ---
 
 ## 🛡️ Key Guarantees
 - **Zero Third-Party Dependencies**: Pure Python standard library (`json`, `re`, `hashlib`, `tempfile`).
 - **Sub-Second Execution**: Hook execution completes in $< 150\text{ms}$.
 - **Zero Token Waste**: Strict 200-line budget cap prevents context bloat in root instruction files.
+- **Project Tool Isolation**: Scopes external service dependencies (databases, hosting, deployment) under workspace `.agents/plugins/<name>/mcp_config.json`, preventing global configuration clutter and ambient tool pollution.

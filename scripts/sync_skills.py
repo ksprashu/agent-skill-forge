@@ -72,6 +72,7 @@ CORE_SKILLS = {
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
+    'work': os.path.join(CORE_SKILLS_DIR, 'work'),
 }
 
 # Backward-Compatible Aliases
@@ -90,6 +91,10 @@ ALIASES = {
     'image-gen-expert': 'image-gen',
     'extract-human-voice': 'voice',
     'evolve': 'align',
+    'teamwork': 'work',
+    'teamwork-preview': 'work',
+    'team': 'work',
+    'swarm': 'work',
 }
 
 

@@ -38,9 +38,9 @@ npx skills add ksprashu/agent-skill-forge --skill frontend-ui-engineering
 
 ---
 
-## 🌟 The 16 Core Universal Action Verbs
+## 🌟 The 18 Core Universal Action Verbs
 
-These 16 skills cover the complete end-to-end engineering lifecycle across code, prose, architectural analysis, tutorials, and visual design:
+These 18 skills cover the complete end-to-end engineering lifecycle across code, prose, architectural analysis, tutorials, visual design, autonomous alignment, and multi-agent teamwork:
 
 | Skill | Triggers & Invocations | Execution Mode | What It Does & When to Use |
 | :--- | :--- | :--- | :--- |
@@ -60,6 +60,8 @@ These 16 skills cover the complete end-to-end engineering lifecycle across code,
 | **`voice`** | `/voice`, `/extract-voice` | User Slash | **Persona & Cadence Profiler**: Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
 | **`copy-write`**| `/copy-write`, `/copy-write-bara`| User Slash | **Technical Writing Companion**: Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization. |
 | **`image-gen`** | `/image-gen` | User Slash | **Multimodal Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
+| **`continuous-alignment`** | `/align`, `/evolve` | Auto / Slash | **Continuous Project Intelligence**: Enforces a 200-line budget on AGENTS.md, distills session transcripts, manages path-scoped rules, and compiles living MADRs. |
+| **`work`** | `/work` | User Slash | **Autonomous Multi-Agent Swarm Engine**: Coordinates parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. |
 
 ---
 
@@ -98,8 +100,10 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
 | **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
 | **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | 5-axis code and architectural review framework. |
+| **`work`** | **Google DeepMind Antigravity Team** | Google Antigravity Teamwork System (`/teamwork-preview`) | Fully open, decoupled multi-agent swarm with Sentinel, Dispatch-Only Orchestrator, Explorers, Competitive Workers, Adversarial Quartet, and Victory Auditor. |
 | **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
 | **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
+| **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Autonomous alignment, 200-line AGENTS.md budget engine, and living ADR compiler. |
 | **`docs`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/docs`](https://github.com/ksprashu/agent-skill-forge) | Full SDLC documentation scaffolding + Stitch 4-theme interactive HTML compiler. |
 | **`catalog`** | **Prashanth Subrahmanyam** | [Google Open Knowledge Format (OKF)](https://github.com/ksprashu/agent-skill-forge) | Codebase memory and progressive disclosure index tree specification. |
 | **`sync`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/sync`](https://github.com/ksprashu/agent-skill-forge) | Multi-runtime symlink synchronizer and JIT workspace bootstrapper. |
@@ -126,7 +130,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 
 ```
 agent-skill-forge/
-├── skills/                     # 16 Core Universal Global Action Verbs
+├── skills/                     # 18 Core Universal Global Action Verbs
 ├── preferred/                  # 12 Curated Domain-Specific Skills (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide

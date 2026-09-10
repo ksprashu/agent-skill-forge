@@ -18,9 +18,10 @@ Align requirements, technical constraints, non-goals, and official API documenta
 
 1. **Clarify Objective & Personas**: Identify target users, core capabilities, and success criteria.
 2. **Ground Against Official Docs**: Look up external library/framework documentation for official API contracts.
-3. **Define Boundaries & Non-Goals**: Explicitly list what the system will NOT do in this iteration.
-4. **Author `SPEC.md`**: Produce the specification document and save to the project root or `.gemini/specs/`.
-5. **Get Human Approval**: Stop and wait for user confirmation before executing implementation code.
+3. **Define Tooling & Environment Boundaries**: Specify whether third-party services rely on CLI tooling, SDKs, or project-scoped MCP plugins (`.agents/plugins/`). Explicitly prohibit assuming ambient global MCP server installations.
+4. **Define Boundaries & Non-Goals**: Explicitly list what the system will NOT do in this iteration.
+5. **Author `SPEC.md`**: Produce the specification document and save to the project root or `.gemini/specs/`.
+6. **Get Human Approval**: Stop and wait for user confirmation before executing implementation code.
 
 ---
 
@@ -53,3 +54,4 @@ Ingest Stripe webhook events, verify signatures using official SDK APIs, and rec
 *   **NEVER** write implementation code before the user approves `SPEC.md`.
 *   **NEVER** invent or guess external third-party library signatures—always ground against official docs.
 *   **NEVER** omit the Non-Goals section.
+*   **NEVER** assume external service MCP servers exist globally—always specify CLI commands, SDKs, or project-scoped plugin requirements.

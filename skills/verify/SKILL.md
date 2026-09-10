@@ -19,14 +19,23 @@ Prove that deliverables satisfy architectural contracts, word bounds, schemas, a
 1. **Synthesize Expectations First**: Before writing deliverables, define deterministic static check scripts (`verify_static.py`) and blinded rubrics (`rubric.json`).
 2. **Execute Static Layer**: Run the Python/Node static verifier to check AST, schema validity, link integrity, and formatting bounds.
 3. **Run Blinded Dynamic Judge**: Evaluate the raw deliverable without exposing the author's internal thinking or conversation history.
-4. **Enforce Doubt-Driven Disproof**: The dynamic judge actively searches for edge-case failures and broken assumptions.
-5. **Remediate on Failure**: If any check fails, generate a concrete delta report and retry (max 3 retries).
+4. **Conduct Forensic Integrity Audit (Anti-Mock Gate)**:
+   - Inspect test suites, fixtures, and source files to verify real implementation.
+   - Assert zero dummy mock facades replacing core business logic.
+   - Assert zero hardcoded outputs designed specifically to satisfy unit tests.
+   - Assert zero deleted, weakened, or commented-out test assertions.
+   - If circumvention is detected, issue an immediate **Binary Veto** halting progression.
+5. **Enforce Doubt-Driven Disproof**: The judge actively searches for edge-case failures, broken assumptions, and unhandled errors.
+6. **Execute Independent Victory Audit**:
+   - Before final sign-off, run a clean-slate empirical test and build pass with zero shared context from implementing agents.
+   - Emit formal verdict: `VICTORY CONFIRMED` or `VICTORY REJECTED`.
+7. **Remediate on Failure**: If any check fails, generate a concrete delta report and retry (max 3 retries).
 
 ---
 
-## 💡 Concrete Example
+## 💡 Concrete Examples
 
-### Fixture: Static Verifier Script (`verify_static.py`)
+### 1. Fixture: Static Verifier Script (`verify_static.py`)
 ```python
 import os, sys, json
 
@@ -46,23 +55,14 @@ if __name__ == "__main__":
     verify()
 ```
 
-### Fixture: Blinded Dynamic Judge Rubric (`rubric.json`)
-```json
-{
-  "criteria": [
-    {
-      "name": "Correctness",
-      "weight": 0.5,
-      "rule": "Handles null and negative integers without crashing."
-    },
-    {
-      "name": "Security",
-      "weight": 0.5,
-      "rule": "Does not execute un-sanitized SQL or shell strings."
-    }
-  ],
-  "pass_threshold": 0.9
-}
+### 2. Fixture: Forensic Integrity Audit Checklist
+```markdown
+# Forensic Integrity Audit Check
+- [ ] No hardcoded mock returns replacing business logic
+- [ ] Real database / network integration verified (no fake in-memory facades)
+- [ ] No weakened or deleted test assertions from baseline
+- [ ] No `@ts-ignore` or file-wide linter disable comments hiding defects
+- [ ] Verdict: PASS or BINARY VETO
 ```
 
 ---
@@ -71,4 +71,6 @@ if __name__ == "__main__":
 
 *   **NEVER** sign off on deliverables without running the deterministic static verification script.
 *   **NEVER** pass author rationale or conversational history to the blinded dynamic judge.
+*   **NEVER** tolerate mock facades, cheated assertions, or hardcoded return values (Binary Veto).
+*   **NEVER** report task completion without clean-slate Victory Audit confirmation.
 *   **NEVER** allow more than 3 remediation retry cycles without halting for human inspection.
