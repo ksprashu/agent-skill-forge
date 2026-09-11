@@ -40,26 +40,37 @@ The Challenger operates under an adversarial mindset: *"How can I prove this cod
 
 ### C. The Forensic Integrity Auditor Protocol (`.agents/auditor_m{i}_{j}/`)
 The Forensic Auditor protects the project from self-delusion and test cheating.
+- **Automated Tooling**:
+  The Forensic Auditor executes deterministic AST and tampering checks:
+  ```bash
+  python3.12 skills/work/scripts/forensic_audit.py --integrity-mode benchmark --strict
+  ```
 - **Cheats Checked**:
-  - Mocking away the actual business logic or database.
-  - Hardcoded return values designed to pass specific unit test cases.
-  - Deleting, skipping, or weakening existing test assertions.
+  - Mocking away physical business logic or database layers (AST check for `mock`, `jest.fn`, etc.).
+  - Tautological assertions (`assert True`, `expect(true).toBe(true)`).
+  - Hardcoded return values designed specifically to pass unit tests.
+  - Git diff tampering (deleted assertions or added skip markers).
   - Disabling linters or type checkers via file-wide ignore comments.
-- **Binary Veto**: If any cheating or circumvention is detected, the auditor issues an immediate binary veto (`VERDICT: VETO`). The milestone CANNOT pass until fully remediated.
+- **Cryptographic Evidence Ledger**:
+  All physical verification executions are hashed via SHA-256 and appended to `.agents/EVIDENCE.md`:
+  ```bash
+  python3.12 skills/work/scripts/forensic_audit.py --exec-and-record "pytest -v"
+  ```
+- **Binary Veto**: If any cheating, mock facade, or tampering is detected, the auditor issues an immediate binary veto (`VERDICT: VETO`). The milestone CANNOT pass until fully remediated.
 
 ### D. The Victory Auditor Protocol (`.agents/victory_auditor/`)
 Invoked exclusively by the Sentinel at the conclusion of all milestones:
 - Runs in complete isolation with zero shared context from previous workers.
-- Executes clean verification commands:
+- Executes clean verification commands and records proof hashes:
   ```bash
-  npm test          # or pytest
+  python3.12 skills/work/scripts/forensic_audit.py --integrity-mode benchmark --exec-and-record "npm test"
   npm run verify    # or python scripts/verify.py
   npm run lint      # or tsc --noEmit / flake8
   npm run build     # or production packaging
   ```
 - Asserts:
-  1. 100% test pass rate.
-  2. Zero lint/type errors.
-  3. Clean build artifacts.
+  1. 100% test pass rate with physical exit code 0.
+  2. Zero AST mock bypasses or tautological assertions.
+  3. Clean build artifacts and zero lint/type errors.
   4. Zero unencrypted secrets in git history.
 - Emits formal verdict in `handoff.md`: `VICTORY CONFIRMED` or `VICTORY REJECTED`.

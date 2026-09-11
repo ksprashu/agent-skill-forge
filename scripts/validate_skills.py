@@ -104,6 +104,53 @@ def validate_skill_dir(base_dir, skill_type):
     return count, errors, warnings
 
 
+def validate_dag_harness(repo_root):
+    """
+    Validates canonical Markdown DAG specifications and templates across skills/
+    fixtures and references using skills/work/scripts/dag_validator.py.
+    """
+    errors = []
+    warnings = []
+    dag_script = os.path.join(repo_root, 'skills', 'work', 'scripts', 'dag_validator.py')
+    if not os.path.exists(dag_script):
+        return 0, [f"Missing DAG validator harness: {dag_script}"], []
+
+    sys.path.insert(0, os.path.join(repo_root, 'skills', 'work', 'scripts'))
+    try:
+        from dag_validator import DAGValidator
+    except Exception as ex:
+        return 0, [f"Failed to import DAGValidator: {ex}"], []
+
+    validator = DAGValidator(check_artifacts=False, base_dir=repo_root)
+
+    fixture_dirs = [
+        os.path.join(repo_root, 'skills', 'work', 'fixtures'),
+        os.path.join(repo_root, 'skills', 'work', 'references'),
+        os.path.join(repo_root, 'skills', 'plan', 'references'),
+    ]
+
+    valid_count = 0
+    for d in fixture_dirs:
+        if not os.path.exists(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if f.endswith('.md'):
+                fpath = os.path.join(d, f)
+                try:
+                    with open(fpath, 'r', encoding='utf-8', errors='replace') as fh:
+                        content = fh.read()
+                    if '|' in content and re.search(r'\|\s*(id|#|task\s*id)\s*\|', content, re.IGNORECASE):
+                        report = validator.validate(content)
+                        if not report.valid:
+                            errors.append(f"[DAG: {f}] Validation failed in {fpath}: {'; '.join(report.errors)}")
+                        else:
+                            valid_count += 1
+                except Exception as ex:
+                    errors.append(f"[DAG: {f}] Exception during validation: {ex}")
+
+    return valid_count, errors, warnings
+
+
 def main():
     print("=" * 65)
     print("🔍 Agent Skill Forge — Skill Validation & PII Audit")
@@ -114,12 +161,14 @@ def main():
 
     core_count, core_errs, core_warns = validate_skill_dir(core_dir, 'core')
     pref_count, pref_errs, pref_warns = validate_skill_dir(pref_dir, 'preferred')
+    dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
+    print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
     print(f"Total Skills: {core_count + pref_count}\n")
 
-    all_warnings = core_warns + pref_warns
-    all_errors = core_errs + pref_errs
+    all_warnings = core_warns + pref_warns + dag_warns
+    all_errors = core_errs + pref_errs + dag_errs
 
     if all_warnings:
         print("⚠️  Warnings:")
@@ -134,8 +183,9 @@ def main():
         print()
         sys.exit(1)
 
-    print("✅ All skills passed validation with 0 PII leaks and clean frontmatter!\n")
+    print("✅ All skills and DAG workflow specifications passed validation with 0 PII leaks and clean frontmatter!\n")
 
 
 if __name__ == '__main__':
     main()
+
