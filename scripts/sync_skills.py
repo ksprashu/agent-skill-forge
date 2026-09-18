@@ -33,6 +33,7 @@ import sys
 import argparse
 import shutil
 import json
+import re
 
 if sys.platform == 'win32':
     import io
@@ -96,6 +97,201 @@ ALIASES = {
     'team': 'work',
     'swarm': 'work',
 }
+
+# ==============================================================================
+# Skill Clusters Taxonomy (Core Action Verbs & Preferred Domain Skills)
+# ==============================================================================
+
+CORE_CLUSTERS = {
+    'c1': {
+        'id': 'plan-spec',
+        'name': 'Planning, Specification & Swarm Execution',
+        'description': 'Requirements gathering, Socratic grilling, spec design, task DAG planning, and autonomous swarm execution.',
+        'skills': ['spec', 'plan', 'grill', 'prompt', 'work'],
+    },
+    'c2': {
+        'id': 'test-review',
+        'name': 'Quality & Verification',
+        'description': 'TDD prove-it reproduction, static verification rubrics, code reviews, and slop stripping.',
+        'skills': ['test', 'verify', 'review', 'unslop'],
+    },
+    'c3': {
+        'id': 'content-creative',
+        'name': 'Content, Creative & Authoring',
+        'description': 'Step-by-step Google codelabs, human voice profiling, technical copywriting, and image generation.',
+        'skills': ['codelab', 'voice', 'copy-write', 'image-gen'],
+    },
+    'c4': {
+        'id': 'docs-governance',
+        'name': 'Knowledge & Governance',
+        'description': 'Documentation compilation, OKF knowledge catalog, Google OSS hygiene, and continuous alignment.',
+        'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment', 'sync'],
+    },
+}
+
+DOMAIN_CLUSTERS = {
+    'd1': {
+        'id': 'fullstack',
+        'name': 'Full-Stack & Quality',
+        'description': 'Frontend UI engineering, Core Web Vitals optimization, Chrome DevTools testing, and resilient API contract design.',
+        'skills': [
+            'frontend-ui-engineering',
+            'performance-optimization',
+            'browser-testing-with-devtools',
+            'api-and-interface-design',
+        ],
+    },
+    'd2': {
+        'id': 'security',
+        'name': 'Security, Diagnostics & Reliability',
+        'description': 'OWASP threat modeling & hardening, root-cause debugging checklist, OpenTelemetry & structured logging.',
+        'skills': [
+            'security-and-hardening',
+            'debugging-and-error-recovery',
+            'observability-and-instrumentation',
+        ],
+    },
+    'd3': {
+        'id': 'devops',
+        'name': 'DevOps & Workflows',
+        'description': 'GitHub Actions matrix CI/CD automation, trunk-based Git workflows, and zero-downtime schema deprecations.',
+        'skills': [
+            'ci-cd-and-automation',
+            'git-workflow-and-versioning',
+            'deprecation-and-migration',
+        ],
+    },
+    'd4': {
+        'id': 'ai',
+        'name': 'AI & Evaluation',
+        'description': 'Context window token management and universal AI assistant benchmark evaluation harness.',
+        'skills': [
+            'context-engineering',
+            'benchmark-harness',
+        ],
+    },
+}
+
+ALL_CLUSTERS = {**CORE_CLUSTERS, **DOMAIN_CLUSTERS}
+
+
+def resolve_clusters_arg(cluster_arg):
+    """Resolve comma-separated cluster codes, IDs, presets, or skill names into a list of skill names."""
+    skills = []
+    if not cluster_arg:
+        return skills
+    parts = [p.strip().lower() for p in cluster_arg.split(',') if p.strip()]
+    for p in parts:
+        if p in ('all', 'complete'):
+            for c in ALL_CLUSTERS.values():
+                skills.extend(c['skills'])
+            break
+        elif p == 'core':
+            for c in CORE_CLUSTERS.values():
+                skills.extend(c['skills'])
+        elif p in ('domain', 'preferred'):
+            for c in DOMAIN_CLUSTERS.values():
+                skills.extend(c['skills'])
+        elif p in ('content', 'creative', 'c3'):
+            skills.extend(CORE_CLUSTERS['c3']['skills'])
+        elif p in ('plan', 'spec', 'planning', 'c1'):
+            skills.extend(CORE_CLUSTERS['c1']['skills'])
+        elif p in ('test', 'qa', 'quality', 'c2'):
+            skills.extend(CORE_CLUSTERS['c2']['skills'])
+        elif p in ('docs', 'gov', 'governance', 'c4'):
+            skills.extend(CORE_CLUSTERS['c4']['skills'])
+        elif p in ALL_CLUSTERS:
+            skills.extend(ALL_CLUSTERS[p]['skills'])
+        else:
+            matched = False
+            for c in ALL_CLUSTERS.values():
+                if p == c['id'].lower():
+                    skills.extend(c['skills'])
+                    matched = True
+                    break
+                elif p in [s.lower() for s in c['skills']]:
+                    skills.append(p)
+                    matched = True
+                    break
+            if not matched:
+                skills.append(p)
+    return list(dict.fromkeys(skills))
+
+
+def interactive_wizard():
+    """Interactive CLI wizard to select clusters and installation scope."""
+    print("=" * 74)
+    print(" 🔨 AGENT SKILL FORGE — Interactive Cluster & Skill Installer")
+    print("=" * 74)
+
+    print("\n📦 CORE SKILL CLUSTERS:")
+    for key, info in sorted(CORE_CLUSTERS.items()):
+        skills_str = ", ".join(info['skills'])
+        print(f"  [{key}] {info['name']}")
+        print(f"       Description : {info['description']}")
+        print(f"       Skills      : {skills_str}")
+
+    print("\n🛠️  DOMAIN SKILL CLUSTERS:")
+    for key, info in sorted(DOMAIN_CLUSTERS.items()):
+        skills_str = ", ".join(info['skills'])
+        print(f"  [{key}] {info['name']}")
+        print(f"       Description : {info['description']}")
+        print(f"       Skills      : {skills_str}")
+
+    print("\n⚡ QUICK PRESETS:")
+    print("  [content] Content & Creative only (codelab, voice, copy-write, image-gen)")
+    print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
+    print("  [domain]  All 12 Preferred Domain Skills (d1, d2, d3, d4)")
+    print("  [all]     Complete Forge (All 30 Core & Domain Skills)")
+    print("  [custom]  Enter comma-separated skill names")
+    print("-" * 74)
+
+    try:
+        choice = input("Enter choice(s) [e.g. c3, or c3,d1, or content] (default: all): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nAborted.")
+        sys.exit(0)
+
+    if not choice:
+        choice = 'all'
+
+    if choice.lower() == 'custom':
+        try:
+            custom_input = input("Enter comma-separated skill names: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nAborted.")
+            sys.exit(0)
+        chosen_skills = [s.strip() for s in custom_input.split(',') if s.strip()]
+    else:
+        chosen_skills = resolve_clusters_arg(choice)
+
+    print(f"\n  -> Selected ({len(chosen_skills)} skills): {', '.join(chosen_skills)}")
+
+    print("\nInstallation Scope:")
+    print("  [1] Global across all AI tools (~/.gemini, ~/.agents, ~/.claude, etc.)")
+    print("  [2] Project-scoped (Install into a specific repository workspace)")
+    try:
+        scope_choice = input("Select scope [1-2] (default: 1): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nAborted.")
+        sys.exit(0)
+
+    if scope_choice == '2':
+        try:
+            project_dir = input("Enter project workspace directory (default: .): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nAborted.")
+            sys.exit(0)
+        if not project_dir:
+            project_dir = "."
+        return 'project', project_dir, chosen_skills, False
+    else:
+        try:
+            prune_input = input("\nPrune unselected skills from global directories? [y/N]: ").strip().lower()
+            strict_prune = (prune_input == 'y')
+        except (EOFError, KeyboardInterrupt):
+            strict_prune = False
+        return 'global', None, chosen_skills, strict_prune
 
 
 def is_link(path):
@@ -175,23 +371,29 @@ def discover_all_skills():
     return all_skills
 
 
-def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False):
+def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False):
     """Remove broken symlinks or symlinks not in allowed list."""
     if not os.path.exists(skills_dir):
         return
+
+    all_available = discover_all_skills()
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
         if is_link(item_path):
             target_exists = os.path.exists(item_path)
-            is_allowed = item in allowed_skills or item in ALIASES
+            if strict_prune:
+                is_allowed = item in allowed_skills or (item in ALIASES and ALIASES[item] in allowed_skills)
+            else:
+                is_allowed = item in allowed_skills or item in ALIASES or (item in all_available and target_exists)
+
             if not target_exists or not is_allowed:
-                reason = "BROKEN" if not target_exists else "NON-GLOBAL / STALE"
+                reason = "BROKEN" if not target_exists else "STALE / NOT SELECTED"
                 print(f"  [{reason}] {item} in {skills_dir}")
                 if prune:
                     remove_link(item_path)
                     print(f"    -> Removed: {item_path}")
-        elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES:
+        elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES and item not in all_available:
             print(f"  [NON-GLOBAL DIR] {item} in {skills_dir}")
             if prune:
                 shutil.rmtree(item_path)
@@ -219,16 +421,41 @@ def sync_skills_json(fix=False):
             print(f"  [JSON CONFIG] Generated {cfg}")
 
 
-def sync_global_skills(prune=False, fix=False, copy_mode=False):
-    """Synchronize core global skills into global agent directories."""
+def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=None, strict_prune=False):
+    """Synchronize selected core and/or domain skills into global agent directories."""
     print("=" * 65)
     print("🚀 Agent Skill Forge — Global Symlink Synchronizer")
     print("=" * 65)
-    print(f"Core Skills ({len(CORE_SKILLS)} primary verbs):")
-    for name, path in CORE_SKILLS.items():
-        exists = os.path.exists(os.path.join(path, 'SKILL.md'))
-        status = "EXISTS" if exists else "MISSING CANONICAL SOURCE"
-        print(f"  - {name:20} -> {path} [{status}]")
+
+    all_available = discover_all_skills()
+
+    if selected_skills is None:
+        target_skill_names = list(CORE_SKILLS.keys())
+        print(f"Default Core Skills ({len(target_skill_names)} primary verbs):")
+    else:
+        target_skill_names = selected_skills
+        print(f"Target Selected Skills ({len(target_skill_names)}):")
+
+    all_targets = {}
+    for name in target_skill_names:
+        if name in all_available:
+            path = all_available[name]['path']
+            all_targets[name] = path
+            exists = os.path.exists(os.path.join(path, 'SKILL.md'))
+            status = "EXISTS" if exists else "MISSING CANONICAL SOURCE"
+            print(f"  - {name:32} -> {path} [{status}]")
+        elif name in CORE_SKILLS:
+            path = CORE_SKILLS[name]
+            all_targets[name] = path
+            exists = os.path.exists(os.path.join(path, 'SKILL.md'))
+            status = "EXISTS" if exists else "MISSING CANONICAL SOURCE"
+            print(f"  - {name:32} -> {path} [{status}]")
+        else:
+            print(f"  ! {name:32} [NOT FOUND IN FORGE]")
+
+    for alias, target in ALIASES.items():
+        if target in all_targets:
+            all_targets[alias] = all_targets[target]
 
     target_dirs = [
         ("~/.agents/skills", AGENTS_SKILLS_DIR),
@@ -238,15 +465,10 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False):
         ("~/.gemini/antigravity-cli/skills", ANTIGRAVITY_CLI_SKILLS_DIR),
     ]
 
-    all_targets = dict(CORE_SKILLS)
-    for alias, target in ALIASES.items():
-        if target in CORE_SKILLS:
-            all_targets[alias] = CORE_SKILLS[target]
-
     for label, target_dir in target_dirs:
         os.makedirs(target_dir, exist_ok=True)
         print(f"\n--- Auditing {label} ---")
-        clean_stale_and_orphan_links(target_dir, all_targets, prune=prune)
+        clean_stale_and_orphan_links(target_dir, all_targets, prune=prune, strict_prune=strict_prune)
 
         for name, src_path in all_targets.items():
             if not os.path.exists(src_path):
@@ -329,36 +551,100 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
 def main():
     parser = argparse.ArgumentParser(description="Agent Skill Forge - Symlink Manager & On-Demand Bootstrapper")
     parser.add_argument('--fix', action='store_true', help="Automatically create or repoint missing symlinks")
-    parser.add_argument('--prune', action='store_true', help="Remove stale, broken, or non-global symlinks")
+    parser.add_argument('--prune', action='store_true', help="Remove stale, broken, or non-selected symlinks")
     parser.add_argument('--copy', action='store_true', help="Use physical directory copying instead of symlinks/junctions")
     parser.add_argument('--project', type=str, help="Target project workspace for JIT skill bootstrapping")
-    parser.add_argument('--skills', type=str, help="Comma-separated skill names to bootstrap into the project")
+    parser.add_argument('--skills', type=str, help="Comma-separated skill names to install/bootstrap")
+    parser.add_argument('--clusters', type=str, help="Comma-separated cluster codes or presets (c1, c2, c3, c4, d1, d2, d3, d4, content, core, domain, all)")
+    parser.add_argument('--all', action='store_true', help="Install all 30 core and domain skills")
+    parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
+    parser.add_argument('--domain', action='store_true', help="Install all 12 preferred domain skills (d1, d2, d3, d4)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, voice, copy-write, image-gen)")
+    parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
+    parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")
 
     args = parser.parse_args()
+
+    if args.list_clusters:
+        print("=" * 70)
+        print("🛠️  Agent Skill Forge — Skill Clusters")
+        print("=" * 70)
+        print("\n📦 CORE SKILL CLUSTERS:")
+        for key, info in sorted(CORE_CLUSTERS.items()):
+            print(f"\nCluster {key.upper()}: {info['name']} ({info['id']})")
+            print(f"  Description: {info['description']}")
+            print("  Skills:")
+            for s in info['skills']:
+                print(f"    - {s}")
+        print("\n🛠️  DOMAIN SKILL CLUSTERS:")
+        for key, info in sorted(DOMAIN_CLUSTERS.items()):
+            print(f"\nCluster {key.upper()}: {info['name']} ({info['id']})")
+            print(f"  Description: {info['description']}")
+            print("  Skills:")
+            for s in info['skills']:
+                print(f"    - {s}")
+        return
 
     if args.list_available:
         all_skills = discover_all_skills()
         print(f"Agent Skill Forge Catalog ({len(all_skills)} total skills):")
-        print("\n🌟 Core Global Skills (15 Action Verbs):")
+        print("\n🌟 Core Global Skills (18 Action Verbs):")
         for name in sorted(CORE_SKILLS.keys()):
             path = CORE_SKILLS[name]
-            print(f"  - {name:20} -> {path}")
+            print(f"  - {name:22} -> {path}")
         print("\n🛠️ Preferred Domain Skills (On-Demand JIT):")
         for name, info in sorted(all_skills.items()):
             if info['type'] == 'preferred':
                 print(f"  - {name:32} -> {info['path']}")
         return
 
-    if args.project:
-        if not args.skills:
-            print("Error: --skills must be provided when using --project (e.g. --skills frontend-ui-engineering,security-and-hardening)")
-            sys.exit(1)
-        skill_names = [s.strip() for s in args.skills.split(',')]
-        bootstrap_project_skills(args.project, skill_names, fix=args.fix, copy_mode=args.copy)
+    if args.interactive:
+        scope, project_dir, chosen_skills, strict_prune = interactive_wizard()
+        if scope == 'project':
+            bootstrap_project_skills(project_dir, chosen_skills, fix=True, copy_mode=args.copy)
+        else:
+            sync_global_skills(prune=args.prune or strict_prune, fix=True, copy_mode=args.copy, selected_skills=chosen_skills, strict_prune=strict_prune)
         return
 
-    sync_global_skills(prune=args.prune, fix=args.fix, copy_mode=args.copy)
+    # Resolve selected skills from CLI flags
+    requested_skills = []
+    has_explicit_selection = False
+
+    if args.all:
+        has_explicit_selection = True
+        for c in ALL_CLUSTERS.values():
+            requested_skills.extend(c['skills'])
+    if args.core:
+        has_explicit_selection = True
+        for c in CORE_CLUSTERS.values():
+            requested_skills.extend(c['skills'])
+    if args.domain:
+        has_explicit_selection = True
+        for c in DOMAIN_CLUSTERS.values():
+            requested_skills.extend(c['skills'])
+    if args.content:
+        has_explicit_selection = True
+        requested_skills.extend(CORE_CLUSTERS['c3']['skills'])
+    if args.clusters:
+        has_explicit_selection = True
+        requested_skills.extend(resolve_clusters_arg(args.clusters))
+    if args.skills:
+        has_explicit_selection = True
+        requested_skills.extend([s.strip() for s in args.skills.split(',') if s.strip()])
+
+    requested_skills = list(dict.fromkeys(requested_skills))
+
+    if args.project:
+        if not requested_skills:
+            print("Error: --skills, --clusters, --content, --core, or --all must be provided with --project")
+            sys.exit(1)
+        bootstrap_project_skills(args.project, requested_skills, fix=args.fix, copy_mode=args.copy)
+        return
+
+    strict_prune = has_explicit_selection and args.prune
+    selected = requested_skills if has_explicit_selection else None
+    sync_global_skills(prune=args.prune, fix=args.fix, copy_mode=args.copy, selected_skills=selected, strict_prune=strict_prune)
 
 
 if __name__ == '__main__':

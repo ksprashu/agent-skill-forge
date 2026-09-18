@@ -3,7 +3,10 @@
     Agent Skill Forge — Windows 1-Liner Universal Installer
 #>
 [CmdletBinding()]
-param()
+param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$ForwardArgs
+)
 
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -28,9 +31,15 @@ if (-not $PythonExe) {
     exit 1
 }
 
-Write-Host "🔄 Synchronizing Core Action Verbs across AI developer tools using $PythonExe..." -ForegroundColor Yellow
-& $PythonExe "$ScriptDir\sync_skills.py" --prune --fix
+if ($ForwardArgs -and $ForwardArgs.Count -gt 0) {
+    & $PythonExe "$ScriptDir\sync_skills.py" --fix @ForwardArgs
+} elseif ([Environment]::UserInteractive -and -not [Console]::IsInputRedirected) {
+    & $PythonExe "$ScriptDir\sync_skills.py" --interactive --fix
+} else {
+    Write-Host "🔄 Synchronizing Core Action Verbs across AI developer tools using $PythonExe..." -ForegroundColor Yellow
+    & $PythonExe "$ScriptDir\sync_skills.py" --prune --fix
+}
 
 Write-Host "`n========================================================================" -ForegroundColor Green
-Write-Host " ✅ AGENT SKILL FORGE IS FULLY INSTALLED & ACTIVE" -ForegroundColor Green
+Write-Host " ✅ AGENT SKILL FORGE IS FULLY CONFIGURED & ACTIVE" -ForegroundColor Green
 Write-Host "========================================================================" -ForegroundColor Green

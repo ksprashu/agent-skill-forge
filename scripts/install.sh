@@ -33,17 +33,30 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-echo "🔄 Synchronizing 15 Core Action Verbs across AI developer tools..."
-python3 "$SCRIPT_DIR/sync_skills.py" --prune --fix
+if [ $# -gt 0 ]; then
+    python3 "$SCRIPT_DIR/sync_skills.py" --fix "$@"
+elif [ -t 0 ]; then
+    python3 "$SCRIPT_DIR/sync_skills.py" --interactive --fix
+else
+    echo "🔄 Synchronizing 15 Core Action Verbs across AI developer tools..."
+    python3 "$SCRIPT_DIR/sync_skills.py" --prune --fix
+fi
 
 echo ""
 echo "========================================================================"
-echo " ✅ AGENT SKILL FORGE IS FULLY INSTALLED & ACTIVE"
+echo " ✅ AGENT SKILL FORGE IS FULLY CONFIGURED & ACTIVE"
 echo "========================================================================"
 echo " 🌟 15 Core Global Skills:"
 echo "    /prompt, /grill, /spec, /plan, /test, /verify, /review, /unslop,"
 echo "    /docs, /catalog, /sync, /google-oss, /codelab, /voice, /copy-write, /image-gen"
 echo ""
-echo " 🛠️  To bootstrap domain skills into any project workspace:"
-echo "    python3 $SCRIPT_DIR/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization"
+echo " 🛠️  Installer Usage Examples:"
+echo "    Interactive Wizard:             bash $SCRIPT_DIR/install.sh"
+echo "    Install Content & Creative:     bash $SCRIPT_DIR/install.sh --content --prune"
+echo "    Install Specific Clusters:      bash $SCRIPT_DIR/install.sh --clusters c3,d1"
+echo "    Install All Core Skills:        bash $SCRIPT_DIR/install.sh --core"
+echo "    Install All Domain Skills:      bash $SCRIPT_DIR/install.sh --domain"
+echo "    Install Complete Forge (All):   bash $SCRIPT_DIR/install.sh --all"
+echo "    Bootstrap to Project Workspace: bash $SCRIPT_DIR/install.sh --project . --clusters c3"
+echo "    List All Clusters & Skills:     bash $SCRIPT_DIR/install.sh --list-clusters"
 echo "========================================================================"

@@ -10,78 +10,123 @@ A comprehensive, zero-slop operational framework for orchestrating **Agent Skill
 
 ---
 
-## 🏛️ 1. Architecture: Global Universal Verbs vs. Project-Scoped JIT
+## 🏛️ 1. Architecture: Modular Clusters & Selective Installation
 
-To maximize agent efficiency and prevent context window exhaustion, Agent Skill Forge organizes skills into two distinct tiers:
+To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Agent Skill Forge** organizes all 30 skills into **8 functional clusters** across two categories:
 
-1. **Global Universal Action Verbs (17 Core Skills)**: Always available across all workspaces. These cover the meta-orchestration, core software development lifecycle (SDLC), content creation, and compliance.
-2. **Curated Preferred Domain Skills (12 Specialized JIT Skills)**: Bootstrapped **Just-In-Time (JIT)** directly into project workspaces (`.gemini/skills/` and `.agents/skills/`). They provide deep domain expertise (e.g., CSS architecture, security hardening, distributed tracing) without polluting global context memory.
+### 📦 Core Clusters (18 Action Skills)
+Available globally or installable in focused sections:
+*   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
+*   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
+*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `voice`, `copy-write`, `image-gen`
+*   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
+
+### 🛠️ Domain Clusters (12 Preferred Skills)
+Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally:
+*   **Cluster D1: Full-Stack & Quality (`fullstack`)**: `frontend-ui-engineering`, `performance-optimization`, `browser-testing-with-devtools`, `api-and-interface-design`
+*   **Cluster D2: Security, Diagnostics & Reliability (`security`)**: `security-and-hardening`, `debugging-and-error-recovery`, `observability-and-instrumentation`
+*   **Cluster D3: DevOps & Workflows (`devops`)**: `ci-cd-and-automation`, `git-workflow-and-versioning`, `deprecation-and-migration`
+*   **Cluster D4: AI & Evaluation (`ai`)**: `context-engineering`, `benchmark-harness`
 
 ```
-                                  ┌────────────────────────────────────────┐
-                                  │   GLOBAL UNIVERSAL ACTION VERBS (17)   │
-                                  │    Always in memory / All Workspaces   │
-                                  └───────────────────┬────────────────────┘
-                                                      │
-                       ┌──────────────────────────────┼──────────────────────────────┐
-                       │                              │                              │
-        ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐ ┌──────────────▼─────────────┐
-        │  1. Meta-Orchestration     │ │     2. Core SDLC Engine     │ │   3. Publishing & Comms    │
-        │  • /prompt                 │ │  • /spec                   │ │  • /docs                   │
-        │  • /grill                  │ │  • /plan                   │ │  • /google-oss             │
-        │  • /align                  │ │  • /test                   │ │  • /codelab                │
-        │  • /catalog                │ │  • /unslop                 │ │  • /voice                  │
-        │  • /sync                   │ │  • /verify                 │ │  • /copy-write             │
-        │                            │ │  • /review                 │ │  • /image-gen              │
-        └────────────────────────────┘ └──────────────┬─────────────┘ └────────────────────────────┘
-                                                      │
-                                                      │ Injects on-demand
-                                                      ▼
-                                  ┌────────────────────────────────────────┐
-                                  │   CURATED PREFERRED DOMAIN SKILLS (12) │
-                                  │    Project-Scoped JIT (.gemini/skills) │
-                                  ├────────────────────────────────────────┤
-                                  │  • frontend-ui-engineering             │
-                                  │  • performance-optimization            │
-                                  │  • api-and-interface-design            │
-                                  │  • security-and-hardening              │
-                                  │  • deprecation-and-migration           │
-                                  │  • browser-testing-with-devtools       │
-                                  │  • observability-and-instrumentation   │
-                                  │  • ci-cd-and-automation                │
-                                  │  • debugging-and-error-recovery        │
-                                  │  • git-workflow-and-versioning         │
-                                  │  • context-engineering                 │
-                                  │  • benchmark-harness                   │
-                                  └────────────────────────────────────────┘
+                                  ┌──────────────────────────────────────────────────────────┐
+                                  │            AGENT SKILL FORGE TAXONOMY (30 SKILLS)        │
+                                  └────────────────────────────┬─────────────────────────────┘
+                                                               │
+                              ┌────────────────────────────────┴────────────────────────────────┐
+                              ▼                                                                 ▼
+               ┌──────────────────────────────┐                                  ┌──────────────────────────────┐
+               │    CORE CLUSTERS (C1 - C4)   │                                  │   DOMAIN CLUSTERS (D1 - D4)  │
+               ├──────────────────────────────┤                                  ├──────────────────────────────┤
+               │ C1: Plan & Spec              │                                  │ D1: Full-Stack & Quality     │
+               │     /spec, /plan, /grill,    │                                  │     frontend-ui, perf-opt,   │
+               │     /prompt                  │                                  │     browser-test, api-design │
+               │                              │                                  │                              │
+               │ C2: Quality & Verification   │                                  │ D2: Security & Reliability   │
+               │     /test, /verify, /review, │                                  │     security, debugging,     │
+               │     /unslop                  │                                  │     observability            │
+               │                              │                                  │                              │
+               │ C3: Content & Creative       │                                  │ D3: DevOps & Workflows       │
+               │     /codelab, /voice,        │                                  │     ci-cd, git-workflow,     │
+               │     /copy-write, /image-gen  │                                  │     deprecation-migration    │
+               │                              │                                  │                              │
+               │ C4: Knowledge & Governance   │                                  │ D4: AI & Evaluation          │
+               │     /docs, /catalog, /sync,  │                                  │     context-engineering,     │
+               │     /google-oss, /align      │                                  │     benchmark-harness        │
+               └──────────────────────────────┘                                  └──────────────────────────────┘
 ```
 
 ---
 
-## 🌟 2. The 17 Global Universal Action Verbs
+## ⚡ 2. How to Install Skills in Sections
 
-### Tier 1: Meta-Orchestration & Project Intelligence
-*   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`). Implements dynamic dual-mode switching (Lightweight vs Heavyweight).
-*   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing for as many rounds as necessary until all ambiguities are resolved and the specification is 100% fleshed out.
-*   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
-*   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
-*   **`/sync`** (`skills/sync`): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.
+Agent Skill Forge includes an interactive terminal installer and powerful scriptable flags:
 
-### Tier 2: Core SDLC Execution Engine
+### A. Interactive Wizard
+Run the installer in an interactive terminal to choose exactly which clusters to install:
+```bash
+bash scripts/install.sh
+```
+
+### B. Installing Specific Clusters (e.g. Content & Creative Only)
+If you only want specific skills (such as Codelabs, Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:
+```bash
+# Install Cluster C3 only and prune unselected skills (like plan, spec, test):
+bash scripts/install.sh --content --prune
+
+# Or explicitly by cluster code:
+bash scripts/install.sh --clusters c3 --prune
+```
+
+### C. Mixing Core and Domain Clusters
+```bash
+# Install Content & Creative (C3) + Full-Stack (D1):
+bash scripts/install.sh --clusters c3,d1
+
+# Install Quality & Verification (C2) + Security (D2):
+bash scripts/install.sh --clusters c2,d2
+```
+
+### D. Presets & Complete Installation
+```bash
+# Install all Core skills:
+bash scripts/install.sh --core
+
+# Install all Preferred Domain skills:
+bash scripts/install.sh --domain
+
+# Install everything:
+bash scripts/install.sh --all
+```
+
+---
+
+## 🌟 3. Detailed Core Skills Directory by Cluster
+
+### 📐 Cluster C1: Planning & Specification (`plan-spec`)
 *   **`/spec`** (`skills/spec`): Writes source-grounded specifications with official API doc citations, interface data contracts, and explicit non-goals before generating code.
 *   **`/plan`** (`skills/plan`): Slices specifications into vertically testable task units with dependency DAG checkpoints.
+*   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing until all ambiguities are resolved.
+*   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`).
+
+### 🧪 Cluster C2: Quality & Verification (`test-review`)
 *   **`/test`** (`skills/test`): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.
-*   **`/unslop`** (`skills/unslop`): Universal anti-bloat engine. Strips AI boilerplate, defensive wrapper clutter, sterile filler words, and dead abstractions across code, prose, analyses, and UI.
 *   **`/verify`** (`skills/verify`): Expectation-Grounded Alignment (EGA). Executes deterministic static check scripts alongside blinded multi-persona dynamic LLM judge rubrics.
 *   **`/review`** (`skills/review`): Conducts 5-axis code reviews (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation diffs.
+*   **`/unslop`** (`skills/unslop`): Universal anti-bloat engine. Strips AI boilerplate, defensive wrapper clutter, sterile filler words, and dead abstractions across code, prose, analyses, and UI.
 
-### Tier 3: Comms, Visuals, Publishing & Open Source
-*   **`/docs`** (`skills/docs`): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals (`technical`, `obsidian`, `proscript`, `dynamics`).
-*   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
-*   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops.
-*   **`/voice`** (`skills/voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence.
-*   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `~/.gemini/personas/` > `.template.md`).
+### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
+*   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for `claat`.
+*   **`/voice`** (`skills/voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
+*   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`).
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
+
+### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
+*   **`/docs`** (`skills/docs`): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals.
+*   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
+*   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
+*   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
+*   **`/sync`** (`skills/sync`): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.
 
 ---
 
