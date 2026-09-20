@@ -1,91 +1,118 @@
-# 🏆 Competitive Branching & Arbiter Synthesis
+# 🏆 Competitive Branching, Design Tournaments & Arbiter Synthesis
 
-In high-stakes software engineering (e.g. designing core algorithms, high-concurrency database synchronizers, parser architectures, or complex refactors), choosing the wrong implementation strategy upfront leads to expensive rewrites.
+In high-stakes software engineering (e.g. designing core architectures, choosing database technologies, concurrency synchronizers, parser designs, or major refactors), choosing the wrong strategy upfront leads to catastrophic rewrites.
 
-The **Competitive Branching Pattern** allows the Orchestrator to dispatch multiple competing workers in parallel, each exploring a distinct implementation hypothesis, before an Arbiter selects or synthesizes the optimal solution.
-
----
-
-## 1. When to Use Competitive Branching
-- **Algorithmic Alternatives**: Approach A (e.g. iterative scan) vs Approach B (e.g. interval tree index).
-- **Architecture Spikes**: REST vs GraphQL endpoints; Server Actions vs API routes.
-- **Performance Optimization**: Comparing memory overhead vs CPU throughput under load.
-- **Complex Refactors**: Evaluating two different decoupling patterns without risking the main branch.
+The **Competitive Branching Pattern** operates at two distinct tiers:
+1. **Tier 1: Architectural Design Tournaments**: Competing design proposals written in parallel before code is written, evaluated by an Architectural Arbiter, with major trade-offs escalated to the user.
+2. **Tier 2: Prototyping Spikes & Implementation Tournaments**: Competing code branches executed in parallel isolated workspaces, evaluated via empirical benchmarks and unit test suites.
 
 ---
 
-## 2. The Tournament Protocol
+## 🏛️ Tier 1: Architectural Design Tournaments
 
 ```
-                        [Start Milestone Task]
-                                  │
-         ┌────────────────────────┴────────────────────────┐
-         ▼                                                 ▼
-┌─────────────────────────┐                       ┌─────────────────────────┐
-│     WORKER ALPHA        │                       │       WORKER BETA       │
-│ • Branch / Dir A        │                       │ • Branch / Dir B        │
-│ • Approach A            │                       │ • Approach B            │
-│ • Unit tests & design   │                       │ • Unit tests & design   │
-└────────┬────────────────┘                       └────────┬────────────────┘
-         │                                                 │
-         └────────────────────────┬────────────────────────┘
-                                  ▼
-                     ┌─────────────────────────┐
-                     │   THE ARBITER SUBAGENT  │
-                     │ • Executes shared tests │
-                     │ • Benchmarks latency    │
-                     │ • Evaluates unslop/code │
-                     │ • Selects winner/merges │
-                     └────────────┬────────────┘
-                                  │
-                                  ▼
-                     [Adversarial Committee Gate]
+                     [SPEC.md Verified by Socratic Grilling]
+                                        │
+                 ┌──────────────────────┴──────────────────────┐
+                 ▼                                             ▼
+     ┌───────────────────────┐                     ┌───────────────────────┐
+     │ DESIGN ARCHITECT ALPHA│                     │ DESIGN ARCHITECT BETA │
+     │ Proposal Alpha        │                     │ Proposal Beta         │
+     │ e.g. In-Memory Cache  │                     │ e.g. SQLite Storage   │
+     └───────────┬───────────┘                     └───────────┬───────────┘
+                 │                                             │
+                 └──────────────────────┬──────────────────────┘
+                                        ▼
+                           ┌─────────────────────────┐
+                           │  ARCHITECTURAL ARBITER  │
+                           │ Runs arbiter_eval.py    │
+                           │ Generates scorecard.md  │
+                           └────────────┬────────────┘
+                                        │
+                       ┌────────────────┴────────────────┐
+                       ▼                                 ▼
+             [Trade-offs Unambiguous]        [Fundamental Trade-off]
+                       │                                 │
+                       ▼                                 ▼
+               SYNTHESIZE DESIGN.md            SENTINEL ASKS USER
+                       │                       (ask_question Choice Card)
+                       │                                 │
+                       └────────────────◄────────────────┘
+                                        │
+                                        ▼
+                         [Approve Authoritative DESIGN.md]
 ```
 
-### Step 1: Dispatch Competing Workers in Isolated Workspaces
-The Orchestrator dispatches two workers simultaneously using `invoke_subagent`:
+### 1. Authoring Competing Proposals
+Design architects write structured markdown proposals in `.agents/design/proposals/`:
+- **Proposal Alpha (`proposal_alpha.md`)**: Explores primary hypothesis (e.g., in-memory trie, sync API, client-side caching).
+- **Proposal Beta (`proposal_beta.md`)**: Explores alternative hypothesis (e.g., SQLite FTS5 virtual table, event-driven worker, server action pagination).
+
+### 2. Automated Arbiter Scoring
+The Architectural Arbiter evaluates proposals across 4 axes using `arbiter_eval.py`:
+1. **Architecture & Spec Grounding (30 pts)**: Coverage of requirements $R_1 \dots R_n$ and non-goals from `SPEC.md`.
+2. **Interface & Data Contracts (25 pts)**: Schema definitions, TypeScript types, migration cleanliness.
+3. **Failure Modes & Resilience (25 pts)**: Concurrency, error handling, retry limits, security boundary checks.
+4. **Simplicity & Unslop (20 pts)**: Avoidance of unnecessary abstractions, minimal dependencies, zero AI fluff words.
+
+Run command:
+```bash
+python3.12 skills/work/scripts/arbiter_eval.py \
+  --design-alpha .agents/design/proposals/proposal_alpha.md \
+  --design-beta .agents/design/proposals/proposal_beta.md \
+  --output-scorecard .agents/design/arbiter_scorecard.md
+```
+
+### 3. User Choice Escalation Protocol
+If the Arbiter identifies genuine trade-offs that affect operational ergonomics, durability, or external dependencies, it marks the recommendation as `USER_DECISION_REQUIRED`.
+The Sentinel presents an interactive choice modal via `ask_question`:
+- Option 1 (Recommended): Proposal Alpha trade-off summary (latency vs persistence).
+- Option 2: Proposal Beta trade-off summary (persistence vs latency).
+Once the user selects an option, the Arbiter records the user decision in `.agents/design/DESIGN.md` § 4.
+
+---
+
+## 🔬 Tier 2: Prototyping Spikes & Implementation Tournaments
+
+### 1. Validation Spikes (Pre-Build)
+For high-risk assumptions (e.g. latency budgets, novel library compatibility), dispatch a prototype worker in a branched workspace (`Workspace: "branch"`):
+- Tests core hypothesis with minimal code.
+- Runs micro-benchmarks.
+- Emits `.agents/design/spike_results.md`.
+
+### 2. Implementation Code Tournaments (Milestone Build)
+During critical milestones, dispatch competing implementation workers in parallel:
 ```json
 {
   "Subagents": [
     {
-      "Role": "Worker Alpha — Approach A (In-Memory Index)",
+      "Role": "Worker Alpha — Approach A",
       "TypeName": "self",
       "Model": "flash",
       "Workspace": "branch",
-      "Prompt": "Implement Milestone 2 using in-memory Trie indexing.\nWorking directory: .agents/worker_alpha/\nRequired Inputs: .agents/ORIGINAL_REQUEST.md, .agents/orchestrator/PROJECT.md\n\n### 🛑 MANDATORY SUBAGENT OPERATIONAL INVARIANTS\n1. Pre-Flight Input Artifact Check: Verify physical presence of .agents/ORIGINAL_REQUEST.md and PROJECT.md before proceeding. If missing, fail fast with error to parent.\n2. Strict Prohibition on Polling Loops: Zero sleep commands or busy-wait polling loops. Execution is event-driven.\n3. Handoff Delivery: Write implementation and tests in branch workspace. Verify builds pass with exit code 0. Report findings to .agents/worker_alpha/handoff.md. Send completion message to parent referencing handoff path."
+      "Prompt": "Implement Milestone 1 using Approach A in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_alpha/handoff.md."
     },
     {
-      "Role": "Worker Beta — Approach B (SQLite Virtual Table)",
+      "Role": "Worker Beta — Approach B",
       "TypeName": "self",
       "Model": "flash",
       "Workspace": "branch",
-      "Prompt": "Implement Milestone 2 using SQLite FTS5 virtual tables.\nWorking directory: .agents/worker_beta/\nRequired Inputs: .agents/ORIGINAL_REQUEST.md, .agents/orchestrator/PROJECT.md\n\n### 🛑 MANDATORY SUBAGENT OPERATIONAL INVARIANTS\n1. Pre-Flight Input Artifact Check: Verify physical presence of .agents/ORIGINAL_REQUEST.md and PROJECT.md before proceeding. If missing, fail fast with error to parent.\n2. Strict Prohibition on Polling Loops: Zero sleep commands or busy-wait polling loops. Execution is event-driven.\n3. Handoff Delivery: Write implementation and tests in branch workspace. Verify builds pass with exit code 0. Report findings to .agents/worker_beta/handoff.md. Send completion message to parent referencing handoff path."
+      "Prompt": "Implement Milestone 1 using Approach B in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_beta/handoff.md."
     }
   ]
 }
 ```
 
-### Step 2: The Arbiter Evaluation Matrix
-Once both workers emit their `handoff.md` reports and their artifacts physically exist on disk, the Orchestrator spawns the **Arbiter** subagent:
-```json
-{
-  "Subagents": [
-    {
-      "Role": "Architectural Arbiter",
-      "TypeName": "self",
-      "Model": "inherit",
-      "Prompt": "You are the Architectural Arbiter.\nRequired Inputs: .agents/worker_alpha/handoff.md, .agents/worker_beta/handoff.md\n\n### 🛑 MANDATORY SUBAGENT OPERATIONAL INVARIANTS\n1. Pre-Flight Input Artifact Check: Assert physical presence of both worker handoff reports before beginning evaluation. If either is missing, fail fast with error to parent.\n2. Strict Prohibition on Polling Loops: Zero sleep commands or busy-waits. Execution is event-driven.\n3. Handoff Delivery: Run python3.12 skills/work/scripts/arbiter_eval.py. Measure correctness, latency, heap allocations, and simplicity. Synthesize the winning code into the main tree. Output scorecard to .agents/orchestrator/arbiter_scorecard.md. Send completion message to parent referencing scorecard path."
-    }
-  ]
-}
+### 3. Implementation Evaluation & Synthesis
+The Arbiter evaluates both codebases:
+```bash
+python3.12 skills/work/scripts/arbiter_eval.py \
+  --alpha-dir .agents/worker_alpha/ \
+  --beta-dir .agents/worker_beta/ \
+  --alpha-test "pytest tests/alpha" \
+  --beta-test "pytest tests/beta" \
+  --output-scorecard .agents/orchestrator/arbiter_scorecard.md
 ```
-
-1. **Functional Correctness**: Does the implementation pass 100% of requirement acceptance criteria?
-2. **Empirical Benchmarks**: Runs `preferred/benchmark-harness` to measure p95 latency and heap allocations under load.
-3. **Simplicity & Unslop**: Strips defensive wrappers, boilerplate, and unnecessary single-use abstractions (`skills/unslop`).
-4. **Maintenance Burden**: Evaluates readability, external dependency count, and architectural clarity.
-
-### Step 3: Synthesis & Mainline Integration
-- If one approach clearly dominates, the Arbiter copies or merges that branch's changes to the main workspace.
-- If both approaches have unique strengths (e.g. Alpha has better API ergonomics, Beta has better query performance), the Arbiter synthesizes the best components into the final implementation.
-- The resulting code is then handed over to the **Adversarial Committee** (Reviewer, Challenger, Forensic Auditor) for final milestone gating.
+- **Dominant Winner**: Arbiter merges winning branch to mainline.
+- **Close Scores**: Arbiter synthesizes Alpha's interface ergonomics with Beta's backend performance.
+- Results advance to the **Adversarial Committee** for milestone gating.

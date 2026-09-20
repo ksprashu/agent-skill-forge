@@ -2,7 +2,9 @@
 """
 Scaffold Work Swarm Project Layout
 Initializes .agents/ directory structure for autonomous multi-agent execution
-across all 5 Teamwork topologies and 3 Integrity modes.
+across all Teamwork topologies and Integrity modes.
+Supports full lifecycle workflows: Socratic spec grilling, parallel design proposals,
+architectural manager evaluation, hypothesis validation spikes, and layered reviews.
 """
 
 import os
@@ -12,16 +14,23 @@ import argparse
 from datetime import datetime, timezone
 
 if sys.platform == "win32":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    if hasattr(sys.stdout, "buffer") and getattr(sys.stdout, "encoding", "").lower() != "utf-8":
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "buffer") and getattr(sys.stderr, "encoding", "").lower() != "utf-8":
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-def scaffold_work(target_dir: str, project_name: str, milestones: int, topology: str = "full", integrity: str = "development"):
+def scaffold_work(target_dir: str, project_name: str, milestones: int, topology: str = "full",
+                  integrity: str = "development", lifecycle: bool = False):
     agents_dir = os.path.join(target_dir, ".agents")
     sentinel_dir = os.path.join(agents_dir, "sentinel")
     orchestrator_dir = os.path.join(agents_dir, "orchestrator")
+    design_dir = os.path.join(agents_dir, "design")
+    proposals_dir = os.path.join(design_dir, "proposals")
 
     os.makedirs(sentinel_dir, exist_ok=True)
-    if topology in ("full", "massive", "proof"):
+    os.makedirs(proposals_dir, exist_ok=True)
+
+    if topology in ("full", "massive", "proof", "lifecycle"):
         os.makedirs(orchestrator_dir, exist_ok=True)
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -56,7 +65,151 @@ Integrity mode: {integrity}
 """)
         print(f"Created: {orig_req_path}")
 
-    # 2. EVIDENCE.md (Cryptographic Proof Ledger)
+    # 2. SPEC.md (Authoritative Socratic Specification & Non-Goals)
+    spec_path = os.path.join(agents_dir, "SPEC.md")
+    if not os.path.exists(spec_path):
+        with open(spec_path, "w", encoding="utf-8") as f:
+            f.write(f"""# Specification & Socratic Context Brief — {project_name}
+
+- Initialized: {now_iso}
+- Status: DRAFT / IN_REVIEW
+- Topology: `{topology}` | Integrity Mode: `{integrity}`
+
+---
+
+## 1. Objective & Problem Statement
+[Define exact problem, users, and core value proposition]
+
+## 2. Socratic Grilling Log (Matt Pocock Alignment Protocol)
+| Turn | Hypothesis | Clarifying Question | Confirmed Decision | User Confidence |
+|------|------------|---------------------|--------------------|-----------------|
+| 1 | [Initial Hypothesis] | [Clarifying Question with Best Guess] | [Confirmed Choice] | >= 95% |
+
+## 3. Official Source Grounding & External Contracts
+- Official SDK / Documentation Links:
+  - [Service Docs](https://...) -> `Contract Signature`
+- Project-Scoped Tooling: CLI tools or plugins under `.agents/plugins/` (zero ambient global MCP assumption).
+
+## 4. Explicit Non-Goals & Scope Boundaries
+- [Define explicit non-goal 1]
+- [Define explicit non-goal 2]
+
+## 5. Detailed Functional & Interface Requirements
+- **R1. Core Interfaces**: [Define request/response schemas, API contracts, types]
+- **R2. Resilience & Edge Cases**: [Concurrency, race conditions, retries, error handling]
+- **R3. Performance Budget**: [Latency p95 targets, memory bounds]
+
+## 6. Binary Acceptance Criteria Checklist
+- [ ] AC1: All functional requirements verified with automated tests (exit code 0).
+- [ ] AC2: Interface contracts match approved DESIGN.md without drift.
+- [ ] AC3: Zero mock shortcuts or test tampering detected (`forensic_audit.py`).
+- [ ] AC4: Cryptographic SHA-256 evidence logged to `.agents/EVIDENCE.md`.
+- [ ] AC5: Independent Victory Audit certified clean cold run.
+""")
+        print(f"Created: {spec_path}")
+
+    # 3. Design Proposals & DESIGN.md
+    proposal_alpha_path = os.path.join(proposals_dir, "proposal_alpha.md")
+    if not os.path.exists(proposal_alpha_path):
+        with open(proposal_alpha_path, "w", encoding="utf-8") as f:
+            f.write(f"""# Architectural Design Proposal Alpha — {project_name}
+
+- Author: Design Architect Alpha
+- Date: {now_iso}
+- Status: PROPOSED
+
+## 1. Overview & System Topology
+[Describe proposed architecture, component breakdown, and module boundaries]
+
+## 2. Data Models & Schemas
+```typescript
+// Define primary interfaces and data contracts
+```
+
+## 3. Interface & API Contracts
+```typescript
+// Define endpoint contracts or function signatures
+```
+
+## 4. Failure Modes & Edge Case Resilience
+- Concurrency & Race Conditions: [Strategy]
+- Error Handling & Retries: [Strategy]
+- Security & Boundary Isolation: [Strategy]
+
+## 5. Explicit Non-Goals & Simplicity
+- Out of Scope: [Items explicitly avoided]
+- Dependency Footprint: [Zero or minimal third-party libraries]
+
+## 6. Trade-Off Analysis & Decision Points
+- **Trade-off A vs B**: [Pros, cons, and performance/complexity trade-offs]
+- **[Choice]**: [Flag choices requiring user decision]
+""")
+        print(f"Created: {proposal_alpha_path}")
+
+    proposal_beta_path = os.path.join(proposals_dir, "proposal_beta.md")
+    if not os.path.exists(proposal_beta_path):
+        with open(proposal_beta_path, "w", encoding="utf-8") as f:
+            f.write(f"""# Architectural Design Proposal Beta — {project_name}
+
+- Author: Design Architect Beta
+- Date: {now_iso}
+- Status: PROPOSED
+
+## 1. Overview & System Topology
+[Describe alternative architecture, component breakdown, and module boundaries]
+
+## 2. Data Models & Schemas
+```typescript
+// Define alternative interfaces and data contracts
+```
+
+## 3. Interface & API Contracts
+```typescript
+// Define endpoint contracts or function signatures
+```
+
+## 4. Failure Modes & Edge Case Resilience
+- Concurrency & Race Conditions: [Alternative Strategy]
+- Error Handling & Retries: [Alternative Strategy]
+- Security & Boundary Isolation: [Alternative Strategy]
+
+## 5. Explicit Non-Goals & Simplicity
+- Out of Scope: [Items explicitly avoided]
+- Dependency Footprint: [Zero or minimal third-party libraries]
+
+## 6. Trade-Off Analysis & Decision Points
+- **Trade-off A vs B**: [Pros, cons, and performance/complexity trade-offs]
+- **[Choice]**: [Flag choices requiring user decision]
+""")
+        print(f"Created: {proposal_beta_path}")
+
+    design_doc_path = os.path.join(design_dir, "DESIGN.md")
+    if not os.path.exists(design_doc_path):
+        with open(design_doc_path, "w", encoding="utf-8") as f:
+            f.write(f"""# Authoritative Technical Design Document — {project_name}
+
+- Approved Date: {now_iso}
+- Arbiter / Manager: Architectural Arbiter
+- Status: PENDING_SYNTHESIS
+
+## 1. Approved Architecture & Selected Approach
+[Synthesized architecture chosen from proposal tournament or user decision]
+
+## 2. Data Models & Interface Contracts
+[Final data models, database schemas, and API contracts]
+
+## 3. Failure Modes, Concurrency & Security
+[Guaranteed edge case handling, locking strategies, and security gates]
+
+## 4. Trade-Off Resolutions & User Decisions
+[Record resolutions of user decision cards and arbiter scorecards]
+
+## 5. Validation Spike & Implementation Milestones
+[Summary of validation spikes executed and target milestone breakdown]
+""")
+        print(f"Created: {design_doc_path}")
+
+    # 4. EVIDENCE.md (Cryptographic Proof Ledger)
     evidence_path = os.path.join(agents_dir, "EVIDENCE.md")
     if not os.path.exists(evidence_path):
         with open(evidence_path, "w", encoding="utf-8") as f:
@@ -72,7 +225,7 @@ Immutable ledger of physical runtime executions, test outputs, and SHA-256 proce
 """)
         print(f"Created: {evidence_path}")
 
-    # 3. Sentinel BRIEFING.md & DISPATCH.md
+    # 5. Sentinel BRIEFING.md & DISPATCH.md
     sentinel_briefing = os.path.join(sentinel_dir, "BRIEFING.md")
     if not os.path.exists(sentinel_briefing):
         with open(sentinel_briefing, "w", encoding="utf-8") as f:
@@ -91,8 +244,9 @@ Executive oversight, liveness monitoring, and mandatory Victory Audit coordinati
 
 ## 🔒 Key Constraints
 - Relay & oversight only; NO direct implementation in primary thread.
+- Socratic Spec Grilling: Interview user until confidence >= 95%.
+- User Decision Gates: Present trade-off choice cards to user when architects diverge.
 - Mandatory Victory Audit before reporting completion.
-- Monitor progress and liveness via recurring heartbeat crons.
 - Clean up subagents and crons upon confirmed victory.
 
 ## Project Status
@@ -113,9 +267,11 @@ Awaiting subagent dispatch and heartbeat scheduling.
 """)
         print(f"Created: {sentinel_dispatch}")
 
-    # 4. Declarative DAG.md (8-column table with execution modes, artifact contracts & live Mermaid)
+    # 6. Declarative DAG.md
     dag_path = os.path.join(agents_dir, "DAG.md")
     if not os.path.exists(dag_path):
+        is_lifecycle = (topology == "lifecycle") or lifecycle
+
         if topology == "focused":
             dag_content = f"""# Declarative DAG: Focused Bugfix Swarm — {project_name}
 
@@ -205,8 +361,112 @@ graph TD
 |---|---|---|---|---|---|---|---|
 {table_rows}
 """
+        elif is_lifecycle:
+            # Full Lifecycle DAG: Spec Grill -> Parallel Design Alpha/Beta -> Arbiter -> Validation Spike -> Milestones -> Multi-Review Committee -> Acceptance Review -> Victory
+            m_tasks = []
+            m_nodes = [
+                '  task_spec_grill["task_spec_grill<br/>[series] <b>PENDING</b>"]:::status-pending',
+                '  task_design_alpha["task_design_alpha<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                '  task_design_beta["task_design_beta<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                '  task_design_arbiter["task_design_arbiter<br/>[series] <b>BLOCKED</b>"]:::status-blocked',
+                '  task_validation_spike["task_validation_spike<br/>[series] <b>BLOCKED</b>"]:::status-blocked',
+            ]
+            m_edges = [
+                '  task_spec_grill --> task_design_alpha',
+                '  task_spec_grill --> task_design_beta',
+                '  task_design_alpha --> task_design_arbiter',
+                '  task_design_beta --> task_design_arbiter',
+                '  task_design_arbiter --> task_validation_spike',
+            ]
+
+            init_tasks = [
+                "| `task_spec_grill` | Socratic Spec Grilling | series | none | .agents/ORIGINAL_REQUEST.md | .agents/SPEC.md | spec_approved | PENDING |",
+                "| `task_design_alpha` | Architecture Proposal Alpha | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_alpha.md | design_pass | BLOCKED |",
+                "| `task_design_beta` | Architecture Proposal Beta | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_beta.md | design_pass | BLOCKED |",
+                "| `task_design_arbiter` | Design Arbiter & User Decision Gate | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_scorecard.md | arbiter_pass | BLOCKED |",
+                "| `task_validation_spike` | Prototyping & Feasibility Spike | series | task_design_arbiter | .agents/design/DESIGN.md | .agents/design/spike_results.md | spike_pass | BLOCKED |",
+            ]
+
+            prev_dep = "task_validation_spike"
+            prev_out = ".agents/design/spike_results.md"
+
+            for i in range(1, milestones + 1):
+                w_id = f"task_m{i}_worker"
+                d_rev = f"task_m{i}_design_rev"
+                c_rev = f"task_m{i}_code_rev"
+                chal = f"task_m{i}_challenger"
+                forn = f"task_m{i}_forensic"
+
+                m_nodes.extend([
+                    f'  {w_id}["{w_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked',
+                    f'  {d_rev}["{d_rev}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                    f'  {c_rev}["{c_rev}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                    f'  {chal}["{chal}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                    f'  {forn}["{forn}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked',
+                ])
+                m_edges.extend([
+                    f"  {prev_dep} --> {w_id}",
+                    f"  {w_id} --> {d_rev}",
+                    f"  {w_id} --> {c_rev}",
+                    f"  {w_id} --> {chal}",
+                    f"  {w_id} --> {forn}",
+                ])
+
+                m_tasks.append(f"| `{w_id}` | Milestone {i} Worker | series | {prev_dep} | {prev_out} | src/, tests/, .agents/m{i}_worker/handoff.md | exit_0 | BLOCKED |")
+                m_tasks.append(f"| `{d_rev}` | Milestone {i} Design Review | parallel | {w_id} | .agents/design/DESIGN.md, src/ | .agents/m{i}_design_rev/review.md | design_pass | BLOCKED |")
+                m_tasks.append(f"| `{c_rev}` | Milestone {i} 5-Axis Code Review | parallel | {w_id} | src/, tests/, .agents/m{i}_worker/handoff.md | .agents/m{i}_code_rev/review.md | review_pass | BLOCKED |")
+                m_tasks.append(f"| `{chal}` | Milestone {i} Adversarial Challenger | parallel | {w_id} | src/, tests/, .agents/m{i}_worker/handoff.md | tests/, .agents/m{i}_challenger/handoff.md | exit_0 | BLOCKED |")
+                m_tasks.append(f"| `{forn}` | Milestone {i} Forensic Integrity Auditor | parallel | {w_id} | src/, tests/ | .agents/m{i}_forensic/handoff.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |")
+
+                prev_dep = f"{d_rev}, {c_rev}, {chal}, {forn}"
+                prev_out = f".agents/m{i}_code_rev/review.md"
+
+            accept_id = "task_acceptance_review"
+            m_nodes.append(f'  {accept_id}["{accept_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
+            for part in prev_dep.split(", "):
+                m_edges.append(f"  {part} --> {accept_id}")
+
+            v_id = "task_victory_auditor"
+            m_nodes.append(f'  {v_id}["{v_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
+            m_edges.append(f"  {accept_id} --> {v_id}")
+
+            mermaid_lines = "\n".join(m_nodes + [""] + m_edges)
+            table_rows = "\n".join(init_tasks + m_tasks + [
+                f"| `{accept_id}` | Acceptance Review against SPEC.md | series | {prev_dep} | .agents/SPEC.md, .agents/EVIDENCE.md | .agents/acceptance_review/report.md | acceptance_pass | BLOCKED |",
+                f"| `{v_id}` | Clean-Slate Terminal Victory Certification | series | {accept_id} | .agents/EVIDENCE.md, .agents/acceptance_review/report.md | .agents/victory_auditor/handoff.md | victory_cert | BLOCKED |",
+            ])
+
+            dag_content = f"""# Declarative Master DAG: Full Lifecycle Swarm — {project_name}
+
+Topology: lifecycle
+Integrity Mode: {integrity}
+Last Scheduled: {now_iso}
+
+---
+
+## 📊 Live Mermaid Execution Topology
+
+```mermaid
+graph TD
+{mermaid_lines}
+
+  classDef status-passed fill:#14532d,stroke:#16a34a,stroke-width:2px,color:#dcfce7;
+  classDef status-running fill:#1e3a8a,stroke:#2563eb,stroke-width:2px,color:#dbeafe;
+  classDef status-pending fill:#2d3748,stroke:#64748b,stroke-width:1px,color:#f1f5f9;
+  classDef status-blocked fill:#78350f,stroke:#d97706,stroke-width:1px,stroke-dasharray: 5 5,color:#fef3c7;
+  classDef status-failed fill:#7f1d1d,stroke:#dc2626,stroke-width:2px,color:#fee2e2;
+```
+
+---
+
+## 📋 Declarative Task Graph Table
+
+| ID | Task Name | Mode | Depends On | Inputs | Outputs | Gate | Status |
+|---|---|---|---|---|---|---|---|
+{table_rows}
+"""
         else:
-            # Multi-milestone swarm DAG
+            # Multi-milestone swarm DAG (standard backward-compatible full topology)
             m_tasks = []
             m_nodes = ['  task_m0_survey["task_m0_survey<br/>[parallel] <b>PENDING</b>"]:::status-pending']
             m_edges = []
@@ -269,7 +529,7 @@ graph TD
             f.write(dag_content)
         print(f"Created: {dag_path}")
 
-    # 5. Topology-specific layout
+    # 7. Topology-specific layout
     if topology == "focused":
         worker_dir = os.path.join(agents_dir, "worker_fix")
         reviewer_dir = os.path.join(agents_dir, "reviewer_fix")
@@ -285,7 +545,7 @@ graph TD
         os.makedirs(review_dir, exist_ok=True)
         print(f"Created document review directory: {review_dir}")
 
-    elif topology in ("full", "massive", "proof"):
+    elif topology in ("full", "massive", "proof", "lifecycle"):
         # Orchestrator PROJECT.md, BRIEFING.md, DISPATCH.md, progress.md
         orchestrator_project = os.path.join(orchestrator_dir, "PROJECT.md")
         if not os.path.exists(orchestrator_project):
@@ -336,6 +596,7 @@ Orchestrate the end-to-end delivery of {project_name} across {milestones} staged
 
 ## 🔒 Key Constraints
 - DISPATCH-ONLY: NEVER edit code, NEVER run tests directly.
+- Socratic Spec & Parallel Design Proposals: coordinate proposals before full build.
 - Binary veto on Forensic Auditor integrity violations (`skills/work/scripts/forensic_audit.py`).
 - Competitive Branching: Dispatch Worker Alpha vs Beta in `Workspace: "branch"`.
 - Spawn fresh subagents per task; do not reuse finished agents.
@@ -377,13 +638,14 @@ def main():
     parser.add_argument("--project-dir", default=".", help="Root project workspace directory")
     parser.add_argument("--name", default="Project", help="Project name")
     parser.add_argument("--milestones", type=int, default=3, help="Number of initial milestones")
-    parser.add_argument("--topology", choices=["full", "focused", "review", "proof", "massive"], default="full",
+    parser.add_argument("--topology", choices=["full", "focused", "review", "proof", "massive", "lifecycle"], default="full",
                         help="Swarm topology to initialize")
     parser.add_argument("--integrity", choices=["development", "demo", "benchmark"], default="development",
                         help="Integrity mode enforcement")
+    parser.add_argument("--lifecycle", action="store_true", help="Enable full lifecycle DAG (spec grill, parallel designs, spikes, acceptance review)")
     args = parser.parse_args()
 
-    scaffold_work(args.project_dir, args.name, args.milestones, args.topology, args.integrity)
+    scaffold_work(args.project_dir, args.name, args.milestones, args.topology, args.integrity, args.lifecycle)
 
 if __name__ == "__main__":
     main()
