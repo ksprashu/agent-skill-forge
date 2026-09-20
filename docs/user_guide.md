@@ -18,7 +18,7 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 Available globally or installable in focused sections:
 *   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
-*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `voice`, `copy-write`, `image-gen`
+*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `copy-write`, `image-gen`
 *   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
 
 ### 🛠️ Domain Clusters (12 Preferred Skills)
@@ -47,7 +47,7 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                │     /unslop                  │                                  │     observability            │
                │                              │                                  │                              │
                │ C3: Content & Creative       │                                  │ D3: DevOps & Workflows       │
-               │     /codelab, /voice,        │                                  │     ci-cd, git-workflow,     │
+               │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
                │     /copy-write, /image-gen  │                                  │     deprecation-migration    │
                │                              │                                  │                              │
                │ C4: Knowledge & Governance   │                                  │ D4: AI & Evaluation          │
@@ -69,7 +69,7 @@ bash scripts/install.sh
 ```
 
 ### B. Installing Specific Clusters (e.g. Content & Creative Only)
-If you only want specific skills (such as Codelabs, Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:
+If you only want specific skills (such as Codelabs, Human-Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:
 ```bash
 # Install Cluster C3 only and prune unselected skills (like plan, spec, test):
 bash scripts/install.sh --content --prune
@@ -117,7 +117,7 @@ bash scripts/install.sh --all
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
 *   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for `claat`.
-*   **`/voice`** (`skills/voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
+*   **`/human-voice`** (`skills/human-voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
 *   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`).
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
 
@@ -188,7 +188,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 
 ### A. The Content, Prose & Codelab Pipeline
 Used when authoring documentation, tutorials, technical blogs, or developer keynotes:
-1. **`/voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
+1. **`/human-voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
 2. **`/copy-write`** or **`/codelab`**: Generates drafts using the 3-tier Profile-Overlay system (`.local.md` > `~/.gemini/personas/` > `.template.md`).
 3. **`/image-gen`**: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.
 4. **`/unslop`**: Eliminates AI filler words (*"delve"*, *"leverage"*, *"testament"*, *"in conclusion"*).
@@ -251,7 +251,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` & `/review` |
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` & `compile_docs.py` |
-| Extracting developer voice or drafting technical prose | Invoke `/voice` & `/copy-write` |
+| Extracting developer voice or drafting technical prose | Invoke `/human-voice` & `/copy-write` |
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |

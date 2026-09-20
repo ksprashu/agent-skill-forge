@@ -13,6 +13,29 @@ import io
 import argparse
 from datetime import datetime, timezone
 
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, SCRIPTS_DIR)
+
+try:
+    from visual_engine.c4_generator import render_c4_component_diagram
+    from visual_engine.sequence_generator import render_sequence_diagram
+    from visual_engine.what_if_compiler import compile_what_if_simulator
+    from visual_engine.manifest import get_baseline_manifest
+except ImportError:
+    try:
+        from .visual_engine.c4_generator import render_c4_component_diagram
+        from .visual_engine.sequence_generator import render_sequence_diagram
+        from .visual_engine.what_if_compiler import compile_what_if_simulator
+        from .visual_engine.manifest import get_baseline_manifest
+    except ImportError:
+        from visual_engine import (
+            render_c4_component_diagram,
+            render_sequence_diagram,
+            compile_what_if_simulator,
+            get_baseline_manifest,
+        )
+
 if sys.platform == "win32":
     if hasattr(sys.stdout, "buffer") and getattr(sys.stdout, "encoding", "").lower() != "utf-8":
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -34,6 +57,169 @@ def scaffold_work(target_dir: str, project_name: str, milestones: int, topology:
         os.makedirs(orchestrator_dir, exist_ok=True)
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    is_lifecycle = (topology == "lifecycle") or lifecycle
+
+    # Generate baseline C4 and Sequence diagrams via visual_engine
+    alpha_c4_spec = {
+        "direction": "TD",
+        "diagram_type": "graph",
+        "boundaries": [
+            {"id": "AlphaBoundary", "label": f"{project_name} Subsystem (Alpha In-Memory)"}
+        ],
+        "components": [
+            {
+                "id": "Gateway",
+                "name": "API Gateway",
+                "technology": "FastAPI / Router",
+                "description": "Validates requests & routes in-memory",
+                "boundary": "AlphaBoundary",
+                "dependencies": ["Engine"],
+            },
+            {
+                "id": "Engine",
+                "name": "In-Memory Engine",
+                "technology": "Python Core",
+                "description": "High-throughput execution engine",
+                "boundary": "AlphaBoundary",
+                "dependencies": ["StateStore"],
+            },
+            {
+                "id": "StateStore",
+                "name": "State Store",
+                "technology": "In-Memory RAM / Cache",
+                "description": "Zero-IO transient state cache",
+                "boundary": "AlphaBoundary",
+                "dependencies": [],
+            },
+        ],
+    }
+    alpha_c4 = render_c4_component_diagram(alpha_c4_spec)
+
+    alpha_seq_participants = [
+        {"id": "Client", "label": "Client / Caller"},
+        {"id": "Gateway", "label": "API Gateway"},
+        {"id": "Engine", "label": "In-Memory Engine"},
+        {"id": "StateStore", "label": "In-Memory Cache"},
+    ]
+    alpha_seq_steps = [
+        {"source": "Client", "target": "Gateway", "message": "Submit Request"},
+        {"source": "Gateway", "target": "Engine", "message": "Dispatch Task"},
+        {"source": "Engine", "target": "StateStore", "message": "Read / Write Transient State"},
+        {"source": "StateStore", "target": "Engine", "message": "State Updated (In-Memory)", "return": True},
+        {"source": "Engine", "target": "Gateway", "message": "Execution Result", "return": True},
+        {"source": "Gateway", "target": "Client", "message": "Response Ready (Fast)", "return": True},
+    ]
+    alpha_seq = render_sequence_diagram(alpha_seq_participants, alpha_seq_steps)
+
+    beta_c4_spec = {
+        "direction": "TD",
+        "diagram_type": "graph",
+        "boundaries": [
+            {"id": "BetaBoundary", "label": f"{project_name} Subsystem (Beta Modular)"}
+        ],
+        "components": [
+            {
+                "id": "Router",
+                "name": "Decoupled Router",
+                "technology": "Service Router",
+                "description": "Dispatches requests to decoupled modules",
+                "boundary": "BetaBoundary",
+                "dependencies": ["ModularCore"],
+            },
+            {
+                "id": "ModularCore",
+                "name": "Modular Core Subsystem",
+                "technology": "Decoupled Sub-Package",
+                "description": "Manifest-driven modular business logic",
+                "boundary": "BetaBoundary",
+                "dependencies": ["DiskStorage"],
+            },
+            {
+                "id": "DiskStorage",
+                "name": "Persistence Engine",
+                "technology": "File System / JSON",
+                "description": "Durable write-ahead storage",
+                "boundary": "BetaBoundary",
+                "dependencies": [],
+            },
+        ],
+    }
+    beta_c4 = render_c4_component_diagram(beta_c4_spec)
+
+    beta_seq_participants = [
+        {"id": "Client", "label": "Client / Caller"},
+        {"id": "Router", "label": "Decoupled Router"},
+        {"id": "ModularCore", "label": "Modular Core"},
+        {"id": "DiskStorage", "label": "Persistence Engine"},
+    ]
+    beta_seq_steps = [
+        {"source": "Client", "target": "Router", "message": "Submit Request"},
+        {"source": "Router", "target": "ModularCore", "message": "Invoke Subsystem"},
+        {"source": "ModularCore", "target": "DiskStorage", "message": "Persist State to Disk"},
+        {"source": "DiskStorage", "target": "ModularCore", "message": "Disk Write Acknowledged (Sync)", "return": True},
+        {"source": "ModularCore", "target": "Router", "message": "Execution Verified", "return": True},
+        {"source": "Router", "target": "Client", "message": "Response Confirmed (Durable)", "return": True},
+    ]
+    beta_seq = render_sequence_diagram(beta_seq_participants, beta_seq_steps)
+
+    design_c4_spec = {
+        "direction": "TD",
+        "diagram_type": "graph",
+        "boundaries": [
+            {"id": "SwarmBoundary", "label": f"{project_name} Subsystem Boundary"}
+        ],
+        "components": [
+            {
+                "id": "Dispatcher",
+                "name": "Hybrid Dispatcher",
+                "technology": "Python CLI / Orchestrator",
+                "description": "Coordinates lifecycle execution & gates",
+                "boundary": "SwarmBoundary",
+                "dependencies": ["CoreEngine"],
+            },
+            {
+                "id": "CoreEngine",
+                "name": "Decoupled Engine Core",
+                "technology": "Modular Python Sub-Package",
+                "description": "Executes tasks with in-memory caching and disk sync",
+                "boundary": "SwarmBoundary",
+                "dependencies": ["Cache", "DiskStore"],
+            },
+            {
+                "id": "Cache",
+                "name": "State Cache",
+                "technology": "In-Memory RAM",
+                "description": "Fast transient state lookups",
+                "boundary": "SwarmBoundary",
+                "dependencies": [],
+            },
+            {
+                "id": "DiskStore",
+                "name": "Durable Store",
+                "technology": "Atomic File Persistence",
+                "description": "Crash-resilient persistent artifacts",
+                "boundary": "SwarmBoundary",
+                "dependencies": [],
+            },
+        ],
+    }
+    design_c4 = render_c4_component_diagram(design_c4_spec)
+
+    design_seq_participants = [
+        {"id": "Sentinel", "label": "Work Sentinel"},
+        {"id": "Dispatcher", "label": "Hybrid Dispatcher"},
+        {"id": "CoreEngine", "label": "Decoupled Engine Core"},
+        {"id": "Storage", "label": "Hybrid Persistence"},
+    ]
+    design_seq_steps = [
+        {"source": "Sentinel", "target": "Dispatcher", "message": "Initialize Swarm Workflow"},
+        {"source": "Dispatcher", "target": "CoreEngine", "message": "Execute Staged Milestone"},
+        {"source": "CoreEngine", "target": "Storage", "message": "Sync State & Persist Checkpoints"},
+        {"source": "Storage", "target": "CoreEngine", "message": "State Persisted (Durable)", "return": True},
+        {"source": "CoreEngine", "target": "Dispatcher", "message": "Milestone Verified (Exit 0)", "return": True},
+        {"source": "Dispatcher", "target": "Sentinel", "message": "Ready for Gate Review", "return": True},
+    ]
+    design_seq = render_sequence_diagram(design_seq_participants, design_seq_steps)
 
     # 1. ORIGINAL_REQUEST.md
     orig_req_path = os.path.join(agents_dir, "ORIGINAL_REQUEST.md")
@@ -119,30 +305,62 @@ Integrity mode: {integrity}
 - Status: PROPOSED
 
 ## 1. Overview & System Topology
-[Describe proposed architecture, component breakdown, and module boundaries]
+Proposed in-memory high-throughput architecture prioritizing ultra-low latency and minimal cold-start overhead.
+
+### 1.1 High-Level System Architecture
+
+```mermaid
+flowchart TD
+  Client["Client / User"] --> Gateway["API Gateway (Alpha)"]
+  Gateway --> Engine["In-Memory Core Engine"]
+  Engine --> Cache[("In-Memory State Store")]
+```
+
+### 1.2 C4 Level 2/3 Component Diagram
+
+{alpha_c4}
+
+### 1.3 Lifecycle Sequence & Dataflow Diagram
+
+{alpha_seq}
 
 ## 2. Data Models & Schemas
 ```typescript
 // Define primary interfaces and data contracts
+export interface AlphaTaskRequest {{
+  taskId: string;
+  payload: Record<string, unknown>;
+  timestamp: string;
+}}
+
+export interface AlphaTaskResult {{
+  taskId: string;
+  status: "success" | "error";
+  latencyMs: number;
+}}
 ```
 
 ## 3. Interface & API Contracts
 ```typescript
 // Define endpoint contracts or function signatures
+export interface AlphaEngineService {{
+  executeTask(req: AlphaTaskRequest): Promise<AlphaTaskResult>;
+  getState(taskId: string): Promise<Record<string, unknown> | null>;
+}}
 ```
 
 ## 4. Failure Modes & Edge Case Resilience
-- Concurrency & Race Conditions: [Strategy]
-- Error Handling & Retries: [Strategy]
-- Security & Boundary Isolation: [Strategy]
+- Concurrency & Race Conditions: Atomic in-memory operations and lock-free concurrency.
+- Error Handling & Retries: In-memory retry loop with exponential backoff before surfacing error.
+- Security & Boundary Isolation: Isolated memory spaces per tenant task.
 
 ## 5. Explicit Non-Goals & Simplicity
-- Out of Scope: [Items explicitly avoided]
-- Dependency Footprint: [Zero or minimal third-party libraries]
+- Out of Scope: Multi-node distributed clustering and heavy database persistence.
+- Dependency Footprint: Zero external database dependencies; pure standard library and light runtime.
 
 ## 6. Trade-Off Analysis & Decision Points
-- **Trade-off A vs B**: [Pros, cons, and performance/complexity trade-offs]
-- **[Choice]**: [Flag choices requiring user decision]
+- **Trade-off A vs B**: Ultra-low latency (Alpha) vs Durable disk persistence (Beta).
+- **[Choice]**: Choose between in-memory transient speed and persistent disk storage across restarts.
 """)
         print(f"Created: {proposal_alpha_path}")
 
@@ -156,30 +374,65 @@ Integrity mode: {integrity}
 - Status: PROPOSED
 
 ## 1. Overview & System Topology
-[Describe alternative architecture, component breakdown, and module boundaries]
+Proposed modular, decoupled architecture prioritizing maximum durability, persistence, and auditability.
+
+### 1.1 High-Level System Architecture
+
+```mermaid
+flowchart TD
+  Client["Client / User"] --> Router["Decoupled Router (Beta)"]
+  Router --> ModularCore["Modular Subsystem Core"]
+  ModularCore --> DiskStorage[("Durable File / Disk Store")]
+```
+
+### 1.2 C4 Level 2/3 Component Diagram
+
+{beta_c4}
+
+### 1.3 Lifecycle Sequence & Dataflow Diagram
+
+{beta_seq}
 
 ## 2. Data Models & Schemas
 ```typescript
 // Define alternative interfaces and data contracts
+export interface BetaTaskRequest {{
+  requestId: string;
+  manifestPath: string;
+  options: {{
+    persist: boolean;
+    sync: boolean;
+  }};
+}}
+
+export interface BetaTaskResult {{
+  requestId: string;
+  persistedArtifacts: string[];
+  durabilityScore: number;
+}}
 ```
 
 ## 3. Interface & API Contracts
 ```typescript
 // Define endpoint contracts or function signatures
+export interface BetaModularService {{
+  processManifest(req: BetaTaskRequest): Promise<BetaTaskResult>;
+  recoverSession(sessionId: string): Promise<boolean>;
+}}
 ```
 
 ## 4. Failure Modes & Edge Case Resilience
-- Concurrency & Race Conditions: [Alternative Strategy]
-- Error Handling & Retries: [Alternative Strategy]
-- Security & Boundary Isolation: [Alternative Strategy]
+- Concurrency & Race Conditions: File locking and atomic rename patterns for disk state.
+- Error Handling & Retries: Crash-recovery journaling and automatic checkpoint replay.
+- Security & Boundary Isolation: Strict sandbox path validation preventing directory traversal.
 
 ## 5. Explicit Non-Goals & Simplicity
-- Out of Scope: [Items explicitly avoided]
-- Dependency Footprint: [Zero or minimal third-party libraries]
+- Out of Scope: Complex relational databases or distributed consensus clusters.
+- Dependency Footprint: Self-contained file-based storage using robust standard libraries.
 
 ## 6. Trade-Off Analysis & Decision Points
-- **Trade-off A vs B**: [Pros, cons, and performance/complexity trade-offs]
-- **[Choice]**: [Flag choices requiring user decision]
+- **Trade-off A vs B**: In-memory transient speed (Alpha) vs Persistent disk reliability (Beta).
+- **[Choice]**: Prioritize durable persistence across crashes vs raw in-memory operation speed.
 """)
         print(f"Created: {proposal_beta_path}")
 
@@ -193,7 +446,25 @@ Integrity mode: {integrity}
 - Status: PENDING_SYNTHESIS
 
 ## 1. Approved Architecture & Selected Approach
-[Synthesized architecture chosen from proposal tournament or user decision]
+Synthesized hybrid architecture combining decoupled modular engines with high-DPI visual rendering and dual caching/durability guarantees.
+
+### 1.1 High-Level System Architecture
+
+```mermaid
+flowchart TD
+  Client["Client / Orchestrator"] --> Dispatcher["Hybrid Dispatcher"]
+  Dispatcher --> CoreEngine["Decoupled Engine Core"]
+  CoreEngine --> Cache[("In-Memory State Cache")]
+  CoreEngine --> Disk[("Durable Disk Persistence")]
+```
+
+### 1.2 C4 Level 3 Component Block Diagram
+
+{design_c4}
+
+### 1.3 Lifecycle Sequence & Dataflow Diagram
+
+{design_seq}
 
 ## 2. Data Models & Interface Contracts
 [Final data models, database schemas, and API contracts]
@@ -208,6 +479,16 @@ Integrity mode: {integrity}
 [Summary of validation spikes executed and target milestone breakdown]
 """)
         print(f"Created: {design_doc_path}")
+
+    # Baseline What-If Simulator in lifecycle mode
+    if is_lifecycle:
+        simulator_path = os.path.join(design_dir, "what_if_simulator.html")
+        if not os.path.exists(simulator_path):
+            manifest = get_baseline_manifest(project_name)
+            sim_html = compile_what_if_simulator(manifest)
+            with open(simulator_path, "w", encoding="utf-8") as f:
+                f.write(sim_html)
+            print(f"Created: {simulator_path}")
 
     # 4. EVIDENCE.md (Cryptographic Proof Ledger)
     evidence_path = os.path.join(agents_dir, "EVIDENCE.md")

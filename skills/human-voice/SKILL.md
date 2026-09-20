@@ -1,10 +1,10 @@
 ---
-name: voice
-description: Extract and profile human typing cadence, style markers, and tone across AI tool logs. Trigger via /voice.
+name: human-voice
+description: Extract and profile human typing cadence, style markers, and tone across AI tool logs. Trigger via /human-voice.
 disable-model-invocation: true
 ---
 
-# Voice: Persona & Speech Cadence Profiler
+# Human-Voice: Persona & Speech Cadence Profiler
 
 Scan developer conversation logs, scrub PII, and extract authentic writing style markers.
 

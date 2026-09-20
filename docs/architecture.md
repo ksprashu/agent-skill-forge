@@ -18,7 +18,7 @@ Agent Skill Forge splits skills into two distinct tiers to balance discovery spe
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        TIER 1: GLOBAL LIFECYCLE                        │
 │   prompt · grill · spec · plan · test · verify · review · unslop       │
-│   docs · catalog · sync · google-oss · codelab · voice · copy-write    │
+│   docs · catalog · sync · google-oss · codelab · human-voice · copy-write│
 │   image-gen                                                            │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │

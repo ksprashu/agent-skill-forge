@@ -251,7 +251,7 @@ def record_evidence(target_dir: str, command: str, stdout: str, stderr: str, exi
 
 def main():
     parser = argparse.ArgumentParser(description="Forensic Integrity Audit Engine for Multi-Agent Systems")
-    parser.add_argument("--target-dir", default=".", help="Root directory to audit")
+    parser.add_argument("--target-dir", "--project-dir", default=".", help="Root directory to audit")
     parser.add_argument("--integrity-mode", choices=["development", "demo", "benchmark"], default="development",
                         help="Integrity mode: benchmark enforces zero-mock purity")
     parser.add_argument("--strict", action="store_true", help="Force benchmark-level zero mock tolerance")

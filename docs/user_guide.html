@@ -265,7 +265,7 @@
 <ul class="list-disc pl-5 my-3 space-y-1">
 <li>  <strong>Cluster C1: Planning & Specification (<code class="inline-code">plan-spec</code>)</strong>: <code class="inline-code">spec</code>, <code class="inline-code">plan</code>, <code class="inline-code">grill</code>, <code class="inline-code">prompt</code></li>
 <li>  <strong>Cluster C2: Quality & Verification (<code class="inline-code">test-review</code>)</strong>: <code class="inline-code">test</code>, <code class="inline-code">verify</code>, <code class="inline-code">review</code>, <code class="inline-code">unslop</code></li>
-<li>  <strong>Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</strong>: <code class="inline-code">codelab</code>, <code class="inline-code">voice</code>, <code class="inline-code">copy-write</code>, <code class="inline-code">image-gen</code></li>
+<li>  <strong>Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</strong>: <code class="inline-code">codelab</code>, <code class="inline-code">human-voice</code>, <code class="inline-code">copy-write</code>, <code class="inline-code">image-gen</code></li>
 <li>  <strong>Cluster C4: Knowledge & Governance (<code class="inline-code">docs-governance</code>)</strong>: <code class="inline-code">docs</code>, <code class="inline-code">catalog</code>, <code class="inline-code">google-oss</code>, <code class="inline-code">continuous-alignment</code>, <code class="inline-code">sync</code></li>
 </ul>
 <h3 id="domain-clusters-12-preferred-skills" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🛠️ Domain Clusters (12 Preferred Skills)</h3>
@@ -300,7 +300,7 @@
                │     /unslop                  │                                  │     observability            │
                │                              │                                  │                              │
                │ C3: Content &amp; Creative       │                                  │ D3: DevOps &amp; Workflows       │
-               │     /codelab, /voice,        │                                  │     ci-cd, git-workflow,     │
+               │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
                │     /copy-write, /image-gen  │                                  │     deprecation-migration    │
                │                              │                                  │                              │
                │ C4: Knowledge &amp; Governance   │                                  │ D4: AI &amp; Evaluation          │
@@ -326,7 +326,7 @@
             </div>
             
 <h3 id="b-installing-specific-clusters-e-g-content-creative-only" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">B. Installing Specific Clusters (e.g. Content & Creative Only)</h3>
-<p class="mb-4 text-[var(--text-secondary)]">If you only want specific skills (such as Codelabs, Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:</p>
+<p class="mb-4 text-[var(--text-secondary)]">If you only want specific skills (such as Codelabs, Human-Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:</p>
 
             <div class="code-container my-4">
                 <div class="code-header">
@@ -393,7 +393,7 @@ bash scripts/install.sh --all
 <h3 id="cluster-c3-content-creative-authoring---inline-code-57" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🎨 Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</h3>
 <ul class="list-disc pl-5 my-3 space-y-1">
 <li>  <strong><code class="inline-code">/codelab</code></strong> (<code class="inline-code">skills/codelab</code>): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for <code class="inline-code">claat</code>.</li>
-<li>  <strong><code class="inline-code">/voice</code></strong> (<code class="inline-code">skills/voice</code>): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.</li>
+<li>  <strong><code class="inline-code">/human-voice</code></strong> (<code class="inline-code">skills/human-voice</code>): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.</li>
 <li>  <strong><code class="inline-code">/copy-write</code></strong> (<code class="inline-code">skills/copy-write</code>): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (<code class="inline-code">.local.md</code> > <code class="inline-code">personas/</code> > <code class="inline-code">.template.md</code>).</li>
 <li>  <strong><code class="inline-code">/image-gen</code></strong> (<code class="inline-code">skills/image-gen</code>): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.</li>
 </ul>
@@ -512,7 +512,7 @@ bash scripts/install.sh --all
 <h2 id="5-specialized-sub-workflows" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🎨 5. Specialized Sub-Workflows</h2>
 <h3 id="a-the-content-prose-codelab-pipeline" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">A. The Content, Prose & Codelab Pipeline</h3>
 <p class="mb-4 text-[var(--text-secondary)]">Used when authoring documentation, tutorials, technical blogs, or developer keynotes:</p>
-<p class="mb-4 text-[var(--text-secondary)]">1. <strong><code class="inline-code">/voice</code></strong>: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).</p>
+<p class="mb-4 text-[var(--text-secondary)]">1. <strong><code class="inline-code">/human-voice</code></strong>: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).</p>
 <p class="mb-4 text-[var(--text-secondary)]">2. <strong><code class="inline-code">/copy-write</code></strong> or <strong><code class="inline-code">/codelab</code></strong>: Generates drafts using the 3-tier Profile-Overlay system (<code class="inline-code">.local.md</code> > <code class="inline-code">~/.gemini/personas/</code> > <code class="inline-code">.template.md</code>).</p>
 <p class="mb-4 text-[var(--text-secondary)]">3. <strong><code class="inline-code">/image-gen</code></strong>: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.</p>
 <p class="mb-4 text-[var(--text-secondary)]">4. <strong><code class="inline-code">/unslop</code></strong>: Eliminates AI filler words (<em>"delve"</em>, <em>"leverage"</em>, <em>"testament"</em>, <em>"in conclusion"</em>).</p>
@@ -653,7 +653,7 @@ npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
 </tr>
 <tr>
 <td>Extracting developer voice or drafting technical prose</td>
-<td>Invoke <code class="inline-code">/voice</code> & <code class="inline-code">/copy-write</code></td>
+<td>Invoke <code class="inline-code">/human-voice</code> & <code class="inline-code">/copy-write</code></td>
 </tr>
 <tr>
 <td>Creating step-by-step developer workshops or codelabs</td>
@@ -720,7 +720,7 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 Available globally or installable in focused sections:
 *   **Cluster C1: Planning &amp; Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality &amp; Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
-*   **Cluster C3: Content, Creative &amp; Authoring (`content-creative`)**: `codelab`, `voice`, `copy-write`, `image-gen`
+*   **Cluster C3: Content, Creative &amp; Authoring (`content-creative`)**: `codelab`, `human-voice`, `copy-write`, `image-gen`
 *   **Cluster C4: Knowledge &amp; Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
 
 ### 🛠️ Domain Clusters (12 Preferred Skills)
@@ -749,7 +749,7 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                │     /unslop                  │                                  │     observability            │
                │                              │                                  │                              │
                │ C3: Content &amp; Creative       │                                  │ D3: DevOps &amp; Workflows       │
-               │     /codelab, /voice,        │                                  │     ci-cd, git-workflow,     │
+               │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
                │     /copy-write, /image-gen  │                                  │     deprecation-migration    │
                │                              │                                  │                              │
                │ C4: Knowledge &amp; Governance   │                                  │ D4: AI &amp; Evaluation          │
@@ -771,7 +771,7 @@ bash scripts/install.sh
 ```
 
 ### B. Installing Specific Clusters (e.g. Content &amp; Creative Only)
-If you only want specific skills (such as Codelabs, Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:
+If you only want specific skills (such as Codelabs, Human-Voice, Copywriting, Image-Gen) and want to exclude planning/spec skills:
 ```bash
 # Install Cluster C3 only and prune unselected skills (like plan, spec, test):
 bash scripts/install.sh --content --prune
@@ -819,7 +819,7 @@ bash scripts/install.sh --all
 
 ### 🎨 Cluster C3: Content, Creative &amp; Authoring (`content-creative`)
 *   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for `claat`.
-*   **`/voice`** (`skills/voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
+*   **`/human-voice`** (`skills/human-voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
 *   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` &gt; `personas/` &gt; `.template.md`).
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
 
@@ -890,7 +890,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 
 ### A. The Content, Prose &amp; Codelab Pipeline
 Used when authoring documentation, tutorials, technical blogs, or developer keynotes:
-1. **`/voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
+1. **`/human-voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
 2. **`/copy-write`** or **`/codelab`**: Generates drafts using the 3-tier Profile-Overlay system (`.local.md` &gt; `~/.gemini/personas/` &gt; `.template.md`).
 3. **`/image-gen`**: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.
 4. **`/unslop`**: Eliminates AI filler words (*&quot;delve&quot;*, *&quot;leverage&quot;*, *&quot;testament&quot;*, *&quot;in conclusion&quot;*).
@@ -953,7 +953,7 @@ npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
 | Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` &amp; `/review` |
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` &amp; `compile_docs.py` |
-| Extracting developer voice or drafting technical prose | Invoke `/voice` &amp; `/copy-write` |
+| Extracting developer voice or drafting technical prose | Invoke `/human-voice` &amp; `/copy-write` |
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |

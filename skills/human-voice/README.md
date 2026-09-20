@@ -1,4 +1,4 @@
-# 🎙️ Voice Skill
+# 🎙️ Human-Voice Skill
 
 Extracts linguistic style markers, typing cadence, and tone profiles from developer tool logs.
 

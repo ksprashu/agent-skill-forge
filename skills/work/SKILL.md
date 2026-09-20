@@ -14,7 +14,7 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 
 > [!IMPORTANT]
 > **PRIMARY THREAD DELEGATION INVARIANT**:
-> When `/work` (or `/teamwork`, `/teamwork-preview`, `/team`, `/swarm`) is triggered:
+> When `/work` (or `/teamwork`, `/team`, `/swarm`) is triggered:
 > 1. **Your Identity**: In this primary conversation thread, you operate strictly as the **Work Sentinel & User Liaison**.
 > 2. **Strict Prohibition on Direct Implementation**: You are **STRICTLY FORBIDDEN** from inspecting source files to fix bugs yourself, writing code, editing files, or running test runners directly on the primary thread.
 > 3. **Bypassing Delegation is Prohibited**: If you write or edit project code yourself in this thread instead of delegating to subagents, you have violated the `/work` contract.
@@ -91,6 +91,10 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 ### Phase 2: Parallel Alternative Technical Design Proposals
 1. **Dispatch Parallel Design Architects**:
    - The Orchestrator spawns `Design Architect Alpha` and `Design Architect Beta` concurrently to author distinct architectural approaches in `.agents/design/proposals/proposal_alpha.md` and `proposal_beta.md`.
+   - **Mandatory Visual Deliverables**: Each proposal MUST include 3 complete visual diagrams adhering to [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md):
+     1. High-Level System Architecture Diagram (`flowchart TD`)
+     2. C4 Level 2/3 Component Block Diagram (`graph TD` / `flowchart LR` with quoted node labels)
+     3. Lifecycle Sequence & Dataflow Diagram (`sequenceDiagram` with `autonumber`).
 2. **Design Rubric Scoring**:
    - The Architectural Arbiter evaluates both proposals across 4 axes using `scripts/arbiter_eval.py`:
      1. Architecture & Spec Grounding (30 pts)
@@ -102,11 +106,14 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 ---
 
 ### Phase 3: Architectural Manager Evaluation & User Decision Gate
-1. **User Choice Escalation**:
-   - If the Arbiter discovers fundamental trade-offs (e.g. In-Memory Speed vs SQLite Persistence, REST vs GraphQL, Client vs Server State), it flags `USER_DECISION_REQUIRED`.
-   - The Sentinel presents an interactive choice modal to the user via `ask_question`.
-2. **Authoritative Synthesis**:
-   - Synthesize the winning architecture, resolved trade-offs, and concrete schemas into `.agents/design/DESIGN.md`.
+1. **Interactive "What-If" Trade-Off Simulator Compilation**:
+   - When proposals reveal fundamental architectural trade-offs (e.g. In-Memory Speed vs SQLite Persistence, REST vs GraphQL, Client vs Server State), the Arbiter compiles `.agents/design/what_if_simulator.html` via `visual_engine.compile_what_if_simulator`.
+   - The simulator provides an offline, zero-CDN HTML5 Canvas 2D radar visualizer with high-DPI scaling and interactive sensitivity sliders.
+2. **User Choice Escalation via Sentinel**:
+   - Arbiter flags `USER_DECISION_REQUIRED` and generates markdown choice cards.
+   - The Sentinel inspects `.agents/design/what_if_simulator.html` and presents an interactive choice modal to the user via `ask_question`.
+3. **Authoritative Synthesis**:
+   - Synthesize the winning architecture, resolved trade-offs, approved visual diagrams, and concrete schemas into `.agents/design/DESIGN.md`.
 
 ---
 
@@ -120,9 +127,11 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 
 ### Phase 5: Declarative Task DAG Decomposition
 - Compile the approved `DESIGN.md` into vertical implementation milestones ($M_1 \dots M_k$) in `.agents/DAG.md`.
-- Validate graph acyclicity and contract validity:
+- Synthesize authoritative system architecture, C4 component, and sequence diagrams directly into `DESIGN.md` § 1.1, § 1.2, § 1.3.
+- Embed live visual Mermaid execution topology into `.agents/DAG.md`.
+- Validate graph acyclicity, contract validity, and visual parity:
   ```bash
-  python3.12 skills/work/scripts/dag_validator.py .agents/DAG.md
+  python3.12 skills/work/scripts/dag_validator.py --check-mermaid .agents/DAG.md
   ```
 
 ---
@@ -135,13 +144,14 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 ---
 
 ### Phase 7: Multi-Perspective Layered Verification & Acceptance Gate
-Upon milestone completion, the Orchestrator dispatches the 4-member Verification Committee concurrently:
+Upon milestone completion, the Orchestrator dispatches the Verification Committee concurrently:
 1. **Architectural Design Reviewer**: Audits git diff against `.agents/design/DESIGN.md` to prevent architectural drift or interface leaks (`design_pass`).
 2. **5-Axis Code Reviewer**: Audits Correctness, Security, Performance, Architecture, and Readability/Unslop (`review_pass`).
 3. **Adversarial Challenger**: Executes hostile edge tests, concurrency stress, and race-condition probes (`exit_0`).
 4. **Forensic Integrity Auditor**: Runs `forensic_audit.py` to enforce zero synthetic mock facades and log SHA-256 evidence to `.agents/EVIDENCE.md` (`zero_mock`).
-5. **Acceptance Reviewer**: Systematically audits all acceptance criteria in `.agents/SPEC.md`, producing `.agents/acceptance_review/report.md` (`acceptance_pass`).
-6. **Victory Auditor**: Independent clean-slate cold run producing final sign-off (`victory_cert`).
+5. **Visual Topology & DAG Synchronizer**: Executes `dag_validator.py --check-mermaid` to ensure 1:1 parity between task table rows and Mermaid diagram nodes.
+6. **Acceptance Reviewer**: Systematically audits all acceptance criteria in `.agents/SPEC.md`, producing `.agents/acceptance_review/report.md` (`acceptance_pass`).
+7. **Victory Auditor**: Independent clean-slate cold run producing final sign-off (`victory_cert`).
 
 ---
 
@@ -202,6 +212,33 @@ The task graph is declared using an 8-column GFM Markdown table:
 
 ---
 
+## 🎨 Visual Production Standards & Generative UI Architecture
+
+Detailed copyable templates, sanitization algorithms, and Generative UI source patterns are documented in the [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md).
+
+### 1. Mandatory Visual Deliverables across the 7-Phase Lifecycle
+Every `/work` swarm enforces visual rigor across proposals, user decisions, architecture consolidation, and verification:
+
+| Phase | Swarm Stage | Mandatory Visual Deliverable | Target Artifact | Enforcing Gate |
+|---|---|---|---|---|
+| **Phase 2** | Parallel Design Proposals | 3 Complete Diagrams: System Architecture (`flowchart TD`), C4 Level 2/3 Component Block (`graph TD`), and Lifecycle Sequence (`sequenceDiagram` with `autonumber`) | `.agents/design/proposals/proposal_alpha.md`, `proposal_beta.md` | `arbiter_eval.py` / `design_pass` |
+| **Phase 3** | Decision Gate | Interactive "What-If" Trade-Off Simulator (Canvas 2D, Retina, Sensitivity Sliders) & Markdown Choice Cards | `.agents/design/what_if_simulator.html` | Sentinel `ask_question` modal |
+| **Phase 5** | Design & DAG Synthesis | Synthesized Architecture Diagrams in `DESIGN.md` § 1.1–1.3 and Live Mermaid Topology in `DAG.md` | `.agents/design/DESIGN.md`, `.agents/DAG.md` | `dag_validator.py --check-mermaid` |
+| **Phase 7** | Layered Verification | 1:1 Parity Validation between Declarative Task Table and Mermaid Diagram Nodes | `.agents/DAG.md` | `dag_validator.py --check-mermaid` |
+
+### 2. Mermaid Diagram Invariants
+- **Node Quoting**: All node labels containing spaces, brackets `[]`, parentheses `()`, slashes, or hyphens MUST be wrapped in explicit double quotes: `node_id["Label (Context)"]`.
+- **Entity Escaping**: Escape internal quotes as `#quot;`, pipes as `&#124;`, arrows as `--&gt;`, and newlines as `<br/>`.
+- **Sequence Autonumber**: All `sequenceDiagram` blocks MUST include the `autonumber` directive.
+
+### 3. Antigravity Generative UI Simulator Invariants
+- **Zero External CDNs**: Artifacts must be 100% self-contained; no external script tags (`unpkg`, `cdnjs`, `jsdelivr`, or external chart libraries like Chart.js or D3) are permitted inside the sandboxed iframe.
+- **Canvas 2D Retina Scaling**: Render radar charts natively via HTML5 Canvas 2D, scaling buffer dimensions by `window.devicePixelRatio` and calling `ctx.scale(dpr, dpr)`.
+- **Headless Fallback**: Include a pre-rendered static HTML comparison table in `<noscript>` so CI test runners and non-JS clients can evaluate trade-offs.
+- **Choice-Card Export**: Provide one-click clipboard export formatting user slider selections into Markdown suitable for the Sentinel's `ask_question` tool.
+
+---
+
 ## 🚀 Swarm Dispatch Payloads
 
 ### 1. Design Architect Subagents (Parallel Proposals)
@@ -212,13 +249,13 @@ The task graph is declared using an 8-column GFM Markdown table:
       "Role": "Design Architect Alpha",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are Design Architect Alpha.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md:\nAuthor a modular, robust architectural proposal with explicit schemas, interfaces, error handling, and trade-offs. Send completion message when written."
+      "Prompt": "You are Design Architect Alpha.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor a modular, robust architectural proposal with explicit schemas, interfaces, error handling, trade-offs, and 3 mandatory Mermaid diagrams (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
     },
     {
       "Role": "Design Architect Beta",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are Design Architect Beta.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md:\nAuthor an alternative architectural proposal exploring distinct storage, concurrency, or interface paradigms with clear trade-offs. Send completion message when written."
+      "Prompt": "You are Design Architect Beta.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor an alternative architectural proposal exploring distinct storage, concurrency, or interface paradigms with clear trade-offs and 3 mandatory Mermaid diagrams (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
     }
   ]
 }

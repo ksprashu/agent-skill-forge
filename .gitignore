@@ -19,15 +19,9 @@ build/
 skills-lock.json
 
 # Swarm Execution Workspaces & Hand-offs
-.agents/orchestrator*
-.agents/sentinel*
-.agents/teamwork_preview_*
-.agents/auditor_*
-.agents/challenger_*
-.agents/reviewer_*
-.agents/worker_*
-.agents/explorer_*
-.agents/victory_auditor*
-.agents/ORIGINAL_REQUEST.md
+.agents/*
+!.agents/rules/
+!.agents/skills/
+!.agents/hooks.json
 ORIGINAL_REQUEST.md
 TEST_READY.md

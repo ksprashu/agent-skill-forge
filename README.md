@@ -73,7 +73,7 @@ The 18 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`spec`](./skills/spec)** | `/spec` | Autonomous | **Grounded Specifications**: Writes specifications with official documentation citations, interface contracts, and explicit non-goals before coding. Prevents API hallucinations and scope creep. |
 | **[`plan`](./skills/plan)** | `/plan` | Autonomous | **Task Slicing & Dependency DAGs**: Slices complex features or refactors into small, vertically testable tasks with verifiable checkpoints. Ensures incremental progress and rollback points. |
 | **[`work`](./skills/work)** | `/work` | User Slash | **Autonomous Multi-Agent Swarm Engine**: Coordinates parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. |
-| **[`grill`](./skills/grill)** | `/grill`, `/grill-me` | User Slash | **Socratic Requirements Interview**: 1-question Socratic interview with attached technical hypotheses to clarify requirements and tradeoffs until 95% confident. Eliminates hidden assumptions. |
+| **[`grill`](./skills/grill)** | `/grill` | User Slash | **Socratic Requirements Interview**: 1-question Socratic interview with attached technical hypotheses to clarify requirements and tradeoffs until 95% confident. Eliminates hidden assumptions. |
 | **[`prompt`](./skills/prompt)** | `/prompt` | User Slash | **Meta-Task & Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into intent directives, model tier selection, and DAG task graphs (`task_graph.json`). |
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
@@ -92,7 +92,7 @@ The 18 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
 | **[`codelab`](./skills/codelab)** | `/codelab` | User Slash | **Google Codelab Creator**: 7-phase workflow scaffolding engaging, interactive developer tutorials and workshops formatted for `claat` with automated quality guards. |
-| **[`voice`](./skills/voice)** | `/voice` | User Slash | **Persona & Cadence Profiler**: Scans developer conversation logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization. |
+| **[`human-voice`](./skills/human-voice)** | `/human-voice` | User Slash | **Persona & Cadence Profiler**: Scans developer conversation logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization. |
 | **[`copy-write`](./skills/copy-write)** | `/copy-write` | User Slash | **Technical Prose Companion**: Drafts articles, documentation, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`). |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | User Slash | **Multimodal Diagram & Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI graphics using Gemini Flash Image with style consistency. |
 
@@ -106,7 +106,6 @@ The 18 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`google-oss`](./skills/google-oss)** | `/google-oss` | User Slash | **Open Source Compliance**: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **[`continuous-alignment`](./skills/continuous-alignment)** | `/align`, `/evolve` | Auto / Slash | **Continuous Alignment Engine**: Distills transcript learnings into a strict 200-line `AGENTS.md` budget, records living ADRs, and compiles roadmap visualizers. |
 | **[`sync`](./skills/sync)** | `/sync` | User Slash | **Symlink Manager & JIT Bootstrapper**: Manages symlinks across global agent runtimes and bootstraps domain skills into project workspaces. |
->>>>>>> 5fc5217 (feat(installer): add skill clusters and selective installation support)
 
 ---
 
@@ -150,7 +149,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
 | **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
 | **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | 5-axis code and architectural review framework. |
-| **`work`** | **Google DeepMind Antigravity Team** | Google Antigravity Teamwork System (`/teamwork-preview`) | Fully open, decoupled multi-agent swarm with Sentinel, Dispatch-Only Orchestrator, Explorers, Competitive Workers, Adversarial Quartet, and Victory Auditor. |
+| **`work`** | **Google DeepMind Antigravity Team** | Google Antigravity Teamwork Architecture | Fully open, decoupled multi-agent swarm with Sentinel, Dispatch-Only Orchestrator, Explorers, Competitive Workers, Adversarial Quartet, and Victory Auditor. |
 | **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
 | **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Autonomous alignment, 200-line AGENTS.md budget engine, and living ADR compiler. |
@@ -159,7 +158,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`sync`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/sync`](https://github.com/ksprashu/agent-skill-forge) | Multi-runtime symlink synchronizer and JIT workspace bootstrapper. |
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
-| **`voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |

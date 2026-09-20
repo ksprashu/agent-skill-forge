@@ -164,6 +164,42 @@ class ValidationReport:
         }
 
 
+class MermaidSyncResult:
+    """
+    Result of verifying 1:1 synchronization between Mermaid diagram and task table.
+    Supports boolean evaluation, tuple unpacking, index access, and attribute access.
+    """
+    def __init__(
+        self,
+        valid: bool,
+        errors: List[str],
+        mermaid_nodes: Set[str],
+        table_nodes: Set[str],
+        issues: Optional[List[ValidationIssue]] = None,
+    ):
+        self.valid = valid
+        self.errors = errors
+        self.mermaid_nodes = mermaid_nodes
+        self.table_nodes = table_nodes
+        self.issues = issues or []
+
+    def __bool__(self) -> bool:
+        return self.valid
+
+    def __iter__(self):
+        yield self.valid
+        yield self.errors
+
+    def __getitem__(self, index: int):
+        return [self.valid, self.errors][index]
+
+    def __len__(self) -> int:
+        return 2
+
+    def __repr__(self) -> str:
+        return f"MermaidSyncResult(valid={self.valid}, errors={self.errors}, mermaid_nodes={self.mermaid_nodes}, table_nodes={self.table_nodes})"
+
+
 VIRTUAL_ARTIFACT_TOKENS = {
     "", "none", "null", "nil", "-", "[]", "n/a", "stdout", "stderr", "stdin",
     "git:diff", "git:branch", "git:commit", "git:head", "git:workspace", "git:patch"
@@ -175,9 +211,10 @@ ILLEGAL_PATH_CHARS = set('<>"|?*')
 class DAGValidator:
     """Core parser, validator, and Mermaid generator for Markdown DAGs."""
 
-    def __init__(self, check_artifacts: bool = False, base_dir: str = "."):
+    def __init__(self, check_artifacts: bool = False, base_dir: str = ".", check_mermaid: bool = False):
         self.check_artifacts = check_artifacts
         self.base_dir = base_dir
+        self.check_mermaid = check_mermaid
 
     @classmethod
     def _is_virtual_artifact(cls, token: str) -> bool:
@@ -817,6 +854,11 @@ class DAGValidator:
         state_issues = self.validate_state_consistency(nodes)
         issues.extend(state_issues)
 
+        # Check Mermaid synchronization if requested
+        if self.check_mermaid:
+            sync_res = validate_mermaid_sync(content)
+            issues.extend(sync_res.issues)
+
         # Cycle detection
         cycle_path, cycle_issues = self.detect_cycle_3color(nodes)
         issues.extend(cycle_issues)
@@ -906,6 +948,168 @@ class DAGValidator:
         return updated_text
 
 
+def extract_mermaid_node_ids(mermaid_code: str) -> Set[str]:
+    """
+    Extracts all declared task node IDs from a Mermaid graph/flowchart diagram string.
+    Correctly ignores comments (%%), graph/flowchart directives, subgraphs, end blocks,
+    class definitions, style directives, and edge labels.
+    """
+    node_ids: Set[str] = set()
+
+    # Strip code fences if present
+    code = mermaid_code.strip()
+    if code.startswith("```mermaid"):
+        code = code[len("```mermaid"):].strip()
+    if code.startswith("```"):
+        code = code[len("```"):].strip()
+    if code.endswith("```"):
+        code = code[:-3].strip()
+
+    lines = code.splitlines()
+
+    # Edge regex patterns for Mermaid
+    edge_pattern = re.compile(r'-->\|[^|]*\||--\s*[^-\n]+\s*-->|-->|---|-.->|-.-|==>|==|->')
+
+    keywords_to_ignore = {
+        "graph", "flowchart", "subgraph", "end", "classdef", "class",
+        "style", "click", "linkstyle", "direction", "sequencediagram",
+        "autonumber", "participant", "actor"
+    }
+
+    for raw_line in lines:
+        # Strip inline comments (%% ...)
+        line = re.sub(r'%%.*$', '', raw_line).strip()
+        if not line:
+            continue
+
+        first_token = line.split()[0].lower() if line.split() else ""
+        if first_token in keywords_to_ignore:
+            continue
+
+        if edge_pattern.search(line):
+            segments = edge_pattern.split(line)
+            for seg in segments:
+                seg = seg.strip()
+                if not seg:
+                    continue
+                sub_segs = [s.strip() for s in seg.split("&")]
+                for s in sub_segs:
+                    m = re.match(r'^([a-zA-Z0-9_\-]+)', s)
+                    if m:
+                        cand = m.group(1)
+                        if cand.lower() not in keywords_to_ignore:
+                            node_ids.add(cand)
+        else:
+            m = re.match(r'^([a-zA-Z0-9_\-]+)', line)
+            if m:
+                cand = m.group(1)
+                if cand.lower() not in keywords_to_ignore:
+                    node_ids.add(cand)
+
+    return node_ids
+
+
+def validate_mermaid_sync(content: str) -> MermaidSyncResult:
+    """
+    Verifies 1:1 synchronization between the Mermaid execution topology
+    and the declarative GFM task table within the given Markdown content.
+    Extracts all node IDs from both representations and detects drift.
+    """
+    validator = DAGValidator()
+    nodes, parse_issues, _ = validator.parse_markdown(content)
+    table_ids = set(nodes.keys())
+
+    if not table_ids:
+        return MermaidSyncResult(
+            valid=False,
+            errors=["No valid DAG tasks found in markdown content to synchronize with Mermaid"],
+            mermaid_nodes=set(),
+            table_nodes=set(),
+            issues=[ValidationIssue(
+                severity="ERROR",
+                code="NO_TASKS_FOUND",
+                task_id=None,
+                message="No valid DAG tasks found in markdown content to synchronize with Mermaid"
+            )]
+        )
+
+    # Extract all ```mermaid blocks
+    mermaid_blocks = re.findall(r'```mermaid\s*([\s\S]*?)\s*```', content)
+    if not mermaid_blocks:
+        return MermaidSyncResult(
+            valid=False,
+            errors=["No Mermaid diagram block found in markdown content"],
+            mermaid_nodes=set(),
+            table_nodes=table_ids,
+            issues=[ValidationIssue(
+                severity="ERROR",
+                code="MISSING_MERMAID_DIAGRAM",
+                task_id=None,
+                message="No Mermaid diagram block found in markdown content"
+            )]
+        )
+
+    # Filter for flowchart / graph blocks (ignoring sequenceDiagram, etc.)
+    candidate_node_sets: List[Tuple[int, Set[str]]] = []
+    for block in mermaid_blocks:
+        lines = [l.strip().lower() for l in block.strip().splitlines() if l.strip()]
+        first_line = lines[0] if lines else ""
+        if first_line.startswith(("graph", "flowchart")):
+            n_ids = extract_mermaid_node_ids(block)
+            overlap = len(n_ids.intersection(table_ids))
+            candidate_node_sets.append((overlap, n_ids))
+
+    if not candidate_node_sets:
+        # Fallback to any mermaid block
+        for block in mermaid_blocks:
+            n_ids = extract_mermaid_node_ids(block)
+            overlap = len(n_ids.intersection(table_ids))
+            candidate_node_sets.append((overlap, n_ids))
+
+    # Pick the block with highest overlap with table_ids
+    candidate_node_sets.sort(key=lambda x: x[0], reverse=True)
+    best_mermaid_nodes = candidate_node_sets[0][1] if candidate_node_sets else set()
+
+    missing_in_mermaid = table_ids - best_mermaid_nodes
+    extra_in_mermaid = best_mermaid_nodes - table_ids
+
+    errors: List[str] = []
+    issues: List[ValidationIssue] = []
+
+    if missing_in_mermaid:
+        missing_sorted = sorted(missing_in_mermaid)
+        msg = f"Task table contains task(s) missing from Mermaid diagram: {', '.join(missing_sorted)}"
+        errors.append(msg)
+        for tid in missing_sorted:
+            issues.append(ValidationIssue(
+                severity="ERROR",
+                code="MERMAID_MISSING_TASK",
+                task_id=tid,
+                message=f"Task '{tid}' is declared in task table but missing from Mermaid diagram"
+            ))
+
+    if extra_in_mermaid:
+        extra_sorted = sorted(extra_in_mermaid)
+        msg = f"Mermaid diagram contains node(s) not declared in task table: {', '.join(extra_sorted)}"
+        errors.append(msg)
+        for nid in extra_sorted:
+            issues.append(ValidationIssue(
+                severity="ERROR",
+                code="MERMAID_EXTRA_NODE",
+                task_id=nid,
+                message=f"Node '{nid}' exists in Mermaid diagram but is not declared in task table"
+            ))
+
+    is_valid = len(errors) == 0
+    return MermaidSyncResult(
+        valid=is_valid,
+        errors=errors,
+        mermaid_nodes=best_mermaid_nodes,
+        table_nodes=table_ids,
+        issues=issues
+    )
+
+
 def print_human_report(report: ValidationReport, quiet: bool = False) -> None:
     if quiet:
         return
@@ -944,6 +1148,7 @@ def main() -> None:
     parser.add_argument("file", nargs="?", default=None, help="Path to Markdown DAG file (e.g., DAG.md, PROJECT.md)")
     parser.add_argument("--stdin", action="store_true", help="Read Markdown content from stdin")
     parser.add_argument("--check-artifacts", action="store_true", help="Verify physical on-disk file existence for artifacts")
+    parser.add_argument("--check-mermaid", action="store_true", help="Verify 1:1 synchronization between Mermaid diagram and task table")
     parser.add_argument("--base-dir", default=".", help="Base directory for relative artifact paths (default: .)")
     parser.add_argument("--mermaid", action="store_true", help="Print generated Mermaid diagram to stdout")
     parser.add_argument("--update-file", action="store_true", help="Update the Markdown file in-place with new statuses and Mermaid diagram")
@@ -990,7 +1195,8 @@ def main() -> None:
 
     validator = DAGValidator(
         check_artifacts=args.check_artifacts,
-        base_dir=args.base_dir
+        base_dir=args.base_dir,
+        check_mermaid=args.check_mermaid
     )
 
     # In-place file update

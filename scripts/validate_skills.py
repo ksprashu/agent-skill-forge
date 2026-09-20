@@ -22,16 +22,25 @@ import sys
 import re
 
 if sys.platform == 'win32':
-    import io
-    if hasattr(sys.stdout, 'buffer'):
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    if hasattr(sys.stderr, 'buffer'):
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 
-SLASH_COMMAND_SKILLS = {'prompt', 'grill', 'docs', 'sync', 'google-oss', 'codelab', 'voice', 'copy-write', 'image-gen'}
+SLASH_COMMAND_SKILLS = {'prompt', 'grill', 'docs', 'sync', 'google-oss', 'codelab', 'human-voice', 'copy-write', 'image-gen', 'work'}
+ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
+ANTIGRAVITY_BUILTIN_SKILLS = {'agy-customizations', 'antigravity_guide', 'antigravity-guide', 'generative_ui', 'migrate-workflows', 'permissioned-github'}
+ALL_RESERVED = ANTIGRAVITY_RESERVED_COMMANDS | ANTIGRAVITY_BUILTIN_SKILLS
+
+sys.path.insert(0, SCRIPT_DIR)
+try:
+    from sync_skills import ALIASES
+except ImportError:
+    ALIASES = {}
+
 PII_PATTERNS = [
     re.compile(r'ksprashanth@', re.IGNORECASE),
     re.compile(r'ksprashu@', re.IGNORECASE),
@@ -89,6 +98,13 @@ def validate_skill_dir(base_dir, skill_type):
         if 'description' not in fm:
             errors.append(f"[{item}] Frontmatter missing 'description'")
 
+        # Check reserved Antigravity namespace collision
+        if item.lower() in ALL_RESERVED:
+            errors.append(f"[{item}] Skill directory name collides with Antigravity reserved namespace: '{item}'")
+        skill_name = fm.get('name')
+        if skill_name and skill_name.strip().lower() in ALL_RESERVED:
+            errors.append(f"[{item}] Skill frontmatter name '{skill_name}' collides with Antigravity reserved namespace")
+
         # Check slash command gating
         if item in SLASH_COMMAND_SKILLS:
             dmi = fm.get('disable-model-invocation', '').lower()
@@ -102,6 +118,15 @@ def validate_skill_dir(base_dir, skill_type):
                 errors.append(f"[{item}] Potential PII match found in {skill_md}: {pat.pattern}")
 
     return count, errors, warnings
+
+
+def validate_aliases():
+    """Verify that no backward-compatible aliases collide with reserved Antigravity names."""
+    errors = []
+    for alias, target in ALIASES.items():
+        if alias.lower() in ALL_RESERVED:
+            errors.append(f"[Alias: '{alias}'] Collides with Antigravity reserved namespace (points to '{target}')")
+    return errors
 
 
 def validate_dag_harness(repo_root):
@@ -162,13 +187,15 @@ def main():
     core_count, core_errs, core_warns = validate_skill_dir(core_dir, 'core')
     pref_count, pref_errs, pref_warns = validate_skill_dir(pref_dir, 'preferred')
     dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
+    alias_errs = validate_aliases()
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
     print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
+    print(f"Validated {len(ALIASES)} Skill Aliases against reserved namespaces.")
     print(f"Total Skills: {core_count + pref_count}\n")
 
     all_warnings = core_warns + pref_warns + dag_warns
-    all_errors = core_errs + pref_errs + dag_errs
+    all_errors = core_errs + pref_errs + dag_errs + alias_errs
 
     if all_warnings:
         print("⚠️  Warnings:")

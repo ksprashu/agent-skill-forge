@@ -36,11 +36,10 @@ import json
 import re
 
 if sys.platform == 'win32':
-    import io
-    if hasattr(sys.stdout, 'buffer'):
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    if hasattr(sys.stderr, 'buffer'):
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -68,7 +67,7 @@ CORE_SKILLS = {
     'sync': os.path.join(CORE_SKILLS_DIR, 'sync'),
     'google-oss': os.path.join(CORE_SKILLS_DIR, 'google-oss'),
     'codelab': os.path.join(CORE_SKILLS_DIR, 'codelab'),
-    'voice': os.path.join(CORE_SKILLS_DIR, 'voice'),
+    'human-voice': os.path.join(CORE_SKILLS_DIR, 'human-voice'),
     'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
@@ -79,7 +78,6 @@ CORE_SKILLS = {
 # Backward-Compatible Aliases
 ALIASES = {
     'prompt-writer': 'prompt',
-    'grill-me': 'grill',
     'planning': 'plan',
     'expectation-harness': 'verify',
     'documentation': 'docs',
@@ -90,13 +88,16 @@ ALIASES = {
     'codelab-creator': 'codelab',
     'copy-write-bara': 'copy-write',
     'image-gen-expert': 'image-gen',
-    'extract-human-voice': 'voice',
+    'extract-human-voice': 'human-voice',
     'evolve': 'align',
     'teamwork': 'work',
-    'teamwork-preview': 'work',
     'team': 'work',
     'swarm': 'work',
 }
+
+ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
+ANTIGRAVITY_BUILTIN_SKILLS = {'agy-customizations', 'antigravity_guide', 'antigravity-guide', 'generative_ui', 'migrate-workflows', 'permissioned-github'}
+ALL_RESERVED = ANTIGRAVITY_RESERVED_COMMANDS | ANTIGRAVITY_BUILTIN_SKILLS
 
 # ==============================================================================
 # Skill Clusters Taxonomy (Core Action Verbs & Preferred Domain Skills)
@@ -119,7 +120,7 @@ CORE_CLUSTERS = {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
         'description': 'Step-by-step Google codelabs, human voice profiling, technical copywriting, and image generation.',
-        'skills': ['codelab', 'voice', 'copy-write', 'image-gen'],
+        'skills': ['codelab', 'human-voice', 'copy-write', 'image-gen'],
     },
     'c4': {
         'id': 'docs-governance',
@@ -239,7 +240,7 @@ def interactive_wizard():
         print(f"       Skills      : {skills_str}")
 
     print("\n⚡ QUICK PRESETS:")
-    print("  [content] Content & Creative only (codelab, voice, copy-write, image-gen)")
+    print("  [content] Content & Creative only (codelab, human-voice, copy-write, image-gen)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 12 Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 30 Core & Domain Skills)")
@@ -372,7 +373,7 @@ def discover_all_skills():
 
 
 def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False):
-    """Remove broken symlinks or symlinks not in allowed list."""
+    """Remove broken symlinks, items matching Antigravity reserved namespace, or symlinks not in allowed list."""
     if not os.path.exists(skills_dir):
         return
 
@@ -380,6 +381,14 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
+        if item.lower() in ALL_RESERVED:
+            reason = "RESERVED ANTIGRAVITY NAMESPACE"
+            print(f"  [{reason}] {item} in {skills_dir}")
+            if prune:
+                remove_path_or_link(item_path)
+                print(f"    -> Removed: {item_path}")
+            continue
+
         if is_link(item_path):
             target_exists = os.path.exists(item_path)
             if strict_prune:
@@ -438,6 +447,9 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
 
     all_targets = {}
     for name in target_skill_names:
+        if name.lower() in ALL_RESERVED:
+            print(f"  [RESERVED SKIPPED] '{name}' collides with Antigravity reserved namespace and cannot be linked.")
+            continue
         if name in all_available:
             path = all_available[name]['path']
             all_targets[name] = path
@@ -454,6 +466,8 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
             print(f"  ! {name:32} [NOT FOUND IN FORGE]")
 
     for alias, target in ALIASES.items():
+        if alias.lower() in ALL_RESERVED:
+            continue
         if target in all_targets:
             all_targets[alias] = all_targets[target]
 
@@ -471,6 +485,9 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
         clean_stale_and_orphan_links(target_dir, all_targets, prune=prune, strict_prune=strict_prune)
 
         for name, src_path in all_targets.items():
+            if name.lower() in ALL_RESERVED:
+                print(f"  [BLOCKED RESERVED] Refusing to link reserved name: {name}")
+                continue
             if not os.path.exists(src_path):
                 continue
             target_link = os.path.join(target_dir, name)
@@ -531,6 +548,10 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
         if not skill:
             continue
 
+        if skill.lower() in ALL_RESERVED:
+            print(f"  [RESERVED SKIPPED] '{skill}' collides with Antigravity reserved namespace and cannot be bootstrapped.")
+            continue
+
         skill_info = all_skills.get(skill)
         if not skill_info:
             print(f"  [NOT FOUND LOCALLY] {skill} — Try pulling via: npx skills add <package> --skill {skill}")
@@ -559,7 +580,7 @@ def main():
     parser.add_argument('--all', action='store_true', help="Install all 30 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 12 preferred domain skills (d1, d2, d3, d4)")
-    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, voice, copy-write, image-gen)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, copy-write, image-gen)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
     parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")

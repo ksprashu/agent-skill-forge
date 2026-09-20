@@ -20,7 +20,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | Cluster | Slug | Invocations & Triggers | Execution Mode | Scope & Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
 | **C1** | **`prompt`** | `/prompt`, `/prompt-writer` | User Slash | Decomposes complex tasks, vague ideas, or multi-step goals into intent directives and DAG task graphs (`task_graph.json`). |
-| **C1** | **`grill`** | `/grill`, `/grill-me`, `/interview` | User Slash | 1-question Socratic interview with attached hypotheses to clarify requirements, architecture, or design tradeoffs until 95% confident. |
+| **C1** | **`grill`** | `/grill`, `/interview` | User Slash | 1-question Socratic interview with attached hypotheses to clarify requirements, architecture, or design tradeoffs until 95% confident. |
 | **C1** | **`spec`** | `/spec`, auto on new features | Autonomous | Writes structured, doc-cited specifications with explicit non-goals before executing code. |
 | **C1** | **`plan`** | `/plan`, `/planning` | Autonomous | Slices complex features, refactors, or projects into small, vertically sliced tasks with verifiable checkpoints. |
 | **C1** | **`work`** | `/work` | User Slash | Coordinates autonomous parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. |
@@ -41,7 +41,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | Cluster | Slug | Invocations & Triggers | Execution Mode | Scope & Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
 | **C3** | **`codelab`** | `/codelab`, `/codelab-creator` | User Slash | Scaffolds and validates interactive step-by-step developer tutorials, workshops, and guides formatted for `claat`. |
-| **C3** | **`voice`** | `/voice`, `/extract-voice` | User Slash | Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
+| **C3** | **`human-voice`** | `/human-voice`, `/extract-human-voice` | User Slash | Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
 | **C3** | **`copy-write`**| `/copy-write`, `/copy-write-bara`| User Slash | Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization. |
 | **C3** | **`image-gen`** | `/image-gen`, `/image-gen-expert` | User Slash | Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
 
@@ -113,7 +113,7 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 | **`sync`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/sync`](https://github.com/ksprashu/agent-skill-forge) | Multi-runtime symlink synchronizer and JIT workspace bootstrapper. |
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
-| **`voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |

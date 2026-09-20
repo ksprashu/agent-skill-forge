@@ -20,7 +20,7 @@ This document serves as the **Single Source of Truth** for preferred agent skill
 > - **Canonical Symlink & JIT Bootstrapper** ➔ Delegated to [`sync`](file:///Users/ksprashanth/code/github/agent-skill-sync/skills/skill-sync)
 > - **Google Open Source Compliance** ➔ Delegated to [`google-oss`](file:///Users/ksprashanth/code/github/gcx-make-google-oss/skills/make-google-oss)
 > - **Codelab Scaffolding & Validation** ➔ Delegated to [`codelab`](file:///Users/ksprashanth/code/github/skills-codelab-creator/skills/codelab-creator)
-> - **Linguistic Voice & Persona Profiling** ➔ Delegated to [`voice`](file:///Users/ksprashanth/code/github/skills-extract-human-voice/skills/extract-human-voice)
+> - **Linguistic Voice & Persona Profiling** ➔ Delegated to [`human-voice`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/human-voice)
 > - **Writing Companion & Profile-Overlay** ➔ Delegated to [`copy-write`](file:///Users/ksprashanth/code/github/copy-write-bara)
 > - **Multimodal Infographic & Diagram Gen** ➔ Delegated to [`image-gen`](file:///Users/ksprashanth/code/github/skills-image-gen-expert/skills/image-gen-expert)
 
@@ -45,7 +45,7 @@ These 15 primary verbs are active globally across Antigravity IDE, Antigravity C
 | **`sync`** | `/sync` | User-only (`disable-model-invocation: true`) | Canonical symlink manager & JIT project-scoped bootstrapper |
 | **`google-oss`**| `/google-oss` | User-only (`disable-model-invocation: true`) | Google OSS compliance, license sweep, header checks, repo sanitization |
 | **`codelab`** | `/codelab` | User-only (`disable-model-invocation: true`) | Google Codelab scaffolding, polyglot blocks, readability validation |
-| **`voice`** | `/voice` | User-only (`disable-model-invocation: true`) | Linguistic style markers, conversational pacing, and anti-slop guidelines |
+| **`human-voice`**| `/human-voice`| User-only (`disable-model-invocation: true`)| Linguistic style markers, conversational pacing, and anti-slop guidelines |
 | **`copy-write`**| `/copy-write` | User-only (`disable-model-invocation: true`) | Writing companion with 3-tier Profile-Overlay voice personalization |
 | **`image-gen`** | `/image-gen` | User-only (`disable-model-invocation: true`) | Multimodal diagram and blog asset generator via Gemini Flash Image |
 

@@ -8,6 +8,8 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
 - **DISPATCH-ONLY**: The Orchestrator NEVER writes functional source code, NEVER runs tests directly, and NEVER edits user files. It only authors orchestration state files (`PROJECT.md`, `DAG.md`, `BRIEFING.md`, `DISPATCH.md`, `progress.md`, `handoff.md`) and dispatches subagents.
 - **Spec Grounding First**: The Orchestrator verifies that `.agents/SPEC.md` exists with clear requirements ($R_1 \dots R_n$) and non-goals before designing or scheduling milestones.
 - **Design Proposal Tournament**: For architectural decisions, the Orchestrator dispatches parallel design architects (Alpha vs Beta) to explore competing hypotheses and uses `scripts/arbiter_eval.py` to synthesize the winning design into `.agents/design/DESIGN.md`.
+- **Visual Artifact Verification**: The Orchestrator enforces that all design proposals include the 3 mandatory Mermaid models (System Architecture, C4 Component Block, Sequence Dataflow) per `visual_production_guide.md`, and verifies that `.agents/design/what_if_simulator.html` is compiled when trade-offs emerge.
+- **Mermaid & DAG Synchronization**: The Orchestrator enforces that the embedded Mermaid diagram in `.agents/DAG.md` matches the declarative task table with 1:1 node parity, verified via `python3.12 skills/work/scripts/dag_validator.py --check-mermaid .agents/DAG.md`.
 - **Stateless Subagents**: Workers, architects, and explorers are ephemeral. Once an agent delivers its `handoff.md`, it is NEVER reused for subsequent work. Fresh subagents are spawned for each node.
 - **Zero-Polling Dormancy**: The Orchestrator is strictly forbidden from executing busy-wait polling loops, sleep commands, or repeated filesystem checks. It dispatches unblocked subagents, enters dormancy by stopping tool calls, and relies on Antigravity's reactive message wakeup.
 - **Layered Committee Verification**: Every milestone must pass a 4-layered committee: Architectural Design Reviewer, 5-Axis Code Reviewer, Adversarial Challenger, and Forensic Integrity Auditor.
@@ -27,6 +29,7 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
 │   ├── proposals/          # Design Proposal Alpha and Beta markdown specs
 │   ├── DESIGN.md           # Authoritative synthesized technical design doc
 │   ├── arbiter_scorecard.md# Automated design scoring matrix
+│   ├── what_if_simulator.html # Interactive Canvas 2D Generative UI trade-off simulator
 │   └── spike_results.md    # Optional empirical validation spike benchmarks
 └── orchestrator/
     ├── PROJECT.md          # Architecture overview, feature inventory (F1..Fn), embedded DAG
@@ -92,21 +95,22 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
          "Role": "Design Architect Alpha",
          "TypeName": "self",
          "Model": "inherit",
-         "Prompt": "Author Architectural Proposal Alpha for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md:\nFocus on modularity, clear interface contracts, error resilience, and minimal dependency footprint. Send completion message when written."
+         "Prompt": "Author Architectural Proposal Alpha for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nFocus on modularity, clear interface contracts, error resilience, minimal dependencies, and include 3 mandatory Mermaid models (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
        },
        {
          "Role": "Design Architect Beta",
          "TypeName": "self",
          "Model": "inherit",
-         "Prompt": "Author Architectural Proposal Beta for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md:\nExplore an alternative storage, concurrency, or interface pattern with concrete schemas and trade-offs. Send completion message when written."
+         "Prompt": "Author Architectural Proposal Beta for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nExplore an alternative storage, concurrency, or interface pattern with concrete schemas, trade-offs, and 3 mandatory Mermaid models (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
        }
      ]
    }
    ```
 3. Once both proposals emit their completion messages, spawn the **Architectural Arbiter**:
    - Runs `python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-scorecard .agents/design/arbiter_scorecard.md`.
-   - If trade-offs require user input (`USER_DECISION_REQUIRED`), signals the Sentinel to present an interactive choice card.
-   - Synthesizes the final approved design into `.agents/design/DESIGN.md`.
+   - Verifies that both proposals contain complete, properly quoted Mermaid models.
+   - If trade-offs require user input (`USER_DECISION_REQUIRED`), compiles `.agents/design/what_if_simulator.html` via `visual_engine.compile_what_if_simulator` and signals the Sentinel to present an interactive choice card.
+   - Synthesizes the final approved design, schemas, and visual diagrams into `.agents/design/DESIGN.md`.
 
 ---
 
@@ -137,6 +141,12 @@ Translate `.agents/design/DESIGN.md` into staged milestones ($M_1 \dots M_k$) in
 | `task_acceptance_review` | Acceptance Review against SPEC.md | series | task_m1_design_rev, task_m1_code_rev, task_m1_challenger, task_m1_forensic | .agents/SPEC.md, .agents/EVIDENCE.md | .agents/acceptance_review/report.md | acceptance_pass | BLOCKED |
 | `task_victory_auditor` | Clean-Slate Victory Audit | series | task_acceptance_review | .agents/EVIDENCE.md, .agents/acceptance_review/report.md | .agents/victory_auditor/handoff.md | victory_cert | BLOCKED |
 
+After compiling or modifying `.agents/DAG.md`, immediately execute:
+```bash
+python3.12 skills/work/scripts/dag_validator.py --check-mermaid .agents/DAG.md
+```
+Assert that validation passes with exit code 0 and confirms 1:1 synchronization between the declarative task table rows and the visual Mermaid diagram nodes.
+
 ---
 
 ### Stage 4: Dynamic Ready Frontier Resolution & Scheduling Protocol
@@ -156,6 +166,7 @@ Upon worker milestone completion, the Orchestrator asserts on-disk handoff exist
 2. **5-Axis Code Reviewer**: Audits Correctness, Security, Performance, Architecture, and Readability/Unslop.
 3. **Adversarial Challenger**: Runs hostile fuzzing, boundary tests, and race-condition stress tests.
 4. **Forensic Integrity Auditor**: Runs `forensic_audit.py` to check for synthetic mock facades, tautological tests, or test tampering, appending SHA-256 evidence to `.agents/EVIDENCE.md`.
+5. **Visual Topology & DAG Synchronizer**: Executes `python3.12 skills/work/scripts/dag_validator.py --check-mermaid .agents/DAG.md` to ensure that task status updates in the declarative table remain in perfect parity with the embedded Mermaid diagram.
 
 ---
 

@@ -47,13 +47,12 @@ CURATED_GLOBAL_SKILLS = {
     'sync': os.path.join(GITHUB_DIR, 'agent-skill-sync/skills/skill-sync'),
     'google-oss': os.path.join(GITHUB_DIR, 'gcx-make-google-oss/skills/make-google-oss'),
     'codelab': os.path.join(GITHUB_DIR, 'skills-codelab-creator/skills/codelab-creator'),
-    'voice': os.path.join(GITHUB_DIR, 'skills-extract-human-voice/skills/extract-human-voice'),
+    'human-voice': os.path.join(GITHUB_DIR, 'skills-extract-human-voice/skills/extract-human-voice'),
     'copy-write': os.path.join(GITHUB_DIR, 'copy-write-bara'),
     'image-gen': os.path.join(GITHUB_DIR, 'skills-image-gen-expert/skills/image-gen-expert'),
 
     # Backward-compatible Aliases
     'prompt-writer': os.path.join(GITHUB_DIR, 'skills-prompt-writer/skills/prompt-writer'),
-    'grill-me': os.path.join(GITHUB_DIR, 'agent-skills/skills/grill'),
     'planning': os.path.join(GITHUB_DIR, 'agent-skills/skills/planning'),
     'expectation-harness': os.path.join(GITHUB_DIR, 'skills-expectation-harness/skills/expectation-harness'),
     'documentation': os.path.join(GITHUB_DIR, 'skills-documentation/skills/documentation'),
