@@ -126,16 +126,53 @@ TONE_CONTEXTS = ("default",) + tuple(s for s in SCOPES if s != "always")
 
 QUOTE_ID_RE = re.compile(r"^q\d+$")
 
+# ---------------------------------------------------------------------------
+# Sensitive data — one table, two consumers
+#
+# harvest.py redacts these out of evidence; this module rejects a profile that
+# still contains one. Those two lists used to be maintained separately and
+# drifted: harvest caught `ghp_`/`gho_`/`sk-proj-`/Slack/JWT/bearer tokens and
+# assignment-style secrets, while the profile validator knew about five
+# patterns and waved the rest through. A secret that survives harvesting has to
+# be caught here, so both sides now read the same table.
+#
+# Columns: regex, human label (for the validator's error), replacement (for
+# the redactor). Order matters — credentials before home paths, because a key
+# embedded in a path must be masked as a key.
+#
+# The assignment-style pattern is deliberately broad. It will fire on a
+# directive phrased "password: never log it", which is a false positive. Being
+# noisy about a literal secret in a file destined for `git commit` is the
+# trade we want; reword the directive.
+# ---------------------------------------------------------------------------
+
+SENSITIVE_PATTERNS = [
+    (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+     "email address", "<email>"),
+    (re.compile(r"\bAIzaSy[A-Za-z0-9_-]{33}\b"),
+     "Google API key", "<api-key>"),
+    (re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b"),
+     "OpenAI-style API key", "<api-key>"),
+    (re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}\b"),
+     "GitHub token", "<token>"),
+    (re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b"),
+     "Slack token", "<token>"),
+    (re.compile(r"\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
+     "JSON Web Token", "<jwt>"),
+    (re.compile(r"(?i)\b(?:bearer|authorization:)\s+\S+"),
+     "authorization header", "<auth>"),
+    (re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S+"),
+     "assigned secret", "<secret>"),
+    (re.compile(r"C:\\Users\\[A-Za-z0-9._-]+", re.IGNORECASE),
+     "home directory path", "~"),
+    (re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+"),
+     "home directory path", "~"),
+]
+
 # A profile is compiled into files that get committed to repositories and
 # pasted into system prompts. Anything personally identifying that leaks in
 # here leaks everywhere downstream, so it is rejected at the contract layer.
-LEAK_PATTERNS = [
-    (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"), "email address"),
-    (re.compile(r"(?:/Users/|/home/|C:\\Users\\)[A-Za-z0-9._-]+"), "home directory path"),
-    (re.compile(r"\bAIzaSy[A-Za-z0-9_-]{33}\b"), "Google API key"),
-    (re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"), "OpenAI-style API key"),
-    (re.compile(r"\bghp_[A-Za-z0-9]{36}\b"), "GitHub token"),
-]
+LEAK_PATTERNS = [(p, label) for p, label, _ in SENSITIVE_PATTERNS]
 
 
 class ProfileError(Exception):
@@ -274,8 +311,23 @@ def validate(profile, evidence=None, strict=False):
     if version != SCHEMA_VERSION:
         errors.append(f"schema_version: expected {SCHEMA_VERSION!r}, got {version!r}")
 
-    if not str(profile.get("subject") or "").strip():
+    # `str(x or "")` would happily accept 42 or ["a"] and stringify it. The
+    # renderer then runs re.sub over profile["subject"] and raises TypeError on
+    # a non-string, so the type has to be checked here, not coerced.
+    subject = profile.get("subject")
+    if not isinstance(subject, str):
+        errors.append(f"subject: must be a string, got {type(subject).__name__}")
+    elif not subject.strip():
         errors.append("subject: must name who this profile describes")
+
+    # Checked early because the dimensions pass below reads it.
+    unknowns = profile.get("unknowns")
+    if not isinstance(unknowns, list):
+        errors.append("unknowns: must be a list")
+        unknowns = []
+    elif any(not isinstance(u, str) for u in unknowns):
+        errors.append("unknowns: every entry must be a dimension name string")
+        unknowns = [u for u in unknowns if isinstance(u, str)]
 
     quote_ids = None
     if evidence is not None:
@@ -306,13 +358,24 @@ def validate(profile, evidence=None, strict=False):
                 # but it must be declared unknown out loud.
                 if entry.get("evidence"):
                     warnings.append(f"{path}: band is 'unknown' but evidence is cited")
-                if name not in profile.get("unknowns", []):
+                if name not in unknowns:
                     errors.append(f"{path}: band is 'unknown' but {name!r} is not "
                                   f"listed in profile.unknowns")
             else:
                 _validate_claim(entry, path, quote_ids, errors, warnings, strict)
                 if not str(entry.get("rationale") or "").strip():
                     errors.append(f"{path}.rationale: required once a band is set")
+                # The other direction of the unknowns invariant. Without this,
+                # a profile can band an axis 'high' and still advertise it as
+                # unknown, so the rendered config claims a measurement it then
+                # tells the reader it never took.
+                if name in unknowns:
+                    errors.append(f"{path}: band is {band!r} but {name!r} is still "
+                                  f"listed in profile.unknowns")
+
+        for name in unknowns:
+            if name not in DIMENSIONS:
+                errors.append(f"unknowns: {name!r} is not a dimension")
 
     # -- rules --------------------------------------------------------------
     seen_ids = set()
@@ -366,14 +429,16 @@ def validate(profile, evidence=None, strict=False):
     if not isinstance(tone, dict):
         errors.append("tone: must be an object")
     else:
-        for key in tone:
+        for key, value in tone.items():
             if key not in TONE_CONTEXTS:
                 errors.append(f"tone.{key}: unknown context; expected one of "
                               f"{', '.join(TONE_CONTEXTS)}")
-
-    unknowns = profile.get("unknowns")
-    if not isinstance(unknowns, list):
-        errors.append("unknowns: must be a list")
+            # render.build_tone_block calls .strip() on these. Only the keys
+            # were ever checked, so a tone value of null or 12 got through
+            # validate() clean and blew up in the renderer instead.
+            if not isinstance(value, str):
+                errors.append(f"tone.{key}: must be a string, got "
+                              f"{type(value).__name__}")
 
     _check_leaks(profile, "profile", errors)
 
@@ -381,7 +446,20 @@ def validate(profile, evidence=None, strict=False):
 
 
 def coverage(profile):
-    """How much of this profile was earned rather than guessed."""
+    """How much of this profile was earned rather than guessed.
+
+    Dimensions and rules each carry a `source`, so they can be sorted into
+    observed / declared / inferred. Tone strings and numeric limits do not:
+    the schema has no place to put one. They still render as directives, so
+    they are counted as `unattributed` and included in the denominator.
+
+    That last part matters. Counting them only in the numerator's absence --
+    i.e. leaving them out of `claims_total` entirely, as this function used to
+    -- meant a profile of two observed rules and six invented limits reported
+    100% grounded. The footer in every generated config quotes this number, so
+    the number has to cover everything the config actually tells the agent to
+    do.
+    """
     counts = {s: 0 for s in SOURCES}
     counts["unknown"] = 0
     for entry in profile.get("dimensions", {}).values():
@@ -391,13 +469,24 @@ def coverage(profile):
             counts[entry.get("source", "inferred")] += 1
     for rule in profile.get("rules", []) + profile.get("forbidden", []):
         counts[rule.get("source", "inferred")] += 1
-    total = sum(counts.values())
+
+    tone = profile.get("tone") or {}
+    limits = profile.get("limits") or {}
+    unattributed = 0
+    if isinstance(tone, dict):
+        unattributed += sum(1 for v in tone.values()
+                            if isinstance(v, str) and v.strip())
+    if isinstance(limits, dict):
+        unattributed += sum(1 for v in limits.values() if v is not None)
+
+    total = sum(counts.values()) + unattributed
     grounded = counts["observed"] + counts["declared"]
     return {
         "claims_total": total,
         "observed": counts["observed"],
         "declared": counts["declared"],
         "inferred": counts["inferred"],
+        "unattributed": unattributed,
         "unknown_dimensions": counts["unknown"],
         "grounded_pct": round(100.0 * grounded / total, 1) if total else 0.0,
     }
@@ -539,6 +628,7 @@ def _cmd_validate(args):
     cov = coverage(profile)
     print(f"\n{cov['claims_total']} claims: {cov['observed']} observed, "
           f"{cov['declared']} declared, {cov['inferred']} inferred, "
+          f"{cov['unattributed']} unattributed (tone/limits), "
           f"{cov['unknown_dimensions']} dimensions left unknown "
           f"({cov['grounded_pct']}% grounded)")
 

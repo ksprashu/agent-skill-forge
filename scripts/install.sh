@@ -42,7 +42,10 @@ PASS_ARGS=()
 for arg in "$@"; do
     case "$arg" in
         --uninstall)
-            python3 "$SCRIPT_DIR/sync_skills.py" "$@"
+            # Only --uninstall goes through. Forwarding "$@" would hand
+            # sync_skills.py flags it does not define (--hard-gate, --offline)
+            # and argparse would exit 2 before removing anything.
+            python3 "$SCRIPT_DIR/sync_skills.py" --uninstall
             python3 "$REPO_ROOT/hooks/design_gate.py" --uninstall || true
             exit 0
             ;;

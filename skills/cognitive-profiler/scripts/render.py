@@ -212,12 +212,17 @@ def build_analysis_block(prof):
     return _bullets(lines) or "_No preference established for depth of analysis._"
 
 
-def build_rules_block(prof):
-    rules = prof.get("rules", [])
-    if not rules:
-        return "_No specific rules recorded._"
+def _rules_by_scope(items):
+    """Render a rule list grouped under its scope headings.
+
+    Shared by the rules and forbidden blocks. They used to be written out
+    separately and the forbidden one dropped both the scope grouping and the
+    *(inferred)* suffix -- so a guessed prohibition read as a hard rule, while
+    the provenance footer below it promised that every inferred item was
+    marked. The reader had no way to tell which prohibitions were earned.
+    """
     by_scope = {}
-    for rule in rules:
+    for rule in items:
         by_scope.setdefault(rule.get("scope", "always"), []).append(rule)
 
     parts = []
@@ -233,11 +238,18 @@ def build_rules_block(prof):
     return "\n".join(parts).strip()
 
 
+def build_rules_block(prof):
+    rules = prof.get("rules", [])
+    if not rules:
+        return "_No specific rules recorded._"
+    return _rules_by_scope(rules)
+
+
 def build_forbidden_block(prof):
     items = prof.get("forbidden", [])
     if not items:
         return "_Nothing recorded as off-limits yet._"
-    return "\n".join(f"- {r['directive'].rstrip('.')}." for r in items)
+    return _rules_by_scope(items)
 
 
 def build_provenance_block(prof):
@@ -257,6 +269,11 @@ def build_provenance_block(prof):
     if cov["inferred"]:
         lines.append("Items marked *(inferred)* were reasoned about, not "
                      "observed. Correct them and they will be replaced.")
+    if cov["unattributed"]:
+        lines.append(
+            f"{cov['unattributed']} of those are tone settings and numeric "
+            f"limits. The profile format has nowhere to record where they came "
+            f"from, so treat them as unsourced and say so if one is wrong.")
     return "\n\n".join(lines)
 
 

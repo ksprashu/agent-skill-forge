@@ -36,7 +36,7 @@ python3 hooks/design_gate.py --status           # is it open, and why
 FORGE_GATE=off claude                           # bypass for one session
 ```
 
-Nine of the twelve spine skills are **not written here**. They are referenced
+Eleven of the twelve spine skills are **not written here**. They are referenced
 from upstream repositories at pinned commit SHAs and fetched at install time —
 nothing is vendored, nothing is forked. See
 [§ Reference-Only Upstream Skills](#-reference-only-upstream-skills).
@@ -88,6 +88,13 @@ bash scripts/install.sh
 ```powershell
 pwsh scripts/install.ps1
 ```
+
+`install.ps1` takes the same flags as `install.sh` — `--spine`, `--clusters`,
+`--hard-gate`, `--offline`, `--no-fetch`, `--uninstall` — and runs the same
+three steps: fetch the pinned upstream skills, link what each harness lacks,
+then optionally install the design-gate hook. Symlinks on Windows need
+Developer Mode or an elevated shell; the script warns if you have neither, and
+`--copy` installs physical copies instead.
 
 ### 2. Fast Scripted Section Installation
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
@@ -206,8 +213,9 @@ The 12 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for pr
 
 ## 🔗 Reference-Only Upstream Skills
 
-Nine of the twelve spine skills are somebody else's work, and they stay that
-way. This repository contains **no copy** of them. Instead
+Eleven of the twelve spine skills are somebody else's work, and they stay that
+way. This repository contains **no copy** of them. Only `profile` is written
+here. Instead
 [`config/upstream.lock.json`](config/upstream.lock.json) pins each one to a
 40-character commit SHA, and `scripts/fetch_upstream.py` resolves it at install
 time into `.upstream/` (gitignored).
@@ -257,8 +265,11 @@ Two caveats, stated plainly:
 
 - **Installing needs the network.** That is inherent to reference-only. Use
   `--offline` once the cache is warm, or `--no-fetch` to skip the spine.
-- **`echo` and `land` need a responsive human.** They are excluded from
-  `--non-interactive` installs because an unattended agent cannot answer them.
+- **Four skills need a responsive human** — `grill`, `echo`, `land`, `nudge`.
+  They are excluded from `--non-interactive` installs because an unattended
+  agent has nobody to ask. `brainstorm` interviews you too, but it installs
+  everywhere on purpose: an autonomous run that hits the design gate with no
+  brainstorm skill present gets blocked without being told why.
 
 ---
 

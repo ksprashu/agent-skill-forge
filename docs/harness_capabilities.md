@@ -364,9 +364,13 @@ write the implementation until the design is stamped.
 
 | Artefact | Path | Unlocks |
 | :--- | :--- | :--- |
-| `docs/design/<slug>.probe.md` | spike | Throwaway exploration |
-| `docs/design/<slug>.design.md` | bounded | A scoped change |
-| `docs/design/<slug>.spec.md` **and** `.plan.md` | architectural | Structural work |
+| `docs/design/<slug>-probe.md` | spike | Throwaway exploration |
+| `docs/design/<slug>-design.md` | bounded | A scoped change |
+| `docs/design/<slug>-spec.md` **and** `-plan.md` | architectural | Structural work |
+
+The separator is a hyphen, not a dot. The gate splits on the last `-` in the
+stem, so `payment-retry-design.md` is a bounded design for `payment-retry`.
+A file named `payment-retry.design.md` is not recognised at all.
 
 An approved spec on its own does **not** open the gate. It returns
 `architectural-plan-missing`. A spec says what to build; a plan says in what
@@ -375,7 +379,7 @@ failure mode it exists to prevent is a good spec followed by improvised
 execution.
 
 ```bash
-python3 hooks/design_gate.py --approve docs/design/my-feature.design.md
+python3 hooks/design_gate.py --approve docs/design/my-feature-design.md
 ```
 
 ---

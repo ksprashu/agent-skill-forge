@@ -45,6 +45,10 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import profile_tool  # noqa: E402  (local module, path set above)
+
 if sys.platform == "win32":  # pragma: no cover - platform guard
     for _stream in (sys.stdout, sys.stderr):
         if hasattr(_stream, "reconfigure"):
@@ -62,19 +66,10 @@ MAX_QUOTE_CHARS = 320
 
 HOME = Path.home()
 
-REDACTIONS = [
-    (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"), "<email>"),
-    (re.compile(r"\bAIzaSy[A-Za-z0-9_-]{33}\b"), "<api-key>"),
-    (re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b"), "<api-key>"),
-    (re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}\b"), "<token>"),
-    (re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b"), "<token>"),
-    (re.compile(r"\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"), "<jwt>"),
-    (re.compile(r"(?i)\b(?:bearer|authorization:)\s+\S+"), "<auth>"),
-    (re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S+"),
-     "<secret>"),
-    (re.compile(r"C:\\Users\\[A-Za-z0-9._-]+", re.IGNORECASE), r"~"),
-    (re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+"), "~"),
-]
+# Same table the profile validator rejects against, so a pattern added on one
+# side is never missing from the other. See profile_tool.SENSITIVE_PATTERNS.
+REDACTIONS = [(pattern, replacement)
+              for pattern, _label, replacement in profile_tool.SENSITIVE_PATTERNS]
 
 
 def redact(text):

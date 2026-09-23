@@ -30,7 +30,25 @@ blocked, so exploration and note-taking stay free.
 
 An artefact counts only if it carries a `Status: approved` line and is newer
 than this branch's merge-base. A design approved for last month's work does not
-authorise today's.
+authorise today's. Freshness comes from git history, not filesystem mtime,
+because a checkout or clone rewrites every mtime to now.
+
+SECURITY MODEL — read this before trusting the gate
+  This is a workflow guardrail, not a security boundary.
+
+  It reliably stops an agent that is simply taking the shortest path to an
+  edit: the Edit/Write/MultiEdit/NotebookEdit branch is path-scoped and exact,
+  and the Bash branch catches the common shell mutations.
+
+  It does not stop an agent that is actively trying to get around it. A shell
+  is a general-purpose mutation engine, and BASH_MUTATORS is a pattern list;
+  anything from an unusual interpreter invocation to a helper script defeats
+  it. The agent can also call `design_gate.py --approve` itself, because
+  writing under docs/ is deliberately never blocked.
+
+  If you need an actual boundary, enforce it where the agent cannot reach:
+  a pre-commit hook, a CI check, or branch protection. Those run outside the
+  agent's tool surface. This hook runs inside it.
 
 Usage
   design_gate.py                       read a PreToolUse event on stdin (hook mode)
@@ -53,6 +71,31 @@ import sys
 import time
 
 BLOCKED_TOOLS = {'Edit', 'Write', 'MultiEdit', 'NotebookEdit'}
+
+# Editor tools are not the only way to change a file. A shell can do it too,
+# so the same gate is applied to Bash commands that look like mutations.
+#
+# Read this for what it is: a speed bump wide enough to stop an agent that is
+# simply taking the quickest route, not a sandbox. A shell is a general-purpose
+# mutation engine and no pattern list closes it. See SECURITY MODEL in the
+# module docstring.
+BASH_TOOLS = {'Bash', 'BashOutput'}
+BASH_MUTATORS = (
+    # in-place editors and file writers
+    re.compile(r'\bsed\b[^|;&]*\s-[a-zA-Z]*i'),
+    re.compile(r'\bperl\b[^|;&]*\s-[a-zA-Z]*i'),
+    re.compile(r'\b(?:tee|dd)\b'),
+    re.compile(r'\b(?:cp|mv|install|rsync|patch|truncate|ln)\b'),
+    re.compile(r'\b(?:rm|rmdir|shred)\b'),
+    re.compile(r'\bgit\s+(?:apply|checkout|restore|revert|stash)\b'),
+    # here-doc or redirection into a file
+    re.compile(r'>>?\s*[^\s|&;<>]+'),
+    # interpreter one-liners that open files for writing
+    re.compile(r'\b(?:python3?|node|ruby)\b[^|;&]*-[ce]\b'),
+)
+# Commands that only read. Checked first, so `grep -r foo > /dev/null` and
+# friends do not trip the redirection pattern for no reason.
+BASH_SAFE_REDIRECT = re.compile(r'>\s*(?:/dev/null|/dev/stderr|&\d)\b')
 
 # Never blocked. Exploration, notes, tests, and the artefacts themselves.
 ALWAYS_ALLOWED_DIRS = (
@@ -122,8 +165,21 @@ def baseline_timestamp(root):
 # Path classification
 # ----------------------------------------------------------------------------
 
+def normalise_rel(rel_path):
+    """Strip a leading './' without eating leading dots.
+
+    str.lstrip('./') removes every leading '.' and '/' character, so
+    '.github/workflows/ci.yml' became 'github/workflows/ci.yml' and stopped
+    matching the '.github/' exemption. Only the prefix should go.
+    """
+    norm = rel_path.replace(os.sep, '/')
+    while norm.startswith('./'):
+        norm = norm[2:]
+    return norm.lstrip('/')
+
+
 def is_always_allowed(rel_path):
-    norm = rel_path.replace(os.sep, '/').lstrip('./')
+    norm = normalise_rel(rel_path)
     if any(norm.startswith(d) or f'/{d}' in f'/{norm}' for d in ALWAYS_ALLOWED_DIRS):
         return True
     base = os.path.basename(norm)
@@ -133,6 +189,43 @@ def is_always_allowed(rel_path):
 # ----------------------------------------------------------------------------
 # Artefact scanning
 # ----------------------------------------------------------------------------
+
+def artefact_timestamp(root, rel):
+    """When this artefact last genuinely changed, in epoch seconds.
+
+    Filesystem mtime is not trustworthy here. `git checkout`, `git reset`, a
+    fresh clone, or a stash pop all rewrite mtimes to now, which would make a
+    long-superseded approved design look like current work and reopen the
+    gate. So for anything git knows about, ask git.
+
+    - Untracked, or tracked with uncommitted changes -> this is live work.
+      Return now.
+    - Otherwise -> the commit time of the last commit that touched it.
+    - Not a git repo at all -> fall back to mtime, which is all we have.
+    """
+    full = os.path.join(root, rel)
+    if not os.path.isdir(os.path.join(root, '.git')):
+        try:
+            return os.path.getmtime(full)
+        except OSError:
+            return 0
+
+    tracked = git(['ls-files', '--error-unmatch', rel], root) is not None
+    if not tracked:
+        return time.time()
+
+    # Tracked but dirty in the working tree means someone is editing it now.
+    if git(['diff', '--quiet', 'HEAD', '--', rel], root) is None:
+        return time.time()
+
+    ts = git(['log', '-1', '--format=%ct', '--', rel], root)
+    if ts and ts.isdigit():
+        return int(ts)
+    try:
+        return os.path.getmtime(full)
+    except OSError:
+        return 0
+
 
 def scan_artefacts(root):
     """Return {kind: [(path, approved, fresh)]} for everything in docs/design."""
@@ -149,14 +242,15 @@ def scan_artefacts(root):
         if not kind:
             continue
         full = os.path.join(ddir, name)
+        rel = f'{DESIGN_DIR}/{name}'
         try:
             with open(full, 'r', encoding='utf-8', errors='replace') as f:
                 text = f.read()
             approved = bool(APPROVED_RE.search(text))
-            fresh = os.path.getmtime(full) >= baseline
         except OSError:
             continue
-        found[kind].append((os.path.join(DESIGN_DIR, name), approved, fresh))
+        fresh = artefact_timestamp(root, rel) >= baseline
+        found[kind].append((rel, approved, fresh))
     return found
 
 
@@ -222,6 +316,42 @@ def block_message(rel_path, reason, detail):
 # Hook mode
 # ----------------------------------------------------------------------------
 
+def looks_like_mutation(command):
+    """Does this shell command look like it writes to the filesystem?"""
+    if not command:
+        return False
+    stripped = BASH_SAFE_REDIRECT.sub('', command)
+    return any(p.search(stripped) for p in BASH_MUTATORS)
+
+
+def run_hook_bash(tool_input, cwd):
+    """Apply the gate to shell commands that look like they mutate files.
+
+    The path a shell command will touch is not knowable without running it, so
+    this cannot be path-scoped the way the editor branch is. Instead it only
+    engages when the gate is shut, and it says plainly what tripped it.
+    """
+    command = tool_input.get('command') or ''
+    if not looks_like_mutation(command):
+        return 0
+
+    root = project_root(cwd)
+    is_open, reason, detail = evaluate(root)
+    if is_open:
+        return 0
+
+    sys.stderr.write(
+        "BLOCKED by the forge design gate.\n\n"
+        f"  This shell command looks like it modifies files:\n    {command[:200]}\n\n"
+        "  No approved design artefact covers this work yet, so the gate is shut\n"
+        "  for writes of any kind, not just Edit and Write.\n"
+        f"{detail}\n\n"
+        "  If this command only reads, re-run it in a form that cannot write,\n"
+        "  or set FORGE_GATE=off for this session if you know what you are doing.\n"
+    )
+    return 2
+
+
 def run_hook():
     if os.environ.get('FORGE_GATE', '').lower() in ('off', '0', 'false', 'disabled'):
         return 0
@@ -232,15 +362,19 @@ def run_hook():
         return 0  # Never break the harness on a malformed event.
 
     tool = event.get('tool_name', '')
+    tool_input = event.get('tool_input') or {}
+    cwd = event.get('cwd') or os.getcwd()
+
+    if tool in BASH_TOOLS:
+        return run_hook_bash(tool_input, cwd)
+
     if tool not in BLOCKED_TOOLS:
         return 0
 
-    tool_input = event.get('tool_input') or {}
     file_path = tool_input.get('file_path') or tool_input.get('notebook_path') or ''
     if not file_path:
         return 0
 
-    cwd = event.get('cwd') or os.getcwd()
     root = project_root(cwd)
 
     try:
@@ -337,7 +471,7 @@ CLAUDE_SETTINGS = os.path.expanduser('~/.claude/settings.json')
 
 def hook_entry(script_path):
     return {
-        'matcher': 'Edit|Write|MultiEdit|NotebookEdit',
+        'matcher': 'Edit|Write|MultiEdit|NotebookEdit|Bash',
         'hooks': [{'type': 'command', 'command': f'python3 "{script_path}"'}],
     }
 
@@ -428,6 +562,29 @@ def cmd_self_test():
     check('nested test dir allowed', is_always_allowed('pkg/tests/helper.py'), True)
     check('src blocked', is_always_allowed('src/auth.py'), False)
     check('scripts blocked', is_always_allowed('scripts/deploy.sh'), False)
+
+    # Regression: lstrip('./') used to eat the leading dot of dotted dirs,
+    # so these documented exemptions silently stopped matching.
+    check('.github/ allowed', is_always_allowed('.github/workflows/ci.yml'), True)
+    check('.forge/ allowed', is_always_allowed('.forge/state.json'), True)
+    check('.upstream/ allowed', is_always_allowed('.upstream/grill/SKILL.md'), True)
+    check('./ prefix stripped', is_always_allowed('./docs/x-spec.md'), True)
+    check('./ prefix on src still blocked', is_always_allowed('./src/auth.py'), False)
+
+    # Bash mutation detection
+    check('sed -i is a mutation', looks_like_mutation("sed -i '' s/a/b/ src/x.py"), True)
+    check('tee is a mutation', looks_like_mutation('echo hi | tee src/x.py'), True)
+    check('redirect is a mutation', looks_like_mutation('echo hi > src/x.py'), True)
+    check('append is a mutation', looks_like_mutation('echo hi >> src/x.py'), True)
+    check('cp is a mutation', looks_like_mutation('cp a.py b.py'), True)
+    check('rm is a mutation', looks_like_mutation('rm -rf build'), True)
+    check('git checkout is a mutation', looks_like_mutation('git checkout -- src'), True)
+    check('python -c is a mutation', looks_like_mutation('python3 -c "open(1,\'w\')"'), True)
+    check('grep is not', looks_like_mutation('grep -rn foo src/'), False)
+    check('ls is not', looks_like_mutation('ls -la'), False)
+    check('cat is not', looks_like_mutation('cat README.md'), False)
+    check('/dev/null redirect is not', looks_like_mutation('make test > /dev/null'), False)
+    check('git status is not', looks_like_mutation('git status --short'), False)
 
     with tempfile.TemporaryDirectory() as tmp:
         ddir = os.path.join(tmp, DESIGN_DIR)

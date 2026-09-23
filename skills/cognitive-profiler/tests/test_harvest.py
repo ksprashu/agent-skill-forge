@@ -77,10 +77,10 @@ class TestRedaction(unittest.TestCase):
         self.assertIn("<secret>", H.redact("password = hunter2correcthorse"))
 
     def test_posix_home_directory_becomes_tilde(self):
-        self.assertEqual(H.redact("/Users/someone/code/x.py"), "~/code/x.py")
+        self.assertEqual(H.redact("/Users/someone/code/x.py"), "~/code/x.py")  # host-path-ok
 
     def test_windows_home_directory_becomes_tilde(self):
-        self.assertEqual(H.redact(r"C:\Users\Someone\notes.md"), r"~\notes.md")
+        self.assertEqual(H.redact(r"C:\Users\Someone\notes.md"), r"~\notes.md")  # host-path-ok
 
     def test_redaction_happens_on_the_way_in(self):
         """Quotes are redacted at capture, not at write, so an exception
@@ -91,7 +91,7 @@ class TestRedaction(unittest.TestCase):
         self.assertNotIn("a@b.com", json.dumps(h.report()))
 
     def test_redaction_is_idempotent(self):
-        once = H.redact("a@b.com and /Users/x/f")
+        once = H.redact("a@b.com and /Users/x/f")  # host-path-ok
         self.assertEqual(H.redact(once), once)
 
     def test_check_redaction_flags_a_dirty_file(self):

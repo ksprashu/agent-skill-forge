@@ -126,6 +126,71 @@ class TestUnknownHandling(unittest.TestCase):
                             for d in prof["dimensions"].values()))
         self.assertEqual(sorted(prof["unknowns"]), sorted(P.DIMENSIONS))
 
+    def test_a_banded_axis_may_not_still_be_listed_as_unknown(self):
+        """The other half of the invariant. Only one direction was enforced, so
+        a profile could band an axis 'high' and simultaneously tell the reader
+        it was never measured."""
+        prof = load_fixture("profile_structured.json")
+        banded = next(n for n, d in prof["dimensions"].items()
+                      if d["band"] != "unknown")
+        prof["unknowns"] = [banded]
+        errors, _ = P.validate(prof, load_fixture("evidence_sample.json"))
+        self.assertTrue(any("is still " in e and "profile.unknowns" in e
+                            for e in errors), errors)
+
+    def test_unknowns_entry_that_is_not_a_dimension_is_rejected(self):
+        prof = load_fixture("profile_terse.json")
+        prof["unknowns"] = prof["unknowns"] + ["vibes"]
+        errors, _ = P.validate(prof)
+        self.assertTrue(any("'vibes' is not a dimension" in e for e in errors), errors)
+
+    def test_unknowns_of_the_wrong_type_does_not_crash_the_dimension_pass(self):
+        """`unknowns` was dereferenced during the dimensions loop but only
+        type-checked afterwards, so a dict here raised instead of erroring."""
+        prof = load_fixture("profile_terse.json")
+        prof["unknowns"] = {"evidence_depth": True}
+        errors, _ = P.validate(prof)
+        self.assertTrue(any(e.startswith("unknowns:") for e in errors), errors)
+
+    def test_non_string_unknowns_entry_is_rejected(self):
+        prof = load_fixture("profile_terse.json")
+        prof["unknowns"] = prof["unknowns"] + [7]
+        errors, _ = P.validate(prof)
+        self.assertTrue(any("dimension name string" in e for e in errors), errors)
+
+
+class TestTypeGuards(unittest.TestCase):
+    """Every field the renderer touches must fail here, not there.
+
+    validate() used to coerce with `str(x or "")` or check only the keys of a
+    mapping. Both let a wrong-typed value through clean and turned it into a
+    TypeError deep inside render.py, where the message names no field.
+    """
+
+    def test_non_string_subject_is_rejected_not_stringified(self):
+        prof = load_fixture("profile_terse.json")
+        prof["subject"] = 42
+        errors, _ = P.validate(prof)
+        self.assertTrue(any("subject: must be a string" in e for e in errors), errors)
+
+    def test_empty_subject_is_still_rejected(self):
+        prof = load_fixture("profile_terse.json")
+        prof["subject"] = "   "
+        errors, _ = P.validate(prof)
+        self.assertTrue(any(e.startswith("subject:") for e in errors), errors)
+
+    def test_non_string_tone_value_is_rejected(self):
+        prof = load_fixture("profile_terse.json")
+        prof["tone"]["default"] = 12
+        errors, _ = P.validate(prof)
+        self.assertTrue(any("tone.default: must be a string" in e for e in errors), errors)
+
+    def test_null_tone_value_is_rejected(self):
+        prof = load_fixture("profile_terse.json")
+        prof["tone"]["default"] = None
+        errors, _ = P.validate(prof)
+        self.assertTrue(any("tone.default: must be a string" in e for e in errors), errors)
+
 
 class TestLeakRejection(unittest.TestCase):
     """Profiles compile into committed files, so they are checked for secrets
@@ -144,7 +209,7 @@ class TestLeakRejection(unittest.TestCase):
         self._assert_rejected("Email dev@example.com before merging", "email address")
 
     def test_home_directory_path_is_rejected(self):
-        self._assert_rejected("Read /Users/someone/notes.md first", "home directory")
+        self._assert_rejected("Read /Users/someone/notes.md first", "home directory")  # host-path-ok
 
     def test_api_key_is_rejected(self):
         self._assert_rejected("Use sk-abcdefghijklmnopqrstuvwxyz012345", "API key")
@@ -154,6 +219,29 @@ class TestLeakRejection(unittest.TestCase):
         prof["subject"] = "dev@example.com"
         errors, _ = P.validate(prof)
         self.assertTrue(any("email address" in e for e in errors), errors)
+
+    def test_everything_the_harvester_redacts_is_also_rejected_here(self):
+        """The two lists used to be maintained separately and drifted: harvest
+        redacted gho_/sk-proj-/Slack/JWT/bearer and the validator did not, so a
+        secret that got into a profile by hand sailed through. One table now."""
+        for sample, label in [
+            ("token gho_0123456789abcdefghij", "GitHub token"),
+            ("key sk-proj-abcdefghijklmnopqrstuvwx", "OpenAI-style API key"),
+            ("xoxb-1234567890-abcdef", "Slack token"),
+            ("eyJhbGciOiJIUzI1.eyJzdWIiOiIxMjM.SflKxwRJSMeKKF2Q", "JSON Web Token"),
+            ("Bearer abcdef123456", "authorization header"),
+            ("api_key=abcdef123456", "assigned secret"),
+            ("C:\\Users\\someone\\notes.md", "home directory path"),  # host-path-ok
+        ]:
+            with self.subTest(sample=sample):
+                self._assert_rejected(f"Do this: {sample}", label)
+
+    def test_the_redactor_and_the_validator_read_the_same_table(self):
+        import harvest as H
+        self.assertEqual(
+            [p.pattern for p, _ in H.REDACTIONS],
+            [p.pattern for p, _ in P.LEAK_PATTERNS],
+            "harvest.REDACTIONS and profile_tool.LEAK_PATTERNS have diverged")
 
 
 class TestLimits(unittest.TestCase):
@@ -223,7 +311,26 @@ class TestCoverage(unittest.TestCase):
         self.assertEqual(cov["observed"], 9)
         self.assertEqual(cov["declared"], 1)
         self.assertEqual(cov["inferred"], 0)
-        self.assertEqual(cov["grounded_pct"], 100.0)
+
+    def test_tone_and_limits_are_counted_as_unattributed(self):
+        """They steer the agent but carry no source, so they cannot be grounded.
+
+        Leaving them out of the denominator let a profile whose every limit was
+        invented still report 100% grounded, and that number is quoted in the
+        footer of every generated config."""
+        prof = load_fixture("profile_structured.json")
+        cov = P.coverage(prof)
+        expected = (sum(1 for v in prof["tone"].values() if v.strip())
+                    + sum(1 for v in prof["limits"].values() if v is not None))
+        self.assertEqual(cov["unattributed"], expected)
+        self.assertGreater(expected, 0, "fixture no longer exercises this")
+        self.assertLess(cov["grounded_pct"], 100.0)
+
+    def test_grounded_pct_is_100_only_when_nothing_is_unsourced(self):
+        prof = load_fixture("profile_structured.json")
+        prof["tone"] = {}
+        prof["limits"] = {name: None for name in P.LIMITS}
+        self.assertEqual(P.coverage(prof)["grounded_pct"], 100.0)
 
     def test_unknown_dimensions_are_counted_separately(self):
         cov = P.coverage(load_fixture("profile_terse.json"))

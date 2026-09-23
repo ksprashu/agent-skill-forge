@@ -66,10 +66,25 @@ Every rendered file carries a provenance footer stating how many claims were
 observed, declared, or inferred. The person living with the rules can see how
 much of it was actually earned.
 
+Tone strings and numeric limits are the hole in this. They steer the agent just
+as hard as a rule does, but the schema gives them nowhere to put a `source`, so
+they can be neither grounded nor challenged. They are counted as
+`unattributed`, included in the denominator of `grounded_pct`, and named in the
+footer. Leaving them out of the count entirely — which is what the first
+version did — let a profile of two observed rules and six invented limits
+report itself 100% grounded. Giving them real provenance means a schema version
+bump, and that is the next change to this skill, not a quiet one.
+
 ### 3. The output must be a function of the input
 
 `TestDifferentiation` renders two opposite profiles and asserts that **every**
 generated file differs. A static template with extra steps cannot pass it.
+Because those two fixtures also differ in subject and timestamp, that test
+alone would pass even if the bands were ignored, so
+`test_bands_alone_change_the_output` flips nothing but the bands on a single
+fixture, and `test_each_dimension_individually_moves_the_output` does it one
+axis at a time. An axis that can be flipped without moving any output is not
+wired to anything.
 `test_no_template_hardcodes_a_persona` bans the specific phrases the old
 version baked in. `test_low_and_high_are_genuinely_opposed` fails any
 dimension whose extremes read similarly — if `low` and `high` produce

@@ -292,6 +292,11 @@ CORE_CLUSTERS = {
     },
 }
 
+# What `--core` and the wizard's [core] preset mean. c5 is deliberately not in
+# here: it is the spine, eleven twelfths of which is fetched from upstream at
+# install time, and --core must stay a local, offline-capable selection.
+CORE_AGGREGATE = ('c1', 'c2', 'c3', 'c4')
+
 DOMAIN_CLUSTERS = {
     'd1': {
         'id': 'fullstack',
@@ -350,8 +355,11 @@ def resolve_clusters_arg(cluster_arg):
                 skills.extend(c['skills'])
             break
         elif p == 'core':
-            for c in CORE_CLUSTERS.values():
-                skills.extend(c['skills'])
+            # c1-c4 only. c5 (the spine) is mostly upstream, so folding it in
+            # here would quietly turn a local core install into a networked
+            # one. Ask for it with --spine or --clusters c5.
+            for key in CORE_AGGREGATE:
+                skills.extend(CORE_CLUSTERS[key]['skills'])
         elif p in ('domain', 'preferred'):
             for c in DOMAIN_CLUSTERS.values():
                 skills.extend(c['skills'])
@@ -546,20 +554,36 @@ def discover_all_skills():
     return all_skills
 
 
-def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False, reserved=None):
-    """Remove broken symlinks, items in this harness's reserved namespace, or links not in the allowed list."""
+def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False,
+                                 reserved=None, excluded=None):
+    """Remove broken symlinks, reserved-namespace items, or links not allowed here.
+
+    `excluded` is the set this harness must not have: capabilities it already
+    covers natively, plus same-named commands the user wrote. Those are removed
+    unconditionally. Without that, the lenient branch below would keep any link
+    whose target merely exists, so flipping a capability to `full` (or adding a
+    local command) left the superseded skill installed forever.
+    """
     if not os.path.exists(skills_dir):
         return
 
     all_available = discover_all_skills()
     if reserved is None:
         reserved = ALL_RESERVED
+    excluded = excluded or set()
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
         if item.lower() in reserved:
             reason = "RESERVED HARNESS NAMESPACE"
             print(f"  [{reason}] {item} in {skills_dir}")
+            if prune:
+                remove_path_or_link(item_path)
+                print(f"    -> Removed: {item_path}")
+            continue
+
+        if item in excluded or ALIASES.get(item) in excluded:
+            print(f"  [SUPERSEDED] {item} in {skills_dir}")
             if prune:
                 remove_path_or_link(item_path)
                 print(f"    -> Removed: {item_path}")
@@ -700,8 +724,15 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
     all_available = discover_all_skills()
 
     if selected_skills is None:
+        # The default is the legacy verb set plus the four-gate spine. The spine
+        # has to be in here: `install.sh` with no arguments prints a banner that
+        # advertises /echo, /brainstorm, /prove and the rest, and a banner that
+        # names skills the run did not install is just a lie. Spine names that
+        # were never fetched are reported as NOT FOUND below and skipped.
         target_skill_names = list(CORE_SKILLS.keys())
-        print(f"Default Core Skills ({len(target_skill_names)} primary verbs):")
+        for gate in SPINE_SKILLS.values():
+            target_skill_names.extend(n for n in gate if n not in target_skill_names)
+        print(f"Default Core Skills + spine ({len(target_skill_names)} entries):")
     else:
         target_skill_names = selected_skills
         print(f"Target Selected Skills ({len(target_skill_names)}):")
@@ -748,7 +779,8 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
                 print(f"                      {info['note']}")
 
         clean_stale_and_orphan_links(target_dir, harness_targets_map, prune=prune,
-                                     strict_prune=strict_prune, reserved=reserved)
+                                     strict_prune=strict_prune, reserved=reserved,
+                                     excluded=set(skipped))
 
         for name, src_path in harness_targets_map.items():
             if name.lower() in reserved:
@@ -845,7 +877,6 @@ def list_harnesses(strict_native=False):
         print("\n  No capability matrix found. Every skill installs into every harness.")
         return 0
 
-    caps = matrix.get('capabilities', {})
     skill_caps = matrix.get('skill_capabilities', {})
     all_forge_skills = sorted(skill_caps.keys())
 
@@ -973,8 +1004,8 @@ def main():
             requested_skills.extend(c['skills'])
     if args.core:
         has_explicit_selection = True
-        for c in CORE_CLUSTERS.values():
-            requested_skills.extend(c['skills'])
+        for key in CORE_AGGREGATE:
+            requested_skills.extend(CORE_CLUSTERS[key]['skills'])
     if args.domain:
         has_explicit_selection = True
         for c in DOMAIN_CLUSTERS.values():

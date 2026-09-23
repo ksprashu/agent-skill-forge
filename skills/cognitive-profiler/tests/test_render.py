@@ -71,6 +71,49 @@ class TestDifferentiation(unittest.TestCase):
         for filename, text in self.structured.items():
             self.assertIn("a structured reader", text, filename)
 
+    def test_bands_alone_change_the_output(self):
+        """The dimensions must be load-bearing, independently of everything else.
+
+        The two fixtures also differ in subject, timestamp and claim counts, so
+        the test above would still pass if render_all ignored every band. This
+        one starts from one fixture and flips nothing but the bands, holding
+        subject, rules, tone, limits and provenance identical -- the only thing
+        left that can move the output is the dimensions.
+        """
+        base = load_fixture("profile_structured.json")
+        flipped = copy.deepcopy(base)
+        swap = {"low": "high", "high": "low"}
+        moved = []
+        for name, entry in flipped["dimensions"].items():
+            if entry["band"] in swap:
+                entry["band"] = swap[entry["band"]]
+                moved.append(name)
+        self.assertTrue(moved, "fixture has no banded dimension left to flip")
+
+        before = R.render_all(base)
+        after = R.render_all(flipped)
+        for filename in before:
+            self.assertNotEqual(
+                before[filename], after[filename],
+                f"{filename} is unchanged after flipping {len(moved)} band(s) "
+                f"({', '.join(moved)}), so the dimensions do not drive it")
+
+    def test_each_dimension_individually_moves_the_output(self):
+        """No axis is allowed to be decorative. One at a time, flip it alone."""
+        base = load_fixture("profile_structured.json")
+        rendered = R.render_one(base, "claude")[1]
+        swap = {"low": "high", "high": "low", "medium": "high"}
+        for name, entry in base["dimensions"].items():
+            if entry["band"] not in swap:
+                continue
+            with self.subTest(dimension=name):
+                one = copy.deepcopy(base)
+                one["dimensions"][name]["band"] = swap[entry["band"]]
+                self.assertNotEqual(
+                    rendered, R.render_one(one, "claude")[1],
+                    f"{name} can be flipped without changing the config, so it "
+                    f"is not wired to any rendered block")
+
 
 class TestUnknownsRenderNothing(unittest.TestCase):
     """An unestablished axis must produce silence, not a plausible default.
@@ -104,9 +147,37 @@ class TestUnknownsRenderNothing(unittest.TestCase):
 
 class TestProvenance(unittest.TestCase):
     def test_footer_reports_the_real_counts(self):
-        text = R.render_one(load_fixture("profile_structured.json"), "claude")[1]
+        prof = load_fixture("profile_structured.json")
+        cov = P.coverage(prof)
+        text = R.render_one(prof, "claude")[1]
         self.assertIn("9 observed in logs", text)
-        self.assertIn("100.0% grounded", text)
+        self.assertIn(f"{cov['grounded_pct']}% grounded", text)
+
+    def test_footer_names_the_unsourced_tone_and_limit_settings(self):
+        prof = load_fixture("profile_structured.json")
+        text = R.render_one(prof, "claude")[1]
+        self.assertIn("tone settings and numeric limits", text)
+        self.assertIn(str(P.coverage(prof)["unattributed"]), text)
+
+    def test_inferred_prohibitions_are_marked_too(self):
+        """The footer promises that every inferred item is marked *(inferred)*.
+        The forbidden block did not honour that, so a guessed prohibition read
+        as a hard rule."""
+        prof = load_fixture("profile_structured.json")
+        self.assertTrue(prof["forbidden"], "fixture no longer exercises this")
+        prof["forbidden"][0]["source"] = "inferred"
+        prof["forbidden"][0]["evidence"] = []
+        block = R.build_forbidden_block(prof)
+        self.assertIn("*(inferred)*", block)
+
+    def test_prohibitions_are_grouped_under_their_scope(self):
+        prof = load_fixture("profile_structured.json")
+        prof["forbidden"] = [
+            dict(prof["forbidden"][0], id="R90", scope="cost",
+                 directive="Never quote a bare list price"),
+        ]
+        block = R.build_forbidden_block(prof)
+        self.assertIn(R.SCOPE_HEADING["cost"], block)
 
     def test_inferred_claims_are_marked_inline(self):
         prof = load_fixture("profile_structured.json")
