@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "_comment": [
+    "Reference-only upstream skills. Nothing here is vendored into this repo.",
+    "scripts/fetch_upstream.py resolves each entry at install time, caches it under",
+    "~/.cache/agent-skill-forge/, and materialises it into <repo>/.upstream/<name>/.",
+    "",
+    "'ref' is a full commit SHA, never a branch. A pinned SHA cannot be moved by an",
+    "upstream force-push. Run `fetch_upstream.py --upgrade` to re-resolve against HEAD",
+    "and review the diff before bumping.",
+    "",
+    "'interactive' true means the skill needs a live human and is excluded from",
+    "non-interactive installs (CI, /loop, autonomous runs)."
+  ],
+
+  "cache_dir": "~/.cache/agent-skill-forge",
+  "materialise_dir": ".upstream",
+
+  "skills": {
+    "grill": {
+      "gate": "understand",
+      "repo": "mattpocock/skills",
+      "path": "skills/productivity/grilling",
+      "ref": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
+      "license": "MIT",
+      "attribution": "Matt Pocock",
+      "why": "Works the ask as a design tree in rounds, and dispatches sub-agents for facts rather than asking you what it could look up.",
+      "interactive": true,
+      "overlay": "grill.md"
+    },
+    "echo": {
+      "gate": "understand",
+      "repo": "Shubhamsaboo/awesome-llm-apps",
+      "path": "agent_skills/thinking-out-loud",
+      "ref": "c62287849378babe255ebc4d8d76862389e3af3b",
+      "license": "Apache-2.0",
+      "attribution": "Shubham Saboo",
+      "why": "Turns a rambling or dictated brief into an echo brief, with the model's own guesses quarantined from your words.",
+      "interactive": true,
+      "overlay": "echo.md"
+    },
+    "done": {
+      "gate": "understand",
+      "repo": "affaan-m/ECC",
+      "path": "skills/intent-driven-development",
+      "ref": "bf70150eb2df8070024e5bdf08e4aa08959e2735",
+      "license": "MIT",
+      "attribution": "Affaan Mustafa (ECC)",
+      "why": "Writes observable AC-NNN acceptance criteria with a verification method each, so done is a fact rather than an opinion.",
+      "interactive": false,
+      "overlay": "done.md"
+    },
+
+    "brainstorm": {
+      "gate": "think",
+      "repo": "obra/superpowers",
+      "path": "skills/brainstorming",
+      "ref": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+      "license": "MIT",
+      "attribution": "Jesse Vincent (obra)",
+      "why": "The hard gate. Three paths (spike, bounded, architectural) with staged approval; approval of an idea does not approve artefacts that do not exist yet.",
+      "interactive": false,
+      "interactive_note": "Its interview needs a human, but it installs everywhere on purpose. An autonomous run that hits the design gate with no brainstorm skill present gets blocked without being told why.",
+      "overlay": "brainstorm.md"
+    },
+    "research": {
+      "gate": "think",
+      "repo": "mattpocock/skills",
+      "path": "skills/engineering/research",
+      "ref": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
+      "license": "MIT",
+      "attribution": "Matt Pocock",
+      "why": "Background agent that reads primary sources only and cites every claim, so expert knowledge enters the work as evidence rather than recall.",
+      "interactive": false,
+      "overlay": "research.md"
+    },
+    "doubt": {
+      "gate": "think",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/doubt-driven-development",
+      "ref": "bcab6a1b8503100e8618c3b4e32cc78de43de769",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Materialises a fresh-context reviewer biased to disprove, while course-correction is still cheap.",
+      "interactive": false,
+      "overlay": "doubt.md"
+    },
+
+    "prove": {
+      "gate": "verify",
+      "repo": "obra/superpowers",
+      "path": "skills/verification-before-completion",
+      "ref": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+      "license": "MIT",
+      "attribution": "Jesse Vincent (obra)",
+      "why": "No completion claim without fresh verification output. Carries a table of claim to what actually proves it.",
+      "interactive": false,
+      "overlay": "prove.md"
+    },
+    "bar": {
+      "gate": "verify",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/constraint-driven-development",
+      "ref": "bcab6a1b8503100e8618c3b4e32cc78de43de769",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Writes the quality bar down with numbers, then watches the diff for it being quietly lowered.",
+      "interactive": false,
+      "overlay": "bar.md"
+    },
+    "scope": {
+      "gate": "verify",
+      "repo": "Shubhamsaboo/awesome-llm-apps",
+      "path": "agent_skills/scope-creep-detector",
+      "ref": "c62287849378babe255ebc4d8d76862389e3af3b",
+      "license": "Apache-2.0",
+      "attribution": "Matt Van Horn",
+      "why": "Compares the diff against the stated intent and turns drift into keep, split, or justify. Offline, no network.",
+      "interactive": false,
+      "overlay": "scope.md"
+    },
+
+    "land": {
+      "gate": "human",
+      "repo": "Shubhamsaboo/awesome-llm-apps",
+      "path": "agent_skills/first-reader",
+      "ref": "c62287849378babe255ebc4d8d76862389e3af3b",
+      "license": "Apache-2.0",
+      "attribution": "Shubham Saboo",
+      "why": "Simulates real readers moment by moment: skim gate, quit points, next-day recall. Reports where the reading broke; never rewrites.",
+      "interactive": true,
+      "overlay": "land.md"
+    },
+    "nudge": {
+      "gate": "human",
+      "repo": "anthropics/skills",
+      "path": "skills/discernment-nudge",
+      "ref": "34040c9c568585f6929bedeaad110ad08f079624",
+      "license": "See LICENSE.txt in anthropics/skills",
+      "license_note": "Custom terms. Fetched at install time, never redistributed by this repo.",
+      "attribution": "Anthropic",
+      "why": "Hands you 2-3 questions tied to what was just produced, so you audit the output instead of swallowing it.",
+      "interactive": true,
+      "overlay": "nudge.md"
+    }
+  }
+}

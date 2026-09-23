@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "subject": "a prose reader",
+  "generated": "2026-09-20T09:25:00Z",
+  "evidence_ref": null,
+  "dimensions": {
+    "visual_scaffolding": {
+      "band": "low",
+      "source": "declared",
+      "evidence": ["Card 1: picked B, said 'a flowchart of something linear tells me nothing'."],
+      "rationale": "Calibration only; no logs were available."
+    },
+    "text_density": {
+      "band": "low",
+      "source": "declared",
+      "evidence": ["Card 1: picked B and said bullet points break the argument up."],
+      "rationale": "Calibration only; no logs were available."
+    },
+    "orientation_need": {
+      "band": "low",
+      "source": "declared",
+      "evidence": ["Card 2: picked B, 'don't tell me what the question was, I asked it'."],
+      "rationale": "Calibration only; no logs were available."
+    },
+    "metaphor_affinity": {
+      "band": "low",
+      "source": "declared",
+      "evidence": ["Card 3: picked B, called the clerk analogy patronising."],
+      "rationale": "Calibration only; no logs were available."
+    },
+    "decision_directness": {
+      "band": "medium",
+      "source": "declared",
+      "evidence": ["Card 2: wanted B's brevity but asked to still see the alternative."],
+      "rationale": "Calibration only; no logs were available."
+    },
+    "evidence_depth": {
+      "band": "unknown",
+      "source": "inferred",
+      "evidence": [],
+      "rationale": ""
+    }
+  },
+  "tone": {
+    "default": "a peer who assumes you already know the field"
+  },
+  "limits": {
+    "response_ceiling_words": null,
+    "sentences_per_bullet": null,
+    "bullets_per_section": null,
+    "code_fold_threshold": null
+  },
+  "rules": [
+    {
+      "id": "R1",
+      "scope": "always",
+      "directive": "Write in paragraphs; do not fragment an argument into bullets",
+      "source": "declared",
+      "evidence": ["Card 1 response."]
+    },
+    {
+      "id": "R2",
+      "scope": "architecture",
+      "directive": "Show the data structures and the actual types rather than a box-and-arrow diagram",
+      "source": "declared",
+      "evidence": ["Asked directly during calibration."]
+    }
+  ],
+  "forbidden": [
+    {
+      "id": "R3",
+      "scope": "always",
+      "directive": "Do not use analogies to explain something the reader already works with daily",
+      "source": "declared",
+      "evidence": ["Most annoying thing question: 'being taught my own job with a metaphor'."]
+    }
+  ],
+  "unknowns": ["evidence_depth"]
+}

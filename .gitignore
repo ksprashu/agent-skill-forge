@@ -25,3 +25,6 @@ skills-lock.json
 !.agents/hooks.json
 ORIGINAL_REQUEST.md
 TEST_READY.md
+
+# Reference-only upstream skills, fetched at install time (never vendored)
+.upstream/

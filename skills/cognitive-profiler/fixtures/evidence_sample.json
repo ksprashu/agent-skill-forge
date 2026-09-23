@@ -1,0 +1,156 @@
+{
+  "evidence_version": "1.0",
+  "generated": "2026-09-20T09:14:02Z",
+  "window_start": null,
+  "sources": {
+    "claude-code": { "status": "read", "sessions": 61 },
+    "antigravity": { "status": "read", "sessions": 24 },
+    "gemini-cli": { "status": "not-found", "sessions": 0 },
+    "cline": { "status": "not-found", "sessions": 0 },
+    "roo-code": { "status": "not-found", "sessions": 0 },
+    "cursor": { "status": "empty", "sessions": 0 }
+  },
+  "coverage": {
+    "level": "adequate",
+    "advice": "Enough signal to ground most dimensions as 'observed'. Still confirm the result with the user before rendering.",
+    "user_turns": 412,
+    "assistant_turns": 508,
+    "sessions": 85,
+    "signal_hits": 47
+  },
+  "stats": {
+    "user_words": { "n": 412, "median": 21, "p75": 48, "p90": 96, "max": 611 },
+    "assistant_words": { "n": 508, "median": 240, "p75": 415, "p90": 690, "max": 2180 },
+    "assistant_words_when_length_complained": {
+      "n": 11, "median": 520, "p75": 640, "p90": 810, "max": 940
+    }
+  },
+  "signals": {
+    "length_complaint": {
+      "count": 11,
+      "means": "Reacted to a response being too long.",
+      "quotes": ["q1", "q2", "q3"]
+    },
+    "structure_request": {
+      "count": 14,
+      "means": "Asked for information to be reshaped into explicit structure.",
+      "quotes": ["q4", "q5", "q6"]
+    },
+    "directness_request": {
+      "count": 8,
+      "means": "Asked for a single recommendation instead of options.",
+      "quotes": ["q7", "q8"]
+    },
+    "depth_request": {
+      "count": 9,
+      "means": "Asked for more rigour: costs, edge cases, or failure modes.",
+      "quotes": ["q9", "q10"]
+    },
+    "analogy_request": {
+      "count": 5,
+      "means": "Asked for an intuitive or concrete explanation.",
+      "quotes": ["q11", "q12"]
+    }
+  },
+  "quotes": [
+    {
+      "id": "q1",
+      "signal": "length_complaint",
+      "matched": "too long",
+      "harness": "claude-code",
+      "text": "this is way too long, I stopped reading at the second heading",
+      "when": "2026-03-04",
+      "prior_response_words": 720
+    },
+    {
+      "id": "q2",
+      "signal": "length_complaint",
+      "matched": "cut it down",
+      "harness": "claude-code",
+      "text": "cut it down to the three things I actually have to decide",
+      "when": "2026-04-17",
+      "prior_response_words": 520
+    },
+    {
+      "id": "q3",
+      "signal": "length_complaint",
+      "matched": "be concise",
+      "harness": "antigravity",
+      "text": "be concise. I asked one question and got an essay",
+      "when": "2026-06-02",
+      "prior_response_words": 480
+    },
+    {
+      "id": "q4",
+      "signal": "structure_request",
+      "matched": "comparison table",
+      "harness": "claude-code",
+      "text": "put the options in a comparison table before you argue for one",
+      "when": "2026-02-28"
+    },
+    {
+      "id": "q5",
+      "signal": "structure_request",
+      "matched": "as a table",
+      "harness": "antigravity",
+      "text": "can you redo that as a table, I can't hold six paragraphs of tradeoffs in my head",
+      "when": "2026-05-11"
+    },
+    {
+      "id": "q6",
+      "signal": "structure_request",
+      "matched": "summary first",
+      "harness": "claude-code",
+      "text": "summary first please, then the detail underneath",
+      "when": "2026-07-21"
+    },
+    {
+      "id": "q7",
+      "signal": "directness_request",
+      "matched": "just tell me",
+      "harness": "claude-code",
+      "text": "just tell me which one you'd pick and why, I don't need the survey",
+      "when": "2026-03-19"
+    },
+    {
+      "id": "q8",
+      "signal": "directness_request",
+      "matched": "stop hedging",
+      "harness": "antigravity",
+      "text": "stop hedging. you clearly think option B is better, say so",
+      "when": "2026-06-30"
+    },
+    {
+      "id": "q9",
+      "signal": "depth_request",
+      "matched": "total cost",
+      "harness": "claude-code",
+      "text": "that's only the storage line. what's the total cost including egress and requests",
+      "when": "2026-04-02"
+    },
+    {
+      "id": "q10",
+      "signal": "depth_request",
+      "matched": "what breaks",
+      "harness": "claude-code",
+      "text": "fine, but what breaks at 10x traffic? I want the failure mode not the happy path",
+      "when": "2026-08-14"
+    },
+    {
+      "id": "q11",
+      "signal": "analogy_request",
+      "matched": "help me understand",
+      "harness": "antigravity",
+      "text": "help me understand what write amplification actually means physically",
+      "when": "2026-05-06"
+    },
+    {
+      "id": "q12",
+      "signal": "analogy_request",
+      "matched": "in plain english",
+      "harness": "claude-code",
+      "text": "in plain english, what is a CRDT actually doing when two replicas disagree",
+      "when": "2026-07-09"
+    }
+  ]
+}
