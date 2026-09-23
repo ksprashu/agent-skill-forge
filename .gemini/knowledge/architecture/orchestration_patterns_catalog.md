@@ -2,7 +2,7 @@
 type: "Architecture Catalog"
 title: "Multi-Agent Orchestration Patterns & Anti-Patterns"
 description: "Reference catalog of endorsed agent orchestration patterns (direct invocation, parallel fan-out, sequential pipeline, research isolation) and anti-patterns."
-resource: "file:///Users/ksprashanth/code/github/agent-skills/references/orchestration-patterns.md"
+resource: "../agent-skills/references/orchestration-patterns.md"
 tags: ["architecture", "orchestration", "multi-agent", "patterns", "anti-patterns", "fan-out"]
 ---
 

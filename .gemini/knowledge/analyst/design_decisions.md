@@ -2,7 +2,7 @@
 type: "Design Decision"
 title: "Agent Skill Forge Architecture & Design Rationale"
 description: "Architectural rationale for 2-tier scoping, token context conservation, 1-word action verbs, and the Laziness Protocol."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/docs/architecture.md"
+resource: "../../../docs/architecture.md"
 tags: ["analyst", "decisions", "architecture", "token-economy", "design-rationale"]
 ---
 
@@ -23,7 +23,7 @@ Modern agentic coding environments (Antigravity, Claude Code, Gemini CLI, Cursor
 ### Decision
 Split skills into two distinct tiers:
 1. **Tier 1 (Global Lifecycle)**: Exactly **16 universal action verbs** that apply to every codebase regardless of language or framework (`prompt`, `grill`, `spec`, `plan`, `test`, `verify`, `review`, `unslop`, `docs`, `catalog`, `sync`, `google-oss`, `codelab`, `voice`, `copy-write`, `image-gen`).
-2. **Tier 2 (Project-Scoped JIT)**: Deep domain skills stored in [`preferred/`](file:///Users/ksprashanth/code/github/agent-skill-forge/preferred/PREFERRED_SKILLS.md) and bootstrapped into `<project>/.gemini/skills/` only when working on matching codebases.
+2. **Tier 2 (Project-Scoped JIT)**: Deep domain skills stored in [`preferred/`](../../../preferred/PREFERRED_SKILLS.md) and bootstrapped into `<project>/.gemini/skills/` only when working on matching codebases.
 
 ### Consequences
 - **Positive**: Global system prompts remain lean (<1,200 tokens). Zero unwanted trigger activations across unrelated tech stacks.

@@ -2,7 +2,7 @@
 type: "Interactive Engine"
 title: "Socratic Grilling & Branch-Walking Interview Engine"
 description: "Operational specification for the Socratic interrogation loop, design-tree branch walking, and proactive default recommendation heuristics."
-resource: "file:///Users/ksprashanth/code/github/mattpocock-skills/skills/productivity/grilling/SKILL.md"
+resource: "../mattpocock-skills/skills/productivity/grilling/SKILL.md"
 tags: ["builder", "grilling", "interview", "socratic", "interaction-design", "matt-pocock"]
 ---
 

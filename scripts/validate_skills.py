@@ -47,6 +47,72 @@ PII_PATTERNS = [
     re.compile(r'Prashanth Subrahmanyam', re.IGNORECASE),
 ]
 
+# A home directory in a tracked file is two defects at once: it leaks the
+# author's username, and the link or command is broken for everyone else. The
+# 2026-09-18 review counted 49 such files while the README advertised "Zero-PII";
+# the patterns below are what would have caught them.
+HOST_PATH_PATTERNS = [
+    re.compile(r'/Users/(?!<)[A-Za-z0-9._-]+'),
+    re.compile(r'[Cc]:[\\/]+Users[\\/]+[A-Za-z0-9._-]+'),
+    re.compile(r'/home/(?!<)[A-Za-z0-9._-]+'),
+]
+
+#: Reviews and standards that quote the pattern throughout. Whole-file
+#: exemptions are a blunt instrument; prefer the inline marker below, which
+#: keeps the justification next to the line it excuses.
+HOST_PATH_EXEMPT = {
+    'docs/ENGINEERING_STANDARD.md',
+    'docs/review/2026-09-23-work-skill-review.md',
+    'docs/review/2026-09-18-asis-tobe.md',
+    'TEST_INFRA.md',
+    'scripts/validate_skills.py',
+}
+
+#: A line carrying this marker is exempt. Used by redaction code, by tests that
+#: feed the scanner a bad path on purpose, and by docs showing what not to do.
+HOST_PATH_INLINE_MARKER = 'host-path-ok'
+
+HOST_PATH_SKIP_DIRS = {'.git', '.upstream', 'node_modules', '__pycache__',
+                       '.pytest_cache', '.venv', 'venv', '.agents', 'output',
+                       'dist', 'build'}
+
+HOST_PATH_SUFFIXES = ('.md', '.py', '.sh', '.json', '.jsonl', '.yaml', '.yml',
+                      '.cjs', '.js', '.ts', '.toml', '.cfg', '.ini', '.txt')
+
+
+def scan_host_paths(repo_root):
+    """Fail on any machine-specific absolute path in a tracked file."""
+    errors = []
+    for dirpath, dirnames, filenames in os.walk(repo_root):
+        dirnames[:] = [d for d in dirnames if d not in HOST_PATH_SKIP_DIRS]
+        for name in filenames:
+            if not name.endswith(HOST_PATH_SUFFIXES):
+                continue
+            full = os.path.join(dirpath, name)
+            rel = os.path.relpath(full, repo_root).replace(os.sep, '/')
+            if rel in HOST_PATH_EXEMPT:
+                continue
+            try:
+                with open(full, 'r', encoding='utf-8') as fh:
+                    content = fh.read()
+            except (OSError, UnicodeDecodeError):
+                continue
+            # Every hit is reported, one per line. Capping at the first match
+            # turns fixing a file into whack-a-mole across repeated runs.
+            for index, line in enumerate(content.splitlines()):
+                if HOST_PATH_INLINE_MARKER in line:
+                    continue
+                for pattern in HOST_PATH_PATTERNS:
+                    match = pattern.search(line)
+                    if match:
+                        errors.append(
+                            f"[host-path] {rel}:{index + 1} contains a machine-specific "
+                            f"absolute path '{match.group(0)}'. Use a repo-relative "
+                            f"path, ~, or an environment variable. If the path is "
+                            f"deliberate, mark the line `{HOST_PATH_INLINE_MARKER}`.")
+                        break
+    return errors
+
 
 def parse_frontmatter(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
@@ -188,14 +254,17 @@ def main():
     pref_count, pref_errs, pref_warns = validate_skill_dir(pref_dir, 'preferred')
     dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
     alias_errs = validate_aliases()
+    path_errs = scan_host_paths(REPO_ROOT)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
     print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
     print(f"Validated {len(ALIASES)} Skill Aliases against reserved namespaces.")
+    print(f"Scanned the tree for machine-specific absolute paths "
+          f"({len(HOST_PATH_EXEMPT)} documented exemptions).")
     print(f"Total Skills: {core_count + pref_count}\n")
 
     all_warnings = core_warns + pref_warns + dag_warns
-    all_errors = core_errs + pref_errs + dag_errs + alias_errs
+    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs
 
     if all_warnings:
         print("⚠️  Warnings:")

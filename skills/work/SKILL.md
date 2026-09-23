@@ -91,17 +91,14 @@ Decompose, parallelize, competitively design, empirically validate, and rigorous
 ### Phase 2: Parallel Alternative Technical Design Proposals
 1. **Dispatch Parallel Design Architects**:
    - The Orchestrator spawns `Design Architect Alpha` and `Design Architect Beta` concurrently to author distinct architectural approaches in `.agents/design/proposals/proposal_alpha.md` and `proposal_beta.md`.
-   - **Mandatory Visual Deliverables**: Each proposal MUST include 3 complete visual diagrams adhering to [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md):
+   - **Mandatory Visual Deliverables**: Each proposal MUST include 3 complete visual diagrams adhering to [Visual Production Guide](references/visual_production_guide.md):
      1. High-Level System Architecture Diagram (`flowchart TD`)
      2. C4 Level 2/3 Component Block Diagram (`graph TD` / `flowchart LR` with quoted node labels)
      3. Lifecycle Sequence & Dataflow Diagram (`sequenceDiagram` with `autonumber`).
-2. **Design Rubric Scoring**:
-   - The Architectural Arbiter evaluates both proposals across 4 axes using `scripts/arbiter_eval.py`:
-     1. Architecture & Spec Grounding (30 pts)
-     2. Interface & Data Contract Rigor (25 pts)
-     3. Failure Modes & Resilience (25 pts)
-     4. Simplicity & Unslop (20 pts)
-   - Outputs `.agents/design/arbiter_scorecard.md`.
+2. **Evidence Collection, then Judgement**:
+   - `scripts/arbiter_eval.py` reads both proposals and writes `.agents/design/arbiter_evidence.md`: counts of substantive schema and code blocks, trivial and placeholder blocks, measured claims (a number with a unit), named alternatives and trade-offs, unresolved `TBD`/`TODO` markers, hedge phrases, and distinct backticked identifiers.
+   - **It does not score and does not pick a winner.** It used to award 100 points across four axes, and on a two-sided fixture pair it preferred the hollow proposal to the substantive one, because length and heading count are easy to fake and depth is not. Counting is a script's job; choosing an architecture is not.
+   - The Arbiter agent reads the evidence *and both proposals*, answers the questions the report poses, and records the decision with its reasoning in `.agents/design/DESIGN.md`.
 
 ---
 
@@ -172,14 +169,82 @@ The task graph is declared using an 8-column GFM Markdown table:
 - **Artifact & Data Flow Contracts (`Inputs` / `Outputs`)**:
   - **Inputs**: Physical files that MUST exist on disk before dispatch (anti-polling invariant).
   - **Outputs**: Physical deliverables guaranteed to exist upon task completion.
-- **Barrier Gates (`Gate`)**:
-  - Deterministic criteria: `spec_approved`, `design_pass`, `arbiter_pass`, `spike_pass`, `exit_0`, `review_pass`, `zero_mock`, `acceptance_pass`, `victory_cert`.
 - **Node Status States (`Status`)**:
   - `PENDING`, `RUNNING`, `PASSED`, `BLOCKED`, `FAILED`.
+
+### 2. Barrier Gates (`Gate`)
+
+Every gate name in the Gate column resolves to a predicate in
+`skills/work/scripts/gate_executor.py`. `dag_validator.py --set-status X=PASSED`
+calls that predicate and **refuses to write PASSED when it returns false**, with
+exit code 3. Run `python3.12 skills/work/scripts/gate_executor.py list` for the
+live registry. A gate name the executor does not recognise fails closed — a typo
+in the Gate column is not permission.
+
+**Mechanical gates** — the executor settles these itself:
+
+| Gate | What has to be true |
+|---|---|
+| `exit_0` (also `test_pass`, `all_passed`) | A verification command was recorded for this task, it exited 0, and the code has not changed since. |
+| `zero_mock` | `forensic_audit.py --strict` exits 0 against the tree. |
+| `file_exists` | Every declared Output exists and is more than a placeholder. |
+| `victory_cert` | Every task PASSED **and** the strict audit is clean **and** a verification run against the current tree exited 0. |
+| `none` | Nothing. Recorded as passing for nothing. |
+| a literal command | The Gate cell may be a test command (`pytest tests/test_auth.py`). It is run as argv — never through a shell — and exit 0 is the gate. |
+
+**Attested gates** — `spec_approved`, `design_pass`, `arbiter_pass`,
+`spike_pass`, `review_pass`, `review_5axis_pass`, `acceptance_pass`,
+`committee_join`. These are judgements, and no script can make them. A reviewer
+records one with:
+
+```bash
+python3.12 skills/work/scripts/gate_executor.py attest \
+  --task task_m1_code_rev --gate review_5axis_pass --verdict PASS \
+  --reviewer-role code-reviewer --worker-role implementer \
+  --evidence .agents/m1_code_rev/review.md \
+  --summary "What was reviewed and what was found."
+```
+
+The executor then refuses that attestation if it is self-signed (reviewer role
+equals worker role), cites nothing, cites a file that does not exist or is
+placeholder text, carries a summary under 40 characters, or was written against
+a different revision than the one on disk. It cannot check whether the reviewer
+was *right* — and says so, in every report, under "Not checked by this gate".
+
+**Recording evidence.** Workers record their verification runs rather than
+asserting them:
+
+```bash
+python3.12 skills/work/scripts/gate_executor.py record \
+  --task task_m1_worker --cmd "python3.12 -m pytest tests -q"
+```
+
+That call exits non-zero when the suite is red, and stamps the run with a digest
+of the source tree. A green run stops counting the moment the code changes.
+
+**Overrides.** `--force-status --reason '<why>'` writes PASSED over a failing
+gate and appends the override, the gate, and the reason to a `## Gate Overrides`
+section of the DAG document. There is no silent bypass.
 
 ---
 
 ## 📐 Canonical DAG Templates
+
+`scaffold_work.py --topology` accepts six values. Pick by how much verification
+the work needs, not by how impressive the name sounds:
+
+| Topology | Shape | Use when |
+|---|---|---|
+| `lifecycle` | Spec grill → two design proposals → arbiter → spike → milestone worker → four parallel reviewers → acceptance → victory | New system or a change whose design is not settled. The only topology that grills the spec first. |
+| `full` | Survey → (worker → committee) × N → victory | The design is settled and one committee verdict per milestone is enough. |
+| `proof` | Survey → spike → (worker → code review ∥ challenger ∥ forensic → join) × N → victory | A single committee verdict is too coarse to trust: each verifier gets its own gate and can fail independently. |
+| `massive` | `full` at 8 milestones | Work that does not decompose into three milestones. Override with `--milestones`. |
+| `focused` | Worker → review ∥ challenger ∥ forensic → victory | One bug, one fix, full verification. |
+| `review` | Lead review → fact check ∥ inconsistency analysis → unslop synthesis | The deliverable is a document, not code. |
+
+Every gate named in every template resolves to a predicate in
+`gate_executor.py`; `test_gate_executor.py` scaffolds all six and fails if any
+gate does not.
 
 ### Template 1: Full Lifecycle Engineering Swarm (`--topology lifecycle`)
 ```markdown
@@ -188,7 +253,7 @@ The task graph is declared using an 8-column GFM Markdown table:
 | `task_spec_grill` | Socratic Spec Grilling | series | none | .agents/ORIGINAL_REQUEST.md | .agents/SPEC.md | spec_approved | PENDING |
 | `task_design_alpha` | Architecture Proposal Alpha | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_alpha.md | design_pass | BLOCKED |
 | `task_design_beta` | Architecture Proposal Beta | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_beta.md | design_pass | BLOCKED |
-| `task_design_arbiter` | Design Arbiter & User Decision Gate | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_scorecard.md | arbiter_pass | BLOCKED |
+| `task_design_arbiter` | Design Arbiter & User Decision Gate | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_evidence.md | arbiter_pass | BLOCKED |
 | `task_validation_spike` | Prototyping & Feasibility Spike | series | task_design_arbiter | .agents/design/DESIGN.md | .agents/design/spike_results.md | spike_pass | BLOCKED |
 | `task_m1_worker` | Milestone 1 Worker | series | task_validation_spike | .agents/design/DESIGN.md | src/, tests/, .agents/m1_worker/handoff.md | exit_0 | BLOCKED |
 | `task_m1_design_rev` | Milestone 1 Design Review | parallel | task_m1_worker | .agents/design/DESIGN.md, src/ | .agents/m1_design_rev/review.md | design_pass | BLOCKED |
@@ -210,11 +275,52 @@ The task graph is declared using an 8-column GFM Markdown table:
 | `task_victory_auditor` | Clean-Slate Certification | series | task_reviewer, task_challenger, task_forensic_auditor | .agents/reviewer_fix/review.md, .agents/challenger_fix/handoff.md, .agents/auditor_fix/handoff.md | .agents/victory_auditor/handoff.md | victory_cert | BLOCKED |
 ```
 
+### Template 3: Multi-Milestone Swarm (`--topology full`, `--topology massive`)
+Identical shape; `massive` only starts at 8 milestones instead of 3. Shown at
+two milestones:
+```markdown
+| ID | Task Name | Mode | Depends On | Inputs | Outputs | Gate | Status |
+|---|---|---|---|---|---|---|---|
+| `task_m0_survey` | Initial Code & Spec Survey | parallel | none | .agents/ORIGINAL_REQUEST.md | .agents/survey/handoff.md | survey_pass | PENDING |
+| `task_m1_worker` | Milestone 1 Worker | series | task_m0_survey | .agents/survey/handoff.md | src/, tests/, .agents/m1_worker/handoff.md | exit_0 | BLOCKED |
+| `task_m1_committee` | Milestone 1 Committee | parallel | task_m1_worker | src/, tests/, .agents/m1_worker/handoff.md | .agents/m1_committee/review.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |
+| `task_m2_worker` | Milestone 2 Worker | series | task_m1_committee | .agents/m1_committee/review.md | src/, tests/, .agents/m2_worker/handoff.md | exit_0 | BLOCKED |
+| `task_m2_committee` | Milestone 2 Committee | parallel | task_m2_worker | src/, tests/, .agents/m2_worker/handoff.md | .agents/m2_committee/review.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |
+| `task_victory_auditor` | Clean-Slate Certification | series | task_m2_committee | .agents/EVIDENCE.md | .agents/victory_auditor/handoff.md | victory_cert | BLOCKED |
+```
+
+### Template 4: Proof Swarm (`--topology proof`)
+`full` plus an upfront validation spike, with the committee split into three
+verifiers that gate independently. A code review that passes no longer carries a
+failing forensic audit across the line with it. Shown at one milestone:
+```markdown
+| ID | Task Name | Mode | Depends On | Inputs | Outputs | Gate | Status |
+|---|---|---|---|---|---|---|---|
+| `task_m0_survey` | Initial Code & Spec Survey | parallel | none | .agents/ORIGINAL_REQUEST.md | .agents/survey/handoff.md | survey_pass | PENDING |
+| `task_validation_spike` | Validation Spike | series | task_m0_survey | .agents/survey/handoff.md | .agents/design/spike_results.md | spike_pass | BLOCKED |
+| `task_m1_worker` | Milestone 1 Worker | series | task_validation_spike | .agents/design/spike_results.md | src/, tests/, .agents/m1_worker/handoff.md | exit_0 | BLOCKED |
+| `task_m1_code_rev` | Milestone 1 5-Axis Code Review | parallel | task_m1_worker | src/, tests/, .agents/m1_worker/handoff.md | .agents/m1_code_rev/review.md | review_pass | BLOCKED |
+| `task_m1_challenger` | Milestone 1 Adversarial Challenger | parallel | task_m1_worker | src/, tests/, .agents/m1_worker/handoff.md | .agents/m1_challenger/handoff.md | exit_0 | BLOCKED |
+| `task_m1_forensic` | Milestone 1 Forensic Integrity Auditor | parallel | task_m1_worker | src/, tests/, .agents/m1_worker/handoff.md | .agents/m1_forensic/handoff.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |
+| `task_m1_join` | Milestone 1 Verification Join | series | task_m1_code_rev, task_m1_challenger, task_m1_forensic | .agents/m1_code_rev/review.md, .agents/m1_challenger/handoff.md, .agents/m1_forensic/handoff.md | .agents/m1_join/verdict.md | committee_join | BLOCKED |
+| `task_victory_auditor` | Clean-Slate Certification | series | task_m1_join | .agents/EVIDENCE.md | .agents/victory_auditor/handoff.md | victory_cert | BLOCKED |
+```
+
+### Template 5: Document Review Deck (`--topology review`)
+```markdown
+| ID | Task Name | Mode | Depends On | Inputs | Outputs | Gate | Status |
+|---|---|---|---|---|---|---|---|
+| `task_lead_reviewer` | Lead Document Review | series | none | .agents/ORIGINAL_REQUEST.md | .agents/review_deck/lead_review.md | review_pass | PENDING |
+| `task_fact_checker` | Comparative Fact-Checking | parallel | task_lead_reviewer | .agents/review_deck/lead_review.md | .agents/review_deck/fact_check.md | fact_check_pass | BLOCKED |
+| `task_inconsistency_inquisitor` | Inconsistency Analysis | parallel | task_lead_reviewer | .agents/review_deck/lead_review.md | .agents/review_deck/inconsistencies.md | analysis_pass | BLOCKED |
+| `task_unslop_auditor` | Standards & Unslop Synthesis | series | task_fact_checker, task_inconsistency_inquisitor | .agents/review_deck/fact_check.md, .agents/review_deck/inconsistencies.md | .agents/review_deck/review_deck.md | unslop_clean | BLOCKED |
+```
+
 ---
 
 ## 🎨 Visual Production Standards & Generative UI Architecture
 
-Detailed copyable templates, sanitization algorithms, and Generative UI source patterns are documented in the [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md).
+Detailed copyable templates, sanitization algorithms, and Generative UI source patterns are documented in the [Visual Production Guide](references/visual_production_guide.md).
 
 ### 1. Mandatory Visual Deliverables across the 7-Phase Lifecycle
 Every `/work` swarm enforces visual rigor across proposals, user decisions, architecture consolidation, and verification:
@@ -240,6 +346,21 @@ Every `/work` swarm enforces visual rigor across proposals, user decisions, arch
 ---
 
 ## 🚀 Swarm Dispatch Payloads
+
+**Before writing any payload, resolve the domain skills for that task** and
+paste the emitted block into the `Prompt`:
+
+```bash
+python3.12 skills/work/scripts/autowire.py --task "<task name and its Outputs>" --role Worker
+```
+
+It scans `skills/` and `preferred/`, emits only paths that exist, and names the
+terms that matched. A subagent that is not told which local skills apply will
+work from its own priors instead. See
+[Domain Autowiring](references/domain_autowiring.md).
+
+Every subagent runs `"Model": "inherit"`. A reviewer cheaper than the agent it
+reviews is theatre.
 
 ### 1. Design Architect Subagents (Parallel Proposals)
 ```json
@@ -269,39 +390,45 @@ Every `/work` swarm enforces visual rigor across proposals, user decisions, arch
       "Role": "Architectural Arbiter",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are the Architectural Arbiter.\nRequired Inputs: .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md:\n1. Run: python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-scorecard .agents/design/arbiter_scorecard.md\n2. If trade-offs require user decision, signal Sentinel with options.\n3. Synthesize winning architecture into .agents/design/DESIGN.md.\n4. Send completion message referencing DESIGN.md."
+      "Prompt": "You are the Architectural Arbiter.\nRequired Inputs: .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md\nGrounding: read the relevant subtrees of .gemini/knowledge/ before judging (see skills/catalog/SKILL.md).\n\nFollow skills/work/references/competitive_branching.md:\n1. Run: python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-report .agents/design/arbiter_evidence.md\n2. That report is EVIDENCE, not a verdict. It counts substantive blocks, measured claims, named alternatives, hedges and unresolved markers; it deliberately emits no score and no winner. Read both proposals yourself and decide.\n3. Answer every question under 'Questions the Arbiter must answer' in the report, in writing.\n4. If trade-offs require a user decision, signal Sentinel with options.\n5. Synthesize the winning architecture into .agents/design/DESIGN.md, stating what you rejected and why.\n6. Attest the gate: python3.12 skills/work/scripts/gate_executor.py attest --task task_design_arbiter --gate arbiter_pass --verdict PASS --reviewer-role architectural-arbiter --worker-role design-architect --evidence .agents/design/DESIGN.md --evidence .agents/design/arbiter_evidence.md --summary '<what you compared and why you chose it>'\n7. Send completion message referencing DESIGN.md."
     }
   ]
 }
 ```
 
 ### 3. Layered Verification Committee (Parallel Batch)
+
+The committee is the only thing standing between faked work and a green DAG, so
+it runs on the orchestrator's own model. It used to be dispatched on `flash` —
+the cheapest model in the fleet reviewing the most expensive model's output,
+which inverts the point of review.
+
 ```json
 {
   "Subagents": [
     {
       "Role": "Architectural Design Reviewer",
       "TypeName": "self",
-      "Model": "flash",
-      "Prompt": "Audit git diff against .agents/design/DESIGN.md for interface drift and boundary violations. Output .agents/m1_design_rev/review.md."
+      "Model": "inherit",
+      "Prompt": "Audit git diff against .agents/design/DESIGN.md for interface drift and boundary violations. Ground yourself in .gemini/knowledge/architecture/ first. Follow skills/review/SKILL.md. Output .agents/m1_design_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_design_rev --gate review_pass --verdict PASS --reviewer-role design-reviewer --worker-role implementer --evidence .agents/m1_design_rev/review.md --summary '<what drifted, what did not>'"
     },
     {
       "Role": "5-Axis Code Reviewer",
       "TypeName": "self",
-      "Model": "flash",
-      "Prompt": "Audit diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. Output .agents/m1_code_rev/review.md."
+      "Model": "inherit",
+      "Prompt": "Audit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_5axis_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
     },
     {
       "Role": "Adversarial Challenger",
       "TypeName": "self",
-      "Model": "flash",
-      "Prompt": "Author hostile edge-case and boundary tests. Assert exit code 0. Output .agents/m1_challenger/handoff.md."
+      "Model": "inherit",
+      "Prompt": "Author hostile edge-case and boundary tests against the implementation. Follow skills/test/SKILL.md. Record the run as evidence rather than asserting it in prose:\npython3.12 skills/work/scripts/gate_executor.py record --task task_m1_challenger --cmd '<your test command>'\nThat call exits non-zero if the suite is red. Output .agents/m1_challenger/handoff.md."
     },
     {
       "Role": "Forensic Integrity Auditor",
       "TypeName": "self",
-      "Model": "flash",
-      "Prompt": "Run: python3.12 skills/work/scripts/forensic_audit.py --integrity-mode development --strict\nAssert zero mocks and append evidence to .agents/EVIDENCE.md."
+      "Model": "inherit",
+      "Prompt": "Run: python3.12 skills/work/scripts/forensic_audit.py --target-dir . --strict\nThe auditor scans production source as well as tests: hardcoded returns, ignored parameters, dead computation, stubs, mocks, tautological assertions. Add --mutate --test-cmd '<test command>' to check that the tests would notice if the code broke. Exit 1 means VETO; the milestone does not advance. Write findings to .agents/m1_forensic/report.md."
     }
   ]
 }
@@ -315,7 +442,7 @@ Every `/work` swarm enforces visual rigor across proposals, user decisions, arch
       "Role": "Acceptance Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are the Acceptance Reviewer.\nRequired Inputs: .agents/SPEC.md, .agents/EVIDENCE.md\n\nSystematically audit every requirement R1..Rn and acceptance criterion AC1..ACk in .agents/SPEC.md against physical test suites and diffs.\nOutput report to .agents/acceptance_review/report.md. Send completion message."
+      "Prompt": "You are the Acceptance Reviewer.\nRequired Inputs: .agents/SPEC.md, .agents/evidence/\n\nSystematically audit every requirement R1..Rn and acceptance criterion AC1..ACk in .agents/SPEC.md against physical test suites and diffs. For each one, cite the test that covers it or record that none does.\nOutput report to .agents/acceptance_review/report.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_acceptance_review --gate acceptance_pass --verdict PASS --reviewer-role acceptance-reviewer --worker-role implementer --evidence .agents/acceptance_review/report.md --summary '<which requirements are covered and which are not>'\nSend completion message."
     }
   ]
 }
@@ -329,7 +456,7 @@ Every `/work` swarm enforces visual rigor across proposals, user decisions, arch
       "Role": "Victory Auditor",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are the independent Victory Auditor.\nRequired Inputs: .agents/EVIDENCE.md, clean git workspace, .agents/acceptance_review/report.md.\n\nExecute clean verification commands cold. Assert 100% test pass rate, clean build, and zero mocks.\nEmit VICTORY CONFIRMED or VICTORY REJECTED in .agents/victory_auditor/handoff.md."
+      "Prompt": "You are the independent Victory Auditor.\nRequired Inputs: .agents/evidence/, clean git workspace, .agents/acceptance_review/report.md.\n\nExecute the verification commands cold, from a clean checkout. Then run the terminal gate, which re-derives the claim rather than trusting the ledger:\npython3.12 skills/work/scripts/gate_executor.py check --gate victory_cert --task task_victory_auditor --cmd '<full test command>'\nIt exits 0 only when every task is PASSED, a strict forensic audit is clean, and a verification run against the current tree exited 0. Exit 1 is VICTORY REJECTED; write the reason it gave into .agents/victory_auditor/handoff.md. Do not write VICTORY CONFIRMED unless that command exited 0."
     }
   ]
 }

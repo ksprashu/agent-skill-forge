@@ -2,7 +2,7 @@
 type: "Architecture Spec"
 title: "Universal Skill Installer & Symlink Orchestration"
 description: "Architectural specification for multi-runtime symlink synchronization, prune/fix algorithms, and JIT workspace bootstrapping."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/scripts/sync_skills.py"
+resource: "../../../scripts/sync_skills.py"
 tags: ["architecture", "installer", "symlinks", "sync", "runtime-hubs"]
 ---
 

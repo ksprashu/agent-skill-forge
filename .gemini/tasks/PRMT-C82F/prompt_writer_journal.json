@@ -11,8 +11,8 @@
     "mentor_completed": true
   },
   "sources_analyzed": [
-    "/Users/ksprashanth/code/github/agent-skills",
-    "/Users/ksprashanth/code/github/mattpocock-skills",
+    "../agent-skills",
+    "../mattpocock-skills",
     "https://github.com/obra/superpowers",
     "https://github.com/anthropics/skills",
     "https://developers.openai.com/codex/plugins",

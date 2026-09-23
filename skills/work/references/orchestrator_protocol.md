@@ -28,7 +28,7 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
 ├── design/
 │   ├── proposals/          # Design Proposal Alpha and Beta markdown specs
 │   ├── DESIGN.md           # Authoritative synthesized technical design doc
-│   ├── arbiter_scorecard.md# Automated design scoring matrix
+│   ├── arbiter_evidence.md # Collected facts about each proposal (no score)
 │   ├── what_if_simulator.html # Interactive Canvas 2D Generative UI trade-off simulator
 │   └── spike_results.md    # Optional empirical validation spike benchmarks
 └── orchestrator/
@@ -107,7 +107,7 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
    }
    ```
 3. Once both proposals emit their completion messages, spawn the **Architectural Arbiter**:
-   - Runs `python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-scorecard .agents/design/arbiter_scorecard.md`.
+   - Runs `python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-report .agents/design/arbiter_evidence.md` to collect evidence, then **reads both proposals and judges**. The script never ranks them.
    - Verifies that both proposals contain complete, properly quoted Mermaid models.
    - If trade-offs require user input (`USER_DECISION_REQUIRED`), compiles `.agents/design/what_if_simulator.html` via `visual_engine.compile_what_if_simulator` and signals the Sentinel to present an interactive choice card.
    - Synthesizes the final approved design, schemas, and visual diagrams into `.agents/design/DESIGN.md`.
@@ -131,7 +131,7 @@ Translate `.agents/design/DESIGN.md` into staged milestones ($M_1 \dots M_k$) in
 | `task_spec_grill` | Socratic Spec Grilling | series | none | .agents/ORIGINAL_REQUEST.md | .agents/SPEC.md | spec_approved | PASSED |
 | `task_design_alpha` | Architecture Proposal Alpha | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_alpha.md | design_pass | PASSED |
 | `task_design_beta` | Architecture Proposal Beta | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_beta.md | design_pass | PASSED |
-| `task_design_arbiter` | Design Arbiter & Synthesis | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_scorecard.md | arbiter_pass | PASSED |
+| `task_design_arbiter` | Design Arbiter & Synthesis | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_evidence.md | arbiter_pass | PASSED |
 | `task_validation_spike` | Feasibility Spike | series | task_design_arbiter | .agents/design/DESIGN.md | .agents/design/spike_results.md | spike_pass | PASSED |
 | `task_m1_worker` | Milestone 1 Worker | series | task_validation_spike | .agents/design/DESIGN.md | src/, tests/, .agents/m1_worker/handoff.md | exit_0 | PENDING |
 | `task_m1_design_rev` | Milestone 1 Design Review | parallel | task_m1_worker | .agents/design/DESIGN.md, src/ | .agents/m1_design_rev/review.md | design_pass | BLOCKED |
@@ -156,7 +156,15 @@ The Orchestrator dispatches subagents in accordance with the Ready Frontier:
 3. **Execution Mode**:
    - `parallel` nodes in the Ready Frontier are dispatched concurrently in a single `invoke_subagent` call.
    - `series` nodes are dispatched in sequential order.
-4. **Anti-Polling Dormancy**: If prerequisites are not satisfied, the node remains in `BLOCKED` status and zero subagents are spawned. The Orchestrator stops calling tools and awaits reactive wakeup.
+4. **Domain Skill Autowiring**: Before writing each dispatch payload, resolve the
+   domain skills for that task and paste the emitted block into the `Prompt`:
+   ```bash
+   python3.12 skills/work/scripts/autowire.py --task "<the task name and its Outputs>" --role Worker
+   ```
+   The script scans `skills/` and `preferred/`, verifies every path it emits
+   exists, and reports which terms matched. See
+   [Domain Autowiring](domain_autowiring.md).
+5. **Anti-Polling Dormancy**: If prerequisites are not satisfied, the node remains in `BLOCKED` status and zero subagents are spawned. The Orchestrator stops calling tools and awaits reactive wakeup.
 
 ---
 

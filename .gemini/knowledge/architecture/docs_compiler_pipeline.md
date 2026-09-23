@@ -2,7 +2,7 @@
 type: "Pipeline Architecture"
 title: "Stitch 4-Theme Documentation Compiler Pipeline"
 description: "Architectural design of the single-page HTML documentation compiler, AST markdown transformations, and responsive CSS styling."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/skills/docs/scripts/compile_docs.py"
+resource: "../../../skills/docs/scripts/compile_docs.py"
 tags: ["architecture", "docs", "compiler", "stitch", "html", "theming"]
 ---
 

@@ -17,6 +17,8 @@
 
 ## 2. Critical Negative Constraints & Architectural Invariants
 
+- **Engineering Standard (normative)**: Read `docs/ENGINEERING_STANDARD.md` before adding any skill, script, verifier, gate, or test. It defines the script contract, the verifier contract (known-bad fixture first), the six required test patterns, the L1-L4 enforcement ladder, and the definition of done.
+- **Executor Invariant**: Any claim using the words *gate*, *verify*, *audit*, *veto*, *certified*, *pass*, or *score* MUST have a function behind it that exits non-zero on failure. Agent self-reports are not enforcement. A gate name may not appear in a SKILL.md before its predicate and its rejection test exist.
 - You must always keep AGENTS.md under 200 lines to prevent token bloat.
 - Never commit unencrypted API keys or passwords.
 - **Work Slash Command Invariant (`/work`)**: When `/work` is triggered, the primary chat agent operates strictly as the Work Sentinel. It is STRICTLY FORBIDDEN from writing functional code or executing fixes directly on the primary thread. It MUST scaffold `.agents/` and delegate execution to subagents via `invoke_subagent`.

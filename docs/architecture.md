@@ -80,7 +80,7 @@ flowchart LR
 
 ## 🧠 5. Open Knowledge Format (OKF) Subsystem
 
-Architectural memory is maintained under [`.gemini/knowledge/`](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md) across 5 specialized subtrees:
+Architectural memory is maintained under [`.gemini/knowledge/`](../.gemini/knowledge/index.md) across 5 specialized subtrees:
 - **`scout/`**: Codebase topology, skill directory, ecosystem landscape.
 - **`analyst/`**: Design decisions, attribution matrix, comparative benchmarks, leading words linguistics.
 - **`architecture/`**: Frontmatter schemas, installer specs, compiler pipelines, orchestration catalogs.

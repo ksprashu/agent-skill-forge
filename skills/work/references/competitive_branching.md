@@ -26,7 +26,7 @@ The **Competitive Branching Pattern** operates at two distinct tiers:
                            ┌─────────────────────────┐
                            │  ARCHITECTURAL ARBITER  │
                            │ Runs arbiter_eval.py    │
-                           │ Generates scorecard.md  │
+                           │ Generates evidence.md   │
                            └────────────┬────────────┘
                                         │
                        ┌────────────────┴────────────────┐
@@ -49,27 +49,42 @@ Design architects write structured markdown proposals in `.agents/design/proposa
 - **Proposal Beta (`proposal_beta.md`)**: Explores alternative hypothesis (e.g., SQLite FTS5 virtual table, event-driven worker, server action pagination).
 
 #### Mandatory Visual Production Deliverables
-Every proposal MUST include three complete, copyable Mermaid visual models adhering to [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md):
+Every proposal MUST include three complete, copyable Mermaid visual models adhering to [Visual Production Guide](../references/visual_production_guide.md):
 1. **High-Level System Architecture Diagram** (`flowchart TD`): Full topology spanning client ingress, application layers, event queues, and storage engines.
 2. **C4 Level 2/3 Component Block Diagram** (`graph TD` or `flowchart LR`): Internal container boundaries, technology annotations, and strict node label quoting `id["Label (Context)"]`.
 3. **Lifecycle Sequence & Dataflow Diagram** (`sequenceDiagram` with `autonumber`): Step-by-step request flow, concurrency blocks (`par`), and fallback branches (`alt`).
 
 Proposals missing these visual models will fail the Architectural Arbiter evaluation gate.
 
-### 2. Automated Arbiter Scoring
-The Architectural Arbiter evaluates proposals across 4 axes using `arbiter_eval.py`:
-1. **Architecture & Spec Grounding (30 pts)**: Coverage of requirements $R_1 \dots R_n$ and non-goals from `SPEC.md`, including complete Mermaid architecture models.
-2. **Interface & Data Contracts (25 pts)**: Schema definitions, TypeScript types, migration cleanliness.
-3. **Failure Modes & Resilience (25 pts)**: Concurrency, error handling, retry limits, security boundary checks.
-4. **Simplicity & Unslop (20 pts)**: Avoidance of unnecessary abstractions, minimal dependencies, zero AI fluff words.
+### 2. Arbiter Evidence Collection, then Judgement
+`arbiter_eval.py` collects facts about the two proposals and stops there:
 
-Run command:
 ```bash
 python3.12 skills/work/scripts/arbiter_eval.py \
   --design-alpha .agents/design/proposals/proposal_alpha.md \
   --design-beta .agents/design/proposals/proposal_beta.md \
-  --output-scorecard .agents/design/arbiter_scorecard.md
+  --output-report .agents/design/arbiter_evidence.md
 ```
+
+The report contains, per proposal: the heading outline; substantive, trivial,
+placeholder and unterminated code blocks counted separately; measured claims
+with concrete numbers, quoted with line numbers; named alternatives that were
+considered and rejected; unresolved `TBD`/`TODO` markers; hedging phrases that
+promise a decision without making one; slop words; and the count of distinct
+backticked identifiers. Its verdict field is always `JUDGEMENT_REQUIRED`.
+
+**It does not score and does not pick a winner.** It used to award 100 points
+across four axes, and on a two-sided fixture pair it preferred the hollow
+proposal to the substantive one — a document of empty headings scored 95 and a
+rigorous one 40. Because the Design Architects can read the scorer, a scorer
+that rewards headings teaches them to write headings. The Arbiter agent reads
+both proposals and the evidence, and decides.
+
+Judge on: does each requirement $R_1 \dots R_n$ in `SPEC.md` have a mechanism
+named against it; are the interface contracts concrete enough to implement
+against; are the failure modes ones this system can actually hit; does the
+proposal name what it gave up. A placeholder block and an unresolved marker in
+the evidence report are the cheap tells — start there, then read.
 
 ### 3. User Choice Escalation Protocol & "What-If" Simulator
 If the Arbiter identifies genuine trade-offs that affect operational ergonomics, durability, or external dependencies, it marks the recommendation as `USER_DECISION_REQUIRED` and compiles an interactive Generative UI simulator:
@@ -90,21 +105,24 @@ For high-risk assumptions (e.g. latency budgets, novel library compatibility), d
 - Emits `.agents/design/spike_results.md`.
 
 ### 2. Implementation Code Tournaments (Milestone Build)
-During critical milestones, dispatch competing implementation workers in parallel:
+During critical milestones, dispatch competing implementation workers in
+parallel. Both run `inherit`: a tournament decided between two cheap-model
+implementations tells you which cheap implementation won, not which design is
+right.
 ```json
 {
   "Subagents": [
     {
       "Role": "Worker Alpha — Approach A",
       "TypeName": "self",
-      "Model": "flash",
+      "Model": "inherit",
       "Workspace": "branch",
       "Prompt": "Implement Milestone 1 using Approach A in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_alpha/handoff.md."
     },
     {
       "Role": "Worker Beta — Approach B",
       "TypeName": "self",
-      "Model": "flash",
+      "Model": "inherit",
       "Workspace": "branch",
       "Prompt": "Implement Milestone 1 using Approach B in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_beta/handoff.md."
     }
@@ -120,8 +138,15 @@ python3.12 skills/work/scripts/arbiter_eval.py \
   --beta-dir .agents/worker_beta/ \
   --alpha-test "pytest tests/alpha" \
   --beta-test "pytest tests/beta" \
-  --output-scorecard .agents/orchestrator/arbiter_scorecard.md
+  --output-report .agents/orchestrator/arbiter_evidence.md
 ```
-- **Dominant Winner**: Arbiter merges winning branch to mainline.
-- **Close Scores**: Arbiter synthesizes Alpha's interface ergonomics with Beta's backend performance.
+The report contains measurements, not a ranking: each candidate's test exit
+code, test count, assertion count, source and test line counts, and any
+benchmark output. Where a fact settles the question mechanically — one suite
+green and the other red — the report says so (`SELECT_ALPHA`, `SELECT_BETA`,
+`BOTH_REJECTED`). Where it does not, the verdict is `JUDGEMENT_REQUIRED` and the
+Arbiter decides.
+
+- **One candidate green, one red**: merge the green one. The report already says which.
+- **Both green**: read both implementations. Line counts and assertion counts do not tell you which design will survive the next change; that is the judgement you were spawned to make.
 - Results advance to the **Adversarial Committee** for milestone gating.
