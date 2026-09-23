@@ -1,0 +1,196 @@
+# Continuous integration for agent-skill-forge.
+#
+# This file is the repository's only L4 enforcement: everything below already
+# exists as a script that exits non-zero, but a script only blocks a merge once
+# something runs it without being asked. Until this workflow existed, every
+# check in the repo was opt-in, and the checks that were skipped were exactly
+# the ones that would have failed.
+#
+# Nothing here scores, judges, or summarises. Each step runs a command that
+# already knows how to fail.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  tests:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip pytest
+
+      # The engine scripts run inside agent harnesses with no install step, so
+      # a third-party import there is a traceback on a user's machine.
+      - name: Assert the engine scripts stay stdlib-only
+        run: python3 scripts/check_stdlib_only.py --repo-root .
+
+      - name: Run the suite
+        run: python -m pytest -q
+
+  validate:
+    name: Skill validation, PII and host paths
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # Frontmatter, reserved-namespace collisions, author PII, and absolute
+      # paths from a contributor's machine. Every one of these has shipped to
+      # main at least once.
+      - name: Validate skills
+        run: python3 scripts/validate_skills.py
+
+      - name: Verify the autowiring matrix resolves on disk
+        run: python3 skills/work/scripts/autowire.py --check --repo-root .
+
+  gates:
+    name: Gate executor and DAG integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Every registered gate has a predicate
+        run: python3 skills/work/scripts/gate_executor.py list
+
+      - name: Committed DAG fixtures stay parseable and in Mermaid parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for dag in skills/work/fixtures/*.md; do
+            echo "--- $dag"
+            python3 skills/work/scripts/dag_validator.py --check-mermaid "$dag"
+          done
+
+      - name: Every scaffolded topology produces resolvable gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for topology in full focused review proof massive lifecycle; do
+            workdir="$(mktemp -d)"
+            python3 skills/work/scripts/scaffold_work.py \
+              --project-dir "$workdir" --name CIProbe --topology "$topology" >/dev/null
+            python3 skills/work/scripts/dag_validator.py --check-mermaid "$workdir/.agents/DAG.md" >/dev/null
+            echo "ok: $topology"
+          done
+
+  forensics:
+    name: Forensic audit and known-corpus regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # The fixture corpora are the auditor's calibration. known_fake is full of
+      # stubs and tautological assertions on purpose; an auditor that passes it
+      # is broken, and the failure is silent unless something checks.
+      - name: Auditor rejects the known-fake corpus
+        shell: bash
+        run: |
+          # No `set -e` here: this step expects the command to fail, and the
+          # runner's default shell would abort on it before the check runs.
+          if python3 skills/work/scripts/forensic_audit.py \
+               --target-dir skills/work/fixtures/known_fake --strict --quiet; then
+            echo "FAIL: the forensic auditor passed a corpus of known-fake code."
+            exit 1
+          fi
+          echo "ok: the auditor rejected known_fake"
+
+      - name: Auditor accepts the known-good corpus
+        run: |
+          python3 skills/work/scripts/forensic_audit.py \
+            --target-dir skills/work/fixtures/known_good --strict --quiet
+
+      - name: Repository is clean under a strict audit
+        run: |
+          python3 skills/work/scripts/forensic_audit.py \
+            --target-dir . --strict --exclude 'fixtures/known_'
+
+  install:
+    name: Installer smoke test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # The installer is the one script every user runs and no test covers end
+      # to end. A syntax error in it is invisible until someone installs.
+      - name: Check the POSIX installer parses
+        if: runner.os != 'Windows'
+        run: bash -n scripts/install.sh
+
+      - name: Check the PowerShell installer parses
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/install.ps1), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { $errors | ForEach-Object { $_.Message }; exit 1 }
+          Write-Host "install.ps1 parses cleanly"
+
+      # On Windows this uses --copy: unprivileged symlink creation there
+      # depends on Developer Mode, and a failure would then report the runner's
+      # configuration rather than the repository's state.
+      - name: Sync a skill into a scratch project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mode=""
+          if [ "${RUNNER_OS}" = "Windows" ]; then mode="--copy"; fi
+          workdir="$(mktemp -d)"
+          # Without --fix this is a dry run that writes nothing. Both halves are
+          # worth pinning: the dry run must create nothing, and --fix must
+          # create something reachable.
+          python3 scripts/sync_skills.py --project "$workdir" --skills work
+          if [ -e "$workdir/.gemini/skills/work" ]; then
+            echo "FAIL: the dry run created $workdir/.gemini/skills/work"
+            exit 1
+          fi
+          python3 scripts/sync_skills.py --project "$workdir" --skills work --fix $mode
+          test -f "$workdir/.gemini/skills/work/SKILL.md" \
+            || { echo "sync_skills.py --fix wrote no SKILL.md under $workdir"; ls -R "$workdir"; exit 1; }

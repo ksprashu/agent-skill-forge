@@ -42,8 +42,23 @@ if sys.platform == "win32":
     if hasattr(sys.stderr, "buffer") and getattr(sys.stderr, "encoding", "").lower() != "utf-8":
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
-def scaffold_work(target_dir: str, project_name: str, milestones: int, topology: str = "full",
+#: Milestone count used when the caller does not name one. ``massive`` exists
+#: to decompose work that does not fit in three milestones; defaulting it to
+#: three made it indistinguishable from ``full``.
+DEFAULT_MILESTONES = {"massive": 8}
+FALLBACK_MILESTONES = 3
+
+
+def resolve_milestones(milestones, topology: str) -> int:
+    """Milestone count for a topology, honouring an explicit ``--milestones``."""
+    if milestones is not None:
+        return milestones
+    return DEFAULT_MILESTONES.get(topology, FALLBACK_MILESTONES)
+
+
+def scaffold_work(target_dir: str, project_name: str, milestones=None, topology: str = "full",
                   integrity: str = "development", lifecycle: bool = False):
+    milestones = resolve_milestones(milestones, topology)
     agents_dir = os.path.join(target_dir, ".agents")
     sentinel_dir = os.path.join(agents_dir, "sentinel")
     orchestrator_dir = os.path.join(agents_dir, "orchestrator")
@@ -473,7 +488,7 @@ flowchart TD
 [Guaranteed edge case handling, locking strategies, and security gates]
 
 ## 4. Trade-Off Resolutions & User Decisions
-[Record resolutions of user decision cards and arbiter scorecards]
+[Record resolutions of user decision cards and arbiter evidence reports]
 
 ## 5. Validation Spike & Implementation Milestones
 [Summary of validation spikes executed and target milestone breakdown]
@@ -664,7 +679,7 @@ graph TD
                 "| `task_spec_grill` | Socratic Spec Grilling | series | none | .agents/ORIGINAL_REQUEST.md | .agents/SPEC.md | spec_approved | PENDING |",
                 "| `task_design_alpha` | Architecture Proposal Alpha | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_alpha.md | design_pass | BLOCKED |",
                 "| `task_design_beta` | Architecture Proposal Beta | parallel | task_spec_grill | .agents/SPEC.md | .agents/design/proposals/proposal_beta.md | design_pass | BLOCKED |",
-                "| `task_design_arbiter` | Design Arbiter & User Decision Gate | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_scorecard.md | arbiter_pass | BLOCKED |",
+                "| `task_design_arbiter` | Design Arbiter & User Decision Gate | series | task_design_alpha, task_design_beta | .agents/design/proposals/proposal_alpha.md, .agents/design/proposals/proposal_beta.md | .agents/design/DESIGN.md, .agents/design/arbiter_evidence.md | arbiter_pass | BLOCKED |",
                 "| `task_validation_spike` | Prototyping & Feasibility Spike | series | task_design_arbiter | .agents/design/DESIGN.md | .agents/design/spike_results.md | spike_pass | BLOCKED |",
             ]
 
@@ -747,24 +762,67 @@ graph TD
 {table_rows}
 """
         else:
-            # Multi-milestone swarm DAG (standard backward-compatible full topology)
+            # Multi-milestone swarm DAG, shared by the full, massive and proof
+            # topologies. They differ in exactly two ways, and nothing else:
+            #   full    — one committee node per milestone.
+            #   massive — same shape, more milestones by default.
+            #   proof   — the committee is split into three separately gated
+            #             verifiers, and a validation spike runs before any
+            #             milestone starts. More nodes, more independent gates,
+            #             for work where a single committee verdict is too
+            #             coarse to trust.
+            # Until 2026-09-23 all three emitted byte-identical DAGs, so two of
+            # the six advertised topologies were names with nothing behind them.
+            split_committee = (topology == "proof")
+
             m_tasks = []
             m_nodes = ['  task_m0_survey["task_m0_survey<br/>[parallel] <b>PENDING</b>"]:::status-pending']
             m_edges = []
             prev_dep = "task_m0_survey"
             prev_out = ".agents/survey/handoff.md"
 
+            if split_committee:
+                s_id = "task_validation_spike"
+                m_nodes.append(f'  {s_id}["{s_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
+                m_edges.append(f"  {prev_dep} --> {s_id}")
+                m_tasks.append(f"| `{s_id}` | Validation Spike | series | {prev_dep} | {prev_out} | .agents/design/spike_results.md | spike_pass | BLOCKED |")
+                prev_dep = s_id
+                prev_out = ".agents/design/spike_results.md"
+
             for i in range(1, milestones + 1):
                 w_id = f"task_m{i}_worker"
-                c_id = f"task_m{i}_committee"
                 m_nodes.append(f'  {w_id}["{w_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
-                m_nodes.append(f'  {c_id}["{c_id}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked')
                 m_edges.append(f"  {prev_dep} --> {w_id}")
-                m_edges.append(f"  {w_id} --> {c_id}")
                 m_tasks.append(f"| `{w_id}` | Milestone {i} Worker | series | {prev_dep} | {prev_out} | src/, tests/, .agents/m{i}_worker/handoff.md | exit_0 | BLOCKED |")
-                m_tasks.append(f"| `{c_id}` | Milestone {i} Committee | parallel | {w_id} | src/, tests/, .agents/m{i}_worker/handoff.md | .agents/m{i}_committee/review.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |")
-                prev_dep = c_id
-                prev_out = f".agents/m{i}_committee/review.md"
+
+                if split_committee:
+                    verifiers = [
+                        (f"task_m{i}_code_rev", f"Milestone {i} 5-Axis Code Review",
+                         f".agents/m{i}_code_rev/review.md", "review_pass"),
+                        (f"task_m{i}_challenger", f"Milestone {i} Adversarial Challenger",
+                         f".agents/m{i}_challenger/handoff.md", "exit_0"),
+                        (f"task_m{i}_forensic", f"Milestone {i} Forensic Integrity Auditor",
+                         f".agents/m{i}_forensic/handoff.md, .agents/EVIDENCE.md", "zero_mock"),
+                    ]
+                    for v_node, v_name, v_out, v_gate in verifiers:
+                        m_nodes.append(f'  {v_node}["{v_node}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked')
+                        m_edges.append(f"  {w_id} --> {v_node}")
+                        m_tasks.append(f"| `{v_node}` | {v_name} | parallel | {w_id} | src/, tests/, .agents/m{i}_worker/handoff.md | {v_out} | {v_gate} | BLOCKED |")
+                    j_id = f"task_m{i}_join"
+                    joined = ", ".join(v[0] for v in verifiers)
+                    m_nodes.append(f'  {j_id}["{j_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
+                    for v_node, _, _, _ in verifiers:
+                        m_edges.append(f"  {v_node} --> {j_id}")
+                    m_tasks.append(f"| `{j_id}` | Milestone {i} Verification Join | series | {joined} | .agents/m{i}_code_rev/review.md, .agents/m{i}_challenger/handoff.md, .agents/m{i}_forensic/handoff.md | .agents/m{i}_join/verdict.md | committee_join | BLOCKED |")
+                    prev_dep = j_id
+                    prev_out = f".agents/m{i}_join/verdict.md"
+                else:
+                    c_id = f"task_m{i}_committee"
+                    m_nodes.append(f'  {c_id}["{c_id}<br/>[parallel] <b>BLOCKED</b>"]:::status-blocked')
+                    m_edges.append(f"  {w_id} --> {c_id}")
+                    m_tasks.append(f"| `{c_id}` | Milestone {i} Committee | parallel | {w_id} | src/, tests/, .agents/m{i}_worker/handoff.md | .agents/m{i}_committee/review.md, .agents/EVIDENCE.md | zero_mock | BLOCKED |")
+                    prev_dep = c_id
+                    prev_out = f".agents/m{i}_committee/review.md"
 
             v_id = "task_victory_auditor"
             m_nodes.append(f'  {v_id}["{v_id}<br/>[series] <b>BLOCKED</b>"]:::status-blocked')
@@ -918,9 +976,14 @@ def main():
     parser = argparse.ArgumentParser(description="Scaffold Work Swarm Project Layout")
     parser.add_argument("--project-dir", default=".", help="Root project workspace directory")
     parser.add_argument("--name", default="Project", help="Project name")
-    parser.add_argument("--milestones", type=int, default=3, help="Number of initial milestones")
+    parser.add_argument("--milestones", type=int, default=None,
+                        help="Number of initial milestones (default: 3, or 8 for --topology massive)")
     parser.add_argument("--topology", choices=["full", "focused", "review", "proof", "massive", "lifecycle"], default="full",
-                        help="Swarm topology to initialize")
+                        help="Swarm topology to initialize: lifecycle (spec grill through victory), "
+                             "full (survey, milestone workers, one committee each), "
+                             "proof (full plus a validation spike and three separately gated verifiers "
+                             "per milestone), massive (full at 8 milestones), "
+                             "focused (single bugfix plus committee), review (document review deck)")
     parser.add_argument("--integrity", choices=["development", "demo", "benchmark"], default="development",
                         help="Integrity mode enforcement")
     parser.add_argument("--lifecycle", action="store_true", help="Enable full lifecycle DAG (spec grill, parallel designs, spikes, acceptance review)")

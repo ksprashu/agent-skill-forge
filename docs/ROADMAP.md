@@ -71,4 +71,4 @@
 ## Architectural Decision Records (Living ADRs)
 Currently recorded architectural decisions in `.gemini/knowledge/ADRs/`:
 
-- **[ADR-001: Flat-File JSONL Storage for Session Memory Distillation](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/ADRs/ADR-001-flat_file_memory_store.md)** (`Accepted`)
+- **[ADR-001: Flat-File JSONL Storage for Session Memory Distillation](../.gemini/knowledge/ADRs/ADR-001-flat_file_memory_store.md)** (`Accepted`)

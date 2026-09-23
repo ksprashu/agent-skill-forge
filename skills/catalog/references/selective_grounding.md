@@ -82,7 +82,7 @@ OKF bundles are designed for complete cross-platform portability across major ag
 
 ### Portability Principles
 1. **Universal Workspace-Relative Paths**:
-   - Never use host-specific absolute paths (e.g. `file:///Users/username/...` or `C:\Users\...`).
+   - Never use host-specific absolute paths (e.g. `file:///Users/username/...` or `C:\Users\...`). <!-- host-path-ok -->
    - Use paths relative to the knowledge root (e.g. `scout/codebase_map.md`, `architecture/data_contracts.md`).
 2. **Deterministic Root Discovery**:
    - The verifier and scaffolder resolve targets in candidate priority: `--dir <explicit_path>` -> `.gemini/knowledge/` -> `.agents/knowledge/` -> `.claude/knowledge/`.

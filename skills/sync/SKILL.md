@@ -35,12 +35,22 @@ Maintain unified skill access across Antigravity, Claude Code, and Gemini CLI wi
 ## 💡 Concrete Example
 
 ### Bootstrapping Command Output
+Without `--fix` the command is a dry run and writes nothing:
 ```bash
 $ python3 scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization
 📦 Bootstrapping skills into project: .
-  [BOOTSTRAP] frontend-ui-engineering -> ./.gemini/skills/frontend-ui-engineering
-  [BOOTSTRAP] performance-optimization -> ./.gemini/skills/performance-optimization
-✅ 2 skills successfully bootstrapped into project scope.
+  [WOULD BOOTSTRAP] frontend-ui-engineering (preferred) -> ./.gemini/skills/frontend-ui-engineering  (dry run; re-run with --fix to create it)
+  [WOULD BOOTSTRAP] performance-optimization (preferred) -> ./.gemini/skills/performance-optimization  (dry run; re-run with --fix to create it)
+```
+
+Add `--fix` to actually create the entries:
+```bash
+$ python3 scripts/sync_skills.py --project . --skills frontend-ui-engineering,performance-optimization --fix
+📦 Bootstrapping skills into project: .
+  [BOOTSTRAP] frontend-ui-engineering (preferred) -> ./.gemini/skills/frontend-ui-engineering
+    -> Created entry to /path/to/agent-skill-forge/preferred/frontend-ui-engineering
+  [BOOTSTRAP] performance-optimization (preferred) -> ./.gemini/skills/performance-optimization
+    -> Created entry to /path/to/agent-skill-forge/preferred/performance-optimization
 ```
 
 ---

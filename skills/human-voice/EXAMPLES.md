@@ -22,7 +22,7 @@ The extractor implements regex-based security filters to make the generated refe
 
 ### Example C: Scrubbing Absolute Local Folders & API Credentials
 * **Raw Input**:
-  > "I have cloned the repo in /Users/developer/code/github/project. My GitHub Token is ghp_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8. Can you push the feature branch?"
+  > "I have cloned the repo in /Users/developer/code/github/project. My GitHub Token is ghp_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8. Can you push the feature branch?"  <!-- host-path-ok: sample raw input for redaction -->
 * **Scrubbed Output**:
   > "I have cloned the repo in /Users/`<USER_ID>`/code/github/project. My GitHub Token is `<REDACTED_GITHUB_TOKEN>`. Can you push the feature branch?"
 

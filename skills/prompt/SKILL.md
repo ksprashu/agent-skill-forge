@@ -65,11 +65,11 @@ flowchart TD
   1. **3-Subagent Scout Crawl**: Spawns parallel subagents (`TypeName: "research"`) for codebase indexing, web research, and docs scraping.
   2. **4D Task Analysis & Socratic Grill**: Evaluates Decomposability, Uncertainty, Adversarial Risk, and Verification Rigidity; clarifies gaps using `ask_question` (1 question at a time).
   3. **Staged Milestone & Living Blueprint Deck Assembly**: Generates a complete deck under `.gemini/prompts/<SHORT_ID>/`:
-     - `blueprint.json`: Machine-readable Living Blueprint, 4D task space metadata & milestone definitions (refer to **[Blueprint Engine](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/prompt/references/blueprint_engine.md)**).
-     - `task_graph.json`: Dynamic DAG mapping staged milestones, atomic task nodes, dependencies, adversarial attack vectors, and terminal E2E convergence gates (refer to **[DAG Orchestration](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/prompt/references/dag_orchestration.md)**).
+     - `blueprint.json`: Machine-readable Living Blueprint, 4D task space metadata & milestone definitions (refer to **[Blueprint Engine](references/blueprint_engine.md)**).
+     - `task_graph.json`: Dynamic DAG mapping staged milestones, atomic task nodes, dependencies, adversarial attack vectors, and terminal E2E convergence gates (refer to **[DAG Orchestration](references/dag_orchestration.md)**).
      - `orchestrator.md`: Directives for the **Pure Manager Thread** and dialectical arbiter.
      - `tasks/task_01_<name>.md`, `tasks/task_02_<name>.md`: Atomic **Intent Directives** specifying goals, requirements, constraints, and acceptance criteria.
-     - `tasks/task_XX_challenger.md`, `tasks/task_XX_forensic.md`: Dedicated directives for the Adversarial Quartet (refer to **[Adversarial Roles](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/prompt/references/adversarial_roles.md)**).
+     - `tasks/task_XX_challenger.md`, `tasks/task_XX_forensic.md`: Dedicated directives for the Adversarial Quartet (refer to **[Adversarial Roles](references/adversarial_roles.md)**).
      - `tasks/task_final_e2e_convergence.md`: Dedicated terminal milestone prompt for full-stack assembly, cross-module user journeys, and holistic Sentinel verification.
   4. **User Approval & Execution Hook**: Saves `rewritten_prompt_<SHORT_ID>.md` with an interactive summary diagram and a **"Proceed"** execution button.
 
@@ -164,7 +164,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
 ### 1. 🎓 The Scout Stage (Short ID Generation, AGY Capability Discovery & Parallel Crawl)
 *   **Generate Short ID**: Generate unique `SHORT_ID` (e.g., `PRMT-8F21`). If this is a revision, capture `PARENT_SHORT_ID`.
 *   **Antigravity Native Capability Grounding**: Consult the built-in **[Antigravity Guide Skill](file://$HOME/.gemini/antigravity/builtin/skills/antigravity_guide/SKILL.md)** and its subdocs to discover native AGY features (`/goal`, `/schedule`, `/grill-me`, `/browser`, `/learn`, `/teamwork-preview`, artifacts, workspace isolation).
-*   **Initialize State & Registry**: Create or hydrate `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md`, `.gemini/tasks/<SHORT_ID>/prompt_writer_journal.json`, sync `.gemini/prompts/registry.json`, and scaffold `.gemini/knowledge/<SHORT_ID>/` following **[Catalog](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/catalog/SKILL.md)**.
+*   **Initialize State & Registry**: Create or hydrate `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md`, `.gemini/tasks/<SHORT_ID>/prompt_writer_journal.json`, sync `.gemini/prompts/registry.json`, and scaffold `.gemini/knowledge/<SHORT_ID>/` following **[Catalog](../catalog/SKILL.md)**.
 *   **MANDATORY Parallel Subagent Scout Crawl (`invoke_subagent`)**: Launch the 3 specialized background subagents concurrently using `invoke_subagent` (Codebase Scout, Web Intelligence Analyst, Docs Crawler).
 *   **Update State**: Check off "Scout Stage" in `.gemini/tasks/<SHORT_ID>/prompt_writer_task.md` upon receiving completion messages.
 
@@ -176,7 +176,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
     2. *Uncertainty & Novelty* (Known API vs. Experimental Research)
     3. *Adversarial Risk* (Standard logic vs. High-risk security/concurrency)
     4. *Verification Rigidity* (Subjective vs. Deterministic byte/proof checks)
-*   **Data Contracts Construction**: Formulate formal specifications, API contracts, and BDD scenarios following **[Spec Custom Skill](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/spec/SKILL.md)** and save to `.gemini/knowledge/<SHORT_ID>/architecture/data_contracts.md`.
+*   **Data Contracts Construction**: Formulate formal specifications, API contracts, and BDD scenarios following **[Spec Custom Skill](../spec/SKILL.md)** and save to `.gemini/knowledge/<SHORT_ID>/architecture/data_contracts.md`.
 *   **The Grilling Discipline & Tool Selection**: Establish a stateful, iterative Socratic grilling session proposing questions strictly **one at a time**:
     *   **Structured Question Tool (`ask_question`)**: For well-defined architectural, design, or skill selection choices.
     *   **Fluid Chat Dialogue**: For open-ended brainstorming and exploring high-level user intent.
@@ -191,7 +191,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
     - `Milestone Final`: **Full-Stack Assembly, End-to-End (E2E) Integration Testing & Holistic Sentinel Sign-off** (`task_final_e2e_convergence`).
 *   **Construct the Dynamic Task Graph (`task_graph.json`)**:
     - Identify logical atomic task units, milestone mappings (`milestone_id`), dependencies, subagent roles (`subagent_role`), valid Antigravity `TypeName`s (`"self"` for code-generating workers in `Workspace: "branch"`, `"research"` for read-only scouts/auditors in `Workspace: "share"`), and blocking `verification_gate` criteria.
-    - **Adversarial Matrix Definition**: Assign specific **Challenger** attack vectors (e.g. fuzzing, race conditions, memory leaks) to every implementation node (refer to **[Adversarial Roles](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/prompt/references/adversarial_roles.md)**).
+    - **Adversarial Matrix Definition**: Assign specific **Challenger** attack vectors (e.g. fuzzing, race conditions, memory leaks) to every implementation node (refer to **[Adversarial Roles](references/adversarial_roles.md)**).
     - **Terminal E2E Convergence Gate**: Inject the mandatory terminal node (`task_final_e2e_convergence`) requiring full cross-module integration test passes, complete user journey verification, and `validate_evidence.py` execution before project completion.
 *   **Dialectical Evolution Protocol**: Configure `orchestrator.md` so the Manager dispatches a **Synthesizer / Arbiter** when friction or breach occurs, dynamically appending remediation nodes to the active milestone in `task_graph.json` (capped at `MAX_MUTATIONS = 4`).
 

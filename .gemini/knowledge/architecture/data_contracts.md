@@ -2,7 +2,7 @@
 type: "Data Contract"
 title: "Agent Skill Data Contracts & Frontmatter Schemas"
 description: "Formal specification of SKILL.md YAML frontmatter schemas, invocation modes, subfolder boundaries, and metadata contracts."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/docs/skill_authoring_guide.md"
+resource: "../../../docs/skill_authoring_guide.md"
 tags: ["architecture", "data-contracts", "schema", "frontmatter", "specification"]
 ---
 

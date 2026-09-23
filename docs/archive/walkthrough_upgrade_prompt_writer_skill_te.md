@@ -11,7 +11,7 @@ We upgraded the `prompt-writer` skill (located in `skills/prompt/` and globally 
 ## Changes Implemented
 
 ### 1. Dynamic Mode & Scout Orchestration Upgrade
-**File**: [`skills/prompt/SKILL.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/SKILL.md)
+**File**: [`skills/prompt/SKILL.md`](../../skills/prompt/SKILL.md)
 - **Clarified Dual-Mode Scope**:
   - `Lightweight Mode` produces a concise rewritten prompt file (`prompt.md` / `rewritten_prompt_<ID>.md`) and does NOT attempt direct, premature file edits on the workspace.
 - **Mandatory Scout Subagents**:
@@ -48,7 +48,7 @@ We upgraded the `prompt-writer` skill (located in `skills/prompt/` and globally 
 ---
 
 ### 2. Prompt Template & Native Orchestration Replacement
-**File**: [`skills/prompt/references/template.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/template.md)
+**File**: [`skills/prompt/references/template.md`](../../skills/prompt/references/template.md)
 - **Eliminated Legacy Offline Python SDK Script**:
   - Removed lines referencing `import asyncio`, `from google.antigravity import Agent`, and `execute_pipeline.py` which previously misled executing agents into writing Python scripts or executing checklists sequentially.
 - **Added Native Antigravity Subagent Directives**:
@@ -57,7 +57,7 @@ We upgraded the `prompt-writer` skill (located in `skills/prompt/` and globally 
 ---
 
 ### 3. DAG Schema & Pure Orchestrator Reference Alignment
-**File**: [`skills/prompt/references/dag_orchestration.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/dag_orchestration.md)
+**File**: [`skills/prompt/references/dag_orchestration.md`](../../skills/prompt/references/dag_orchestration.md)
 - **Type Name Precision**:
   - Explicitly added `type_name: "research"` for read-only sentry/scout nodes and `type_name: "self"` for code-generating worker nodes in `task_graph.json` schema definitions.
 - **Zero Inline Code-Editing on Main Thread**:
@@ -67,9 +67,9 @@ We upgraded the `prompt-writer` skill (located in `skills/prompt/` and globally 
 
 ### 4. Subagent System Prompts Alignment
 **Files**:
-- [`skills/prompt/references/subagents/codebase_scout.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/codebase_scout.md)
-- [`skills/prompt/references/subagents/docs_crawler.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/docs_crawler.md)
-- [`skills/prompt/references/subagents/web_intelligence_analyst.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/web_intelligence_analyst.md)
+- [`skills/prompt/references/subagents/codebase_scout.md`](../../skills/prompt/references/subagents/codebase_scout.md)
+- [`skills/prompt/references/subagents/docs_crawler.md`](../../skills/prompt/references/subagents/docs_crawler.md)
+- [`skills/prompt/references/subagents/web_intelligence_analyst.md`](../../skills/prompt/references/subagents/web_intelligence_analyst.md)
 
 - Added native Antigravity configuration headers (`TypeName: "research"`, `Workspace: "share"`).
 
@@ -80,6 +80,6 @@ We upgraded the `prompt-writer` skill (located in `skills/prompt/` and globally 
 1. **Git Diff Audit**:
    - Verified that all diffs in `skills/prompt/` cleanly target instructions, templates, and schemas without introducing syntax or markdown formatting errors.
 2. **Global Symlink Verification**:
-   - Confirmed that `/Users/ksprashanth/.gemini/config/skills/prompt-writer/SKILL.md` immediately reflects the updated instructions and schema definitions.
+   - Confirmed that `~/.gemini/config/skills/prompt-writer/SKILL.md` immediately reflects the updated instructions and schema definitions.
 3. **Documentation Suite Compilation**:
    - Executed `compile_html_docs.py` to compile the project's documentation suite into production-ready HTML files. All documentation chapters compiled cleanly with zero tag imbalances.

@@ -145,7 +145,7 @@ The 19 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | :--- | :--- | :--- | :--- |
 | **[`spec`](./skills/spec)** | `/spec` | Autonomous | **Grounded Specifications**: Writes specifications with official documentation citations, interface contracts, and explicit non-goals before coding. Prevents API hallucinations and scope creep. |
 | **[`plan`](./skills/plan)** | `/plan` | Autonomous | **Task Slicing & Dependency DAGs**: Slices complex features or refactors into small, vertically testable tasks with verifiable checkpoints. Ensures incremental progress and rollback points. |
-| **[`work`](./skills/work)** | `/work` | User Slash | **Autonomous Multi-Agent Swarm Engine**: Coordinates parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. |
+| **[`work`](./skills/work)** | `/work` | User Slash | **Autonomous Multi-Agent Swarm Engine**: Coordinates parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. Six scaffold topologies, a DAG whose gates are settled by a script rather than by the agent's own say-so, and a forensic auditor calibrated against a known-fake corpus. |
 | **[`grill`](./skills/grill)** | `/grill` | User Slash | **Socratic Requirements Interview**: 1-question Socratic interview with attached technical hypotheses to clarify requirements and tradeoffs until 95% confident. Eliminates hidden assumptions. |
 | **[`prompt`](./skills/prompt)** | `/prompt` | User Slash | **Meta-Task & Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into intent directives, model tier selection, and DAG task graphs (`task_graph.json`). |
 
@@ -312,6 +312,46 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 
 ---
 
+## ✅ How This Repo Checks Itself
+
+A skill that tells an agent to verify its work is a suggestion. A script that
+exits non-zero is a fact. Everything in this section is the second kind, and
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs all of it on every
+pull request — so the checks that used to be skipped are the ones that now
+block.
+
+| Command | What it settles |
+| :--- | :--- |
+| `python3 -m pytest -q` | 655 tests across `skills/`, `tests/` and `tests/e2e/` |
+| `python3 scripts/validate_skills.py` | Frontmatter, reserved-namespace collisions, author PII, absolute host paths |
+| `python3 scripts/check_stdlib_only.py` | No third-party import reaches a script that runs inside a harness |
+| `python3 skills/work/scripts/gate_executor.py list` | Every gate a topology can emit has a predicate behind it |
+| `python3 skills/work/scripts/dag_validator.py --check-mermaid <dag>` | The table and the rendered diagram agree |
+| `python3 skills/work/scripts/forensic_audit.py --target-dir . --strict --exclude 'fixtures/known_'` | Stubs, tautological assertions, and mocked "passes" |
+| `python3 skills/work/scripts/autowire.py --check` | Every skill the autowiring matrix names exists on disk |
+
+Two rules hold throughout, and they are the reason the above is short:
+
+**Scripts collect evidence; models make judgements.** A script counts, quotes,
+measures, and executes. It never scores, bands, or concludes. `arbiter_eval.py`
+emits per-candidate evidence and the model picks a winner — because a script
+that awards 95/100 to the worse implementation is confidently wrong in a format
+that looks authoritative.
+
+**Gates fail closed.** A gate is `mechanical` (a script settles it now),
+`attested` (a judgement, where the script validates only the *form* of the
+attestation), or `trivial`. An unknown gate name is an error, not a pass.
+
+`skills/work/fixtures/known_fake` is a corpus of deliberately fake code and
+`known_good` is its honest twin. CI asserts the auditor rejects the first and
+accepts the second. It is the test that the tests work.
+
+📖 **[docs/ENGINEERING_STANDARD.md](docs/ENGINEERING_STANDARD.md)** — the
+enforcement ladder, the evidence/judgement split, and the recipe for adding a
+gate without adding theatre.
+
+---
+
 ## 📁 Monorepo Structure
 
 ```
@@ -331,8 +371,18 @@ agent-skill-forge/
 │   ├── install.sh              # 1-liner installer
 │   ├── fetch_upstream.py       # Pinned upstream resolver / verifier / upgrader
 │   ├── sync_skills.py          # Symlink manager & JIT bootstrapper
-│   └── validate_skills.py      # Frontmatter linter & PII scanner
+│   ├── validate_skills.py      # Frontmatter linter & PII scanner
+│   └── check_stdlib_only.py    # Engine scripts must run on a bare interpreter
+├── skills/work/                # The parallel-subagent engine
+│   ├── scripts/                # scaffold · dag_validator · gate_executor
+│   │                           # forensic_audit · arbiter_eval · autowire
+│   ├── fixtures/               # known_good / known_fake auditor calibration
+│   └── tests/                  # Engine suite (pytest)
+├── tests/                      # Repo-level suites (PII, host paths, installer)
+├── pytest.ini                  # Test discovery across both trees
+├── .github/workflows/ci.yml    # The only L4: what blocks a merge
 ├── docs/                       # Full Documentation Suite & Stitch Portals
+│   ├── ENGINEERING_STANDARD.md # How verification is built here, and why
 │   ├── harness_capabilities.md # Native skills per harness + canonical usage
 │   └── skill_authoring_guide.md# Official Skill Authoring Guide
 ├── .gemini/knowledge/          # Google OKF Knowledge Bundle
