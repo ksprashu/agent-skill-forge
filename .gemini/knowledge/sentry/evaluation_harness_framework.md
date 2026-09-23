@@ -2,7 +2,7 @@
 type: "Evaluation Framework"
 title: "3-Tier Agent Skill Evaluation Harness"
 description: "Architectural design of the 3-tier testing framework for agent skills: structural linting, trigger/routing evaluation, and behavioral trace grading."
-resource: "file:///Users/ksprashanth/code/github/agent-skills/evals/README.md"
+resource: "../agent-skills/evals/README.md"
 tags: ["sentry", "evals", "testing", "benchmarks", "verification", "ci-cd"]
 ---
 

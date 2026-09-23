@@ -25,7 +25,7 @@ The Sentinel serves as the executive watchdog, user liaison, and integrity ancho
 ├── design/
 │   ├── proposals/          # Competing architectural design proposals (Alpha, Beta)
 │   ├── DESIGN.md           # Authoritative synthesized technical design doc
-│   ├── arbiter_scorecard.md# Automated design evaluation scorecard
+│   ├── arbiter_evidence.md # Collected facts about each proposal (no score)
 │   ├── what_if_simulator.html # Interactive Canvas 2D Generative UI trade-off simulator
 │   └── spike_results.md    # Feasibility spike benchmarks and empirical test results
 └── sentinel/
@@ -60,18 +60,21 @@ The Sentinel serves as the executive watchdog, user liaison, and integrity ancho
 
 ---
 
-### Stage 2: Parallel Design Proposals & Arbiter Scoring
+### Stage 2: Parallel Design Proposals & Arbiter Evidence
 1. **Dispatch Parallel Design Architects**:
    - Orchestrator dispatches `Design Architect Alpha` and `Design Architect Beta` concurrently to author distinct architectural approaches in `.agents/design/proposals/proposal_alpha.md` and `proposal_beta.md`.
-   - Both proposals must author the 3 mandatory Mermaid diagrams per [Visual Production Guide](file:///c:/Users/kspra/code/github/agent-skill-forge/skills/work/references/visual_production_guide.md):
+   - Both proposals must author the 3 mandatory Mermaid diagrams per [Visual Production Guide](../references/visual_production_guide.md):
      1. High-Level System Architecture (`flowchart TD`)
      2. C4 Level 2/3 Component Block Diagram (`graph TD` with quoted node labels)
      3. Lifecycle Sequence Diagram (`sequenceDiagram` with `autonumber`).
-2. **Automated Arbiter Scoring**:
-   - Run the design evaluation engine:
+2. **Arbiter Evidence Collection**:
+   - Collect the structural facts about both proposals:
      ```bash
-     python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-scorecard .agents/design/arbiter_scorecard.md
+     python3.12 skills/work/scripts/arbiter_eval.py --design-alpha .agents/design/proposals/proposal_alpha.md --design-beta .agents/design/proposals/proposal_beta.md --output-report .agents/design/arbiter_evidence.md
      ```
+   - The script does not score or rank. Its verdict on design proposals is
+     always `JUDGEMENT_REQUIRED`; the Arbiter agent reads both documents and
+     the evidence and decides. See [Competitive Branching](competitive_branching.md) § Tier 1.
 
 ---
 

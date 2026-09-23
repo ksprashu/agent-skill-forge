@@ -2,7 +2,7 @@
 type: "Compliance Spec"
 title: "Open Source Compliance & License Header Standard"
 description: "Apache-2.0 licensing policies, SPDX copyright headers, repository hygiene, and Google OSS compliance automation."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/skills/google-oss/SKILL.md"
+resource: "../../../skills/google-oss/SKILL.md"
 tags: ["sentry", "compliance", "oss", "apache-2.0", "license-headers", "spdx"]
 ---
 

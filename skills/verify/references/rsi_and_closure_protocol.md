@@ -6,7 +6,7 @@ This document defines the formal specification for **Phase 3 (Domain-Aware Full 
 
 ## 🔒 Phase 3: Domain-Aware Full Closure Engine (`ega_closure_engine.py`)
 
-When all DAG nodes in `task_graph.json` pass the Dual-Verification Gate (Static Verifier + Blinded Dynamic Judge), `ega_loop_runner.py` automatically invokes [ega_closure_engine.py](file:///Users/ksprashanth/code/github/skills-expectation-harness/skills/expectation-harness/scripts/ega_closure_engine.py).
+When all DAG nodes in `task_graph.json` pass the Dual-Verification Gate (Static Verifier + Blinded Dynamic Judge), `ega_loop_runner.py` automatically invokes `scripts/ega_closure_engine.py`.
 
 ### Domain Closure Matrix
 
@@ -55,13 +55,13 @@ flowchart TD
 
 - **Run Full Control Loop + Closure + RSI**:
   ```bash
-  python3 /Users/ksprashanth/code/github/skills-expectation-harness/skills/expectation-harness/scripts/ega_loop_runner.py <SHORT_ID>
+  python3 ${VERIFY_SKILL_DIR}/scripts/ega_loop_runner.py <SHORT_ID>
   ```
 - **Manual Domain Closure Trigger**:
   ```bash
-  python3 /Users/ksprashanth/code/github/skills-expectation-harness/skills/expectation-harness/scripts/ega_closure_engine.py .gemini/harness/<SHORT_ID>
+  python3 ${VERIFY_SKILL_DIR}/scripts/ega_closure_engine.py .gemini/harness/<SHORT_ID>
   ```
 - **Manual RSI Dream Sequence Trigger**:
   ```bash
-  python3 /Users/ksprashanth/code/github/skills-expectation-harness/skills/expectation-harness/scripts/rsi_dream_engine.py .gemini/harness/<SHORT_ID>
+  python3 ${VERIFY_SKILL_DIR}/scripts/rsi_dream_engine.py .gemini/harness/<SHORT_ID>
   ```

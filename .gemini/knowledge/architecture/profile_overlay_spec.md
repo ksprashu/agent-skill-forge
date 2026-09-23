@@ -2,7 +2,7 @@
 type: "Architecture Spec"
 title: "3-Tier Profile-Overlay Personalization Engine"
 description: "Specification for hierarchical persona resolution across gitignored local overrides, user home profiles, and sanitized templates."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/skills/copy-write/SKILL.md"
+resource: "../../../skills/copy-write/SKILL.md"
 tags: ["architecture", "profile-overlay", "personalization", "security", "pii-isolation"]
 ---
 

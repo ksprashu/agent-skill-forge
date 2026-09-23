@@ -2,7 +2,7 @@
 type: "Codebase Map"
 title: "Agent Skill Forge Repository Topology"
 description: "Directory hierarchy, structural layout, and subsystem boundaries of the Agent Skill Forge monorepo."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/README.md"
+resource: "../../../README.md"
 tags: ["scout", "topology", "monorepo", "skills", "layout"]
 ---
 

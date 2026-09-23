@@ -38,6 +38,7 @@ def get_tool_paths():
 
     return {
         "antigravity-cli": os.path.join(HOME, ".gemini", "antigravity-cli", "brain"),
+        "antigravity-ide": os.path.join(HOME, ".gemini", "antigravity", "brain"),
         "gemini-cli": os.path.join(HOME, ".gemini", "tmp"),
         "claude-code": os.path.join(HOME, ".claude", "projects"),
         "cline": os.path.join(app_support, "Code", "User", "globalStorage", "saoudrizwan.claude-dev", "tasks"),
@@ -69,8 +70,8 @@ PII_PATTERNS = [
 _current_system_user = getpass.getuser()
 NAME_PATTERNS = [
     (r'\b' + re.escape(_current_system_user) + r'\b', '<USER_ID>'),
-    (r'/Users/' + re.escape(_current_system_user), '/Users/<USER_ID>'),
-    (r'/home/' + re.escape(_current_system_user), '/home/<USER_ID>'),
+    (r'/Users/' + re.escape(_current_system_user), '/Users/<USER_ID>'),  # host-path-ok
+    (r'/home/' + re.escape(_current_system_user), '/home/<USER_ID>'),  # host-path-ok
 ]
 
 CRITIQUE_KEYWORDS = [
@@ -103,28 +104,33 @@ def sanitize_text(text, extra_names=None):
         
     return text
 
-def extract_antigravity_cli(extra_names=None):
-    """Extracts from Antigravity CLI transcript.jsonl files."""
+def extract_antigravity(extra_names=None):
+    """Extracts from Antigravity IDE and CLI transcript.jsonl files."""
     prompts = []
-    base_dir = PATHS["antigravity-cli"]
-    if not os.path.exists(base_dir):
-        return prompts
-
-    # Search recursively for transcript.jsonl
-    log_files = glob.glob(os.path.join(base_dir, "**", "transcript.jsonl"), recursive=True)
-    for log_file in log_files:
-        try:
-            with open(log_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    data = json.loads(line)
-                    # Extract from PLANNER_RESPONSE or user interactions
-                    if data.get("type") == "USER_INPUT" and data.get("content"):
-                        prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-                    elif data.get("source") == "USER_EXPLICIT" and data.get("content"):
-                        prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-        except Exception:
+    dirs_to_check = [PATHS.get("antigravity-ide"), PATHS.get("antigravity-cli")]
+    for base_dir in dirs_to_check:
+        if not base_dir or not os.path.exists(base_dir):
             continue
+
+        # Traverse all directories including hidden (.system_generated)
+        for root, _, files in os.walk(base_dir):
+            if "transcript.jsonl" in files:
+                log_file = os.path.join(root, "transcript.jsonl")
+                try:
+                    with open(log_file, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            data = json.loads(line)
+                            # Extract from PLANNER_RESPONSE or user interactions
+                            if data.get("type") == "USER_INPUT" and data.get("content"):
+                                prompts.append(sanitize_text(data["content"], extra_names=extra_names))
+                            elif data.get("source") == "USER_EXPLICIT" and data.get("content"):
+                                prompts.append(sanitize_text(data["content"], extra_names=extra_names))
+                except Exception:
+                    continue
     return prompts
+
+def extract_antigravity_cli(extra_names=None):
+    return extract_antigravity(extra_names=extra_names)
 
 def extract_gemini_cli(extra_names=None):
     """Extracts from gemini-cli session JSONL files."""
@@ -335,6 +341,7 @@ def write_canonical_files(prompts, stats, output_dir):
     
     # Create voice_and_tone.md
     voice_file = os.path.join(output_dir, "voice_and_tone.md")
+    spelling_examples = "*customisation*, *optimise*, *prioritise*" if stats["spelling"] == "British/Commonwealth" else "*customization*, *optimize*, *prioritize*"
     with open(voice_file, 'w', encoding='utf-8') as f:
         f.write(f"""# Voice and Tone Guidelines: <USER_NICKNAME> Persona
 
@@ -351,7 +358,7 @@ This persona is modeled directly from historical interactions across different A
 * Rejects boilerplate prose or excessive "let's do this!" marketing introductions.
 
 ### Typographical Authenticity
-* **Spelling**: Prefers **{stats["spelling"]}** conventions (e.g., *customisation*, *optimise*, *prioritise*).
+* **Spelling**: Prefers **{stats["spelling"]}** conventions (e.g., {spelling_examples}).
 * **Speed-Typing Shorthand**: Frequently features natural speed-typing shortcuts like *teh* (the), *anyting* (anything), *deplouyed* (deployed) as authentic live-terminal markings.
 * **Dialogue Markers**: Uses conversational check-ins like *"Hello... what's happening here? You were hung."* or *"Is the backend also running?"*.
 
@@ -426,7 +433,7 @@ def main():
     parser = argparse.ArgumentParser(description="Extract human writing voice and tone from local AI coding tool logs.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose diagnostic output")
     parser.add_argument("-o", "--output-dir", type=str, default=None, help="Custom output directory path for generated files")
-    parser.add_argument("-t", "--tool", type=str, default="all", choices=["all", "antigravity-cli", "gemini-cli", "claude-code", "cline", "roo-code", "aider", "cursor"], help="Target a specific AI coding tool for extraction")
+    parser.add_argument("-t", "--tool", type=str, default="all", choices=["all", "antigravity", "antigravity-ide", "antigravity-cli", "gemini-cli", "claude-code", "cline", "roo-code", "aider", "cursor"], help="Target a specific AI coding tool for extraction")
     parser.add_argument("-u", "--user-name", type=str, default=None, help="Custom user name to scrub from prompts")
     parser.add_argument("-n", "--user-nickname", type=str, default=None, help="Custom user nickname to scrub from prompts")
     args = parser.parse_args()
@@ -449,11 +456,11 @@ def main():
     all_prompts = []
     target_tool = args.tool.lower()
     
-    # 1. Antigravity CLI
-    if target_tool in ["all", "antigravity-cli"]:
-        print("Checking Antigravity CLI files...")
-        ag_prompts = extract_antigravity_cli(extra_names=extra_names)
-        print(f"-> Extracted {len(ag_prompts)} prompts from Antigravity CLI.")
+    # 1. Antigravity IDE & CLI
+    if target_tool in ["all", "antigravity", "antigravity-ide", "antigravity-cli"]:
+        print("Checking Antigravity IDE & CLI files...")
+        ag_prompts = extract_antigravity(extra_names=extra_names)
+        print(f"-> Extracted {len(ag_prompts)} prompts from Antigravity.")
         all_prompts.extend(ag_prompts)
     
     # 2. Gemini CLI

@@ -78,6 +78,25 @@ def run_validator(
     return proc.returncode, proc.stdout, proc.stderr
 
 
+GATE_BYPASS_REASON = (
+    "E2E fixture: this suite exercises DAG bookkeeping — status cells, Mermaid "
+    "synchronisation, ready-frontier evolution — on fixtures that carry no "
+    "evidence and no attestations. Gate semantics are covered by "
+    "skills/work/tests/test_gate_executor.py, which is where a regression in "
+    "enforcement will surface."
+)
+
+
+def run_validator_forced(args: list[str], **kwargs) -> tuple[int, str, str]:
+    """``run_validator`` for writes that deliberately bypass gate enforcement.
+
+    Every PASSED transition in this file goes through here, so the bypass is
+    visible at each call site instead of being a default nobody notices.
+    """
+    return run_validator(args + ["--force-status", "--reason", GATE_BYPASS_REASON],
+                         **kwargs)
+
+
 class BaseE2ETestCase(unittest.TestCase):
     """Base test case providing fixture helpers and CLI assertion utilities."""
 
@@ -484,7 +503,7 @@ class Tier1FeatureCoverageTests(BaseE2ETestCase):
         """Verify --update-file updates the existing Mermaid block in-place without duplicate blocks."""
         fixture = self.copy_fixture("focused_bugfix_dag.md")
         # Update status and sync mermaid
-        code, out, err = run_validator([
+        code, out, err = run_validator_forced([
             str(fixture),
             "--set-status", "task_reviewer=PASSED",
             "--update-file",
@@ -746,7 +765,7 @@ class Tier2BoundaryCornerCaseTests(BaseE2ETestCase):
         content = """# Absolute Path Leak DAG
 | ID | Task Name | Mode | Depends On | Inputs | Outputs | Gate | Status |
 |---|---|---|---|---|---|---|---|
-| T1 | Leaked Path Task | series | none | C:\\Users\\Admin\\secret.key | /etc/passwd | exit_0 | PASSED |
+| T1 | Leaked Path Task | series | none | C:\\Users\\Admin\\secret.key | /etc/passwd | exit_0 | PASSED |  <!-- host-path-ok: fixture asserting rejection -->
 """
         dag_file = self.write_temp_dag(content)
         code, out, err = run_validator([str(dag_file)])
@@ -954,7 +973,7 @@ class Tier3CrossFeatureCombinationTests(BaseE2ETestCase):
         """Verify background watchdog does not block milestone gate evaluation."""
         fixture = self.copy_fixture("async_watchdog_dag.md")
         # task_worker set to PASSED -> task_gate should now enter ready frontier even though watchdog is RUNNING
-        code, out, err = run_validator([
+        code, out, err = run_validator_forced([
             str(fixture),
             "--set-status", "task_worker=PASSED",
             "--update-file",
@@ -1001,7 +1020,7 @@ class Tier3CrossFeatureCombinationTests(BaseE2ETestCase):
     def test_T3_6_combo_inplace_status_update_mermaid_sync(self):
         """Verify --set-status and --update-file updates table cell and Mermaid CSS simultaneously."""
         fixture = self.copy_fixture("focused_bugfix_dag.md")
-        code, out, err = run_validator([
+        code, out, err = run_validator_forced([
             str(fixture),
             "--set-status", "task_reviewer=PASSED",
             "--set-status", "task_challenger=PASSED",
@@ -1041,14 +1060,14 @@ class Tier3CrossFeatureCombinationTests(BaseE2ETestCase):
         self.assertNotIn("T4", out)
 
         # Turn 2: Mark T2 as PASSED -> T3 still PENDING -> Frontier = [T3]
-        run_validator([str(fixture), "--set-status", "T2=PASSED", "--update-file"])
+        run_validator_forced([str(fixture), "--set-status", "T2=PASSED", "--update-file"])
         code, out, _ = run_validator([str(fixture), "--ready-frontier"])
         self.assertNotIn("T2", out)
         self.assertIn("T3", out)
         self.assertNotIn("T4", out)
 
         # Turn 3: Mark T3 as PASSED -> T4 becomes unblocked -> Frontier = [T4]
-        run_validator([str(fixture), "--set-status", "T3=PASSED", "--update-file"])
+        run_validator_forced([str(fixture), "--set-status", "T3=PASSED", "--update-file"])
         code, out, _ = run_validator([str(fixture), "--ready-frontier"])
         self.assertIn("T4", out)
 
@@ -1171,7 +1190,7 @@ class Tier4RealWorldWorkloadScenarioTests(BaseE2ETestCase):
         """Simulate Turn 3: Committee members all complete; unblocks Victory Auditor."""
         fixture = self.copy_fixture("focused_bugfix_dag.md")
         # Mark all committee members PASSED
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_reviewer=PASSED",
             "--set-status", "task_challenger=PASSED",
@@ -1186,7 +1205,7 @@ class Tier4RealWorldWorkloadScenarioTests(BaseE2ETestCase):
     def test_T4_4_scenario_focused_bugfix_victory_certification_terminates(self):
         """Simulate Turn 4: Victory Auditor completes; entire workflow terminates."""
         fixture = self.copy_fixture("focused_bugfix_dag.md")
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_reviewer=PASSED",
             "--set-status", "task_challenger=PASSED",
@@ -1271,7 +1290,7 @@ class Tier4RealWorldWorkloadScenarioTests(BaseE2ETestCase):
         """Simulate Milestone 2 Arbiter synthesis resolving winner and unblocking M2 Committee."""
         fixture = self.copy_fixture("multi_milestone_swarm_dag.md")
         # Workers A and B pass; Arbiter unblocks
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_m2_worker_a=PASSED",
             "--set-status", "task_m2_worker_b=PASSED",
@@ -1287,14 +1306,14 @@ class Tier4RealWorldWorkloadScenarioTests(BaseE2ETestCase):
         fixture = self.copy_fixture("multi_milestone_swarm_dag.md")
 
         # Stage 1: Tournament workers complete
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_m2_worker_a=PASSED",
             "--set-status", "task_m2_worker_b=PASSED",
             "--update-file",
         ])
         # Stage 2: Arbiter completes synthesis
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_m2_arbiter=PASSED",
             "--set-status", "task_m2_comm=PASSED",
@@ -1307,7 +1326,7 @@ class Tier4RealWorldWorkloadScenarioTests(BaseE2ETestCase):
         self.assertEqual(data.get("ready_frontier"), ["task_final_vic"])
 
         # Stage 4: Victory confirmed
-        run_validator([
+        run_validator_forced([
             str(fixture),
             "--set-status", "task_final_vic=PASSED",
             "--update-file",

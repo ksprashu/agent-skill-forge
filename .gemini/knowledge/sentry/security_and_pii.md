@@ -2,7 +2,7 @@
 type: "Security Policy"
 title: "Zero-PII Sanitization & Security Isolation Policy"
 description: "Zero-PII compliance rules, dynamic runtime username lookups, regex security audits, and gitignore isolation."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/SECURITY.md"
+resource: "../../../SECURITY.md"
 tags: ["sentry", "security", "pii", "sanitization", "policy"]
 ---
 

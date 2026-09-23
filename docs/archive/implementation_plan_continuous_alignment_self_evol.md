@@ -16,19 +16,19 @@ Build and deploy the `continuous-alignment` skill and Antigravity lifecycle hook
 
 ### Core Engine & Scripts (`skills/continuous-alignment/`)
 
-#### [NEW] [SKILL.md](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/SKILL.md)
+#### [NEW] [SKILL.md](../../skills/continuous-alignment/SKILL.md)
 - Primary skill definition with YAML frontmatter (`name: continuous-alignment`), `/align`, `/evolve`, and `/prune-memory` commands, and step-by-step alignment playbooks.
 
-#### [NEW] [distill_session.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/distill_session.py)
+#### [NEW] [distill_session.py](../../skills/continuous-alignment/scripts/distill_session.py)
 - Handles Antigravity `Stop` lifecycle event on `stdin`.
 - Reads `transcriptPath` JSONL logs, extracts verified architectural decisions, constraints, error resolutions, and command patterns.
 - Serializes deduplicated memory entries into `.gemini/knowledge/memories.jsonl`.
 
-#### [NEW] [sync_agents_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/sync_agents_rules.py)
+#### [NEW] [sync_agents_rules.py](../../skills/continuous-alignment/scripts/sync_agents_rules.py)
 - Consolidates extracted memories into `AGENTS.md` and `.agents/rules/*.md`.
 - Enforces 200-line budget cap, handles conflict invalidation, and provides `--pulse` for `PreInvocation` hooks.
 
-#### [NEW] [compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/compile_roadmap.py)
+#### [NEW] [compile_roadmap.py](../../skills/continuous-alignment/scripts/compile_roadmap.py)
 - Compiles active milestones into `docs/ROADMAP.md` and `docs/VISION.md`.
 - Generates MADR decision records in `.gemini/knowledge/ADRs/`.
 
@@ -36,17 +36,17 @@ Build and deploy the `continuous-alignment` skill and Antigravity lifecycle hook
 
 ### Project Configuration & Hooks
 
-#### [NEW] [.agents/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.agents/hooks.json)
+#### [NEW] [.agents/hooks.json](../../.agents/hooks.json)
 - Configures `Stop` and `PreInvocation` hooks for the workspace.
 
 ---
 
 ### Verification & Test Suite
 
-#### [NEW] [test_distill.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_distill.py)
+#### [NEW] [test_distill.py](../../skills/continuous-alignment/tests/test_distill.py)
 - Pytest unit tests for transcript JSONL parsing, rule deduplication, and error resolution extraction.
 
-#### [NEW] [test_sync_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_sync_rules.py)
+#### [NEW] [test_sync_rules.py](../../skills/continuous-alignment/tests/test_sync_rules.py)
 - Pytest unit tests for 200-line budget enforcement, path-scoped rule spillover, and rule invalidation.
 
 ---
@@ -64,7 +64,7 @@ Build and deploy the `continuous-alignment` skill and Antigravity lifecycle hook
    ```
 3. **Simulated Hook Ingestion**:
    ```bash
-   echo '{"conversationId": "test", "workspacePaths": ["/Users/ksprashanth/code/github/agent-skill-forge"], "transcriptPath": "skills/continuous-alignment/tests/fixtures/sample_transcript.jsonl"}' | python skills/continuous-alignment/scripts/distill_session.py
+   echo '{"conversationId": "test", "workspacePaths": ["<WORKSPACE_ROOT>"], "transcriptPath": "skills/continuous-alignment/tests/fixtures/sample_transcript.jsonl"}' | python skills/continuous-alignment/scripts/distill_session.py
    ```
 
 ### Manual Verification

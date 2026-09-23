@@ -2,7 +2,7 @@
 type: "Security & Quality Policy"
 title: "Anti-Rationalization Matrix, Red Flags & Definition of Done"
 description: "Defensive guardrails against agent shortcuts, behavioral red flags, the Prove-It verification protocol, and the Definition of Done standard."
-resource: "file:///Users/ksprashanth/code/github/agent-skills/references/definition-of-done.md"
+resource: "../agent-skills/references/definition-of-done.md"
 tags: ["sentry", "anti-rationalization", "red-flags", "definition-of-done", "prove-it", "quality"]
 ---
 

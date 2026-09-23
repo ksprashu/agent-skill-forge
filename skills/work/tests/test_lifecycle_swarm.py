@@ -35,7 +35,7 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from dag_validator import DAGValidator, TaskStatus
-from arbiter_eval import evaluate_design_file, score_design_proposals, print_scorecard
+from arbiter_eval import collect_design_evidence, compare_design_evidence, write_report
 from scaffold_work import scaffold_work
 
 
@@ -154,27 +154,33 @@ export function queryTokens(prefix: string): Promise<string[]>;
 - [Choice]: In-memory transient speed (Alpha) vs Persistent disk reliability (Beta).
 """, encoding="utf-8")
 
-        eval_a = evaluate_design_file("Proposal Alpha", str(proposal_a))
-        eval_b = evaluate_design_file("Proposal Beta", str(proposal_b))
+        eval_a = collect_design_evidence("Proposal Alpha", str(proposal_a))
+        eval_b = collect_design_evidence("Proposal Beta", str(proposal_b))
 
         self.assertTrue(eval_a["exists"])
         self.assertTrue(eval_b["exists"])
-        self.assertTrue(eval_a["scores"]["total"] >= 70.0)
-        self.assertTrue(eval_b["scores"]["total"] >= 70.0)
+        # Facts, not scores: both proposals carry real schema blocks, and the
+        # arbiter collects them rather than converting them into points.
+        self.assertGreater(eval_a["code_blocks"]["substantive"]
+                           + eval_a["code_blocks"]["trivial"], 0)
+        self.assertGreater(eval_b["code_blocks"]["substantive"]
+                           + eval_b["code_blocks"]["trivial"], 0)
+        self.assertNotIn("scores", eval_a)
 
-        score_res = score_design_proposals(eval_a, eval_b)
-        self.assertEqual(score_res["type"], "design")
-        # Since Proposal B has a [Choice] item, it should trigger user decision required or synthesis
-        self.assertIn("recommendation", score_res)
+        comparison = compare_design_evidence(eval_a, eval_b)
+        self.assertEqual(comparison["type"], "design")
+        # Beta names an explicit [Choice]; both name trade-offs. Neither is ranked.
+        self.assertEqual(comparison["verdict"], "JUDGEMENT_REQUIRED")
+        self.assertGreater(len(eval_b["named_alternatives"]), 0)
 
-        # Print scorecard and assert disk file creation
-        scorecard_out = Path(self.test_dir) / "arbiter_scorecard.md"
-        print_scorecard(score_res, str(scorecard_out))
-        self.assertTrue(scorecard_out.exists())
-        scorecard_text = scorecard_out.read_text(encoding="utf-8")
-        self.assertIn("Architectural Design Arbiter Scorecard", scorecard_text)
-        self.assertIn("Architecture & Spec Grounding", scorecard_text)
-        self.assertIn("Interface & Data Contracts", scorecard_text)
+        report_out = Path(self.test_dir) / "arbiter_evidence.md"
+        write_report(comparison, str(report_out), quiet=True)
+        self.assertTrue(report_out.exists())
+        report_text = report_out.read_text(encoding="utf-8")
+        self.assertIn("Architectural Arbiter — Evidence Report", report_text)
+        self.assertIn("Discriminating signals", report_text)
+        self.assertIn("Questions the Arbiter must answer", report_text)
+        self.assertNotIn("TOTAL SCORE", report_text)
 
     def test_lifecycle_dag_state_progression(self):
         # Scaffold lifecycle DAG
