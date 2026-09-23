@@ -104,10 +104,15 @@ def sanitize_text(text, extra_names=None):
         
     return text
 
-def extract_antigravity(extra_names=None):
-    """Extracts from Antigravity IDE and CLI transcript.jsonl files."""
+def extract_antigravity(extra_names=None, surfaces=("antigravity-ide", "antigravity-cli")):
+    """Extracts from Antigravity transcript.jsonl files.
+
+    ``surfaces`` names which of the two brains to read. It defaults to both,
+    which is what ``--tool antigravity`` means; ``--tool antigravity-cli`` asks
+    for the CLI only, and a filter that silently widens is not a filter.
+    """
     prompts = []
-    dirs_to_check = [PATHS.get("antigravity-ide"), PATHS.get("antigravity-cli")]
+    dirs_to_check = [PATHS.get(name) for name in surfaces]
     for base_dir in dirs_to_check:
         if not base_dir or not os.path.exists(base_dir):
             continue
@@ -130,7 +135,11 @@ def extract_antigravity(extra_names=None):
     return prompts
 
 def extract_antigravity_cli(extra_names=None):
-    return extract_antigravity(extra_names=extra_names)
+    return extract_antigravity(extra_names=extra_names, surfaces=("antigravity-cli",))
+
+
+def extract_antigravity_ide(extra_names=None):
+    return extract_antigravity(extra_names=extra_names, surfaces=("antigravity-ide",))
 
 def extract_gemini_cli(extra_names=None):
     """Extracts from gemini-cli session JSONL files."""
@@ -456,11 +465,20 @@ def main():
     all_prompts = []
     target_tool = args.tool.lower()
     
-    # 1. Antigravity IDE & CLI
-    if target_tool in ["all", "antigravity", "antigravity-ide", "antigravity-cli"]:
-        print("Checking Antigravity IDE & CLI files...")
-        ag_prompts = extract_antigravity(extra_names=extra_names)
-        print(f"-> Extracted {len(ag_prompts)} prompts from Antigravity.")
+    # 1. Antigravity IDE & CLI. Each surface has its own brain directory, and
+    # naming one on --tool has to mean that one.
+    ANTIGRAVITY_SURFACES = {
+        "all": ("antigravity-ide", "antigravity-cli"),
+        "antigravity": ("antigravity-ide", "antigravity-cli"),
+        "antigravity-ide": ("antigravity-ide",),
+        "antigravity-cli": ("antigravity-cli",),
+    }
+    if target_tool in ANTIGRAVITY_SURFACES:
+        surfaces = ANTIGRAVITY_SURFACES[target_tool]
+        label = " & ".join("IDE" if s.endswith("ide") else "CLI" for s in surfaces)
+        print(f"Checking Antigravity {label} files...")
+        ag_prompts = extract_antigravity(extra_names=extra_names, surfaces=surfaces)
+        print(f"-> Extracted {len(ag_prompts)} prompts from Antigravity {label}.")
         all_prompts.extend(ag_prompts)
     
     # 2. Gemini CLI

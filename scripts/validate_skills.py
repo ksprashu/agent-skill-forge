@@ -76,8 +76,12 @@ HOST_PATH_SKIP_DIRS = {'.git', '.upstream', 'node_modules', '__pycache__',
                        '.pytest_cache', '.venv', 'venv', '.agents', 'output',
                        'dist', 'build'}
 
+#: ``.html`` earns its place: the generated walkthroughs and implementation
+#: plans carry `file:///Users/...` links, and leaving the suffix off meant the
+#: scan reported a clean repository while 27 such links sat in tracked docs.
 HOST_PATH_SUFFIXES = ('.md', '.py', '.sh', '.json', '.jsonl', '.yaml', '.yml',
-                      '.cjs', '.js', '.ts', '.toml', '.cfg', '.ini', '.txt')
+                      '.cjs', '.js', '.ts', '.toml', '.cfg', '.ini', '.txt',
+                      '.html')
 
 
 def scan_host_paths(repo_root):

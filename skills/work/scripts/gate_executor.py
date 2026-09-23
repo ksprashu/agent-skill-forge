@@ -38,6 +38,14 @@ Three kinds of gate, and the difference between them is the whole design:
     this module goes to it, no further. It does not, and cannot, check whether
     the reviewer was right.
 
+    Read the self-signing check narrowly. ``reviewer_role`` and ``worker_role``
+    are strings a caller supplies, so the check catches the honest mistake of
+    running the review under the worker's own role; it does not establish that
+    two different agents were involved, and one agent typing two names defeats
+    it. Treat an attested gate as a record that someone claimed to review, not
+    as proof that an independent party did. Binding these to harness identity
+    would need something this module cannot see.
+
 ``trivial``
     ``none``. Passes. Recorded as passing for nothing.
 
@@ -97,6 +105,20 @@ PLACEHOLDER_MARKERS = ("TBD", "TODO", "FIXME", "<!-- fill", "PLACEHOLDER", "XXX"
 DEFAULT_TIMEOUT = 900
 
 TRIVIAL_GATES = {"none", "n/a", "na", "-", "", "null"}
+
+#: The digest of a tree containing no code at all. Named so the freshness
+#: checks can reject it by identity instead of silently comparing equal.
+EMPTY_TREE_DIGEST = "empty-tree"
+
+#: Gate names that draw on the same ledger of recorded verification runs.
+#: They ask one question — did a command exit 0 against this tree — so a run
+#: recorded under any of them answers all of them. A run recorded under any
+#: *other* gate does not.
+EXECUTION_GATE_ALIASES = frozenset({"exit_0", "test_pass", "all_passed"})
+
+#: Ceiling on how many entries a cited evidence directory is walked for before
+#: the search gives up. A directory is evidence because something in it is.
+EVIDENCE_DIR_SCAN_LIMIT = 2000
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +182,39 @@ class GateContext:
         return self.base_dir / AGENTS_DIRNAME
 
     def scan_root(self) -> Path:
-        return (self.base_dir / self.source_dir) if self.source_dir else self.base_dir
+        """The tree a digest is taken over. Raises ``ScopeError`` if unusable."""
+        if not self.source_dir:
+            return self.base_dir
+        root = contained_path(self.base_dir, self.source_dir)
+        if not root.is_dir():
+            raise ScopeError(
+                f"--source-dir names nothing on disk: {self.source_dir!r}. A "
+                f"digest over a directory that does not exist is the digest of "
+                f"nothing, and it matches every other nothing.")
+        return root
+
+
+class ScopeError(ValueError):
+    """A path argument that escapes the project root or names nothing."""
+
+
+def contained_path(base_dir: str | Path, candidate: str | Path) -> Path:
+    """Resolve ``candidate`` beneath ``base_dir``, or raise ``ScopeError``.
+
+    ``Path("/project") / "/etc"`` is ``/etc`` — pathlib discards the left
+    operand the moment the right one is absolute. Every path this module takes
+    arrives from a DAG cell, an attestation, or a CLI flag, so that discard is
+    an escape hatch rather than a convenience: a gate could record freshness
+    for one tree while the command it gated ran against another, or cite a file
+    outside the workspace as proof of work inside it. Resolve first, then prove
+    containment.
+    """
+    base = Path(base_dir).resolve()
+    raw = Path(candidate)
+    target = (raw if raw.is_absolute() else base / raw).resolve()
+    if target != base and base not in target.parents:
+        raise ScopeError(f"path escapes the project root {base}: {candidate}")
+    return target
 
 
 # ---------------------------------------------------------------------------
@@ -188,10 +242,19 @@ def tree_digest(root: str | Path) -> str:
     Two trees share a digest when every code file has the same relative path
     and the same bytes. Docs, images and build output are excluded so that
     editing a README does not invalidate an otherwise valid test run.
+
+    A tree with no code files gets ``EMPTY_TREE_DIGEST`` rather than the
+    SHA-256 of the empty string. Both are constants, but only one of them says
+    so: the freshness checks refuse the named one outright, because a digest
+    taken over nothing matches every other nothing and would turn the staleness
+    test into a no-op.
     """
     root = Path(root).resolve()
+    files = iter_source_files(root)
+    if not files:
+        return EMPTY_TREE_DIGEST
     hasher = hashlib.sha256()
-    for path in iter_source_files(root):
+    for path in files:
         try:
             data = path.read_bytes()
         except OSError:
@@ -264,9 +327,14 @@ KIND_AUDIT = "audit"
 def record_run(base_dir: str | Path, task: str, gate: str, result: Dict[str, Any],
                source_dir: Optional[str] = None,
                kind: str = KIND_VERIFICATION) -> Path:
-    """Persist one execution, stamped with the digest of the tree it ran against."""
+    """Persist one execution, stamped with the digest of the tree it ran against.
+
+    Raises ``ScopeError`` rather than stamping a record with the digest of a
+    tree outside the project: a freshness stamp that describes somewhere else
+    is worse than no stamp, because the reader cannot tell the difference.
+    """
     base = Path(base_dir)
-    scan_root = (base / source_dir) if source_dir else base
+    scan_root = contained_path(base, source_dir) if source_dir else base
     target = evidence_dir(base, task)
     target.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -308,9 +376,29 @@ def load_runs(base_dir: str | Path, task: str,
     return runs
 
 
+def accepted_run_gates(gate: str) -> frozenset:
+    """Which recorded gates answer for ``gate``.
+
+    ``exit_0``, ``test_pass`` and ``all_passed`` are three names for one
+    question, so they pool their runs. Everything else stands alone: a green
+    lint run recorded against a lint gate is not evidence that the tests pass.
+    """
+    return EXECUTION_GATE_ALIASES if gate in EXECUTION_GATE_ALIASES else frozenset({gate})
+
+
 def latest_run(base_dir: str | Path, task: str,
-               kind: Optional[str] = KIND_VERIFICATION) -> Optional[Dict[str, Any]]:
+               kind: Optional[str] = KIND_VERIFICATION,
+               gates: Optional[Sequence[str]] = None) -> Optional[Dict[str, Any]]:
+    """The most recent run for a task, narrowed to ``gates`` when given.
+
+    ``gates`` is not optional in spirit. Filtering only by task let a run
+    recorded for one gate satisfy a different one; callers should pass the
+    gates they are willing to accept.
+    """
     runs = load_runs(base_dir, task, kind=kind)
+    if gates is not None:
+        allowed = set(gates)
+        runs = [r for r in runs if r.get("gate") in allowed]
     return runs[-1] if runs else None
 
 
@@ -334,10 +422,11 @@ def write_attestation(base_dir: str | Path, task: str, gate: str, verdict: str,
 
     The digest is taken by this function rather than accepted as an argument so
     that an attestation cannot be back-dated to a revision the reviewer never
-    saw.
+    saw. For the same reason a ``source_dir`` outside the project raises
+    ``ScopeError`` instead of being digested.
     """
     base = Path(base_dir)
-    scan_root = (base / source_dir) if source_dir else base
+    scan_root = contained_path(base, source_dir) if source_dir else base
     path = attestation_path(base, task, gate)
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -355,15 +444,39 @@ def write_attestation(base_dir: str | Path, task: str, gate: str, verdict: str,
     return path
 
 
+def _directory_problem(base_dir: Path, path: Path, rel: str) -> Optional[str]:
+    """A directory is evidence only when something inside it is.
+
+    Accepting a directory on sight let an attestation cite an empty folder and
+    satisfy the advertised non-empty-artifact check. The walk stops at the
+    first qualifying file, so the common case costs one entry.
+    """
+    scanned = 0
+    for child in sorted(path.rglob("*")):
+        if child.is_dir() or child.name.startswith("."):
+            continue
+        scanned += 1
+        if scanned > EVIDENCE_DIR_SCAN_LIMIT:
+            return (f"cited evidence directory holds more than "
+                    f"{EVIDENCE_DIR_SCAN_LIMIT} files with no qualifying "
+                    f"artifact among them: {rel}")
+        if _artifact_problem(base_dir, str(child)) is None:
+            return None
+    return (f"cited evidence directory contains no file that qualifies as "
+            f"evidence: {rel}")
+
+
 def _artifact_problem(base_dir: Path, rel: str) -> Optional[str]:
     """Why this cited artifact does not count as evidence, or None if it does."""
-    path = Path(rel)
-    if not path.is_absolute():
-        path = base_dir / rel
+    try:
+        path = contained_path(base_dir, rel)
+    except ScopeError:
+        return (f"cited evidence is outside the project root: {rel}. Evidence "
+                f"for work done in this workspace has to live in it.")
     if not path.exists():
         return f"cited evidence does not exist: {rel}"
     if path.is_dir():
-        return None
+        return _directory_problem(base_dir, path, rel)
     try:
         raw = path.read_bytes()
     except OSError as exc:
@@ -426,6 +539,10 @@ def validate_attestation(record: Dict[str, Any], ctx: GateContext) -> List[str]:
     current_digest = tree_digest(ctx.scan_root())
     if not recorded_digest:
         problems.append("attestation carries no tree_digest")
+    elif current_digest == EMPTY_TREE_DIGEST:
+        problems.append(
+            f"no source files under {ctx.scan_root()}; a digest over an empty "
+            f"tree cannot show the attestation is still current")
     elif recorded_digest != current_digest:
         problems.append(
             "attestation is stale: the code changed after it was written "
@@ -447,6 +564,8 @@ ATTESTATION_BLIND_SPOTS = [
     "whether the reviewer's judgement was correct",
     "whether the review was thorough",
     "whether the cited evidence actually supports the verdict",
+    "whether reviewer_role and worker_role are really two different agents; "
+    "they are self-declared strings, not verified identities",
 ]
 
 
@@ -462,12 +581,17 @@ def _gate_trivial(ctx: GateContext) -> GateResult:
     )
 
 
-def _gate_recorded_exit_zero(ctx: GateContext) -> GateResult:
+def _gate_recorded_exit_zero(ctx: GateContext,
+                             accept: Optional[Sequence[str]] = None) -> GateResult:
     """A verification command ran against *this* tree and exited 0.
 
     If ``--cmd`` is supplied the command is run now and recorded. Otherwise the
     most recent recorded run for the task is consulted, and rejected if it was
     taken against a different revision of the code.
+
+    ``accept`` names the recorded gates that answer for this one. It exists for
+    composite gates such as ``victory_cert``, which have no runs of their own
+    and draw on the execution ledger instead.
     """
     if ctx.command:
         result = run_command(ctx.command, ctx.base_dir, ctx.timeout)
@@ -484,17 +608,26 @@ def _gate_recorded_exit_zero(ctx: GateContext) -> GateResult:
             details={"exit_code": result["exit_code"]},
         )
 
-    record = latest_run(ctx.base_dir, ctx.task)
+    accepted = frozenset(accept) if accept is not None else accepted_run_gates(ctx.gate)
+    record = latest_run(ctx.base_dir, ctx.task, gates=accepted)
     if record is None:
         return GateResult(
             gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
-            reason=(f"No recorded verification run for task {ctx.task!r}. Run "
-                    f"`gate_executor.py check --task {ctx.task} --gate {ctx.gate} "
-                    f"--cmd '<your test command>'` first."),
+            reason=(f"No recorded verification run for task {ctx.task!r} under "
+                    f"gate {ctx.gate!r}. Run `gate_executor.py check --task "
+                    f"{ctx.task} --gate {ctx.gate} --cmd '<your test command>'` "
+                    f"first."),
             not_checked=[],
         )
 
     current = tree_digest(ctx.scan_root())
+    if current == EMPTY_TREE_DIGEST:
+        return GateResult(
+            gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
+            reason=(f"No source files under {ctx.scan_root()}. A freshness "
+                    f"digest over an empty tree matches anything, so it proves "
+                    f"nothing; point --source-dir at the code."),
+        )
     if record.get("tree_digest") != current:
         return GateResult(
             gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
@@ -563,11 +696,26 @@ def _gate_file_exists(ctx: GateContext) -> GateResult:
 def _gate_victory_cert(ctx: GateContext) -> GateResult:
     """Terminal gate. Composite, and deliberately the strictest thing here.
 
-    Requires, in order: no unfinished task anywhere in the DAG, a strict
-    forensic audit with nothing outstanding, and a verification run against the
-    current tree that exited 0. Any one of them missing and there is no
-    certificate.
+    Requires, in order: a readable set of DAG statuses, no unfinished task
+    anywhere in that DAG, a strict forensic audit with nothing outstanding, and
+    a verification run against the current tree that exited 0. Any one of them
+    missing and there is no certificate.
+
+    The statuses have to be supplied. An empty mapping used to satisfy the
+    "every task PASSED" test vacuously, so the strongest condition in the
+    strictest gate was skipped by the plain ``check --gate victory_cert``
+    invocation the documentation recommends. A gate with nothing to check
+    refuses; it does not pass.
     """
+    if not ctx.all_statuses:
+        return GateResult(
+            gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
+            reason=("victory_cert needs the DAG's task statuses and got none. "
+                    "Pass --dag <path/to/DAG.md>, or run the gate through "
+                    "`dag_validator.py --run-gates`, which supplies them."),
+            not_checked=["every other condition; certification stopped here"],
+        )
+
     unfinished = sorted(tid for tid, status in ctx.all_statuses.items()
                         if tid != ctx.task and str(status).upper() != "PASSED")
     if unfinished:
@@ -585,7 +733,7 @@ def _gate_victory_cert(ctx: GateContext) -> GateResult:
             evidence=audit.evidence,
         )
 
-    exec_result = _gate_recorded_exit_zero(ctx)
+    exec_result = _gate_recorded_exit_zero(ctx, accept=EXECUTION_GATE_ALIASES)
     if not exec_result.passed:
         return GateResult(
             gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
@@ -792,6 +940,13 @@ def evaluate_gate(gate: str, task: str, base_dir: str | Path = ".", *,
     )
     spec = resolve_spec(ctx.gate)
     try:
+        ctx.scan_root()  # reject an escaping or missing scope before anything runs
+    except ScopeError as exc:
+        return GateResult(
+            gate=ctx.gate, task=ctx.task, kind=spec.kind, passed=False,
+            reason=f"Refusing to evaluate against an invalid scope: {exc}",
+        )
+    try:
         return spec.predicate(ctx)
     except Exception as exc:  # a crashing predicate must not read as a pass
         return GateResult(
@@ -818,11 +973,31 @@ def _print_result(result: GateResult) -> None:
             print(f"    - {item}")
 
 
+def statuses_from_dag(dag_path: str | Path) -> Dict[str, str]:
+    """Task id -> status, read from a DAG markdown file.
+
+    Imported here rather than at module scope: ``dag_validator`` imports this
+    module, and a top-level import back would be a cycle.
+    """
+    import dag_validator  # noqa: PLC0415 — deliberate, see docstring
+
+    content = Path(dag_path).read_text(encoding="utf-8")
+    nodes, _issues, _counts = dag_validator.DAGValidator().parse_markdown(content)
+    return {tid: node.status.value for tid, node in nodes.items()}
+
+
 def _cmd_check(args: argparse.Namespace) -> int:
+    all_statuses: Optional[Dict[str, str]] = None
+    if args.dag:
+        try:
+            all_statuses = statuses_from_dag(args.dag)
+        except OSError as exc:
+            print(f"error: cannot read --dag {args.dag}: {exc}", file=sys.stderr)
+            return 2
     result = evaluate_gate(
         args.gate, args.task, args.base_dir,
         outputs=args.output, command=args.cmd, timeout=args.timeout,
-        source_dir=args.source_dir,
+        source_dir=args.source_dir, all_statuses=all_statuses,
     )
     if args.json:
         print(json.dumps(result.to_dict(), indent=2))
@@ -902,6 +1077,10 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--output", action="append", default=[],
                        help="Declared output path (repeatable), for file_exists")
     check.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
+    check.add_argument("--dag", default=None,
+                       help="DAG.md to read task statuses from. Required by "
+                            "composite gates such as victory_cert, which "
+                            "refuse rather than assume when they have none.")
     check.add_argument("--json", action="store_true")
     add_common(check)
     check.set_defaults(func=_cmd_check)
@@ -939,7 +1118,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except ScopeError as exc:
+        # A bad --source-dir is a usage error, not a gate verdict. Exiting 2
+        # keeps it distinct from the 1 that means "the gate said no".
+        print(f"Error: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

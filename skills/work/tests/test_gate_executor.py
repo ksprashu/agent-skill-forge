@@ -613,8 +613,247 @@ class TestTreeDigest(unittest.TestCase):
                           {"command": "x", "exit_code": 0, "stdout": "", "stderr": ""})
             self.assertEqual(before, GE.tree_digest(fx.root))
 
-    def test_missing_directory_digests_without_crashing(self):
-        self.assertTrue(GE.tree_digest("/nonexistent/path/xyz"))
+    def test_missing_directory_digests_to_the_named_empty_constant(self):
+        """Not a crash, and not a hash either — a value the gates can refuse."""
+        self.assertEqual(GE.EMPTY_TREE_DIGEST, GE.tree_digest("/nonexistent/path/xyz"))
+
+    def test_a_tree_holding_only_prose_is_empty_for_digest_purposes(self):
+        with ProjectFixture() as fx:
+            fx.write("docs/notes.md", substantial("Notes"))
+            self.assertEqual(GE.EMPTY_TREE_DIGEST, GE.tree_digest(fx.root / "docs"))
+
+
+# ---------------------------------------------------------------------------
+# Scope containment
+#
+# `Path("/project") / "/etc"` is `/etc`: pathlib drops the left operand as soon
+# as the right one is absolute. Every path here arrives from a DAG cell, an
+# attestation or a CLI flag, so that discard is reachable by anything writing a
+# DAG. These tests hold the door shut.
+# ---------------------------------------------------------------------------
+
+class TestScopeContainment(unittest.TestCase):
+
+    def test_an_absolute_scope_outside_the_project_is_refused(self):
+        with ProjectFixture() as fx:
+            result = GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="/etc")
+            self.assertFalse(result.passed)
+            self.assertIn("escapes the project root", result.reason)
+
+    def test_a_relative_scope_that_climbs_out_is_refused(self):
+        with ProjectFixture() as fx:
+            result = GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="../..")
+            self.assertFalse(result.passed)
+            self.assertIn("escapes the project root", result.reason)
+
+    def test_a_scope_naming_nothing_is_refused(self):
+        """An absent scope digests to nothing, and nothing matches nothing."""
+        with ProjectFixture() as fx:
+            result = GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="nope")
+            self.assertFalse(result.passed)
+            self.assertIn("names nothing on disk", result.reason)
+
+    def test_a_scope_inside_the_project_still_works(self):
+        with ProjectFixture() as fx:
+            result = GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="src",
+                                      command=f"{sys.executable} -m pytest tests -q")
+            self.assertTrue(result.passed, result.reason)
+
+    def test_the_scope_is_checked_before_any_command_runs(self):
+        """A bad scope must not get as far as executing the gated command."""
+        with ProjectFixture() as fx:
+            marker = fx.root / "ran.txt"
+            result = GE.evaluate_gate(
+                "exit_0", "worker", fx.root, source_dir="/etc",
+                command=f"{sys.executable} -c \"open({str(marker)!r}, 'w').close()\"")
+            self.assertFalse(result.passed)
+            self.assertFalse(marker.exists())
+
+    def test_recording_refuses_to_stamp_a_digest_from_outside(self):
+        with ProjectFixture() as fx:
+            with self.assertRaises(GE.ScopeError):
+                GE.record_run(fx.root, "worker", "exit_0",
+                              {"command": "x", "exit_code": 0, "stdout": "", "stderr": ""},
+                              source_dir="/etc")
+
+    def test_attesting_refuses_to_stamp_a_digest_from_outside(self):
+        with ProjectFixture() as fx:
+            with self.assertRaises(GE.ScopeError):
+                GE.write_attestation(fx.root, "review", "review_pass", "PASS",
+                                     "code-reviewer", "implementer", ["report.md"],
+                                     "a" * 50, source_dir="/etc")
+
+    def test_the_cli_reports_a_bad_scope_as_a_usage_error(self):
+        with ProjectFixture() as fx:
+            proc = run_executor("record", "--task", "worker", "--cmd",
+                                f"{sys.executable} -c pass", "--base-dir", str(fx.root),
+                                "--source-dir", "/etc")
+            self.assertEqual(2, proc.returncode, proc.stdout + proc.stderr)
+            self.assertIn("escapes the project root", proc.stderr)
+
+    def test_evidence_outside_the_project_is_not_evidence(self):
+        with ProjectFixture() as fx:
+            GE.write_attestation(fx.root, "review", "review_pass", "PASS",
+                                 "code-reviewer", "implementer", ["/etc/hosts"],
+                                 "Reviewed the diff against the spec and found nothing blocking.")
+            result = GE.evaluate_gate("review_pass", "review", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("outside the project root", result.reason)
+
+
+# ---------------------------------------------------------------------------
+# The empty digest is not freshness
+# ---------------------------------------------------------------------------
+
+class TestEmptyDigestNeverCountsAsFresh(unittest.TestCase):
+
+    def test_a_run_recorded_over_an_empty_scope_never_satisfies_the_gate(self):
+        with ProjectFixture() as fx:
+            fx.write("docs/notes.md", substantial("Notes"))
+            GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="docs",
+                             command=f"{sys.executable} -c pass")
+            result = GE.evaluate_gate("exit_0", "worker", fx.root, source_dir="docs")
+            self.assertFalse(result.passed)
+            self.assertIn("No source files under", result.reason)
+
+    def test_an_attestation_over_an_empty_scope_cannot_be_shown_current(self):
+        with ProjectFixture() as fx:
+            fx.write("docs/notes.md", substantial("Notes"))
+            fx.write("report.md", substantial("Code review"))
+            GE.write_attestation(fx.root, "review", "review_pass", "PASS",
+                                 "code-reviewer", "implementer", ["report.md"],
+                                 "Reviewed the diff against the spec and found nothing blocking.",
+                                 source_dir="docs")
+            result = GE.evaluate_gate("review_pass", "review", fx.root, source_dir="docs")
+            self.assertFalse(result.passed)
+            self.assertIn("no source files under", result.reason)
+
+
+# ---------------------------------------------------------------------------
+# The execution ledger is scoped to the gate that asked for it
+# ---------------------------------------------------------------------------
+
+class TestLedgerIsScopedToItsGate(unittest.TestCase):
+
+    def _green(self, fx, gate):
+        return GE.record_run(fx.root, "worker", gate,
+                             {"command": f"{gate}-command", "exit_code": 0,
+                              "stdout": "", "stderr": ""})
+
+    def test_a_run_recorded_for_another_gate_does_not_transfer(self):
+        """A green lint run is not evidence that the tests pass."""
+        with ProjectFixture() as fx:
+            self._green(fx, "lint_clean")
+            result = GE.evaluate_gate("exit_0", "worker", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("No recorded verification run", result.reason)
+
+    def test_the_three_execution_aliases_still_pool_their_runs(self):
+        with ProjectFixture() as fx:
+            self._green(fx, "test_pass")
+            for gate in ("exit_0", "test_pass", "all_passed"):
+                self.assertTrue(GE.evaluate_gate(gate, "worker", fx.root).passed, gate)
+
+    def test_only_the_execution_aliases_pool(self):
+        self.assertEqual(GE.EXECUTION_GATE_ALIASES, GE.accepted_run_gates("exit_0"))
+        self.assertEqual(frozenset({"lint_clean"}), GE.accepted_run_gates("lint_clean"))
+
+
+# ---------------------------------------------------------------------------
+# victory_cert refuses rather than assumes
+# ---------------------------------------------------------------------------
+
+class TestVictoryCertNeedsStatuses(unittest.TestCase):
+
+    DAG = textwrap.dedent("""\
+        # Test DAG
+
+        ## Task Graph
+        | ID | Title | Mode | Depends On | Inputs | Outputs | Gate | Status |
+        |---|---|---|---|---|---|---|---|
+        | worker | Build it | series | none | SPEC.md | src/mod.py | exit_0 | {worker} |
+        | victory | Certify | series | worker | src/mod.py | VICTORY.md | victory_cert | RUNNING |
+    """)
+
+    def test_no_statuses_means_no_certificate(self):
+        """An empty mapping used to satisfy "every task PASSED" vacuously."""
+        with ProjectFixture() as fx:
+            result = GE.evaluate_gate("victory_cert", "victory", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("task statuses", result.reason)
+
+    def test_the_bare_cli_invocation_refuses_and_says_how_to_fix_it(self):
+        with ProjectFixture() as fx:
+            proc = run_executor("check", "--gate", "victory_cert", "--task", "victory",
+                                "--base-dir", str(fx.root))
+            self.assertEqual(1, proc.returncode)
+            self.assertIn("--dag", proc.stdout)
+
+    def test_the_cli_reads_statuses_from_a_dag_and_blocks_on_a_pending_task(self):
+        with ProjectFixture() as fx:
+            dag = fx.write("DAG.md", self.DAG.format(worker="PENDING"))
+            proc = run_executor("check", "--gate", "victory_cert", "--task", "victory",
+                                "--base-dir", str(fx.root), "--dag", str(dag))
+            self.assertEqual(1, proc.returncode)
+            self.assertIn("worker", proc.stdout)
+
+    def test_the_cli_certifies_when_the_dag_and_the_ledger_both_agree(self):
+        with ProjectFixture() as fx:
+            fx.write("VICTORY.md", substantial("Victory certificate"))
+            dag = fx.write("DAG.md", self.DAG.format(worker="PASSED"))
+            GE.evaluate_gate("exit_0", "victory", fx.root,
+                             command=f"{sys.executable} -m pytest tests -q")
+            proc = run_executor("check", "--gate", "victory_cert", "--task", "victory",
+                                "--base-dir", str(fx.root), "--dag", str(dag),
+                                "--output", "VICTORY.md")
+            self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+    def test_an_unreadable_dag_is_a_usage_error_not_a_pass(self):
+        with ProjectFixture() as fx:
+            proc = run_executor("check", "--gate", "victory_cert", "--task", "victory",
+                                "--base-dir", str(fx.root), "--dag",
+                                str(fx.root / "absent.md"))
+            self.assertEqual(2, proc.returncode)
+
+
+# ---------------------------------------------------------------------------
+# A cited directory is evidence only when something inside it is
+# ---------------------------------------------------------------------------
+
+class TestDirectoryEvidence(unittest.TestCase):
+
+    def _attest(self, fx, evidence):
+        GE.write_attestation(
+            fx.root, "review", "review_pass", "PASS", "code-reviewer", "implementer",
+            evidence, "Reviewed the diff against the spec and found nothing blocking.")
+        return GE.evaluate_gate("review_pass", "review", fx.root)
+
+    def test_an_empty_directory_is_not_evidence(self):
+        with ProjectFixture() as fx:
+            (fx.root / "findings").mkdir()
+            result = self._attest(fx, ["findings"])
+            self.assertFalse(result.passed)
+            self.assertIn("no file that qualifies", result.reason)
+
+    def test_a_directory_of_placeholders_is_not_evidence(self):
+        with ProjectFixture() as fx:
+            fx.write("findings/a.md", "TODO\n")
+            result = self._attest(fx, ["findings"])
+            self.assertFalse(result.passed)
+            self.assertIn("no file that qualifies", result.reason)
+
+    def test_a_directory_holding_one_real_artifact_is_evidence(self):
+        with ProjectFixture() as fx:
+            fx.write("findings/a.md", "TODO\n")
+            fx.write("findings/nested/b.md", substantial("Review findings"))
+            result = self._attest(fx, ["findings"])
+            self.assertTrue(result.passed, result.reason)
+
+    def test_a_directory_of_only_dotfiles_is_not_evidence(self):
+        with ProjectFixture() as fx:
+            fx.write("findings/.hidden.md", substantial("Hidden"))
+            result = self._attest(fx, ["findings"])
+            self.assertFalse(result.passed)
 
 
 # ---------------------------------------------------------------------------

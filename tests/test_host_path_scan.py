@@ -83,6 +83,16 @@ class TestHostPathScan(unittest.TestCase):
         errors = self.scan("deep/nested.md", "ok\nok\n/Users/someone/x\n")  # host-path-ok
         self.assertIn("deep/nested.md:3", errors[0])
 
+    def test_generated_html_is_scanned(self):
+        """The exported walkthroughs carry absolute `file://` home links.
+
+        ``.html`` was missing from the suffix list, so the scan passed while 27
+        such links sat in tracked docs. It is the file type most likely to leak,
+        because nobody writes it by hand and nobody reads the diff.
+        """
+        text = '<a href="file:///Users/someone/code/x.md">x</a>\n'  # host-path-ok
+        self.assertTrue(self.scan("docs/walkthrough.html", text))
+
     def test_binary_and_unscanned_extensions_are_skipped(self):
         self.assertEqual([], self.scan("logo.png", "/Users/someone/x"))  # host-path-ok
 

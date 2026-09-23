@@ -322,12 +322,12 @@ block.
 
 | Command | What it settles |
 | :--- | :--- |
-| `python3 -m pytest -q` | 624 tests across `skills/`, `tests/` and `tests/e2e/` |
+| `python3 -m pytest -q` | 655 tests across `skills/`, `tests/` and `tests/e2e/` |
 | `python3 scripts/validate_skills.py` | Frontmatter, reserved-namespace collisions, author PII, absolute host paths |
 | `python3 scripts/check_stdlib_only.py` | No third-party import reaches a script that runs inside a harness |
 | `python3 skills/work/scripts/gate_executor.py list` | Every gate a topology can emit has a predicate behind it |
 | `python3 skills/work/scripts/dag_validator.py --check-mermaid <dag>` | The table and the rendered diagram agree |
-| `python3 skills/work/scripts/forensic_audit.py --target-dir . --strict` | Stubs, tautological assertions, and mocked "passes" |
+| `python3 skills/work/scripts/forensic_audit.py --target-dir . --strict --exclude 'fixtures/known_'` | Stubs, tautological assertions, and mocked "passes" |
 | `python3 skills/work/scripts/autowire.py --check` | Every skill the autowiring matrix names exists on disk |
 
 Two rules hold throughout, and they are the reason the above is short:
