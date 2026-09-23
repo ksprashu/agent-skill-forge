@@ -120,7 +120,7 @@ they are the thing the whole system's honesty rests on.
 | V1 | **A verifier must have a known-bad fixture it rejects, committed to the repo.** `fixtures/known_fake/` for integrity auditors, `fixtures/hollow_design.md` for arbiters. A test asserts non-zero exit on it. |
 | V2 | **A verifier must have a known-good fixture it accepts.** Otherwise the fix for V1 is `exit(1)` unconditionally. |
 | V3 | **A verifier audits the artifact it claims to audit.** An integrity auditor that globs only `test_*.py` cannot see a faked `src/` implementation. State the glob in the docstring. |
-| V4 | **Test coverage must scale with authority.** Any script that can emit a blocking verdict needs coverage at least as thorough as the thing it blocks. `forensic_audit.py` — the Binary Veto — shipped with zero tests; that inversion was the bug, and it now carries 64 of its own plus the 17 guarding the host-path scanner, against two fixture corpora. |
+| V4 | **Test coverage must scale with authority.** Any script that can emit a blocking verdict needs coverage at least as thorough as the thing it blocks. `forensic_audit.py` — the Binary Veto — shipped with zero tests; that inversion was the bug, and it now carries 64 of its own plus the 18 guarding the host-path scanner, against two fixture corpora. `gate_executor.py`, which can block a task from reaching `PASSED`, carries 91. |
 | V5 | **A verifier reports what it did not check.** "Audited 12 test files; did not audit src/" is honest. "ZERO violations detected" is not, when only a third of the surface was examined. |
 | V6 | **No axis may be a constant.** If a scoring dimension returns the same value for every input, delete it. It inflates the total and discriminates nothing. |
 

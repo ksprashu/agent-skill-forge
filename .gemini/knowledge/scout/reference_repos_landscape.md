@@ -2,7 +2,7 @@
 type: "Ecosystem Landscape"
 title: "Agent Skills Ecosystem Landscape & Reference Repositories"
 description: "Comprehensive landscape analysis of major AI agent skill ecosystems: Addy Osmani, Matt Pocock, Superpowers, Anthropic, Codex, and Cursor."
-resource: "../agent-skills/docs/comparison.md"
+resource: "https://github.com/addyosmani/agent-skills/blob/bcab6a1b8503100e8618c3b4e32cc78de43de769/docs/comparison.md"
 tags: ["scout", "landscape", "ecosystem", "addy-osmani", "matt-pocock", "superpowers", "codex", "anthropic", "cursor"]
 ---
 

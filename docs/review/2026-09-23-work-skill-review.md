@@ -349,13 +349,25 @@ being true; where something is still open, it says so.
 - Three tamper-detection tests built a throwaway git repo and committed into it without disabling commit signing. On any machine with `commit.gpgsign = true` globally — and the author's is one — the commit failed against an unreachable signing agent and the test reported a tampering-detection failure that had nothing to do with tampering. The temp repo now sets `commit.gpgsign false` locally.
 - `scripts/check_stdlib_only.py` enforces the stdlib-only rule where the repo actually claims it (`scripts/`, `hooks/`, `skills/work/scripts/`), rather than repo-wide — `skills/image-gen` legitimately needs Pillow.
 
+**Found by automated review of the remediation PR:**
+
+Nineteen findings were raised against the PR. Sixteen were real, one was a false positive (an inline `host-path-ok` marker in `tests/test_host_path_scan.py`, which sits in the test source and never reaches the scanned fixture), and two were narrower than rated. The engine defects shared one root cause and one shape.
+
+- **`Path(base) / "/etc"` is `/etc`.** pathlib discards the left operand as soon as the right is absolute, and every path the gate executor handles arrives from a DAG cell, an attestation, or a CLI flag. A task could record freshness for one tree while the command it gated ran against another, or cite `/etc/passwd` as evidence of work done in the workspace. `contained_path()` now resolves first and proves containment second; `evaluate_gate`, `record_run` and `write_attestation` all go through it, and the CLI reports a `ScopeError` as exit 2 rather than a verdict.
+- **A digest over nothing matches every other nothing.** `tree_digest` returned the SHA-256 of the empty string for a tree with no code in it, so a `--source-dir` naming an absent or code-free directory silently disabled the staleness check that is the whole point of the digest. It now returns the named constant `EMPTY_TREE_DIGEST`, and both the execution and attestation freshness checks refuse it by identity.
+- **A cited directory was evidence by existing.** An attestation could point at an empty directory and satisfy the non-empty-artifact check. A directory now qualifies only when some file inside it does, with a scan ceiling so a large tree cannot be used as a denial of service.
+- **The execution ledger was filtered by task, not by gate.** A green lint run recorded under any gate name satisfied a later `exit_0`. Runs are now pooled only across `exit_0`/`test_pass`/`all_passed`, which are three names for one question; everything else stands alone.
+- **`victory_cert` certified an empty mapping vacuously.** `all_statuses` defaulted to `{}`, and the documented `check --gate victory_cert` invocation had no way to supply statuses, so the strongest condition in the strictest gate was skipped by the recommended command. The gate now refuses without statuses and `check --dag <path>` reads them from the DAG.
+
+Also: `.html` was missing from `HOST_PATH_SUFFIXES`, so the scan reported a clean repository while 27 `file:///Users/...` links sat in tracked generated docs — the file type least likely to be read in a diff was the one not scanned. Eight `resource:` fields in `.gemini/knowledge/` pointed at sibling checkouts that do not exist here; they are now SHA-pinned upstream URLs. `--tool antigravity-cli` read the IDE brain as well as the CLI one. 24 gate tests and 7 others were added for the above.
+
 **Still open, deliberately:**
 
 - **W-10** as above: harness-level, not script-level.
 - **W-07 and W-08 have no executor.** Both are now correct prose in the dispatch briefs, and prose is L1. Nothing fails if a future edit drops the grounding line from a brief. A linter over the dispatch payloads in `SKILL.md` would close that; it is not written.
 - **Attested gates check form, not correctness.** `gate_executor.py attest` rejects an attestation that is unsigned, self-signed, cites missing or empty artifacts, or was written against a different tree digest. It cannot check whether the reviewer was right, and nothing can. That ceiling is stated in the module docstring so the next reader does not mistake the gate for more than it is.
 
-Repository state after remediation: **624 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree all exit 0.
+Repository state after remediation: **655 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
 
 ---
 
