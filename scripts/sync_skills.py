@@ -45,6 +45,9 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 CORE_SKILLS_DIR = os.path.join(REPO_ROOT, 'skills')
 PREFERRED_SKILLS_DIR = os.path.join(REPO_ROOT, 'preferred')
+UPSTREAM_SKILLS_DIR = os.path.join(REPO_ROOT, '.upstream')
+HARNESSES_FILE = os.path.join(REPO_ROOT, 'config', 'harnesses.json')
+UPSTREAM_LOCK_FILE = os.path.join(REPO_ROOT, 'config', 'upstream.lock.json')
 
 AGENTS_SKILLS_DIR = os.path.expanduser('~/.agents/skills')
 GEMINI_SKILLS_DIR = os.path.expanduser('~/.gemini/skills')
@@ -68,12 +71,26 @@ CORE_SKILLS = {
     'google-oss': os.path.join(CORE_SKILLS_DIR, 'google-oss'),
     'codelab': os.path.join(CORE_SKILLS_DIR, 'codelab'),
     'human-voice': os.path.join(CORE_SKILLS_DIR, 'human-voice'),
+    'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
     'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'work': os.path.join(CORE_SKILLS_DIR, 'work'),
+    'profile': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
+    'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
 }
+
+# The four-gate spine. These live in .upstream/ and are fetched at install time
+# from pinned commits by scripts/fetch_upstream.py — never vendored here.
+SPINE_SKILLS = {
+    'understand': ['echo', 'grill', 'done'],
+    'think': ['brainstorm', 'research', 'doubt'],
+    'verify': ['prove', 'bar', 'scope'],
+    'human': ['profile', 'land', 'nudge'],
+}
+UPSTREAM_SPINE = {'echo', 'grill', 'done', 'brainstorm', 'research', 'doubt',
+                  'prove', 'bar', 'scope', 'land', 'nudge'}
 
 # Backward-Compatible Aliases
 ALIASES = {
@@ -89,6 +106,8 @@ ALIASES = {
     'copy-write-bara': 'copy-write',
     'image-gen-expert': 'image-gen',
     'extract-human-voice': 'human-voice',
+    'profile-me': 'cognitive-profiler',
+    'cognitive-profile': 'cognitive-profiler',
     'evolve': 'align',
     'teamwork': 'work',
     'team': 'work',
@@ -98,6 +117,142 @@ ALIASES = {
 ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
 ANTIGRAVITY_BUILTIN_SKILLS = {'agy-customizations', 'antigravity_guide', 'antigravity-guide', 'generative_ui', 'migrate-workflows', 'permissioned-github'}
 ALL_RESERVED = ANTIGRAVITY_RESERVED_COMMANDS | ANTIGRAVITY_BUILTIN_SKILLS
+
+
+# ==============================================================================
+# Harness Capability Matrix
+# ==============================================================================
+
+_HARNESS_CACHE = None
+
+
+def load_harnesses():
+    """Load config/harnesses.json. Returns None if absent, so older flows still run."""
+    global _HARNESS_CACHE
+    if _HARNESS_CACHE is not None:
+        return _HARNESS_CACHE
+    if not os.path.exists(HARNESSES_FILE):
+        print(f"  [WARN] {HARNESSES_FILE} not found. Falling back to installing every skill everywhere.")
+        _HARNESS_CACHE = False
+        return None
+    try:
+        with open(HARNESSES_FILE, 'r', encoding='utf-8') as f:
+            _HARNESS_CACHE = json.load(f)
+    except (json.JSONDecodeError, ValueError) as e:
+        print(f"  [ERROR] {HARNESSES_FILE} is not valid JSON: {e}")
+        _HARNESS_CACHE = False
+        return None
+    return _HARNESS_CACHE
+
+
+def harness_targets():
+    """Resolve installation targets from the capability matrix.
+
+    Returns [(key, label, expanded_dir, harness_config)].
+    """
+    matrix = load_harnesses()
+    if not matrix:
+        return [
+            ('agents-hub', '~/.agents/skills', AGENTS_SKILLS_DIR, {}),
+            ('gemini-cli', '~/.gemini/skills', GEMINI_SKILLS_DIR, {}),
+            ('antigravity-ide', '~/.gemini/config/skills', GEMINI_CONFIG_SKILLS_DIR, {}),
+            ('claude-code', '~/.claude/skills', CLAUDE_SKILLS_DIR, {}),
+            ('antigravity-cli', '~/.gemini/antigravity-cli/skills', ANTIGRAVITY_CLI_SKILLS_DIR, {}),
+        ]
+    targets = []
+    for key, cfg in matrix.get('harnesses', {}).items():
+        for raw in cfg.get('skills_dirs', []):
+            targets.append((key, raw, os.path.expanduser(raw), cfg))
+    return targets
+
+
+def harness_reserved(harness_cfg):
+    """Reserved names for one harness, falling back to the Antigravity set."""
+    reserved = harness_cfg.get('reserved')
+    if reserved is None:
+        return set(ALL_RESERVED)
+    return {r.lower() for r in reserved}
+
+
+def local_commands(harness_cfg, project_dir=None):
+    """Slash commands the user has defined themselves for this harness.
+
+    These are not harness capabilities. `~/.claude/commands/plan.md` is one
+    person's config, not something Claude Code ships, so it must never be
+    written into harnesses.json. It is still a real collision for that person,
+    so we detect it at runtime and let it subtract locally.
+
+    Returns {command_name: path}.
+    """
+    found = {}
+    dirs = list(harness_cfg.get('commands_dirs', []))
+    if project_dir:
+        dirs += [os.path.join(project_dir, d)
+                 for d in harness_cfg.get('project_commands_dirs', [])]
+    for raw in dirs:
+        d = os.path.expanduser(raw)
+        if not os.path.isdir(d):
+            continue
+        try:
+            entries = os.listdir(d)
+        except OSError:
+            continue
+        for fn in entries:
+            if fn.endswith('.md') and not fn.startswith('.'):
+                found.setdefault(fn[:-3].lower(), os.path.join(d, fn))
+    return found
+
+
+def native_conflicts(skill_names, harness_cfg, strict_native=False, ignore_native=False,
+                     project_dir=None, include_local=True):
+    """Which of these skills the harness already covers.
+
+    Returns {skill_name: {'provider', 'coverage', 'capability', 'note', 'source'}}.
+    'source' is 'native' for a capability the harness ships, or 'local' for a
+    same-named slash command the user wrote themselves.
+
+    Only 'full' coverage is subtracted by default; --strict-native also drops
+    'partial'. A local command always subtracts, because two things answering
+    to the same name is a collision no coverage level can soften.
+    """
+    if ignore_native:
+        return {}
+    matrix = load_harnesses()
+    if not matrix:
+        return {}
+    skill_caps = matrix.get('skill_capabilities', {})
+    native = harness_cfg.get('native', {})
+
+    skipped = {}
+    for name in skill_names:
+        cap = skill_caps.get(name)
+        if not cap or cap not in native:
+            continue
+        entry = native[cap]
+        coverage = entry.get('coverage', 'full')
+        if coverage == 'full' or (strict_native and coverage == 'partial'):
+            skipped[name] = {
+                'provider': entry.get('provider', '?'),
+                'coverage': coverage,
+                'capability': cap,
+                'note': entry.get('note', ''),
+                'source': 'native',
+            }
+
+    if include_local:
+        user_cmds = local_commands(harness_cfg, project_dir=project_dir)
+        for name in skill_names:
+            if name in skipped or name.lower() not in user_cmds:
+                continue
+            skipped[name] = {
+                'provider': '/' + name.lower(),
+                'coverage': 'local',
+                'capability': skill_caps.get(name, '?'),
+                'note': 'Your own command at %s. Delete it to use the forge skill instead.'
+                        % user_cmds[name.lower()].replace(os.path.expanduser('~'), '~'),
+                'source': 'local',
+            }
+    return skipped
 
 # ==============================================================================
 # Skill Clusters Taxonomy (Core Action Verbs & Preferred Domain Skills)
@@ -119,14 +274,21 @@ CORE_CLUSTERS = {
     'c3': {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
-        'description': 'Step-by-step Google codelabs, human voice profiling, technical copywriting, and image generation.',
-        'skills': ['codelab', 'human-voice', 'copy-write', 'image-gen'],
+        'description': 'Step-by-step Google codelabs, human voice profiling, agent communication profiling, technical copywriting, and image generation.',
+        'skills': ['codelab', 'human-voice', 'cognitive-profiler', 'copy-write', 'image-gen'],
     },
     'c4': {
         'id': 'docs-governance',
         'name': 'Knowledge & Governance',
         'description': 'Documentation compilation, OKF knowledge catalog, Google OSS hygiene, and continuous alignment.',
         'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment', 'sync'],
+    },
+    'c5': {
+        'id': 'spine',
+        'name': 'The Four-Gate Spine',
+        'description': 'Understand the ask, think before building, prove the result, and make it land with a human. Eleven of these twelve are referenced from upstream at a pinned commit, not vendored.',
+        'skills': ['echo', 'grill', 'done', 'brainstorm', 'research', 'doubt',
+                   'prove', 'bar', 'scope', 'profile', 'land', 'nudge'],
     },
 }
 
@@ -240,7 +402,7 @@ def interactive_wizard():
         print(f"       Skills      : {skills_str}")
 
     print("\n⚡ QUICK PRESETS:")
-    print("  [content] Content & Creative only (codelab, human-voice, copy-write, image-gen)")
+    print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 12 Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 30 Core & Domain Skills)")
@@ -369,20 +531,34 @@ def discover_all_skills():
             if os.path.isdir(path) and os.path.exists(os.path.join(path, 'SKILL.md')):
                 all_skills[name] = {'path': path, 'type': 'preferred'}
 
+    # Reference-only upstream skills, materialised by scripts/fetch_upstream.py.
+    # These deliberately win over a local skill of the same name: `grill` is the
+    # upstream engine plus an overlay, not the older local copy.
+    if os.path.exists(UPSTREAM_SKILLS_DIR):
+        for name in sorted(os.listdir(UPSTREAM_SKILLS_DIR)):
+            path = os.path.join(UPSTREAM_SKILLS_DIR, name)
+            if os.path.isdir(path) and os.path.exists(os.path.join(path, 'SKILL.md')):
+                if name in all_skills:
+                    print(f"  [UPSTREAM WINS] {name}: using .upstream/{name}, "
+                          f"shadowing {os.path.relpath(all_skills[name]['path'], REPO_ROOT)}")
+                all_skills[name] = {'path': path, 'type': 'upstream'}
+
     return all_skills
 
 
-def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False):
-    """Remove broken symlinks, items matching Antigravity reserved namespace, or symlinks not in allowed list."""
+def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict_prune=False, reserved=None):
+    """Remove broken symlinks, items in this harness's reserved namespace, or links not in the allowed list."""
     if not os.path.exists(skills_dir):
         return
 
     all_available = discover_all_skills()
+    if reserved is None:
+        reserved = ALL_RESERVED
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
-        if item.lower() in ALL_RESERVED:
-            reason = "RESERVED ANTIGRAVITY NAMESPACE"
+        if item.lower() in reserved:
+            reason = "RESERVED HARNESS NAMESPACE"
             print(f"  [{reason}] {item} in {skills_dir}")
             if prune:
                 remove_path_or_link(item_path)
@@ -430,8 +606,93 @@ def sync_skills_json(fix=False):
             print(f"  [JSON CONFIG] Generated {cfg}")
 
 
-def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=None, strict_prune=False):
-    """Synchronize selected core and/or domain skills into global agent directories."""
+def clean_skills_json():
+    """Remove forge entries from global skills.json configs or delete file if empty."""
+    configs = [
+        os.path.expanduser('~/.gemini/config/skills.json'),
+        os.path.expanduser('~/.agents/skills.json'),
+    ]
+    for cfg in configs:
+        if not os.path.exists(cfg):
+            continue
+        try:
+            with open(cfg, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            entries = data.get('entries', [])
+            remaining_entries = []
+            for entry in entries:
+                entry_path = os.path.abspath(os.path.expanduser(entry.get('path', '')))
+                if not entry_path.startswith(REPO_ROOT):
+                    remaining_entries.append(entry)
+            if not remaining_entries and not data.get('inherits'):
+                os.remove(cfg)
+                print(f"  [REMOVED CONFIG] {cfg}")
+            elif len(remaining_entries) != len(entries):
+                data['entries'] = remaining_entries
+                with open(cfg, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2)
+                print(f"  [UPDATED CONFIG] Removed forge entries from {cfg}")
+            else:
+                print(f"  [OK] No forge entries in {cfg}")
+        except Exception as e:
+            print(f"  [ERROR] Failed to clean {cfg}: {e}")
+
+
+def uninstall_skills(project_dir=None):
+    """Remove all installed skills and configs associated with Agent Skill Forge."""
+    print("=" * 65)
+    print("🧹 Agent Skill Forge — Skill Uninstaller")
+    print("=" * 65)
+
+    all_skills = discover_all_skills()
+    all_names = set(all_skills.keys()) | set(CORE_SKILLS.keys()) | set(ALIASES.keys())
+
+    if project_dir:
+        project_dir = os.path.abspath(os.path.expanduser(project_dir))
+        target_dirs = [
+            (f"{project_dir}/.gemini/skills", os.path.join(project_dir, '.gemini', 'skills')),
+            (f"{project_dir}/.agents/skills", os.path.join(project_dir, '.agents', 'skills')),
+        ]
+    else:
+        target_dirs = [(label, path) for _k, label, path, _c in harness_targets()]
+
+    for label, target_dir in target_dirs:
+        if not os.path.exists(target_dir):
+            continue
+        print(f"\n--- Cleaning {label} ---")
+        removed_count = 0
+        for item in sorted(os.listdir(target_dir)):
+            item_path = os.path.join(target_dir, item)
+            if is_link(item_path):
+                try:
+                    dst = os.readlink(item_path)
+                    if sys.platform == 'win32' and dst.startswith('\\\\?\\'):
+                        dst = dst[4:]
+                    abs_dst = os.path.abspath(os.path.join(target_dir, dst))
+                    if abs_dst.startswith(REPO_ROOT) or item in all_names:
+                        remove_link(item_path)
+                        print(f"  [UNLINKED] {item} -> {dst}")
+                        removed_count += 1
+                except OSError as e:
+                    print(f"  [ERROR] {item}: {e}")
+            elif os.path.isdir(item_path) and item in all_names:
+                shutil.rmtree(item_path)
+                print(f"  [REMOVED DIR] {item}")
+                removed_count += 1
+        if removed_count == 0:
+            print("  (no installed forge skills found)")
+
+    if not project_dir:
+        print("\n--- Cleaning JSON Configuration Registries ---")
+        clean_skills_json()
+
+    print("\n✅ All Agent Skill Forge skills have been completely removed.")
+
+
+
+def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=None, strict_prune=False,
+                       strict_native=False, ignore_native=False):
+    """Synchronize selected skills into each harness, minus what that harness ships natively."""
     print("=" * 65)
     print("🚀 Agent Skill Forge — Global Symlink Synchronizer")
     print("=" * 65)
@@ -445,11 +706,10 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
         target_skill_names = selected_skills
         print(f"Target Selected Skills ({len(target_skill_names)}):")
 
+    # Reserved-name filtering is per harness now, not global: a name Antigravity
+    # reserves may be perfectly installable under Claude Code.
     all_targets = {}
     for name in target_skill_names:
-        if name.lower() in ALL_RESERVED:
-            print(f"  [RESERVED SKIPPED] '{name}' collides with Antigravity reserved namespace and cannot be linked.")
-            continue
         if name in all_available:
             path = all_available[name]['path']
             all_targets[name] = path
@@ -466,27 +726,33 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
             print(f"  ! {name:32} [NOT FOUND IN FORGE]")
 
     for alias, target in ALIASES.items():
-        if alias.lower() in ALL_RESERVED:
-            continue
         if target in all_targets:
             all_targets[alias] = all_targets[target]
 
-    target_dirs = [
-        ("~/.agents/skills", AGENTS_SKILLS_DIR),
-        ("~/.gemini/skills", GEMINI_SKILLS_DIR),
-        ("~/.gemini/config/skills", GEMINI_CONFIG_SKILLS_DIR),
-        ("~/.claude/skills", CLAUDE_SKILLS_DIR),
-        ("~/.gemini/antigravity-cli/skills", ANTIGRAVITY_CLI_SKILLS_DIR),
-    ]
-
-    for label, target_dir in target_dirs:
+    for hkey, label, target_dir, hcfg in harness_targets():
         os.makedirs(target_dir, exist_ok=True)
-        print(f"\n--- Auditing {label} ---")
-        clean_stale_and_orphan_links(target_dir, all_targets, prune=prune, strict_prune=strict_prune)
+        hlabel = hcfg.get('label', hkey)
+        print(f"\n--- Auditing {hlabel}: {label} ---")
 
-        for name, src_path in all_targets.items():
-            if name.lower() in ALL_RESERVED:
-                print(f"  [BLOCKED RESERVED] Refusing to link reserved name: {name}")
+        reserved = harness_reserved(hcfg)
+        skipped = native_conflicts(all_targets.keys(), hcfg,
+                                   strict_native=strict_native, ignore_native=ignore_native)
+
+        # Subtract what this harness already ships, so the forge does not shadow it.
+        harness_targets_map = {n: p for n, p in all_targets.items() if n not in skipped}
+        for name, info in sorted(skipped.items()):
+            tag = 'YOURS' if info['source'] == 'local' else 'NATIVE'
+            owner = 'your own' if info['source'] == 'local' else hlabel
+            print(f"  [{tag} {info['coverage'].upper():<6}] {name:<22} covered by {owner} {info['provider']}")
+            if info['note']:
+                print(f"                      {info['note']}")
+
+        clean_stale_and_orphan_links(target_dir, harness_targets_map, prune=prune,
+                                     strict_prune=strict_prune, reserved=reserved)
+
+        for name, src_path in harness_targets_map.items():
+            if name.lower() in reserved:
+                print(f"  [BLOCKED RESERVED] {name} collides with a {hlabel} reserved name")
                 continue
             if not os.path.exists(src_path):
                 continue
@@ -569,6 +835,63 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
                 print(f"  [ALREADY PRESENT] {skill} in {target_dir}")
 
 
+def list_harnesses(strict_native=False):
+    """Print each harness, where it installs, and what the forge will skip there."""
+    matrix = load_harnesses()
+    print("=" * 78)
+    print(" 🧭 Agent Skill Forge — Harness Capability Matrix")
+    print("=" * 78)
+    if not matrix:
+        print("\n  No capability matrix found. Every skill installs into every harness.")
+        return 0
+
+    caps = matrix.get('capabilities', {})
+    skill_caps = matrix.get('skill_capabilities', {})
+    all_forge_skills = sorted(skill_caps.keys())
+
+    for key, cfg in matrix.get('harnesses', {}).items():
+        label = cfg.get('label', key)
+        dirs = ', '.join(cfg.get('skills_dirs', []))
+        hooks = cfg.get('hook_support', 'none')
+        print(f"\n  {label}  ({key})")
+        print(f"    Installs to   : {dirs}")
+        print(f"    Hook support  : {hooks}"
+              + ("   <- the design gate can be enforced here" if hooks != 'none' else "   <- design gate is advisory only"))
+
+        reserved = cfg.get('reserved', [])
+        if reserved:
+            print(f"    Reserved names: {len(reserved)} built-in command(s) the forge will never shadow")
+
+        covered = cfg.get('native', {})
+        if covered:
+            print(f"    Natively covers: {len(covered)} capability(ies)")
+            for cap, entry in sorted(covered.items()):
+                print(f"        {cap:<24} {entry.get('coverage','full'):<8} {entry.get('provider','?')}")
+                if entry.get('note'):
+                    print(f"        {'':<24} note: {entry['note']}")
+
+        skipped = native_conflicts(all_forge_skills, cfg, strict_native=strict_native)
+        if not skipped:
+            print(f"    Skipped here  : nothing — the forge installs its full selection")
+            continue
+
+        native_hits = {n: i for n, i in skipped.items() if i['source'] == 'native'}
+        local_hits = {n: i for n, i in skipped.items() if i['source'] == 'local'}
+        if native_hits:
+            print(f"    Skipped here  : {len(native_hits)} skill(s) the harness already ships")
+            for name, info in sorted(native_hits.items()):
+                print(f"        {name:<16} {info['coverage']:<8} {info['provider']}")
+        if local_hits:
+            print(f"    Your commands : {len(local_hits)} skill(s) you already defined yourself")
+            for name, info in sorted(local_hits.items()):
+                print(f"        {name:<16} {'local':<8} {info['provider']}")
+                print(f"        {'':<16} {info['note']}")
+
+    print("\n  Coverage 'full' is skipped by default. 'partial' is installed unless --strict-native.")
+    print("  Override everything with --ignore-native.")
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Agent Skill Forge - Symlink Manager & On-Demand Bootstrapper")
     parser.add_argument('--fix', action='store_true', help="Automatically create or repoint missing symlinks")
@@ -580,12 +903,24 @@ def main():
     parser.add_argument('--all', action='store_true', help="Install all 30 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 12 preferred domain skills (d1, d2, d3, d4)")
-    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, copy-write, image-gen)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
     parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")
+    parser.add_argument('--uninstall', action='store_true', help="Uninstall and remove all installed skills and configs")
+    parser.add_argument('--spine', action='store_true', help="Install the four-gate spine only (c5)")
+    parser.add_argument('--strict-native', action='store_true', help="Also skip skills a harness covers only partially")
+    parser.add_argument('--ignore-native', action='store_true', help="Install everything everywhere, even where the harness has a native")
+    parser.add_argument('--list-harnesses', action='store_true', help="Show each harness, its skills dir, and what it covers natively")
 
     args = parser.parse_args()
+
+    if args.list_harnesses:
+        return list_harnesses(strict_native=args.strict_native)
+
+    if args.uninstall:
+        uninstall_skills(project_dir=args.project)
+        return
 
     if args.list_clusters:
         print("=" * 70)
@@ -647,6 +982,9 @@ def main():
     if args.content:
         has_explicit_selection = True
         requested_skills.extend(CORE_CLUSTERS['c3']['skills'])
+    if args.spine:
+        has_explicit_selection = True
+        requested_skills.extend(CORE_CLUSTERS['c5']['skills'])
     if args.clusters:
         has_explicit_selection = True
         requested_skills.extend(resolve_clusters_arg(args.clusters))
@@ -665,7 +1003,9 @@ def main():
 
     strict_prune = has_explicit_selection and args.prune
     selected = requested_skills if has_explicit_selection else None
-    sync_global_skills(prune=args.prune, fix=args.fix, copy_mode=args.copy, selected_skills=selected, strict_prune=strict_prune)
+    sync_global_skills(prune=args.prune, fix=args.fix, copy_mode=args.copy, selected_skills=selected,
+                       strict_prune=strict_prune, strict_native=args.strict_native,
+                       ignore_native=args.ignore_native)
 
 
 if __name__ == '__main__':

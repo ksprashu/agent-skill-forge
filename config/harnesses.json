@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "_comment": [
+    "Harness capability matrix. The installer subtracts a forge skill from a harness",
+    "when that harness already ships the same CAPABILITY natively.",
+    "",
+    "coverage 'full'    -> skill is skipped by default for that harness.",
+    "coverage 'partial' -> skill is installed by default; --strict-native also skips it.",
+    "",
+    "Keep this honest. A wrong 'full' silently removes a capability from a harness."
+  ],
+
+  "capabilities": {
+    "requirements-interview": "Interrogate an ambiguous ask until the requirement is unambiguous.",
+    "ramble-capture": "Turn a long unstructured or dictated brief into a verified understanding.",
+    "acceptance-criteria": "Write observable done criteria that outlive the session.",
+    "design-gate": "Block implementation until a design artifact is approved.",
+    "primary-source-research": "Investigate against first-party sources and cite every claim.",
+    "adversarial-review": "Cross-examine an in-flight decision from a fresh context.",
+    "task-decomposition": "Break work into ordered, individually testable tasks.",
+    "spec-authoring": "Write a structured specification before implementation.",
+    "intent-engineering": "Decompose a vague goal into directives and a task graph.",
+    "swarm-execution": "Run a multi-agent plan with oversight and adversarial checks.",
+    "tdd": "Write the failing test before the implementation.",
+    "code-review": "Audit a diff for correctness, security, performance, readability.",
+    "completion-evidence": "Refuse completion claims that lack fresh verification output.",
+    "quality-bar": "Record the project's quality thresholds and detect them being lowered.",
+    "scope-drift": "Compare a diff against its stated intent and flag what grew.",
+    "verification-rubrics": "Run deterministic static checks plus blinded judge rubrics.",
+    "simplification": "Strip boilerplate, filler, and dead abstraction.",
+    "cognitive-calibration": "Profile how this specific human reads, and adapt output to it.",
+    "reader-simulation": "Simulate real readers to find where a draft loses them.",
+    "discernment-prompts": "Hand the human questions that help them audit the output.",
+    "voice-profiling": "Extract a human's authentic writing cadence and style markers.",
+    "technical-copy": "Draft technical prose in a chosen voice.",
+    "chart-authoring": "Design charts, dashboards, and data visualisations.",
+    "image-generation": "Generate technical diagrams and visual assets.",
+    "codelab-authoring": "Author step-by-step interactive developer tutorials.",
+    "docs-authoring": "Scaffold SDLC docs and compile them into readable portals.",
+    "knowledge-catalog": "Maintain a durable progressive-disclosure codebase memory.",
+    "oss-compliance": "Audit licensing headers and scrub internal references.",
+    "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
+    "skill-sync": "Manage skill installation across agent runtimes."
+  },
+
+  "skill_capabilities": {
+    "grill": "requirements-interview",
+    "echo": "ramble-capture",
+    "done": "acceptance-criteria",
+    "brainstorm": "design-gate",
+    "research": "primary-source-research",
+    "doubt": "adversarial-review",
+    "prove": "completion-evidence",
+    "bar": "quality-bar",
+    "scope": "scope-drift",
+    "land": "reader-simulation",
+    "nudge": "discernment-prompts",
+    "profile": "cognitive-calibration",
+
+    "plan": "task-decomposition",
+    "spec": "spec-authoring",
+    "prompt": "intent-engineering",
+    "work": "swarm-execution",
+    "test": "tdd",
+    "review": "code-review",
+    "verify": "verification-rubrics",
+    "unslop": "simplification",
+    "codelab": "codelab-authoring",
+    "human-voice": "voice-profiling",
+    "copy-write": "technical-copy",
+    "image-gen": "image-generation",
+    "docs": "docs-authoring",
+    "catalog": "knowledge-catalog",
+    "google-oss": "oss-compliance",
+    "continuous-alignment": "alignment-distillation",
+    "sync": "skill-sync"
+  },
+
+  "harnesses": {
+    "claude-code": {
+      "label": "Claude Code",
+      "skills_dirs": ["~/.claude/skills"],
+      "project_skills_dirs": [".claude/skills"],
+      "hook_support": "settings-json",
+      "hook_config": "~/.claude/settings.json",
+      "commands_dirs": ["~/.claude/commands"],
+      "project_commands_dirs": [".claude/commands"],
+      "native": {
+        "task-decomposition": {
+          "provider": "plan mode (shift+tab)",
+          "coverage": "partial",
+          "note": "Plan mode produces an approved plan for the current turn. It does not persist an ordered task graph with per-task checkpoints, which is what the plan skill writes to disk."
+        },
+        "code-review": {
+          "provider": "/review",
+          "coverage": "partial",
+          "note": "The built-in reviews a GitHub pull request. The review skill runs a five-axis audit over an arbitrary working diff, with no PR required."
+        }
+      },
+      "reserved": []
+    },
+
+    "antigravity-ide": {
+      "label": "Antigravity IDE",
+      "skills_dirs": ["~/.gemini/config/skills"],
+      "project_skills_dirs": [".gemini/skills"],
+      "hook_support": "none",
+      "native": {},
+      "reserved": [
+        "goal", "schedule", "browser", "grill-me", "teamwork-preview", "learn",
+        "boost", "agents", "config", "settings", "clear", "resume", "rewind",
+        "undo", "fork", "add-dir", "keybindings", "codesearch", "credits",
+        "diff", "permissions", "statusline", "title", "voice", "help",
+        "agy-customizations", "antigravity_guide", "antigravity-guide",
+        "generative_ui", "migrate-workflows", "permissioned-github"
+      ]
+    },
+
+    "antigravity-cli": {
+      "label": "Antigravity CLI",
+      "skills_dirs": ["~/.gemini/antigravity-cli/skills"],
+      "project_skills_dirs": [".gemini/skills"],
+      "hook_support": "none",
+      "native": {},
+      "reserved": [
+        "goal", "schedule", "browser", "grill-me", "teamwork-preview", "learn",
+        "boost", "agents", "config", "settings", "clear", "resume", "rewind",
+        "undo", "fork", "add-dir", "keybindings", "codesearch", "credits",
+        "diff", "permissions", "statusline", "title", "voice", "help",
+        "agy-customizations", "antigravity_guide", "antigravity-guide",
+        "generative_ui", "migrate-workflows", "permissioned-github"
+      ]
+    },
+
+    "gemini-cli": {
+      "label": "Gemini CLI",
+      "skills_dirs": ["~/.gemini/skills"],
+      "project_skills_dirs": [".gemini/skills"],
+      "hook_support": "none",
+      "native": {},
+      "reserved": []
+    },
+
+    "codex": {
+      "label": "OpenAI Codex",
+      "skills_dirs": ["~/.codex/skills"],
+      "project_skills_dirs": [".codex/skills"],
+      "hook_support": "none",
+      "native": {},
+      "reserved": []
+    },
+
+    "agents-hub": {
+      "label": "Universal Agent Hub",
+      "skills_dirs": ["~/.agents/skills"],
+      "project_skills_dirs": [".agents/skills"],
+      "hook_support": "none",
+      "native": {},
+      "reserved": []
+    }
+  }
+}

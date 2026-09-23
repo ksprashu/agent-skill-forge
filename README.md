@@ -6,6 +6,72 @@ Built for engineering rigor, token context economy, and zero AI slop.
 
 ---
 
+## 🧭 The Four-Gate Spine
+
+Most agent failures are not coding failures. The model built the wrong thing,
+or it built the right thing without being asked to think, or it said "done"
+without checking, or it produced something technically correct that no human
+wanted to read. The spine is twelve skills arranged as four gates against
+exactly those four failures.
+
+```
+  UNDERSTAND ──► THINK ──► [gate] ──► BUILD ──► VERIFY ──► HUMAN
+```
+
+| Gate | Skills | The failure it prevents |
+| :--- | :--- | :--- |
+| **Understand** | `echo` · `grill` · `done` | Building a confident answer to the wrong question. |
+| **Think** | `brainstorm` · `research` · `doubt` | Taking the first idea because it arrived first. |
+| **Verify** | `prove` · `bar` · `scope` | Claiming done without evidence that it is. |
+| **Human** | `profile` · `land` · `nudge` | Correct output that reads like machine sludge. |
+
+The gate between THINK and BUILD is the only one with teeth. On Claude Code it
+is a `PreToolUse` hook that **blocks** edits to product code until a design
+artefact is stamped `status: approved`. Docs, tests, and Markdown are never
+blocked, so exploration stays free.
+
+```bash
+bash scripts/install.sh --spine --hard-gate     # install the spine, enforce the gate
+python3 hooks/design_gate.py --status           # is it open, and why
+FORGE_GATE=off claude                           # bypass for one session
+```
+
+Nine of the twelve spine skills are **not written here**. They are referenced
+from upstream repositories at pinned commit SHAs and fetched at install time —
+nothing is vendored, nothing is forked. See
+[§ Reference-Only Upstream Skills](#-reference-only-upstream-skills).
+
+### One spine, every harness
+
+Each skill claims a *capability*, not a name. Each harness declares which
+capabilities it already covers. The installer subtracts, so a harness never
+receives a skill that duplicates something it already ships — and your own
+slash commands are detected too.
+
+```bash
+python3 scripts/sync_skills.py --list-harnesses
+```
+
+| Harness | Installs to | Hooks | Design gate |
+| :--- | :--- | :--- | :--- |
+| Claude Code | `~/.claude/skills` | ✅ `settings.json` | **Enforced** |
+| Antigravity IDE | `~/.gemini/config/skills` | ❌ | Advisory |
+| Antigravity CLI | `~/.gemini/antigravity-cli/skills` | ❌ | Advisory |
+| Gemini CLI | `~/.gemini/skills` | ❌ | Advisory |
+| OpenAI Codex | `~/.codex/skills` | ❌ | Advisory |
+| Universal Agent Hub | `~/.agents/skills` | ❌ | Advisory |
+
+Only Claude Code exposes a hook API, so it is the only harness where the design
+gate can actually stop an edit. Everywhere else the gate is instruction text in
+the `brainstorm` skill — a strong instruction, not an enforced one. If you need
+it to hold on those harnesses, use a pre-commit hook or a CI check.
+
+📖 **[docs/harness_capabilities.md](docs/harness_capabilities.md)** — what each
+harness ships natively, and how to drive those defaults canonically alongside
+the spine.
+
+---
+
 ## 🚀 Quickstart & Selective Installation
 
 `agent-skill-forge` allows you to install **everything**, **only specific clusters** (e.g. Content & Creative without Planning/Spec), or **individual skills**.
@@ -43,7 +109,7 @@ bash scripts/install.sh --core
 # Install all Preferred Domain skills (D1, D2, D3, D4)
 bash scripts/install.sh --domain
 
-# Install the COMPLETE Forge (All 30 Core + Domain skills)
+# Install the COMPLETE Forge (All 31 Core + Domain skills)
 bash scripts/install.sh --all
 
 # Bootstrap specific clusters into a local project workspace only (.gemini/skills)
@@ -63,7 +129,7 @@ python3 scripts/sync_skills.py --list-clusters
 
 ## 🌟 Core Skills Taxonomy (4 Clusters)
 
-The 18 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
+The 19 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*
@@ -87,12 +153,13 @@ The 18 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, and synthesizes diagrams.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
 | **[`codelab`](./skills/codelab)** | `/codelab` | User Slash | **Google Codelab Creator**: 7-phase workflow scaffolding engaging, interactive developer tutorials and workshops formatted for `claat` with automated quality guards. |
 | **[`human-voice`](./skills/human-voice)** | `/human-voice` | User Slash | **Persona & Cadence Profiler**: Scans developer conversation logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization. |
+| **[`cognitive-profiler`](./skills/cognitive-profiler)** | `/cognitive-profiler`, `/profile-me` | User Slash | **Agent Communication Profiler**: Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`. |
 | **[`copy-write`](./skills/copy-write)** | `/copy-write` | User Slash | **Technical Prose Companion**: Drafts articles, documentation, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`). |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | User Slash | **Multimodal Diagram & Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI graphics using Gemini Flash Image with style consistency. |
 
@@ -137,6 +204,64 @@ The 12 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for pr
 
 ---
 
+## 🔗 Reference-Only Upstream Skills
+
+Nine of the twelve spine skills are somebody else's work, and they stay that
+way. This repository contains **no copy** of them. Instead
+[`config/upstream.lock.json`](config/upstream.lock.json) pins each one to a
+40-character commit SHA, and `scripts/fetch_upstream.py` resolves it at install
+time into `.upstream/` (gitignored).
+
+Why reference rather than vendor:
+
+- **No silent drift.** A fork diverges the day after you make it. A SHA pin
+  either resolves or fails loudly.
+- **Upgrades are reviewable.** `--upgrade` prints a GitHub compare link for
+  every skill with a newer commit. You read the diff, then bump the pin.
+- **Attribution is structural.** The upstream author's content is never edited.
+  Forge-specific glue lives in [`overlays/`](overlays/) and is appended at
+  fetch time, below the upstream text and above a provenance block.
+- **Tamper-evident.** Every materialised tree is sha256-hashed into
+  `.forge-manifest.json`. `--verify` exits non-zero if anything changed.
+
+```bash
+python3 scripts/fetch_upstream.py            # resolve all pinned skills
+python3 scripts/fetch_upstream.py --verify   # check nothing was tampered with
+python3 scripts/fetch_upstream.py --upgrade  # show what moved upstream
+python3 scripts/fetch_upstream.py --offline  # install from local cache only
+```
+
+| Skill | Gate | Upstream | Licence |
+| :--- | :--- | :--- | :--- |
+| **`grill`** | understand | [`mattpocock/skills` · productivity/grilling](https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling) | MIT |
+| **`echo`** | understand | [`Shubhamsaboo/awesome-llm-apps` · thinking-out-loud](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/agent_skills/thinking-out-loud) | Apache-2.0 |
+| **`done`** | understand | [`affaan-m/ECC` · intent-driven-development](https://github.com/affaan-m/ECC/tree/main/skills/intent-driven-development) | MIT |
+| **`brainstorm`** | think | [`obra/superpowers` · brainstorming](https://github.com/obra/superpowers/tree/main/skills/brainstorming) | MIT |
+| **`research`** | think | [`mattpocock/skills` · engineering/research](https://github.com/mattpocock/skills/tree/main/skills/engineering/research) | MIT |
+| **`doubt`** | think | [`addyosmani/agent-skills` · doubt-driven-development](https://github.com/addyosmani/agent-skills/tree/main/skills/doubt-driven-development) | MIT |
+| **`prove`** | verify | [`obra/superpowers` · verification-before-completion](https://github.com/obra/superpowers/tree/main/skills/verification-before-completion) | MIT |
+| **`bar`** | verify | [`addyosmani/agent-skills` · constraint-driven-development](https://github.com/addyosmani/agent-skills/tree/main/skills/constraint-driven-development) | MIT |
+| **`scope`** | verify | [`Shubhamsaboo/awesome-llm-apps` · scope-creep-detector](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/agent_skills/scope-creep-detector) | Apache-2.0 |
+| **`land`** | human | [`Shubhamsaboo/awesome-llm-apps` · first-reader](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/agent_skills/first-reader) | Apache-2.0 |
+| **`nudge`** | human | [`anthropics/skills` · discernment-nudge](https://github.com/anthropics/skills/tree/main/skills/discernment-nudge) | Custom — see upstream `LICENSE.txt` |
+
+Thank you to **Matt Pocock**, **Addy Osmani**, **Jesse Vincent (obra)**,
+**Affaan Mustafa**, **Shubham Saboo**, and **Anthropic**. The forge is glue
+around your work, not a replacement for it.
+
+> `anthropics/skills` ships custom licence terms rather than a standard OSS
+> licence. It is fetched at install time onto your machine and is never
+> redistributed by this repository. Read the upstream terms before use.
+
+Two caveats, stated plainly:
+
+- **Installing needs the network.** That is inherent to reference-only. Use
+  `--offline` once the cache is warm, or `--no-fetch` to skip the spine.
+- **`echo` and `land` need a responsive human.** They are excluded from
+  `--non-interactive` installs because an unattended agent cannot answer them.
+
+---
+
 ## 👤 Attributions & Lineage Matrix (Page at a Glance)
 
 We gratefully acknowledge the creators, open-source contributors, and engineering pioneers whose work inspired and shaped the skills in `agent-skill-forge`:
@@ -159,6 +284,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
@@ -179,15 +305,24 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 
 ```
 agent-skill-forge/
-├── skills/                     # 18 Core Universal Global Action Verbs
+├── skills/                     # Core Universal Global Action Verbs
 ├── preferred/                  # 12 Curated Domain-Specific Skills (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
+├── config/
+│   ├── harnesses.json          # Harness capability matrix — drives subtraction
+│   └── upstream.lock.json      # SHA-pinned reference-only skills
+├── overlays/                   # Forge glue appended to upstream skills at fetch
+├── hooks/
+│   └── design_gate.py          # PreToolUse hard gate (Claude Code)
+├── .upstream/                  # Fetched upstream skills (gitignored)
 ├── scripts/                    # Installer & Verification Scripts
 │   ├── install.sh              # 1-liner installer
+│   ├── fetch_upstream.py       # Pinned upstream resolver / verifier / upgrader
 │   ├── sync_skills.py          # Symlink manager & JIT bootstrapper
 │   └── validate_skills.py      # Frontmatter linter & PII scanner
 ├── docs/                       # Full Documentation Suite & Stitch Portals
+│   ├── harness_capabilities.md # Native skills per harness + canonical usage
 │   └── skill_authoring_guide.md# Official Skill Authoring Guide
 ├── .gemini/knowledge/          # Google OKF Knowledge Bundle
 └── README.md                   # Monorepo Entrypoint & Attribution Matrix

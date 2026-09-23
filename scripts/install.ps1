@@ -4,6 +4,7 @@
 #>
 [CmdletBinding()]
 param(
+    [switch]$Uninstall,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$ForwardArgs
 )
@@ -29,6 +30,11 @@ foreach ($cmd in @('python3.12', 'python3.13', 'py', 'python3', 'python')) {
 if (-not $PythonExe) {
     Write-Error "❌ Error: Python 3 is required but not found in PATH."
     exit 1
+}
+
+if ($Uninstall -or ($ForwardArgs -contains '--uninstall')) {
+    & $PythonExe "$ScriptDir\sync_skills.py" --uninstall
+    exit 0
 }
 
 if ($ForwardArgs -and $ForwardArgs.Count -gt 0) {

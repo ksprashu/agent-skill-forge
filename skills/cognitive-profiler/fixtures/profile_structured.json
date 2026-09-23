@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "subject": "a structured reader",
+  "generated": "2026-09-20T09:20:00Z",
+  "evidence_ref": "fixtures/evidence_sample.json",
+  "dimensions": {
+    "visual_scaffolding": {
+      "band": "high",
+      "source": "observed",
+      "evidence": ["q4", "q5", "q6"],
+      "rationale": "14 structure requests across 412 turns (3.4%), with no rejections. Explicitly asks for comparison tables before argument."
+    },
+    "text_density": {
+      "band": "high",
+      "source": "observed",
+      "evidence": ["q1", "q2", "q3"],
+      "rationale": "11 length complaints. Median response at complaint is 520 words against an overall median of 240, so the trigger is length rather than topic."
+    },
+    "orientation_need": {
+      "band": "high",
+      "source": "declared",
+      "evidence": ["Chose card 2 variant A: context and problem before options."],
+      "rationale": "No log signal either way; settled by calibration."
+    },
+    "metaphor_affinity": {
+      "band": "high",
+      "source": "observed",
+      "evidence": ["q11", "q12"],
+      "rationale": "Asks for physical and plain-English framings of unfamiliar concepts; no rejections of analogy recorded."
+    },
+    "decision_directness": {
+      "band": "high",
+      "source": "observed",
+      "evidence": ["q7", "q8"],
+      "rationale": "8 directness requests (1.9%), including an explicit instruction to stop hedging."
+    },
+    "evidence_depth": {
+      "band": "high",
+      "source": "observed",
+      "evidence": ["q9", "q10"],
+      "rationale": "9 depth requests (2.2%), consistently asking for the full cost line and the failure mode rather than the happy path."
+    }
+  },
+  "tone": {
+    "default": "a senior colleague who already knows the domain",
+    "learning": "a good lecturer: concrete, unhurried, never patronising"
+  },
+  "limits": {
+    "response_ceiling_words": 520,
+    "sentences_per_bullet": 2,
+    "bullets_per_section": 4,
+    "code_fold_threshold": 20
+  },
+  "rules": [
+    {
+      "id": "R1",
+      "scope": "architecture",
+      "directive": "Put the candidate options in a comparison table before arguing for any of them",
+      "source": "observed",
+      "evidence": ["q4"]
+    },
+    {
+      "id": "R2",
+      "scope": "always",
+      "directive": "Lead with the answer, then the detail underneath it",
+      "source": "observed",
+      "evidence": ["q6"]
+    },
+    {
+      "id": "R3",
+      "scope": "cost",
+      "directive": "Never quote a single cost line in isolation; give the total including egress and request charges",
+      "source": "observed",
+      "evidence": ["q9"]
+    }
+  ],
+  "forbidden": [
+    {
+      "id": "R4",
+      "scope": "always",
+      "directive": "Do not present a balanced survey of options without stating which one you would pick",
+      "source": "observed",
+      "evidence": ["q7", "q8"]
+    }
+  ],
+  "unknowns": []
+}
