@@ -40,6 +40,13 @@ SECURITY MODEL — read this before trusting the gate
   edit: the Edit/Write/MultiEdit/NotebookEdit branch is path-scoped and exact,
   and the Bash branch catches the common shell mutations.
 
+  The docs/tests/Markdown exemption holds on both branches, but by different
+  means. The editor branch knows the exact path. The Bash branch tokenises the
+  command and lets it through only when every path-shaped operand it can read
+  is exempt; anything it cannot parse -- a pipeline, an interpreter one-liner,
+  an extensionless target -- is blocked rather than guessed at. So the
+  exemption is reliable for simple commands and conservative for the rest.
+
   It does not stop an agent that is actively trying to get around it. A shell
   is a general-purpose mutation engine, and BASH_MUTATORS is a pattern list;
   anything from an unusual interpreter invocation to a helper script defeats
@@ -66,6 +73,7 @@ import fnmatch
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -228,7 +236,12 @@ def artefact_timestamp(root, rel):
 
 
 def scan_artefacts(root):
-    """Return {kind: [(path, approved, fresh)]} for everything in docs/design."""
+    """Return {kind: [(path, slug, approved, fresh)]} for everything in docs/design.
+
+    The slug is the stem with the `-<kind>` suffix removed, so
+    `payment-retry-spec.md` yields slug `payment-retry`. evaluate() needs it to
+    pair a spec with its own plan rather than with any plan lying around.
+    """
     found = {k: [] for k in ARTEFACT_KINDS}
     ddir = os.path.join(root, DESIGN_DIR)
     if not os.path.isdir(ddir):
@@ -241,6 +254,7 @@ def scan_artefacts(root):
         kind = next((k for k in ARTEFACT_KINDS if stem.endswith(f'-{k}')), None)
         if not kind:
             continue
+        slug = stem[:-(len(kind) + 1)]
         full = os.path.join(ddir, name)
         rel = f'{DESIGN_DIR}/{name}'
         try:
@@ -250,7 +264,7 @@ def scan_artefacts(root):
         except OSError:
             continue
         fresh = artefact_timestamp(root, rel) >= baseline
-        found[kind].append((rel, approved, fresh))
+        found[kind].append((rel, slug, approved, fresh))
     return found
 
 
@@ -259,25 +273,43 @@ def evaluate(root):
     found = scan_artefacts(root)
 
     def live(kind):
-        return [p for p, ok, fresh in found[kind] if ok and fresh]
+        return [(p, slug) for p, slug, ok, fresh in found[kind] if ok and fresh]
 
-    probes, designs, specs, plans = live('probe'), live('design'), live('spec'), live('plan')
+    probes, designs = live('probe'), live('design')
+    specs, plans = live('spec'), live('plan')
 
     if specs:
-        if plans:
-            return True, 'architectural', f"spec {specs[0]} and plan {plans[0]} are approved"
+        # Pair by slug. Combining the two lists independently meant an approved
+        # `alpha-spec.md` plus an approved `beta-plan.md` opened the gate, so
+        # work nobody planned could ride in on a plan written for something
+        # else. The whole point of requiring both is that the plan is *this*
+        # spec's plan.
+        plan_slugs = {slug: p for p, slug in plans}
+        paired = [(sp, plan_slugs[slug]) for sp, slug in specs if slug in plan_slugs]
+        if paired:
+            spec_path, plan_path = paired[0]
+            return True, 'architectural', (
+                f"spec {spec_path} and its plan {plan_path} are approved")
+
+        orphans = ', '.join(sorted(slug for _, slug in specs))
+        stray = ', '.join(sorted(slug for _, slug in plans))
+        extra = ''
+        if stray:
+            extra = (f"\n  Approved plan(s) exist for a different slug ({stray}). "
+                     f"A plan only\n  authorises the spec it belongs to.")
         return False, 'architectural-plan-missing', (
-            f"An approved spec exists ({specs[0]}) but no approved plan.\n"
-            f"  Approving a spec only permits writing the plan. Write\n"
-            f"  {DESIGN_DIR}/<slug>-plan.md, get it approved, then edit."
+            f"An approved spec exists ({specs[0][0]}) but no approved plan with\n"
+            f"  the matching slug. Approving a spec only permits writing the plan.\n"
+            f"  Write {DESIGN_DIR}/{orphans.split(', ')[0]}-plan.md, get it approved,\n"
+            f"  then edit.{extra}"
         )
     if designs:
-        return True, 'bounded', f"design {designs[0]} is approved"
+        return True, 'bounded', f"design {designs[0][0]} is approved"
     if probes:
-        return True, 'spike', f"probe {probes[0]} is approved"
+        return True, 'spike', f"probe {probes[0][0]} is approved"
 
-    stale = [p for k in found for p, ok, fresh in found[k] if ok and not fresh]
-    unapproved = [p for k in found for p, ok, _ in found[k] if not ok]
+    stale = [p for k in found for p, _slug, ok, fresh in found[k] if ok and not fresh]
+    unapproved = [p for k in found for p, _slug, ok, _ in found[k] if not ok]
     detail = ''
     if stale:
         detail = (
@@ -324,18 +356,80 @@ def looks_like_mutation(command):
     return any(p.search(stripped) for p in BASH_MUTATORS)
 
 
+# A token that looks like a path we could classify, and is not a flag, a URL,
+# or a shell variable. It must end in a file extension: that is what separates
+# `docs/notes.md` from a sed script like `s/a/b/`, which is full of slashes and
+# is not a path at all. Extensionless operands (`rm -rf build`) simply are not
+# classifiable here, so the caller falls through to blocking.
+PATH_TOKEN_RE = re.compile(r'^[A-Za-z0-9._~@/\\-]+\.[A-Za-z0-9]{1,6}$')
+
+
+def bash_path_operands(command):
+    """Best-effort list of filesystem paths a shell command names.
+
+    This exists only to honour one promise: docs/, tests/ and Markdown are
+    never blocked. That promise was written for the editor branch and the Bash
+    branch broke it, refusing `sed -i docs/notes.md` while the gate was shut.
+
+    It is a tokeniser, not a shell. It is used in one direction only -- to let
+    a command through when *every* path it names is exempt. If nothing
+    path-shaped can be extracted, or one operand is not exempt, the caller
+    falls through to blocking. Being wrong here can only ever be conservative.
+    """
+    try:
+        tokens = shlex.split(command, comments=True)
+    except ValueError:
+        return []  # Unbalanced quotes. Cannot reason about it; do not try.
+
+    paths = []
+    for tok in tokens:
+        if tok.startswith('-') or '://' in tok or '$' in tok or '*' in tok:
+            continue
+        if tok in ('>', '>>', '|', '&&', ';'):
+            continue
+        while tok.startswith('>'):
+            tok = tok[1:]
+        if tok and PATH_TOKEN_RE.match(tok):
+            paths.append(tok)
+    return paths
+
+
+def bash_targets_only_allowed_paths(command, root):
+    """True when the command names at least one path and all of them are exempt."""
+    operands = bash_path_operands(command)
+    checked = []
+    for tok in operands:
+        if os.path.isabs(tok):
+            real = os.path.realpath(tok)
+            try:
+                rel = os.path.relpath(real, os.path.realpath(root))
+            except ValueError:
+                return False
+            if rel.startswith('..'):
+                return False  # Outside the project. Not ours to wave through.
+            tok = rel
+        checked.append(tok)
+
+    return bool(checked) and all(is_always_allowed(t) for t in checked)
+
+
 def run_hook_bash(tool_input, cwd):
     """Apply the gate to shell commands that look like they mutate files.
 
-    The path a shell command will touch is not knowable without running it, so
-    this cannot be path-scoped the way the editor branch is. Instead it only
-    engages when the gate is shut, and it says plainly what tripped it.
+    Shell commands cannot be path-scoped the way the editor branch is -- the
+    paths a command touches are not knowable without running it. So the check
+    runs the other way round: if every path the command names is one the gate
+    never blocks, let it through; otherwise, once the gate is shut, refuse and
+    say what tripped it.
     """
     command = tool_input.get('command') or ''
     if not looks_like_mutation(command):
         return 0
 
     root = project_root(cwd)
+    if bash_targets_only_allowed_paths(command, root):
+        return 0
+
     is_open, reason, detail = evaluate(root)
     if is_open:
         return 0
@@ -346,6 +440,9 @@ def run_hook_bash(tool_input, cwd):
         "  No approved design artefact covers this work yet, so the gate is shut\n"
         "  for writes of any kind, not just Edit and Write.\n"
         f"{detail}\n\n"
+        "  docs/, tests/ and Markdown are exempt, but only when every path in\n"
+        "  the command is one of those and the command is simple enough to read.\n"
+        "  A pipeline or an interpreter one-liner cannot be checked that way.\n\n"
         "  If this command only reads, re-run it in a form that cannot write,\n"
         "  or set FORGE_GATE=off for this session if you know what you are doing.\n"
     )
@@ -469,10 +566,22 @@ def cmd_status():
 CLAUDE_SETTINGS = os.path.expanduser('~/.claude/settings.json')
 
 
+def hook_command(script_path):
+    """The command line Claude Code will run for every matched tool call.
+
+    It records the interpreter that is running this installer, not the literal
+    string `python3`. install.ps1 deliberately searches for python3.12, py,
+    python3 and python in that order, so on a Windows box where only `py`
+    exists a hard-coded `python3` installs cleanly and then fails to start on
+    every single tool call.
+    """
+    return f'"{sys.executable}" "{script_path}"'
+
+
 def hook_entry(script_path):
     return {
         'matcher': 'Edit|Write|MultiEdit|NotebookEdit|Bash',
-        'hooks': [{'type': 'command', 'command': f'python3 "{script_path}"'}],
+        'hooks': [{'type': 'command', 'command': hook_command(script_path)}],
     }
 
 
@@ -493,14 +602,16 @@ def cmd_install():
     for group in pre:
         for h in group.get('hooks', []):
             if 'design_gate.py' in h.get('command', ''):
-                h['command'] = f'python3 "{script_path}"'
+                h['command'] = hook_command(script_path)
                 _write_settings(settings)
                 print(f"  Design gate already present; path refreshed in {CLAUDE_SETTINGS}")
+                print(f"  Interpreter: {sys.executable}")
                 return 0
     pre.append(hook_entry(script_path))
     _write_settings(settings)
     print(f"  Design gate installed into {CLAUDE_SETTINGS}")
-    print(f"  Matches: Edit, Write, MultiEdit, NotebookEdit")
+    print(f"  Matches: Edit, Write, MultiEdit, NotebookEdit, Bash")
+    print(f"  Interpreter: {sys.executable}")
     print(f"  Disable for one session with: FORGE_GATE=off")
     return 0
 
@@ -586,6 +697,33 @@ def cmd_self_test():
     check('/dev/null redirect is not', looks_like_mutation('make test > /dev/null'), False)
     check('git status is not', looks_like_mutation('git status --short'), False)
 
+    # The Bash branch must honour the same exemptions the editor branch does.
+    # It used to block every detected write regardless of path, so a shut gate
+    # refused `sed -i docs/notes.md` -- which the contract says is never
+    # blocked.
+    def only_allowed(cmd):
+        return bash_targets_only_allowed_paths(cmd, '/tmp/forge-selftest')
+
+    check('sed on docs is exempt', only_allowed("sed -i '' s/a/b/ docs/notes.md"), True)
+    check('write into tests/ is exempt', only_allowed('echo x > tests/test_a.py'), True)
+    check('cp between docs is exempt', only_allowed('cp docs/a.md docs/b.md'), True)
+    check('markdown anywhere is exempt', only_allowed('rm CHANGELOG.md'), True)
+    check('sed on src is not exempt', only_allowed("sed -i '' s/a/b/ src/auth.py"), False)
+    check('mixed docs and src is not exempt',
+          only_allowed('cp docs/a.md src/auth.py'), False)
+    check('no readable operand is not exempt',
+          only_allowed('python3 -c "open(\'src/x.py\',\'w\')"'), False)
+    check('unbalanced quotes are not exempt', only_allowed('sed -i "docs/a.md'), False)
+    check('path outside the project is not exempt',
+          only_allowed('rm /etc/hosts.md'), False)
+
+    # The installed hook must name the interpreter that installed it. A literal
+    # 'python3' breaks on a Windows box where only `py` or python3.12 exists.
+    check('hook records a real interpreter',
+          hook_command('/x/design_gate.py').startswith(f'"{sys.executable}"'), True)
+    check('hook does not hard-code python3',
+          hook_command('/x/design_gate.py').startswith('python3 '), False)
+
     with tempfile.TemporaryDirectory() as tmp:
         ddir = os.path.join(tmp, DESIGN_DIR)
         os.makedirs(ddir)
@@ -609,10 +747,21 @@ def cmd_self_test():
         check('approved spec alone -> closed', is_open, False)
         check('reason is plan-missing', reason, 'architectural-plan-missing')
 
+        # A plan for a *different* slug must not authorise this spec. The two
+        # lists used to be combined independently, so any approved plan opened
+        # the gate for any approved spec.
+        other_plan = os.path.join(ddir, 'unrelated-plan.md')
+        with open(other_plan, 'w') as f:
+            f.write('# Plan\n\nStatus: approved\n')
+        is_open, reason, _ = evaluate(tmp)
+        check('spec + mismatched plan -> closed', is_open, False)
+        check('mismatched plan reason', reason, 'architectural-plan-missing')
+        os.remove(other_plan)
+
         plan = os.path.join(ddir, 'y-plan.md')
         with open(plan, 'w') as f:
             f.write('# Plan\n\n**Status**: approved\n')
-        check('spec + plan -> open', evaluate(tmp)[0], True)
+        check('spec + matching plan -> open', evaluate(tmp)[0], True)
 
         stale = os.path.join(tmp, DESIGN_DIR, 'z-design.md')
         os.remove(spec)

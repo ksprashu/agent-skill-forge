@@ -124,6 +124,15 @@ LIMITS = {
 
 TONE_CONTEXTS = ("default",) + tuple(s for s in SCOPES if s != "always")
 
+# Top-level keys validate() refuses to do without. build_schema() reads the same
+# tuple, so the advertised schema and the CLI cannot disagree about what a
+# profile must contain. They did: `forbidden` was absent here and required
+# there, so a profile that passed the published schema was rejected on load.
+# test_schema_required_matches_validator deletes each of these in turn and
+# fails if the validator stays quiet.
+REQUIRED_TOP_LEVEL = ("schema_version", "subject", "dimensions", "rules",
+                      "forbidden", "limits", "tone", "unknowns")
+
 QUOTE_ID_RE = re.compile(r"^q\d+$")
 
 # ---------------------------------------------------------------------------
@@ -537,8 +546,7 @@ def build_schema():
             "must cite resolvable quote IDs); scripts/profile_tool.py validate does."
         ),
         "type": "object",
-        "required": ["schema_version", "subject", "dimensions", "rules",
-                     "limits", "tone", "unknowns"],
+        "required": list(REQUIRED_TOP_LEVEL),
         "additionalProperties": False,
         "properties": {
             "schema_version": {"const": SCHEMA_VERSION},

@@ -350,6 +350,36 @@ class TestSchemaGeneration(unittest.TestCase):
         props = P.build_schema()["properties"]["dimensions"]["properties"]
         self.assertEqual(sorted(props), sorted(P.DIMENSIONS))
 
+    def test_schema_required_matches_the_validator(self):
+        """Anything the schema calls required, validate() must actually refuse.
+
+        The published schema is what other tools check against. When it let
+        `forbidden` be omitted but validate() rejected the result, a profile
+        could pass the advertised contract and still be unloadable.
+        """
+        required = P.build_schema()["required"]
+        self.assertEqual(required, list(P.REQUIRED_TOP_LEVEL))
+
+        base = load_fixture("profile_terse.json")
+        self.assertEqual(P.validate(base)[0], [], "fixture must start clean")
+        for key in required:
+            with self.subTest(missing=key):
+                prof = copy.deepcopy(base)
+                prof.pop(key, None)
+                errors, _ = P.validate(prof)
+                self.assertTrue(
+                    any(e.startswith(key) for e in errors),
+                    f"schema requires {key!r} but validate() did not complain: {errors}")
+
+    def test_validator_requires_nothing_the_schema_omits(self):
+        """The other direction: a profile with only the schema's required keys
+        plus valid values must load. Otherwise the schema understates the
+        contract and the mismatch is just pointing the other way."""
+        base = load_fixture("profile_terse.json")
+        minimal = {k: v for k, v in base.items() if k in P.REQUIRED_TOP_LEVEL}
+        errors, _ = P.validate(minimal)
+        self.assertEqual(errors, [], "schema is missing a key validate() needs")
+
 
 class TestAmend(unittest.TestCase):
     def test_amend_appends_and_keeps_the_profile_valid(self):

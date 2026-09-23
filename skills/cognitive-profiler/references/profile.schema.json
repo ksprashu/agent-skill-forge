@@ -9,6 +9,7 @@
     "subject",
     "dimensions",
     "rules",
+    "forbidden",
     "limits",
     "tone",
     "unknowns"

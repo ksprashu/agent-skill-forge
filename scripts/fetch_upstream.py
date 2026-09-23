@@ -41,6 +41,7 @@ import shutil
 import ssl
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import urllib.request
 
@@ -336,11 +337,101 @@ def tree_hash(root):
     return h.hexdigest()
 
 
+CACHE_COMPLETE_MARKER = '.forge-cache-complete'
+
+
+def cache_is_complete(cached):
+    """A cache directory counts only if the marker says the whole tree landed.
+
+    Treating any non-empty directory as a hit was wrong: fetch_tree writes
+    files as it walks, so a network failure partway through leaves a directory
+    with some of the skill in it. The next run -- especially `--offline`, which
+    cannot re-check -- called that a cache hit and materialised a truncated
+    skill, then hashed the truncation into the manifest so `--verify` agreed it
+    was fine.
+
+    One migration allowance: a cache written before the marker existed has no
+    way to prove itself. If it has a SKILL.md at the top level it is accepted
+    once and stamped, because otherwise `--offline` on an air-gapped machine
+    with a warm cache would have no way forward. That check is weaker than the
+    marker -- a truncated tree can still contain SKILL.md -- so it applies only
+    to directories that predate this code. Everything downloaded from here on
+    is promoted atomically or not at all.
+    """
+    if os.path.isfile(os.path.join(cached, CACHE_COMPLETE_MARKER)):
+        return True
+    if not os.path.isfile(os.path.join(cached, 'SKILL.md')):
+        return False
+    try:
+        with open(os.path.join(cached, CACHE_COMPLETE_MARKER), 'w', encoding='utf-8') as f:
+            json.dump({'migrated': True, 'note': 'pre-marker cache, accepted once'}, f)
+    except OSError:
+        return False
+    print(f"      adopted a pre-marker cache entry at {cached}")
+    return True
+
+
+def fetch_tree_atomic(repo, path, ref, token, cached):
+    """Download into a sibling temp directory, then promote in one rename.
+
+    A half-written cache never becomes visible under its real name, so there is
+    no partial state for a later run to mistake for a complete one.
+    """
+    parent = os.path.dirname(cached) or '.'
+    os.makedirs(parent, exist_ok=True)
+    staging = tempfile.mkdtemp(prefix=f'.{os.path.basename(cached)}.partial-', dir=parent)
+    try:
+        count = fetch_tree(repo, path, ref, token, staging)
+        with open(os.path.join(staging, CACHE_COMPLETE_MARKER), 'w', encoding='utf-8') as f:
+            json.dump({'repo': repo, 'path': path, 'ref': ref, 'files': count}, f)
+        if os.path.isdir(cached):
+            shutil.rmtree(cached, ignore_errors=True)
+        os.replace(staging, cached)
+        staging = None
+        return count
+    finally:
+        if staging and os.path.isdir(staging):
+            shutil.rmtree(staging, ignore_errors=True)
+
+
+def materialised_ref(lock, name):
+    """The ref recorded in an already-materialised skill, or None."""
+    manifest = os.path.join(materialise_root(lock), name, MANIFEST_NAME)
+    try:
+        with open(manifest, 'r', encoding='utf-8') as f:
+            return json.load(f).get('ref')
+    except (OSError, json.JSONDecodeError, ValueError, AttributeError):
+        return None
+
+
+def drop_stale_materialisation(lock, name, wanted_ref):
+    """Remove a materialised skill pinned to some other ref. Returns the old ref.
+
+    Called when a fetch fails. Both installers deliberately continue to the
+    sync step after a failed fetch, so without this the sync would link the
+    copy left over from the previous pin while the log said the new pin failed
+    -- the worst of both: an install that is silently one commit behind what
+    the lock file claims.
+    """
+    dest = os.path.join(materialise_root(lock), name)
+    if not os.path.isdir(dest):
+        return None
+    have = materialised_ref(lock, name)
+    if have == wanted_ref:
+        return None
+    shutil.rmtree(dest, ignore_errors=True)
+    return have or 'unknown'
+
+
 def materialise(lock, name, entry, cached):
     dest = os.path.join(materialise_root(lock), name)
     if os.path.exists(dest):
         shutil.rmtree(dest)
-    shutil.copytree(cached, dest)
+    # The completeness marker belongs to the cache, not to the skill. Leaving
+    # it out keeps tree_sha256 a hash of upstream's files plus the overlay and
+    # nothing else.
+    shutil.copytree(cached, dest,
+                    ignore=shutil.ignore_patterns(CACHE_COMPLETE_MARKER))
     upstream_name = apply_overlay(dest, name, entry)
 
     manifest = {
@@ -432,16 +523,19 @@ def cmd_fetch(args, lock):
         print(f"  {name:11} {entry['repo']}/{entry['path']} @ {short}")
 
         try:
-            if os.path.isdir(cached) and os.listdir(cached):
+            if cache_is_complete(cached):
                 print(f"      cache hit")
             elif args.offline:
+                partial = " (a partial download is present and was ignored)" \
+                    if os.path.isdir(cached) else ""
                 raise FetchError(
-                    f"not cached and --offline was requested.\n"
+                    f"not cached and --offline was requested{partial}.\n"
                     f"      Expected at {cached}\n"
                     f"      Run without --offline once on a networked machine to populate the cache."
                 )
             else:
-                n = fetch_tree(entry['repo'], entry['path'], entry['ref'], token, cached)
+                n = fetch_tree_atomic(entry['repo'], entry['path'], entry['ref'],
+                                      token, cached)
                 print(f"      fetched {n} file(s) -> cache")
 
             dest, manifest = materialise(lock, name, entry, cached)
@@ -451,8 +545,10 @@ def cmd_fetch(args, lock):
         except FetchError as e:
             print(f"      FAILED: {e}")
             failed.append((name, str(e)))
-            if os.path.isdir(cached) and not os.listdir(cached):
-                shutil.rmtree(cached, ignore_errors=True)
+            stale_ref = drop_stale_materialisation(lock, name, entry['ref'])
+            if stale_ref:
+                print(f"      removed the copy left from ref {stale_ref[:8]}; the sync "
+                      f"step would otherwise have installed it as if it were {short}")
 
     dropped = demote_excluded(lock, needs_human)
     for name in dropped:

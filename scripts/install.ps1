@@ -129,6 +129,13 @@ if ($PassArgs.Count -gt 0) {
     & $PythonExe "$ScriptDir\sync_skills.py" --prune --fix
 }
 
+# $ErrorActionPreference does not apply to a native process's exit code, so
+# without this check a failed sync fell straight through to the green banner.
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "`n❌ Skill synchronization failed (exit $LASTEXITCODE). Nothing further was done." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
 # ------------------------------------------------------------------------------
 # Step 3: optionally make the design gate mechanical.
 # Only Claude Code has a hook API; elsewhere the gate stays advisory.
@@ -137,6 +144,13 @@ if ($HardGate) {
     Write-Host ""
     Write-Host "🚧 Enabling the design gate (blocks product-code edits without an approved design)..." -ForegroundColor Yellow
     & $PythonExe "$RepoRoot\hooks\design_gate.py" --install
+    if ($LASTEXITCODE -ne 0) {
+        # Claiming an enforced gate that was never installed is worse than
+        # failing here: the user would rely on it.
+        Write-Host "`n❌ The design gate could not be installed (exit $LASTEXITCODE)." -ForegroundColor Red
+        Write-Host "    Skills are installed, but the gate is NOT enforced." -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
     Write-Host "    Antigravity, Gemini CLI, and Codex have no hook API. There the gate is"
     Write-Host "    the instruction text in the brainstorm skill and nothing more."
 }
