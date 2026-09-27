@@ -54,9 +54,15 @@ permission.
 
 Freshness is enforced throughout by ``tree_digest``: a SHA-256 over the sorted
 (path, content-hash) pairs of every source file under the project root. A green
-test run or a reviewer's approval only counts if the digest recorded alongside
-it still matches the tree. Evidence for code that has since changed is not
-evidence.
+test run only counts if the digest recorded alongside it still matches the tree.
+Evidence for code that has since changed is not evidence.
+
+An attestation carries a second anchor, ``evidence_digest``, over the artifacts
+it cites. The tree digest cannot see them — ``.agents/`` is excluded and ``.md``
+is not a digested extension — so without it an approved design document could be
+rewritten with its approval intact, and a pre-code gate such as ``spec_approved``
+would have nothing to anchor to at all. An attestation needs at least one live
+anchor; a change to either one invalidates it.
 
 Exit codes: 0 gate passed, 1 gate failed, 2 invocation error.
 """
@@ -288,7 +294,13 @@ def run_command(command: str, cwd: str | Path, timeout: int = DEFAULT_TIMEOUT) -
     ``shlex`` and executed directly, so ``&&``, pipes and redirection are inert
     text rather than operators.
     """
-    argv = shlex.split(command)
+    try:
+        argv = shlex.split(command)
+    except ValueError as exc:
+        # An unbalanced quote in a Gate cell is a malformed cell, not a crash.
+        # This runs over Markdown an agent wrote; it has to fail closed.
+        return {"command": command, "argv": [], "exit_code": 2, "stdout": "",
+                "stderr": f"unparseable command: {exc}", "duration_s": 0.0}
     if not argv:
         return {"command": command, "argv": [], "exit_code": 2,
                 "stdout": "", "stderr": "empty command", "duration_s": 0.0}
@@ -407,7 +419,53 @@ def latest_run(base_dir: str | Path, task: str,
 # ---------------------------------------------------------------------------
 
 ATTESTATION_FIELDS = ("task", "gate", "verdict", "reviewer_role", "worker_role",
-                      "evidence", "summary", "tree_digest", "attested_at")
+                      "evidence", "summary", "tree_digest", "evidence_digest",
+                      "attested_at")
+
+
+def evidence_digest(base_dir: str | Path, evidence: Sequence[str]) -> str:
+    """SHA-256 over the cited artifacts, whatever their extension.
+
+    The tree digest answers "has the code changed"; it excludes ``.agents/``
+    and every non-code extension, which is right for a test run and wrong for
+    a design review. A reviewer who approves ``DESIGN.md`` is attesting to that
+    document, and until this existed, editing the approved document left the
+    approval standing.
+
+    It also gives a pre-code gate something to anchor to. ``spec_approved`` and
+    ``design_pass`` are reached before a line of source exists, so the tree
+    digest at that point is ``EMPTY_TREE_DIGEST`` — the reviewed artefact is
+    the only thing there is to hash.
+    """
+    base = Path(base_dir)
+    paths: List[Path] = []
+    for rel in evidence:
+        try:
+            path = contained_path(base, str(rel))
+        except ScopeError:
+            continue
+        if path.is_file():
+            paths.append(path)
+        elif path.is_dir():
+            paths.extend(child for child in sorted(path.rglob("*"))
+                         if child.is_file() and not child.name.startswith("."))
+    if not paths:
+        return EMPTY_TREE_DIGEST
+    hasher = hashlib.sha256()
+    for path in sorted(set(paths)):
+        try:
+            data = path.read_bytes()
+        except OSError:
+            continue
+        try:
+            label = path.resolve().relative_to(base.resolve()).as_posix()
+        except ValueError:  # pragma: no cover — contained_path already proved it
+            label = path.name
+        hasher.update(label.encode("utf-8"))
+        hasher.update(b"\0")
+        hasher.update(hashlib.sha256(data).hexdigest().encode("ascii"))
+        hasher.update(b"\n")
+    return hasher.hexdigest()
 
 
 def attestation_path(base_dir: str | Path, task: str, gate: str) -> Path:
@@ -438,6 +496,7 @@ def write_attestation(base_dir: str | Path, task: str, gate: str, verdict: str,
         "evidence": list(evidence),
         "summary": summary,
         "tree_digest": tree_digest(scan_root),
+        "evidence_digest": evidence_digest(base, evidence),
         "attested_at": _now_iso(),
     }
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -535,18 +594,32 @@ def validate_attestation(record: Dict[str, Any], ctx: GateContext) -> List[str]:
     if len(summary) < 40:
         problems.append("attestation summary is under 40 characters; say what was reviewed")
 
-    recorded_digest = str(record.get("tree_digest") or "")
-    current_digest = tree_digest(ctx.scan_root())
-    if not recorded_digest:
+    # Freshness rests on two anchors, and an attestation needs at least one of
+    # them. The code anchor is empty before any source exists, which is the
+    # normal state at spec_approved and design_pass; the evidence anchor is
+    # empty only when nothing was cited, which is already a problem above.
+    recorded_tree = str(record.get("tree_digest") or "")
+    current_tree = tree_digest(ctx.scan_root())
+    recorded_evidence = str(record.get("evidence_digest") or "")
+    current_evidence = evidence_digest(ctx.base_dir, evidence if isinstance(evidence, list) else [])
+
+    if not recorded_tree:
         problems.append("attestation carries no tree_digest")
-    elif current_digest == EMPTY_TREE_DIGEST:
+    elif recorded_tree == EMPTY_TREE_DIGEST and current_tree == EMPTY_TREE_DIGEST \
+            and current_evidence == EMPTY_TREE_DIGEST:
         problems.append(
-            f"no source files under {ctx.scan_root()}; a digest over an empty "
-            f"tree cannot show the attestation is still current")
-    elif recorded_digest != current_digest:
+            f"nothing to anchor freshness to: no source files under "
+            f"{ctx.scan_root()} and no readable cited evidence. A digest over "
+            f"an empty tree matches every other empty tree.")
+    elif recorded_tree != current_tree:
         problems.append(
             "attestation is stale: the code changed after it was written "
-            f"(attested {recorded_digest[:12]}, now {current_digest[:12]})")
+            f"(attested {recorded_tree[:12]}, now {current_tree[:12]})")
+    elif recorded_evidence != current_evidence:
+        problems.append(
+            "attestation is stale: the cited evidence changed after it was "
+            f"written (attested {recorded_evidence[:12]}, now "
+            f"{current_evidence[:12]}). Re-read it and re-attest.")
 
     try:
         attested_at = datetime.fromisoformat(str(record.get("attested_at")))
@@ -711,8 +784,9 @@ def _gate_victory_cert(ctx: GateContext) -> GateResult:
         return GateResult(
             gate=ctx.gate, task=ctx.task, kind="mechanical", passed=False,
             reason=("victory_cert needs the DAG's task statuses and got none. "
-                    "Pass --dag <path/to/DAG.md>, or run the gate through "
-                    "`dag_validator.py --run-gates`, which supplies them."),
+                    "Pass --dag <path/to/DAG.md>. `dag_validator.py --set-status "
+                    "<task>=PASSED` also routes through this gate and supplies "
+                    "them from the DAG it is editing."),
             not_checked=["every other condition; certification stopped here"],
         )
 
@@ -905,11 +979,17 @@ def _looks_like_command(token: str) -> bool:
 
     Deliberately narrow. Anything that merely *looks* shell-ish would let a
     typo'd gate name execute; requiring a known runner keeps an unrecognised
-    single word failing closed.
+    single word failing closed. A cell that will not even tokenise — an
+    unbalanced quote, say — is not a command either: it routes to the unknown
+    gate, which refuses, rather than raising out of status enforcement.
     """
     if " " not in token:
         return False
-    head = shlex.split(token)[0] if token.strip() else ""
+    try:
+        parts = shlex.split(token)
+    except ValueError:
+        return False
+    head = parts[0] if parts else ""
     head = Path(head).name.lower()
     runners = {"pytest", "python", "python3", "python3.12", "python3.13", "npm",
                "npx", "node", "go", "cargo", "make", "ruff", "mypy", "jest",

@@ -76,9 +76,18 @@ class TestDryRunWritesNothing(BootstrapCase):
         self.assertIn("WOULD BOOTSTRAP", out)
         self.assertIn("--fix", out)
 
-    def test_parent_directories_are_created_so_the_path_is_visible(self):
+    def test_not_even_the_parent_directories_are_created(self):
+        """The class name is the contract: a dry run touches nothing.
+
+        This previously asserted the opposite — that `.gemini/skills` and
+        `.agents/skills` were created so the printed path would exist. That is
+        still a write into someone else's project from a command that says it
+        is making none, and two empty directories are exactly what made the
+        earlier `[BOOTSTRAP]` wording read as a completed install.
+        """
         run_sync(["--project", str(self.project), "--skills", "work"])
-        self.assertTrue((self.project / ".gemini" / "skills").is_dir())
+        self.assertFalse((self.project / ".gemini" / "skills").exists())
+        self.assertFalse((self.project / ".agents" / "skills").exists())
 
 
 class TestFixCreatesTheEntry(BootstrapCase):

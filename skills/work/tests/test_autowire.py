@@ -27,6 +27,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
@@ -406,6 +407,34 @@ class TestCli(unittest.TestCase):
         code, out, err = run_cli(["--task", "add structured logging", "--role", "Worker"])
         self.assertEqual(code, 0, err)
         self.assertIn("for role Worker", out)
+
+
+class TestRepoRootDefaultsToTheCheckout(unittest.TestCase):
+    """The catalogs live beside this script, not in the caller's project.
+
+    The Orchestrator runs this from whatever directory the work is happening
+    in. While ``--repo-root`` defaulted to ``.``, every such run discovered
+    zero skills and reported an empty matrix as though the catalog were empty.
+    """
+
+    def test_the_default_finds_the_forge_checkout(self):
+        self.assertEqual(REPO_ROOT.resolve(), autowire.default_repo_root())
+
+    def test_discovery_works_from_an_unrelated_directory(self):
+        with tempfile.TemporaryDirectory() as elsewhere:
+            code, out, err = run_cli(["--task", "add structured logging"], cwd=elsewhere)
+            self.assertEqual(code, 0, err)
+            self.assertIn("Domain Skills", out)
+            self.assertNotIn("Discovered 0 skills", out)
+
+    def test_an_explicit_repo_root_still_wins(self):
+        with tempfile.TemporaryDirectory() as empty:
+            code, out, err = run_cli(
+                ["--task", "add structured logging", "--repo-root", empty, "--json"])
+            self.assertEqual(code, 0, err)
+            match = json.loads(out)["matches"][0]
+            self.assertEqual([], match["skills"])
+            self.assertTrue(match["missing_skills"])
 
 
 class TestSourceDiscipline(unittest.TestCase):

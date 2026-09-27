@@ -56,6 +56,22 @@ SKILL_ROOTS = ("skills", "preferred")
 SKILL_FILENAME = "SKILL.md"
 CATALOG_RELPATH = Path("preferred") / "catalog.json"
 
+
+def default_repo_root() -> Path:
+    """The checkout holding the skill catalogs, found from this file.
+
+    Defaulting to the working directory was wrong for the documented use. This
+    script is run by an orchestrator working inside some *other* project, and
+    what it needs to read is the catalog next to itself, not whatever happens
+    to be in the cwd. Walking up from ``__file__`` finds it in a forge checkout
+    and in an installed skill tree alike; ``--repo-root`` still overrides.
+    """
+    here = Path(__file__).resolve()
+    for candidate in here.parents:
+        if all((candidate / root).is_dir() for root in SKILL_ROOTS):
+            return candidate
+    return Path.cwd()
+
 # Words that match everything and therefore discriminate nothing.
 STOPWORDS = frozenset(
     """
@@ -454,7 +470,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--task", help="Task description to match against the matrix")
     parser.add_argument("--role", help="Narrow to one role (Worker, Reviewer, ...)")
     parser.add_argument(
-        "--repo-root", default=".", help="Repository root holding skills/ and preferred/"
+        "--repo-root", default=None,
+        help="Repository root holding skills/ and preferred/ (default: the "
+             "checkout this script lives in, not the working directory)"
     )
     parser.add_argument("--max", type=int, default=None, help="Cap the number of domains")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of a brief")
@@ -470,7 +488,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    repo_root = Path(args.repo_root).resolve()
+    repo_root = (Path(args.repo_root).resolve() if args.repo_root
+                 else default_repo_root())
 
     if not repo_root.is_dir():
         print(f"error: --repo-root {repo_root} is not a directory", file=sys.stderr)

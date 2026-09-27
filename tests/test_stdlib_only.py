@@ -132,6 +132,38 @@ class TestCleanCodePasses(ScanCase):
         self.assertEqual(self.scan(), [])
 
 
+class TestRootsDoNotVouchForEachOther(ScanCase):
+    """The allow-list is per root, because the roots are not mutually importable.
+
+    Nothing under ``hooks/`` can ``import`` a module that only exists in
+    ``scripts/``. While the names were pooled into one union, a genuine missing
+    dependency could hide behind an unrelated file that merely shared its name.
+    """
+
+    def test_a_module_from_another_root_is_still_a_violation(self):
+        write(self.root, "scripts/helper.py", "X = 1\n")
+        write(self.root, "hooks/a.py", "import helper\n")
+        problems = checker.scan(self.root, ("scripts", "hooks"))
+        self.assertTrue(any("hooks/a.py" in p and "helper" in p for p in problems),
+                        problems)
+
+    def test_the_importer_is_still_clean(self):
+        write(self.root, "scripts/helper.py", "X = 1\n")
+        write(self.root, "scripts/a.py", "import helper\n")
+        write(self.root, "hooks/b.py", "import os\n")
+        self.assertEqual(checker.scan(self.root, ("scripts", "hooks")), [])
+
+    def test_a_declared_cross_root_import_is_allowed(self):
+        """``validate_skills.py`` puts the work engine on sys.path first."""
+        write(self.root, "scripts/a.py", "import dag_validator\n")
+        self.assertEqual(checker.scan(self.root, ("scripts",)), [])
+
+    def test_the_allowance_does_not_leak_to_other_roots(self):
+        write(self.root, "hooks/a.py", "import dag_validator\n")
+        problems = checker.scan(self.root, ("hooks",))
+        self.assertTrue(any("dag_validator" in p for p in problems), problems)
+
+
 class TestRepositoryIsClean(unittest.TestCase):
     def test_the_enforced_roots_are_clean_today(self):
         problems = checker.scan(REPO_ROOT)

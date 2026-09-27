@@ -199,7 +199,7 @@ records one with:
 
 ```bash
 python3.12 skills/work/scripts/gate_executor.py attest \
-  --task task_m1_code_rev --gate review_5axis_pass --verdict PASS \
+  --task task_m1_code_rev --gate review_pass --verdict PASS \
   --reviewer-role code-reviewer --worker-role implementer \
   --evidence .agents/m1_code_rev/review.md \
   --summary "What was reviewed and what was found."
@@ -410,13 +410,13 @@ which inverts the point of review.
       "Role": "Architectural Design Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Audit git diff against .agents/design/DESIGN.md for interface drift and boundary violations. Ground yourself in .gemini/knowledge/architecture/ first. Follow skills/review/SKILL.md. Output .agents/m1_design_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_design_rev --gate review_pass --verdict PASS --reviewer-role design-reviewer --worker-role implementer --evidence .agents/m1_design_rev/review.md --summary '<what drifted, what did not>'"
+      "Prompt": "Audit git diff against .agents/design/DESIGN.md for interface drift and boundary violations. Ground yourself in .gemini/knowledge/architecture/ first. Follow skills/review/SKILL.md. Output .agents/m1_design_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_design_rev --gate design_pass --verdict PASS --reviewer-role design-reviewer --worker-role implementer --evidence .agents/m1_design_rev/review.md --summary '<what drifted, what did not>'"
     },
     {
       "Role": "5-Axis Code Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Audit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_5axis_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
+      "Prompt": "Audit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
     },
     {
       "Role": "Adversarial Challenger",
@@ -428,7 +428,7 @@ which inverts the point of review.
       "Role": "Forensic Integrity Auditor",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Run: python3.12 skills/work/scripts/forensic_audit.py --target-dir . --strict\nThe auditor scans production source as well as tests: hardcoded returns, ignored parameters, dead computation, stubs, mocks, tautological assertions. Add --mutate --test-cmd '<test command>' to check that the tests would notice if the code broke. Exit 1 means VETO; the milestone does not advance. Write findings to .agents/m1_forensic/report.md."
+      "Prompt": "Run: python3.12 skills/work/scripts/forensic_audit.py --target-dir . --strict\nThe auditor scans production source as well as tests: hardcoded returns, ignored parameters, dead computation, stubs, mocks, tautological assertions. Add --mutate --test-cmd '<test command>' to check that the tests would notice if the code broke. Exit 1 means VETO; the milestone does not advance. Write findings to .agents/m1_forensic/handoff.md; the auditor appends its own SHA-256 ledger to .agents/EVIDENCE.md. Both are declared outputs of this task."
     }
   ]
 }
@@ -456,7 +456,7 @@ which inverts the point of review.
       "Role": "Victory Auditor",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are the independent Victory Auditor.\nRequired Inputs: .agents/evidence/, clean git workspace, .agents/acceptance_review/report.md.\n\nExecute the verification commands cold, from a clean checkout. Then run the terminal gate, which re-derives the claim rather than trusting the ledger:\npython3.12 skills/work/scripts/gate_executor.py check --gate victory_cert --task task_victory_auditor --cmd '<full test command>'\nIt exits 0 only when every task is PASSED, a strict forensic audit is clean, and a verification run against the current tree exited 0. Exit 1 is VICTORY REJECTED; write the reason it gave into .agents/victory_auditor/handoff.md. Do not write VICTORY CONFIRMED unless that command exited 0."
+      "Prompt": "You are the independent Victory Auditor.\nRequired Inputs: .agents/evidence/, clean git workspace, .agents/acceptance_review/report.md.\n\nExecute the verification commands cold, from a clean checkout. Then run the terminal gate, which re-derives the claim rather than trusting the ledger:\npython3.12 skills/work/scripts/gate_executor.py check --gate victory_cert --task task_victory_auditor --dag .agents/DAG.md --cmd '<full test command>'\nIt exits 0 only when every task is PASSED, a strict forensic audit is clean, and a verification run against the current tree exited 0. Exit 1 is VICTORY REJECTED; write the reason it gave into .agents/victory_auditor/handoff.md. Do not write VICTORY CONFIRMED unless that command exited 0."
     }
   ]
 }
