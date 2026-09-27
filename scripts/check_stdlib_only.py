@@ -58,6 +58,18 @@ if sys.version_info < MIN_PYTHON:
 #: Test-only dependency. The engine scripts themselves may not import it.
 TEST_ONLY_MODULES = frozenset({"pytest"})
 
+#: Imports that reach from one enforced root into another. Each is a script
+#: that puts the other root on ``sys.path`` before importing, so the module is
+#: local in fact even though it is not local to the importer's own directory.
+#: Listed one by one, with the importer named, because the alternative —
+#: pooling every root's module names into one allow-list — let a file in any
+#: root vouch for an identically-named import in any other.
+CROSS_ROOT_IMPORTS = {
+    # validate_skills.py runs the DAG fixtures through the work skill's own
+    # validator rather than reimplementing the parser.
+    "scripts": frozenset({"dag_validator"}),
+}
+
 SKIP_DIR_NAMES = frozenset({"__pycache__", ".git", ".upstream", "node_modules", "fixtures"})
 
 
@@ -100,17 +112,26 @@ def imported_modules(tree: ast.AST) -> Iterable[Tuple[int, str]]:
 
 
 def scan(repo_root: Path, roots: Sequence[str] = ENFORCED_ROOTS) -> List[str]:
-    """Every non-stdlib import under ``roots``. One line per violation."""
-    root_paths = [repo_root / r for r in roots]
-    allowed = set(sys.stdlib_module_names) | local_module_names(root_paths) | {
+    """Every non-stdlib import under ``roots``. One line per violation.
+
+    The allow-list is computed per root, not as one union across all of them.
+    These trees are not mutually importable at runtime: nothing under ``hooks/``
+    can ``import`` a module that exists only in ``scripts/``. Pooling the names
+    meant a file in one root vouched for an identically-named import in
+    another, so a genuine missing dependency could hide behind a local module
+    that merely shared its name.
+    """
+    stdlib = set(sys.stdlib_module_names) | {
         # Sibling trees these scripts legitimately add to sys.path.
         "tests",
     }
     violations: List[str] = []
-    for root in root_paths:
+    for rel in roots:
+        root = repo_root / rel
         if not root.exists():
             violations.append(f"{root}: enforced root does not exist")
             continue
+        allowed = stdlib | local_module_names([root]) | CROSS_ROOT_IMPORTS.get(str(rel), frozenset())
         for path in iter_python_files(root):
             try:
                 tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

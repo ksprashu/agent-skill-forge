@@ -583,6 +583,29 @@ class TestExecutionSafety(unittest.TestCase):
             result = GE.run_command("definitely-not-a-real-binary-xyz --go", fx.root)
             self.assertEqual(127, result["exit_code"])
 
+    def test_an_unbalanced_quote_is_a_refusal_not_a_traceback(self):
+        """``shlex.split`` raises on a cell an agent got half-right."""
+        with ProjectFixture() as fx:
+            result = GE.run_command("pytest -k 'not slow", fx.root)
+            self.assertEqual(2, result["exit_code"])
+            self.assertIn("unparseable command", result["stderr"])
+            self.assertEqual([], result["argv"])
+
+    def test_an_empty_command_is_a_refusal(self):
+        with ProjectFixture() as fx:
+            result = GE.run_command("   ", fx.root)
+            self.assertEqual(2, result["exit_code"])
+            self.assertIn("empty command", result["stderr"])
+
+    def test_an_unparseable_cell_is_not_mistaken_for_a_command(self):
+        """Status enforcement walks every Gate cell; it may not raise on one.
+
+        The cell routes to the unknown-gate path instead, which refuses.
+        """
+        self.assertFalse(GE._looks_like_command("pytest -k 'not slow"))
+        result = GE.evaluate_gate("pytest -k 'not slow", "worker", ".")
+        self.assertFalse(result.passed)
+
 
 # ---------------------------------------------------------------------------
 # Tree digest
@@ -716,7 +739,13 @@ class TestEmptyDigestNeverCountsAsFresh(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("No source files under", result.reason)
 
-    def test_an_attestation_over_an_empty_scope_cannot_be_shown_current(self):
+    def test_an_attestation_with_neither_anchor_cannot_be_shown_current(self):
+        """No source and no readable evidence leaves nothing to compare against.
+
+        Deleting the cited report after the fact is the only way to reach this
+        with the artifact checks in place, and it is worth reaching: the pair of
+        empty digests would otherwise match forever.
+        """
         with ProjectFixture() as fx:
             fx.write("docs/notes.md", substantial("Notes"))
             fx.write("report.md", substantial("Code review"))
@@ -724,9 +753,88 @@ class TestEmptyDigestNeverCountsAsFresh(unittest.TestCase):
                                  "code-reviewer", "implementer", ["report.md"],
                                  "Reviewed the diff against the spec and found nothing blocking.",
                                  source_dir="docs")
+            (Path(fx.root) / "report.md").unlink()
             result = GE.evaluate_gate("review_pass", "review", fx.root, source_dir="docs")
             self.assertFalse(result.passed)
-            self.assertIn("no source files under", result.reason)
+            self.assertIn("nothing to anchor freshness to", result.reason)
+
+
+# ---------------------------------------------------------------------------
+# Attestation freshness rests on two anchors, not one
+# ---------------------------------------------------------------------------
+
+class TestAttestationFreshnessHasTwoAnchors(unittest.TestCase):
+    """The tree digest alone cannot carry a design review.
+
+    ``.agents/`` is excluded from the scan and ``.md`` is not a digested
+    extension, so the reviewed document is invisible to the code anchor. Before
+    the evidence anchor existed, a greenfield ``design_pass`` was unprovable —
+    there is no source at that point in the lifecycle — and, once past that, an
+    approved proposal could be rewritten without disturbing its approval.
+    """
+
+    ATTEST = ("Read the proposal end to end and checked the interfaces against "
+              "the acceptance criteria.")
+
+    def _attest(self, fx, evidence=("DESIGN.md",), source_dir=None):
+        GE.write_attestation(fx.root, "design", "design_pass", "PASS",
+                             "architect", "implementer", list(evidence),
+                             self.ATTEST, source_dir=source_dir)
+
+    def test_a_greenfield_design_review_passes_with_no_source_at_all(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "DESIGN.md").write_text(substantial("Design proposal"), encoding="utf-8")
+            self.assertEqual(GE.EMPTY_TREE_DIGEST, GE.tree_digest(root),
+                             "precondition: the lifecycle starts with no code")
+            GE.write_attestation(root, "design", "design_pass", "PASS",
+                                 "architect", "implementer", ["DESIGN.md"], self.ATTEST)
+            result = GE.evaluate_gate("design_pass", "design", root)
+            self.assertTrue(result.passed, result.reason)
+
+    def test_editing_the_reviewed_document_invalidates_the_approval(self):
+        with ProjectFixture() as fx:
+            fx.write("DESIGN.md", substantial("Design proposal"))
+            self._attest(fx)
+            fx.write("DESIGN.md", substantial("Design proposal, now with a queue"))
+            result = GE.evaluate_gate("design_pass", "design", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("cited evidence changed", result.reason)
+
+    def test_a_directory_of_evidence_is_hashed_through(self):
+        with ProjectFixture() as fx:
+            fx.write("notes/one.md", substantial("First note"))
+            fx.write("notes/two.md", substantial("Second note"))
+            self._attest(fx, evidence=("notes",))
+            self.assertTrue(GE.evaluate_gate("design_pass", "design", fx.root).passed)
+            fx.write("notes/two.md", substantial("Second note, revised"))
+            result = GE.evaluate_gate("design_pass", "design", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("cited evidence changed", result.reason)
+
+    def test_the_code_anchor_still_bites_when_there_is_code(self):
+        """Touching the source invalidates an approval even if the doc is intact."""
+        with ProjectFixture() as fx:
+            fx.write("DESIGN.md", substantial("Design proposal"))
+            fx.write("src/app.py", HONEST_SOURCE)
+            self._attest(fx)
+            self.assertTrue(GE.evaluate_gate("design_pass", "design", fx.root).passed)
+            fx.write("src/app.py", HONEST_SOURCE + "\n\ndef added():\n    return 1\n")
+            result = GE.evaluate_gate("design_pass", "design", fx.root)
+            self.assertFalse(result.passed)
+            self.assertIn("the code changed", result.reason)
+
+    def test_evidence_outside_the_project_is_not_hashed(self):
+        with ProjectFixture() as fx:
+            self.assertEqual(GE.EMPTY_TREE_DIGEST,
+                             GE.evidence_digest(fx.root, ["/etc/hosts", "../escape.md"]))
+
+    def test_the_digest_covers_content_not_just_names(self):
+        with ProjectFixture() as fx:
+            fx.write("a.md", substantial("Alpha"))
+            first = GE.evidence_digest(fx.root, ["a.md"])
+            fx.write("a.md", substantial("Beta"))
+            self.assertNotEqual(first, GE.evidence_digest(fx.root, ["a.md"]))
 
 
 # ---------------------------------------------------------------------------

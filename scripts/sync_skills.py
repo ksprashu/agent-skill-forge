@@ -838,8 +838,13 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
 
     project_gemini_skills = os.path.join(project_dir, '.gemini', 'skills')
     project_agents_skills = os.path.join(project_dir, '.agents', 'skills')
-    os.makedirs(project_gemini_skills, exist_ok=True)
-    os.makedirs(project_agents_skills, exist_ok=True)
+    if fix:
+        # Deferred until --fix. Creating these unconditionally made the dry run
+        # leave two empty directories in someone else's project, which is both
+        # a write the caller did not ask for and the exact "it looked like it
+        # installed" confusion the [WOULD BOOTSTRAP] wording exists to end.
+        os.makedirs(project_gemini_skills, exist_ok=True)
+        os.makedirs(project_agents_skills, exist_ok=True)
 
     for skill in skill_names:
         skill = skill.strip()

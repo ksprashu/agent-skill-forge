@@ -157,13 +157,18 @@ The Orchestrator dispatches subagents in accordance with the Ready Frontier:
    - `parallel` nodes in the Ready Frontier are dispatched concurrently in a single `invoke_subagent` call.
    - `series` nodes are dispatched in sequential order.
 4. **Domain Skill Autowiring**: Before writing each dispatch payload, resolve the
-   domain skills for that task and paste the emitted block into the `Prompt`:
+   domain skills for that task and paste the emitted block into the `Prompt`.
+   Substitute the role you are actually dispatching — `Worker`, `Reviewer`,
+   `Challenger` or `Auditor` — because the matrix maps different skills to each,
+   and the security and code-review entries belong to the verification roles:
    ```bash
-   python3.12 skills/work/scripts/autowire.py --task "<the task name and its Outputs>" --role Worker
+   python3.12 <work-skill>/scripts/autowire.py \
+     --task "<the task name and its Outputs>" --role <the dispatched role>
    ```
-   The script scans `skills/` and `preferred/`, verifies every path it emits
-   exists, and reports which terms matched. See
-   [Domain Autowiring](domain_autowiring.md).
+   The script reads `skills/` and `preferred/` from the checkout it lives in,
+   not from the project you are working on, so it needs no `--repo-root` when
+   the two differ. It verifies every path it emits exists and reports which
+   terms matched. See [Domain Autowiring](domain_autowiring.md).
 5. **Anti-Polling Dormancy**: If prerequisites are not satisfied, the node remains in `BLOCKED` status and zero subagents are spawned. The Orchestrator stops calling tools and awaits reactive wakeup.
 
 ---
