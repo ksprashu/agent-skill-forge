@@ -495,6 +495,70 @@ class TestDAGValidator(unittest.TestCase):
         self.assertIn("PASSED", updated_content)
         self.assertIn("```mermaid", updated_content)
 
+    # -- The file is written only if the update survives validation ---------
+    #
+    # --update-file used to write first and validate afterwards. The command
+    # exited non-zero, which reads as a refusal, while the invalid status sat
+    # in the caller's DAG.
+
+    BLOCKED = (
+        "| ID | Title | Mode | Depends On | Inputs | Outputs | Gate | Status |\n"
+        "|---|---|---|---|---|---|---|---|\n"
+        "| A | Task A | series | none | - | - | none | PENDING |\n"
+        "| B | Task B | series | A | - | - | none | PENDING |\n"
+    )
+
+    def _update(self, body, *args):
+        f = Path(self.test_dir) / "dag.md"
+        f.write_text(body, encoding="utf-8")
+        proc = subprocess.run(
+            [sys.executable, self.script_path, str(f), "--update-file", *args],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
+        return proc, f
+
+    def test_a_blocked_transition_is_not_persisted(self):
+        proc, f = self._update(self.BLOCKED, "--set-status", "B=PASSED")
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(self.BLOCKED, f.read_text(encoding="utf-8"),
+                         "the refused update was written to disk anyway")
+
+    def test_the_refusal_names_the_error_it_would_introduce(self):
+        proc, _ = self._update(self.BLOCKED, "--set-status", "B=PASSED")
+        self.assertIn("refusing to write", proc.stderr)
+        self.assertIn("upstream dependency 'A' is PENDING", proc.stderr)
+
+    def test_a_legal_transition_still_writes(self):
+        proc, f = self._update(self.BLOCKED, "--set-status", "A=PASSED")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("| A | Task A | series | none | - | - | none | PASSED |",
+                      f.read_text(encoding="utf-8"))
+
+    def test_a_dag_that_is_already_invalid_can_still_be_repaired(self):
+        """Refusing on pre-existing errors would strand a broken DAG.
+
+        Only errors the update *introduces* block it. Here the file arrives
+        already inconsistent and the update is the thing that fixes it.
+        """
+        broken = (
+            "| ID | Title | Mode | Depends On | Inputs | Outputs | Gate | Status |\n"
+            "|---|---|---|---|---|---|---|---|\n"
+            "| A | Task A | series | none | - | - | none | PENDING |\n"
+            "| B | Task B | series | A | - | - | none | PASSED |\n"
+        )
+        proc, f = self._update(broken, "--set-status", "A=PASSED")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("PENDING", f.read_text(encoding="utf-8"))
+
+    def test_the_write_is_atomic(self):
+        """A crash mid-write must not truncate the caller's DAG."""
+        import dag_validator as DV
+        target = Path(self.test_dir) / "atomic.md"
+        target.write_text("original\n", encoding="utf-8")
+        DV.atomic_write(str(target), "replacement\n")
+        self.assertEqual("replacement\n", target.read_text(encoding="utf-8"))
+        self.assertEqual([], [p for p in target.parent.iterdir()
+                              if p.name.startswith(".atomic.md.tmp")])
+
     def test_multi_token_backticks_split(self):
         md = """
 # Multi-token Code Spans

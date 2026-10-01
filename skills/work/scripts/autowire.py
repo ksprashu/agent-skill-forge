@@ -90,11 +90,23 @@ class SkillEntry:
     relpath: str
     description: str
     tags: Tuple[str, ...] = ()
+    #: Absolute location of the skill directory. ``relpath`` is relative to the
+    #: forge checkout, which is not where a dispatched subagent is standing --
+    #: see ``render_brief`` for why the brief must carry this one instead.
+    abspath: str = ""
+
+    @property
+    def skill_file(self) -> str:
+        """The path to hand an agent. Absolute when discovery knew where it was."""
+        base = self.abspath or self.relpath
+        return f"{base.rstrip('/')}/{SKILL_FILENAME}"
 
     def to_dict(self) -> Dict[str, object]:
         return {
             "name": self.name,
             "path": self.relpath,
+            "abs_path": self.abspath,
+            "skill_file": self.skill_file,
             "description": self.description,
             "tags": list(self.tags),
         }
@@ -287,6 +299,7 @@ def discover_skills(repo_root: Path) -> List[SkillEntry]:
                     relpath=f"{root_name}/{child.name}",
                     description=front.get("description", ""),
                     tags=tags.get(child.name, tags.get(name, ())),
+                    abspath=str(child.resolve()),
                 )
             )
     return entries
@@ -399,7 +412,15 @@ def autowire(
 
 
 def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str:
-    """The block to paste into a dispatch payload's Prompt field."""
+    """The block to paste into a dispatch payload's Prompt field.
+
+    Paths are absolute. The brief tells a subagent to open each file, and that
+    subagent is standing in the target project, not in the forge checkout --
+    ``preferred/security-and-hardening/SKILL.md`` resolves against its
+    workspace and is not there. Every skill the autowiring named was
+    unopenable by the agent instructed to read it, which is the quiet version
+    of the feature not working at all.
+    """
     if not matches:
         return (
             "Domain Skills: none matched. Work from the task description and the "
@@ -412,7 +433,7 @@ def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str
         terms = ", ".join(sorted(match.terms)[:6])
         for entry in match.resolved:
             lines.append(
-                f"- {entry.relpath}/{SKILL_FILENAME} — {match.domain.label} "
+                f"- {entry.skill_file} — {match.domain.label} "
                 f"(matched: {terms})"
             )
         for missing in match.missing:

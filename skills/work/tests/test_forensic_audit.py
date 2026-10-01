@@ -439,6 +439,73 @@ class TestHonestReporting(unittest.TestCase):
         self.assertIn("NOT RUN", out)
 
 
+class TestUnparseableSourceIsBlocking(unittest.TestCase):
+    """A file the auditor could not read is not a file it cleared.
+
+    Counting a parse failure in the coverage block and nowhere else meant
+    `--strict` printed `VERDICT: CLEARED` over production code that does not
+    compile — the exact "looks like enforcement, isn't" failure this tool
+    exists to catch, committed by the tool itself.
+    """
+
+    BROKEN = "def pay_out(amount):\n    if amount >\n        return 0\n"
+
+    def _audit(self, files, *extra):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "src"
+            src.mkdir()
+            for name, body in files.items():
+                (src / name).write_text(textwrap.dedent(body), encoding="utf-8")
+            tests = Path(tmp) / "tests"
+            tests.mkdir()
+            (tests / "test_ok.py").write_text(
+                "from src.ok import add\n\n\ndef test_add():\n    assert add(2, 3) == 5\n",
+                encoding="utf-8")
+            proc = run_cli("--target-dir", tmp, "--json", *extra)
+            return json.loads(proc.stdout), proc.returncode
+
+    def test_broken_source_does_not_get_a_clean_verdict(self):
+        payload, code = self._audit({"broken.py": self.BROKEN}, "--strict")
+        self.assertNotEqual("CLEARED", payload["verdict"])
+        self.assertNotEqual(0, code)
+
+    def test_the_finding_names_the_file_and_the_reason(self):
+        payload, _ = self._audit({"broken.py": self.BROKEN}, "--strict")
+        found = [f for f in payload["violations"] if f["category"] == "UNPARSEABLE_SOURCE"]
+        self.assertEqual(1, len(found), payload["violations"])
+        self.assertIn("broken.py", found[0]["file"])
+        self.assertIn("syntax error", found[0]["message"])
+        self.assertEqual("VETO", found[0]["severity"])
+
+    def test_one_broken_file_does_not_excuse_the_rest(self):
+        payload, _ = self._audit({
+            "broken.py": self.BROKEN,
+            "ok.py": "def add(a, b):\n    return a + b\n",
+        }, "--strict")
+        categories = [f["category"] for f in payload["violations"]]
+        self.assertEqual(1, categories.count("UNPARSEABLE_SOURCE"))
+        self.assertEqual(2, payload["coverage"]["source_files_audited"])
+
+    def test_parseable_source_is_still_cleared(self):
+        """The guard must not fire on code that merely looks unusual."""
+        payload, code = self._audit(
+            {"ok.py": "def add(a, b):\n    return a + b\n"}, "--strict")
+        self.assertEqual("CLEARED", payload["verdict"])
+        self.assertEqual(0, code)
+
+    def test_the_reason_survives_to_the_coverage_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "broken.py"
+            path.write_text(self.BROKEN, encoding="utf-8")
+            coverage = FA.ScanCoverage()
+            self.assertIsNone(FA._parse(str(path), coverage))
+            self.assertEqual([str(path)], coverage.unparseable)
+            self.assertIn("syntax error", coverage.unparseable_reasons[str(path)])
+            violations = FA.unparseable_violations(coverage)
+            self.assertEqual(1, len(violations))
+            self.assertEqual(FA.VETO, violations[0].severity)
+
+
 class TestJsonContract(unittest.TestCase):
     def test_json_payload_shape(self):
         payload = json.loads(run_cli("--target-dir", str(KNOWN_FAKE), "--json").stdout)

@@ -104,6 +104,9 @@ class ScanCoverage:
     js_files: list[str] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
     unparseable: list[str] = field(default_factory=list)
+    #: path -> why it could not be read or parsed, so the violation can say so
+    #: rather than making the reader go and find out.
+    unparseable_reasons: dict[str, str] = field(default_factory=dict)
     mutation_ran: bool = False
     mutants_total: int = 0
     mutants_survived: int = 0
@@ -525,15 +528,47 @@ class TestSuiteAuditor(ast.NodeVisitor):
 # --------------------------------------------------------------------------
 
 def _parse(file_path: str, coverage: ScanCoverage) -> ast.Module | None:
+    """Parse a file, or record precisely why it could not be.
+
+    An unexamined file is not a clean file. The reason is kept alongside the
+    path because ``unparseable_violations`` turns every entry here into a VETO:
+    see the note there for why a parse failure is a blocking finding and not a
+    coverage footnote.
+    """
     try:
         source = Path(file_path).read_text(encoding="utf-8", errors="replace")
         return ast.parse(source, filename=file_path)
-    except SyntaxError:
+    except SyntaxError as exc:
+        where = f" at line {exc.lineno}" if exc.lineno else ""
         coverage.unparseable.append(file_path)
+        coverage.unparseable_reasons[file_path] = f"syntax error{where}: {exc.msg}"
         return None
-    except OSError:
+    except OSError as exc:
         coverage.unparseable.append(file_path)
+        coverage.unparseable_reasons[file_path] = f"could not be read: {exc.strerror or exc}"
         return None
+
+
+def unparseable_violations(coverage: ScanCoverage) -> list[ForensicViolation]:
+    """Every file the audit could not read is a blocking finding.
+
+    Until this existed, a file that failed ``ast.parse`` was counted in
+    ``coverage.unparseable`` and contributed nothing else, so ``--strict``
+    could print ``VERDICT: CLEARED`` over production code that does not even
+    compile. That is the precise failure this tool exists to catch, committed
+    by the tool itself: a clean report that means "nothing was examined".
+
+    Fail closed. The auditor cannot vouch for source it never read, and saying
+    so in the coverage block is not the same as refusing.
+    """
+    return [
+        ForensicViolation(
+            "UNPARSEABLE_SOURCE", path, 0,
+            f"{coverage.unparseable_reasons.get(path, 'could not be parsed')} "
+            f"— the audit could not examine this file, so it cannot clear it",
+            VETO)
+        for path in coverage.unparseable
+    ]
 
 
 def audit_python_source(file_path: str, strict: bool, coverage: ScanCoverage) -> list[ForensicViolation]:
@@ -920,6 +955,7 @@ def main(argv: list[str] | None = None) -> int:
         violations.extend(audit_python_test(path, strict, coverage))
     for path in coverage.js_files:
         violations.extend(audit_js_file(path, strict))
+    violations.extend(unparseable_violations(coverage))
 
     if not coverage.source_files:
         notes.append("No production source files were found. This audit says nothing about "
