@@ -376,13 +376,23 @@ Eleven more findings landed after the first batch was pushed. All eleven held up
 
 Six documentation defects were fixed alongside: two gate names in `SKILL.md` that no longer exist in the registry, a `design_pass` mislabelled `review_pass`, a declared output (`handoff.md`, plus the auditor's SHA-256 ledger appended to `.agents/EVIDENCE.md`) that the prose did not mention, a missing `--dag` flag in a worked example, and a dispatch step in `orchestrator_protocol.md` that hardcoded one role's name across all four.
 
+**Third round on the same PR:**
+
+Three more findings, all real, and all three were cases of a tool reporting success over work it had not actually done.
+
+- **The Binary Veto cleared source it could not parse.** `_parse` caught `SyntaxError`, appended the path to `coverage.unparseable`, and returned `None`; the audit loop skipped the file and emitted no violation. So `forensic_audit.py --strict` printed `VERDICT: CLEARED` over a tree containing production code that does not compile — the exact failure the tool exists to catch, committed by the tool itself, and the clean report means "nothing was examined". Unparseable files are now `UNPARSEABLE_SOURCE` violations at VETO severity, carrying the reason (`syntax error at line N: ...`, or the `OSError` strerror) so the reader does not have to go and find out. A file the auditor could not read is not a file it cleared.
+- **`dag_validator.py --update-file` wrote first and validated second.** The new content went to disk through `open(path, "w")`, and only then was it validated; a failing check exited non-zero while the invalid status sat in the file. `--set-status B=PASSED` with `B` depending on a `PENDING` `A` persisted exactly that. Validation now runs on the candidate string before anything is written, and only errors the update *introduces* block it — refusing on pre-existing ones would make a broken DAG unrepairable by the tool that reports it broken. The write itself goes through `atomic_write`: temp sibling, `fsync`, `os.replace`, because `open(..., "w")` truncates before it writes and a crash in between leaves the project's entire task record empty.
+- **`autowire.py` emitted repo-relative skill paths into the dispatch brief.** The same bug class as the `--repo-root` fix in round two, at the other end: that fixed where autowire *reads*, this fixes what it *emits*. The brief is handed to a subagent standing in the target project, where `skills/spec/SKILL.md` does not resolve. `SkillEntry` now carries an absolute `abspath` from discovery and the brief renders that.
+
+Fourteen regression tests cover the three.
+
 **Still open, deliberately:**
 
 - **W-10** as above: harness-level, not script-level.
 - **W-07 and W-08 have no executor.** Both are now correct prose in the dispatch briefs, and prose is L1. Nothing fails if a future edit drops the grounding line from a brief. A linter over the dispatch payloads in `SKILL.md` would close that; it is not written.
 - **Attested gates check form, not correctness.** `gate_executor.py attest` rejects an attestation that is unsigned, self-signed, cites missing or empty artifacts, or was written against a different revision of either the code or the evidence it cites. It cannot check whether the reviewer was right, and nothing can. That ceiling is stated in the module docstring so the next reader does not mistake the gate for more than it is.
 
-Repository state after remediation: **671 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
+Repository state after remediation: **685 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
 
 ---
 

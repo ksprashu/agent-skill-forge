@@ -24,6 +24,7 @@ ago, and a reference document describing a mapping the code does not implement.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -435,6 +436,53 @@ class TestRepoRootDefaultsToTheCheckout(unittest.TestCase):
             match = json.loads(out)["matches"][0]
             self.assertEqual([], match["skills"])
             self.assertTrue(match["missing_skills"])
+
+
+class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
+    """The brief says "read each with view_file". The paths must survive that.
+
+    `preferred/security-and-hardening/SKILL.md` exists relative to the forge
+    checkout, and the dispatched subagent is standing in the target project,
+    where it does not. Every skill the autowiring named was unopenable by the
+    agent instructed to read it — the feature failed silently rather than
+    visibly, which is the worse of the two.
+    """
+
+    def test_every_emitted_path_exists_as_written(self):
+        brief = autowire.render_brief(
+            autowire.autowire("harden the RBAC layer", REPO_ROOT))
+        emitted = [line.split(" — ")[0][2:] for line in brief.splitlines()
+                   if line.startswith("- ") and not line.startswith("- MISSING:")]
+        self.assertTrue(emitted, brief)
+        for path in emitted:
+            self.assertTrue(Path(path).is_absolute(), f"{path} is not absolute")
+            self.assertTrue(Path(path).is_file(), f"{path} does not exist")
+
+    def test_the_paths_resolve_from_an_unrelated_working_directory(self):
+        with tempfile.TemporaryDirectory() as elsewhere:
+            code, out, _ = run_cli(["--task", "harden the RBAC layer"], cwd=elsewhere)
+            self.assertEqual(code, 0)
+            emitted = [line.split(" — ")[0][2:] for line in out.splitlines()
+                       if line.startswith("- ") and not line.startswith("- MISSING:")]
+            self.assertTrue(emitted, out)
+            for path in emitted:
+                self.assertTrue(os.path.isfile(os.path.join(elsewhere, path)),
+                                f"subagent in {elsewhere} cannot open {path}")
+
+    def test_the_json_payload_carries_both_forms(self):
+        """`path` stays repo-relative for display; `skill_file` is what to open."""
+        code, out, _ = run_cli(["--task", "harden the RBAC layer", "--json"])
+        self.assertEqual(code, 0)
+        skill = json.loads(out)["matches"][0]["skills"][0]
+        self.assertFalse(os.path.isabs(skill["path"]))
+        self.assertTrue(os.path.isabs(skill["skill_file"]))
+        self.assertTrue(Path(skill["skill_file"]).is_file())
+
+    def test_a_missing_skill_is_still_reported_as_missing(self):
+        brief = autowire.render_brief([autowire.Match(
+            domain=autowire.DOMAIN_MATRIX[0], terms=("x",), resolved=(),
+            missing=("preferred/not-on-disk",))])
+        self.assertIn("MISSING: preferred/not-on-disk", brief)
 
 
 class TestSourceDiscipline(unittest.TestCase):

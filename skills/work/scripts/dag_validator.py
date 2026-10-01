@@ -1145,6 +1145,32 @@ def print_human_report(report: ValidationReport, quiet: bool = False) -> None:
 OVERRIDE_HEADING = "## Gate Overrides"
 
 
+def atomic_write(path: str, content: str) -> None:
+    """Replace a file in one step, or not at all.
+
+    ``open(path, "w")`` truncates before it writes. An exception, a full disk
+    or a signal between those two moments leaves the caller's DAG — the record
+    of every task and gate in the project — truncated or empty. Writing a
+    sibling temp file and renaming it over the target means a reader sees
+    either the old content or the new one.
+    """
+    target = Path(path)
+    tmp = target.with_name(f".{target.name}.tmp-{os.getpid()}")
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            fh.write(content)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, target)
+    finally:
+        # os.replace consumed it on the happy path; this is the failure path.
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
 def append_override_log(content: str, notes: List[str]) -> str:
     """Record forced transitions inside the DAG document itself.
 
@@ -1296,9 +1322,31 @@ def main() -> None:
             updated_content = validator.update_markdown_content(content, status_updates)
             if override_notes:
                 updated_content = append_override_log(updated_content, override_notes)
-            with open(file_path, "w", encoding="utf-8") as fh:
-                fh.write(updated_content)
+
+            # Validate the candidate before it reaches the disk. Writing first
+            # and validating after meant a task could be persisted as PASSED
+            # with an upstream dependency still pending: the command exited
+            # non-zero, which reads as a refusal, while the invalid status sat
+            # in the file. Only errors this update *introduces* block it --
+            # refusing on pre-existing ones would make a broken DAG
+            # unrepairable by the tool that reports it broken.
+            before = set(validator.validate(content).errors)
+            introduced = [e for e in validator.validate(updated_content).errors
+                          if e not in before]
+            if introduced:
+                if not args.quiet:
+                    print(f"Error: refusing to write {file_path} -- this update would "
+                          f"introduce {len(introduced)} validation error(s):", file=sys.stderr)
+                    for err in introduced:
+                        print(f"   • {err}", file=sys.stderr)
+                    print("\n   The file is unchanged. Fix the transition, or satisfy the "
+                          "dependency first.", file=sys.stderr)
+                sys.exit(3)
+
+            atomic_write(file_path, updated_content)
             content = updated_content
+        except SystemExit:
+            raise
         except Exception as ex:
             if not args.quiet:
                 print(f"Error updating {file_path}: {ex}", file=sys.stderr)
