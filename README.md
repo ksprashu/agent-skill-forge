@@ -322,7 +322,7 @@ block.
 
 | Command | What it settles |
 | :--- | :--- |
-| `python3 -m pytest -q` | 699 tests across `skills/`, `tests/` and `tests/e2e/` |
+| `python3 -m pytest -q` | 724 tests across `skills/`, `tests/` and `tests/e2e/` |
 | `python3 scripts/validate_skills.py` | Frontmatter, reserved-namespace collisions, author PII, absolute host paths |
 | `python3 scripts/check_stdlib_only.py` | No third-party import reaches a script that runs inside a harness |
 | `python3 skills/work/scripts/gate_executor.py list` | Every gate a topology can emit has a predicate behind it |
