@@ -31,9 +31,11 @@ Also bootstraps project-scoped domain skills into:
 import os
 import sys
 import argparse
+import difflib
 import shutil
 import json
 import re
+import stat
 
 if sys.platform == 'win32':
     if hasattr(sys.stdout, 'reconfigure'):
@@ -343,9 +345,60 @@ DOMAIN_CLUSTERS = {
 ALL_CLUSTERS = {**CORE_CLUSTERS, **DOMAIN_CLUSTERS}
 
 
+class UnknownSelector(ValueError):
+    """Raised when a --clusters/--skills token matches nothing known."""
+
+    def __init__(self, unknown, vocabulary):
+        self.unknown = unknown
+        self.vocabulary = vocabulary
+        super().__init__(self.format())
+
+    def format(self):
+        lines = []
+        for token in self.unknown:
+            hint = difflib.get_close_matches(token, sorted(self.vocabulary), n=3, cutoff=0.6)
+            suffix = f"  Did you mean: {', '.join(hint)}?" if hint else ""
+            lines.append(f"  unknown selector '{token}'.{suffix}")
+        lines.append("\nRun with --list-clusters to see every valid cluster, preset, and skill name.")
+        return "Unrecognised selector(s):\n" + "\n".join(lines)
+
+
+def _selector_vocabulary():
+    """Every token resolve_clusters_arg accepts, for suggestions and listings."""
+    vocab = {'all', 'complete', 'core', 'domain', 'preferred', 'content', 'creative',
+             'planning', 'qa', 'quality', 'gov', 'governance'}
+    vocab.update(ALL_CLUSTERS.keys())
+    vocab.update(ALIASES.keys())
+    for c in ALL_CLUSTERS.values():
+        vocab.add(c['id'].lower())
+        vocab.update(s.lower() for s in c['skills'])
+    vocab.update(discover_all_skills().keys())
+    return vocab
+
+
+def validate_skill_names(skills_arg):
+    """Split a --skills list into (names, unknown).
+
+    Every name is returned, including the unrecognised ones: the installers
+    already report those as NOT FOUND LOCALLY or RESERVED SKIPPED and carry on,
+    and a typo should not be fatal. `unknown` is reported separately so callers
+    can keep an unresolved name from counting as an explicit selection, which
+    is the part that was actually dangerous — see main().
+    """
+    names = [s.strip() for s in skills_arg.split(',') if s.strip()]
+    known = discover_all_skills()
+    unknown = [n for n in names if n not in known and n not in ALIASES]
+    return names, unknown
+
+
 def resolve_clusters_arg(cluster_arg):
-    """Resolve comma-separated cluster codes, IDs, presets, or skill names into a list of skill names."""
+    """Resolve cluster codes, IDs, presets, or skill names into (skills, unknown).
+
+    Tokens that resolve to nothing are returned in `unknown` rather than raised
+    on, so the caller picks the policy: the wizard stops, the CLI warns.
+    """
     skills = []
+    unknown = []
     if not cluster_arg:
         return skills
     parts = [p.strip().lower() for p in cluster_arg.split(',') if p.strip()]
@@ -385,8 +438,9 @@ def resolve_clusters_arg(cluster_arg):
                     matched = True
                     break
             if not matched:
-                skills.append(p)
-    return list(dict.fromkeys(skills))
+                unknown.append(p)
+
+    return list(dict.fromkeys(skills)), unknown
 
 
 def interactive_wizard():
@@ -432,9 +486,17 @@ def interactive_wizard():
         except (EOFError, KeyboardInterrupt):
             print("\nAborted.")
             sys.exit(0)
-        chosen_skills = [s.strip() for s in custom_input.split(',') if s.strip()]
+        chosen_skills, unknown = validate_skill_names(custom_input)
+        vocabulary = set(discover_all_skills()) | set(ALIASES)
     else:
-        chosen_skills = resolve_clusters_arg(choice)
+        chosen_skills, unknown = resolve_clusters_arg(choice)
+        vocabulary = _selector_vocabulary()
+
+    # The wizard stops where the CLI only warns: the user is sitting here and
+    # can retype, and the next prompt offers to prune.
+    if unknown:
+        print(f"\n❌ {UnknownSelector(unknown, vocabulary)}", file=sys.stderr)
+        sys.exit(2)
 
     print(f"\n  -> Selected ({len(chosen_skills)} skills): {', '.join(chosen_skills)}")
 
@@ -465,12 +527,128 @@ def interactive_wizard():
         return 'global', None, chosen_skills, strict_prune
 
 
+# Dropped into every --copy install so a physical copy can later be told
+# apart from a directory the user wrote by hand. Copies made before this
+# marker existed have none, so they read as foreign and are left alone:
+# a stale copy lingering is a far cheaper failure than deleting real work.
+OWNER_MARKER = '.forge-owned'
+
+
 def is_link(path):
     """Check if path is a symlink or Windows junction."""
     if os.path.islink(path):
         return True
     if sys.platform == 'win32' and hasattr(os.path, 'isjunction') and os.path.isjunction(path):
         return True
+    return False
+
+
+def has_reparse_attribute(st):
+    """True when an lstat result carries FILE_ATTRIBUTE_REPARSE_POINT.
+
+    Split out of is_reparse_point so this much is checkable off Windows. The
+    rest of that function is platform dispatch and a stdlib call, but this is
+    the test that decides whether a junction is seen at all on Python
+    3.8-3.11 — and being wrong here is what lets rmtree walk into the source
+    repo. st_file_attributes is absent on non-Windows stat results, hence the
+    default rather than an AttributeError handler around the whole lookup.
+    """
+    return bool(getattr(st, 'st_file_attributes', 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+
+
+def is_reparse_point(path):
+    """True for a symlink or any Windows reparse point, including junctions.
+
+    os.path.isjunction landed in 3.12 but the installers probe plain `python`,
+    so on 3.8-3.11 a junction we created ourselves is invisible to is_link and
+    gets handled as an ordinary directory. That matters because shutil.rmtree
+    follows junctions on Windows: the "delete the link" path would instead
+    walk into the canonical repo and delete the source. Fall back to the
+    reparse-point attribute, which has been available on every supported
+    Python.
+    """
+    if os.path.islink(path):
+        return True
+    if sys.platform != 'win32':
+        return False
+    if hasattr(os.path, 'isjunction'):
+        try:
+            if os.path.isjunction(path):
+                return True
+        except OSError:
+            pass
+    try:
+        return has_reparse_attribute(os.lstat(path))
+    except OSError:
+        return False
+
+
+def link_destination(path):
+    """Absolute destination of a link or junction, or None if not one.
+
+    Reports the destination whether or not it currently resolves, so a foreign
+    link to an unmounted volume or a moved checkout still names its owner
+    instead of reading as one of our own broken links. That is the property
+    the prune path depends on.
+
+    readlink is used rather than realpath to report the entry's own immediate
+    destination — the one we would have written — rather than the end of a
+    chain some other repo may have introduced. Both agree on dangling links,
+    so the two are interchangeable for the common case; is_forge_owned tests
+    the resolved form as well, which is what makes a link through a symlinked
+    parent (/tmp -> /private/tmp) still read as ours.
+
+    Relative destinations resolve against the link's own directory, not the
+    process working directory.
+    """
+    if not is_reparse_point(path):
+        return None
+    try:
+        dest = os.readlink(path)
+    except OSError:
+        # Junctions on older Pythons are not readable via readlink.
+        try:
+            dest = os.path.realpath(path)
+        except OSError:
+            return None
+    if sys.platform == 'win32' and dest.startswith('\\\\?\\'):
+        dest = dest[4:]
+    if not os.path.isabs(dest):
+        dest = os.path.join(os.path.dirname(os.path.abspath(path)), dest)
+    return os.path.normpath(os.path.abspath(dest))
+
+
+def _is_within(child, parent):
+    """True if `child` is `parent` or sits underneath it."""
+    try:
+        return os.path.commonpath([os.path.abspath(child), os.path.abspath(parent)]) == os.path.abspath(parent)
+    except (ValueError, OSError):
+        # Different drives on Windows, or an unresolvable path.
+        return False
+
+
+def is_forge_owned(path):
+    """True only for entries this repo actually put here.
+
+    Ownership is decided by where an entry points, never by what it is called.
+    These hub directories are shared — creative-stack and any other skill repo
+    link into the same ~/.claude/skills — so an unrecognised name is evidence
+    of another owner, not of staleness. Deciding on name alone is what silently
+    deleted eight working creative-stack skills on every --prune run.
+
+    Anything we cannot positively attribute to this repo returns False, so the
+    caller leaves it alone. Guessing wrong in that direction costs a stale
+    entry; guessing wrong in the other direction costs the user their work.
+    """
+    root = os.path.realpath(REPO_ROOT)
+
+    dest = link_destination(path)
+    if dest is not None:
+        return _is_within(dest, root) or _is_within(os.path.realpath(dest), root)
+
+    if os.path.isdir(path):
+        return os.path.isfile(os.path.join(path, OWNER_MARKER))
+
     return False
 
 
@@ -495,6 +673,14 @@ def create_link(src_path, target_link, copy_mode=False):
         if os.path.exists(target_link) or is_link(target_link):
             remove_path_or_link(target_link)
         shutil.copytree(src_path, target_link)
+        # Stamp the copy so a later --prune can tell it apart from a directory
+        # the user wrote themselves. Without this, a physical install and
+        # somebody else's work are indistinguishable on disk.
+        try:
+            with open(os.path.join(target_link, OWNER_MARKER), 'w', encoding='utf-8') as f:
+                f.write(os.path.realpath(src_path) + "\n")
+        except OSError as e:
+            print(f"  [WARN] could not mark {target_link} as forge-owned: {e}")
         return
 
     if sys.platform == 'win32':
@@ -574,6 +760,13 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
 
     for item in sorted(os.listdir(skills_dir)):
         item_path = os.path.join(skills_dir, item)
+
+        # Reserved names are purged whoever owns them. A harness reserves these
+        # for itself, so anything sitting on one is already broken for every
+        # repo on the machine, not just ours — leaving a foreign one in place
+        # would leave the collision it causes in place too. The set is a fixed,
+        # known list, which is what makes claiming authority over it defensible
+        # where the open-ended rules below are not.
         if item.lower() in reserved:
             reason = "RESERVED HARNESS NAMESPACE"
             print(f"  [{reason}] {item} in {skills_dir}")
@@ -582,6 +775,24 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
                 print(f"    -> Removed: {item_path}")
             continue
 
+        # Past this point every branch can delete something we did not install,
+        # so ownership is settled first. Three cases used to slip past the
+        # link-only check and reach shutil.rmtree: a foreign skill stored as a
+        # real directory, a foreign link whose target was temporarily
+        # unreachable (it read as one of our own broken links), and a Windows
+        # junction on Python <3.12 that is invisible to islink — where rmtree
+        # follows the junction and takes the source repo with it.
+        if not is_forge_owned(item_path):
+            dest = link_destination(item_path)
+            where = f" -> {dest}" if dest else ""
+            print(f"  [FOREIGN] {item}{where} in {skills_dir} (owned elsewhere, left alone)")
+            continue
+
+        # Superseded stays downstream of the ownership check, unlike reserved.
+        # `excluded` is open-ended — it grows with every capability a harness
+        # declares native and every command the user writes — so a name landing
+        # in it says this harness covers that capability, not that whatever
+        # holds the name is ours to delete.
         if item in excluded or ALIASES.get(item) in excluded:
             print(f"  [SUPERSEDED] {item} in {skills_dir}")
             if prune:
@@ -589,7 +800,9 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
                 print(f"    -> Removed: {item_path}")
             continue
 
-        if is_link(item_path):
+        # Everything from here down is ours, confirmed by destination or by
+        # the ownership marker.
+        if is_reparse_point(item_path):
             target_exists = os.path.exists(item_path)
             if strict_prune:
                 is_allowed = item in allowed_skills or (item in ALIASES and ALIASES[item] in allowed_skills)
@@ -602,7 +815,10 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
                 if prune:
                     remove_link(item_path)
                     print(f"    -> Removed: {item_path}")
-        elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES and item not in all_available:
+        elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES:
+            # A --copy install that is no longer selected. Reached only when
+            # the ownership marker is present, so this cannot be the user's
+            # own directory that happens to share a skill name.
             print(f"  [NON-GLOBAL DIR] {item} in {skills_dir}")
             if prune:
                 shutil.rmtree(item_path)
@@ -610,24 +826,44 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
 
 
 def sync_skills_json(fix=False):
-    """Register canonical skills directories in global skills.json configs."""
+    """Register canonical skills directories in global skills.json configs.
+
+    Merged, not rewritten. These files are shared with every other skill repo
+    on the machine — creative-stack registers its own source directory in the
+    same two files — and writing only our entries unregistered theirs on every
+    sync.
+    """
     configs = [
         os.path.expanduser('~/.gemini/config/skills.json'),
         os.path.expanduser('~/.agents/skills.json'),
     ]
-    data = {
-        "entries": [
-            {"path": CORE_SKILLS_DIR.replace('\\', '/')},
-            {"path": PREFERRED_SKILLS_DIR.replace('\\', '/')}
-        ]
-    }
+    ours = [CORE_SKILLS_DIR.replace('\\', '/'),
+            PREFERRED_SKILLS_DIR.replace('\\', '/')]
+
     for cfg in configs:
-        cfg_dir = os.path.dirname(cfg)
-        os.makedirs(cfg_dir, exist_ok=True)
+        os.makedirs(os.path.dirname(cfg), exist_ok=True)
+        data, entries = {}, []
+        if os.path.exists(cfg):
+            try:
+                with open(cfg, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                entries = data.get('entries', [])
+            except (json.JSONDecodeError, ValueError):
+                print(f"  [WARN] {cfg} is not valid JSON — rewriting")
+                data, entries = {}, []
+
+        known = {os.path.abspath(os.path.expanduser(e.get('path', '')))
+                 for e in entries}
+        added = [{"path": p} for p in ours if os.path.abspath(p) not in known]
+        if not added:
+            print(f"  [JSON CONFIG] {cfg} already registered")
+            continue
         if fix:
+            data['entries'] = entries + added
             with open(cfg, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2)
-            print(f"  [JSON CONFIG] Generated {cfg}")
+            print(f"  [JSON CONFIG] Updated {cfg} "
+                  f"(+{len(added)}, {len(entries)} existing kept)")
 
 
 def clean_skills_json():
@@ -1027,12 +1263,35 @@ def main():
     if args.spine:
         has_explicit_selection = True
         requested_skills.extend(CORE_CLUSTERS['c5']['skills'])
+    # An unresolved selector is reported but not fatal — the installers already
+    # print NOT FOUND LOCALLY / RESERVED SKIPPED for names they cannot place,
+    # and a typo should not stop the names that did resolve from installing.
+    #
+    # What it must not do is count as an explicit selection. strict_prune is
+    # armed by has_explicit_selection and scoped by requested_skills, so a
+    # single mistyped name used to arm prune against an allow-list that matched
+    # nothing — and the whole installed set went. Unresolved names therefore
+    # ride along in requested_skills (so they get reported) without ever
+    # setting the flag that arms pruning.
+    unresolved = []
     if args.clusters:
-        has_explicit_selection = True
-        requested_skills.extend(resolve_clusters_arg(args.clusters))
+        resolved, unknown = resolve_clusters_arg(args.clusters)
+        requested_skills.extend(resolved)
+        unresolved.extend(unknown)
+        if resolved:
+            has_explicit_selection = True
     if args.skills:
-        has_explicit_selection = True
-        requested_skills.extend([s.strip() for s in args.skills.split(',') if s.strip()])
+        names, unknown = validate_skill_names(args.skills)
+        requested_skills.extend(names)
+        unresolved.extend(unknown)
+        if len(names) > len(unknown):
+            has_explicit_selection = True
+
+    if unresolved:
+        print(f"\n⚠️  {UnknownSelector(unresolved, _selector_vocabulary())}", file=sys.stderr)
+        if args.prune and not has_explicit_selection:
+            print("    Nothing in this selection resolved, so --prune is limited to its "
+                  "default sweep rather than pruning to an empty allow-list.", file=sys.stderr)
 
     requested_skills = list(dict.fromkeys(requested_skills))
 
