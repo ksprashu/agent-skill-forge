@@ -2,7 +2,7 @@
 type: "Linguistic Heuristic"
 title: "Leading Words & Cognitive Linguistics in Skill Design"
 description: "Theoretical framework for utilizing pretrained model priors, leading words, information hierarchy ladders, and diagnosing agent failure modes."
-resource: "file:///Users/ksprashanth/code/github/mattpocock-skills/skills/productivity/writing-great-skills/SKILL.md"
+resource: "https://github.com/mattpocock/skills/blob/c55ee46073ed923f86ce59a5eb3b6d895095d1b7/skills/productivity/writing-for-agents/SKILL.md"
 tags: ["analyst", "linguistics", "leading-words", "information-hierarchy", "failure-modes", "matt-pocock"]
 ---
 

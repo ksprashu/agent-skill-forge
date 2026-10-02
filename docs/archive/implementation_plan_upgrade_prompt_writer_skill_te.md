@@ -18,7 +18,7 @@ Grouped by component:
 
 ### Prompt Skill Definition & Instructions
 
-#### [MODIFY] [`skills/prompt/SKILL.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/SKILL.md)
+#### [MODIFY] [`skills/prompt/SKILL.md`](../../skills/prompt/SKILL.md)
 - **Scout Stage Subagent Invocations**:
   - Add explicit, copy-pasteable `invoke_subagent` JSON payload structures with valid `TypeName: "research"`, exact `Role` strings, and targeted `Prompt` directives.
   - Ban main-thread deep inline search/grep before launching the 3 parallel scouts.
@@ -32,16 +32,16 @@ Grouped by component:
 
 ### Prompt Templates & References
 
-#### [MODIFY] [`skills/prompt/references/template.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/template.md)
+#### [MODIFY] [`skills/prompt/references/template.md`](../../skills/prompt/references/template.md)
 - Replace the legacy offline `execute_pipeline.py` Python SDK script with native Antigravity `invoke_subagent` tool-call directives.
 - Add `<SUBAGENT_ORCHESTRATION>` structure detailing parallel worker dispatch (`TypeName: "self"`, `Workspace: "branch"`, distinct roles like `Frontend Builder`, `Backend Builder`, `Sentry Verifier`).
 
-#### [MODIFY] [`skills/prompt/references/dag_orchestration.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/dag_orchestration.md)
+#### [MODIFY] [`skills/prompt/references/dag_orchestration.md`](../../skills/prompt/references/dag_orchestration.md)
 - Ensure all DAG task nodes in `task_graph.json` schema and examples explicitly include valid `TypeName`s (`self` / `research`) and imperative `invoke_subagent` dispatch commands.
 
-#### [MODIFY] [`skills/prompt/references/subagents/codebase_scout.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/codebase_scout.md)
-#### [MODIFY] [`skills/prompt/references/subagents/docs_crawler.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/docs_crawler.md)
-#### [MODIFY] [`skills/prompt/references/subagents/web_intelligence_analyst.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/prompt/references/subagents/web_intelligence_analyst.md)
+#### [MODIFY] [`skills/prompt/references/subagents/codebase_scout.md`](../../skills/prompt/references/subagents/codebase_scout.md)
+#### [MODIFY] [`skills/prompt/references/subagents/docs_crawler.md`](../../skills/prompt/references/subagents/docs_crawler.md)
+#### [MODIFY] [`skills/prompt/references/subagents/web_intelligence_analyst.md`](../../skills/prompt/references/subagents/web_intelligence_analyst.md)
 - Ensure all scout subagent instructions explicitly align with `TypeName: "research"` toolsets and message-passing handoffs (`send_message`).
 
 ---
@@ -54,4 +54,4 @@ Grouped by component:
 
 ### Manual Verification
 - Verify that `invoke_subagent` payloads in `SKILL.md` and `template.md` adhere strictly to Antigravity tool definitions (`Subagents: [{ TypeName, Role, Prompt, Workspace }]`).
-- Verify that `/Users/ksprashanth/.gemini/config/skills/prompt-writer` symlink correctly reflects all changes.
+- Verify that `~/.gemini/config/skills/prompt-writer` symlink correctly reflects all changes.

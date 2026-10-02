@@ -2,7 +2,7 @@
 type: "Runbook"
 title: "Agent Skill Forge Developer Runbooks"
 description: "Step-by-step developer operations for skill validation, symlink synchronization, documentation compilation, and OKF verification."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/docs/user_guide.md"
+resource: "../../../docs/user_guide.md"
 tags: ["builder", "runbooks", "operations", "cli", "workflow"]
 ---
 

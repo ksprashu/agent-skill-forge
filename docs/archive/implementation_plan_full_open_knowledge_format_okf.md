@@ -48,21 +48,21 @@ The knowledgebase will be organized into 5 progressive disclosure domains:
 ## Detailed File Specifications
 
 ### 1. Index & Navigation
-#### [MODIFY] [index.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md)
+#### [MODIFY] [index.md](../../.gemini/knowledge/index.md)
 * Comprehensive progressive disclosure tree linking all 12 concept documents.
 * Searchable Concept Matrix (`Concept ID`, `Concept Title`, `Type`, `File Path`, `Grounding Scope`).
 
-#### [MODIFY] [log.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/log.md)
+#### [MODIFY] [log.md](../../.gemini/knowledge/log.md)
 * Chronological update history logging genesis and full OKF knowledgebase expansion.
 
 ---
 
 ### 2. Scout Subsystem
-#### [MODIFY] [codebase_map.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/scout/codebase_map.md)
+#### [MODIFY] [codebase_map.md](../../.gemini/knowledge/scout/codebase_map.md)
 * Valid OKF frontmatter (`type: "Codebase Map"`).
 * Full monorepo directory layout, subsystem descriptions, and path references.
 
-#### [NEW] [skill_inventory.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/scout/skill_inventory.md)
+#### [NEW] [skill_inventory.md](../../.gemini/knowledge/scout/skill_inventory.md)
 * Comprehensive taxonomy of all 16 core universal action verbs (`prompt`, `grill`, `spec`, `plan`, `test`, `verify`, `review`, `unslop`, `docs`, `catalog`, `sync`, `google-oss`, `codelab`, `voice`, `copy-write`, `image-gen`).
 * Complete directory of all 12 preferred domain skills in `preferred/`.
 * Aliases, execution modes (Autonomous vs. Slash command), and trigger signatures.
@@ -70,49 +70,49 @@ The knowledgebase will be organized into 5 progressive disclosure domains:
 ---
 
 ### 3. Analyst Subsystem
-#### [MODIFY] [design_decisions.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/design_decisions.md)
+#### [MODIFY] [design_decisions.md](../../.gemini/knowledge/analyst/design_decisions.md)
 * Valid OKF frontmatter (`type: "Design Decision"`).
 * In-depth rationale: 2-tier architecture (Global vs Project-Scoped JIT), Token context economics, 1-word action verbs, Laziness Protocol ("Subtract before you add"), and Profile-Overlay isolation.
 
-#### [NEW] [attribution_matrix.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/attribution_matrix.md)
+#### [NEW] [attribution_matrix.md](../../.gemini/knowledge/analyst/attribution_matrix.md)
 * Upstream lineage and creator attribution (Matt Pocock, Addy Osmani, Anthropic, Cursor, Google OSPO, DeepMind).
 * Monorepo consolidation lineage and adaptation models.
 
 ---
 
 ### 4. Architecture Subsystem
-#### [MODIFY] [data_contracts.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/data_contracts.md)
+#### [MODIFY] [data_contracts.md](../../.gemini/knowledge/architecture/data_contracts.md)
 * Valid OKF frontmatter (`type: "Data Contract"`).
 * Formal schema for `SKILL.md` frontmatter (`name`, `description`, `disable-model-invocation`), structural rules, subfolder contracts (`references/`, `scripts/`, `assets/`).
 
-#### [MODIFY] [installer_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/installer_spec.md)
+#### [MODIFY] [installer_spec.md](../../.gemini/knowledge/architecture/installer_spec.md)
 * Valid OKF frontmatter (`type: "Architecture Spec"`).
 * Multi-runtime directory matrix (`~/.agents/skills/`, `~/.gemini/skills/`, `~/.gemini/config/skills/`, `~/.claude/skills/`, `~/.gemini/antigravity-cli/skills/`), symlink resolution, prune/fix algorithms, and JIT workspace bootstrapping.
 
-#### [NEW] [docs_compiler_pipeline.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/docs_compiler_pipeline.md)
+#### [NEW] [docs_compiler_pipeline.md](../../.gemini/knowledge/architecture/docs_compiler_pipeline.md)
 * Documentation compiler architecture (`compile_docs.py`), 4 Stitch themes (`technical`, `obsidian`, `proscript`, `dynamics`), AST markdown regex parsing, single-page bundle emission, responsive CSS rules.
 
-#### [NEW] [profile_overlay_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/profile_overlay_spec.md)
+#### [NEW] [profile_overlay_spec.md](../../.gemini/knowledge/architecture/profile_overlay_spec.md)
 * 3-tier personality resolution engine (`*.local.md` -> `~/.gemini/personas/default/` -> `*.template.md`) and Zero-PII fallback flow.
 
 ---
 
 ### 5. Builder Subsystem
-#### [MODIFY] [runbooks.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/builder/runbooks.md)
+#### [MODIFY] [runbooks.md](../../.gemini/knowledge/builder/runbooks.md)
 * Valid OKF frontmatter (`type: "Runbook"`).
 * Executable developer runbooks for skill validation, symlink synchronization, project bootstrapping, doc compilation, and OKF verification.
 
-#### [NEW] [skill_authoring_guide.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/builder/skill_authoring_guide.md)
+#### [NEW] [skill_authoring_guide.md](../../.gemini/knowledge/builder/skill_authoring_guide.md)
 * Authoring guide for building new skills: 3-level progressive disclosure hierarchy, markdown formatting rules, token budget limits, and presubmit verification checklist.
 
 ---
 
 ### 6. Sentry Subsystem
-#### [MODIFY] [security_and_pii.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/security_and_pii.md)
+#### [MODIFY] [security_and_pii.md](../../.gemini/knowledge/sentry/security_and_pii.md)
 * Valid OKF frontmatter (`type: "Security Policy"`).
 * Zero-PII sanitization patterns, dynamic user lookups (`getpass.getuser()`), regex audit tests, gitignore isolation rules.
 
-#### [NEW] [oss_compliance_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/oss_compliance_spec.md)
+#### [NEW] [oss_compliance_spec.md](../../.gemini/knowledge/sentry/oss_compliance_spec.md)
 * Google Open Source / Apache-2.0 licensing rules, SPDX headers, repository cleanliness audits, and copyright notice automation.
 
 ---

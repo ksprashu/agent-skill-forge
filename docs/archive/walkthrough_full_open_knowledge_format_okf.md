@@ -1,7 +1,7 @@
 # 🧠 Walkthrough: Full Implementation of PRMT-C82F
 
 ## 🎯 Goal Accomplished
-Expanded and enriched the **Agent Skill Forge** Open Knowledge Format (OKF) knowledgebase under [`.gemini/knowledge/`](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md) by ingesting architectural, linguistic, multi-agent orchestration, and evaluation patterns from **Addy Osmani** (`agent-skills`), **Matt Pocock** (`mattpocock-skills`), **Jesse Vincent** (`superpowers`), **Anthropic** (`anthropics/skills`), **OpenAI Codex** (`codex-plugin`), and **Cursor** (`cursor/pstack`).
+Expanded and enriched the **Agent Skill Forge** Open Knowledge Format (OKF) knowledgebase under [`.gemini/knowledge/`](../../.gemini/knowledge/index.md) by ingesting architectural, linguistic, multi-agent orchestration, and evaluation patterns from **Addy Osmani** (`agent-skills`), **Matt Pocock** (`mattpocock-skills`), **Jesse Vincent** (`superpowers`), **Anthropic** (`anthropics/skills`), **OpenAI Codex** (`codex-plugin`), and **Cursor** (`cursor/pstack`).
 
 ---
 
@@ -49,26 +49,26 @@ Expanded and enriched the **Agent Skill Forge** Open Knowledge Format (OKF) know
 
 | Concept ID | Concept Title | Type | File Path | Grounding Scope |
 | :--- | :--- | :--- | :--- | :--- |
-| `CONCEPT-SCOUT-MAP` | Codebase Map | Codebase Map | [scout/codebase_map.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/scout/codebase_map.md) | Monorepo layout, directory hierarchy & boundaries |
-| `CONCEPT-SCOUT-INV` | Full Skills Taxonomy | Inventory | [scout/skill_inventory.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/scout/skill_inventory.md) | 16 core verbs + 12 preferred domain skills |
-| `CONCEPT-SCOUT-LAND` | Ecosystem Landscape | Ecosystem Landscape | [scout/reference_repos_landscape.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/scout/reference_repos_landscape.md) | Addy Osmani, Matt Pocock, Superpowers, Codex, Cursor |
-| `CONCEPT-ANALYST-DEC` | Design Decisions | Design Decision | [analyst/design_decisions.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/design_decisions.md) | 2-tier scoping, token economics & laziness |
-| `CONCEPT-ANALYST-ATTR` | Attribution Matrix | Attribution Matrix | [analyst/attribution_matrix.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/attribution_matrix.md) | Creator credits & upstream provenance |
-| `CONCEPT-ANALYST-COMP` | Comparative Analysis | Comparative Analysis | [analyst/framework_comparative_analysis.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/framework_comparative_analysis.md) | Lifecycle vs. autonomy vs. token trade-offs |
-| `CONCEPT-ANALYST-LING` | Leading Words & Linguistics | Linguistic Heuristic | [analyst/leading_words_and_heuristics.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/analyst/leading_words_and_heuristics.md) | Model priors, info hierarchy & failure modes |
-| `CONCEPT-ARCH-SCHEMA` | Data Contracts | Data Contract | [architecture/data_contracts.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/data_contracts.md) | YAML frontmatter schemas & structure |
-| `CONCEPT-ARCH-INSTALL` | Installer Specification | Architecture Spec | [architecture/installer_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/installer_spec.md) | Multi-runtime symlinks & JIT bootstrapper |
-| `CONCEPT-ARCH-COMPILER`| Docs Compiler Pipeline | Pipeline Architecture | [architecture/docs_compiler_pipeline.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/docs_compiler_pipeline.md) | Stitch 4-theme compilation pipeline |
-| `CONCEPT-ARCH-OVERLAY` | Profile-Overlay Engine | Architecture Spec | [architecture/profile_overlay_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/profile_overlay_spec.md) | 3-tier persona resolution & PII isolation |
-| `CONCEPT-ARCH-COMPAT` | Cross-Platform Spec | Architecture Spec | [architecture/cross_platform_compatibility_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/cross_platform_compatibility_spec.md) | Multi-harness compatibility mapping |
-| `CONCEPT-ARCH-ORCH` | Orchestration Catalog | Architecture Catalog | [architecture/orchestration_patterns_catalog.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/architecture/orchestration_patterns_catalog.md) | Endorsed fan-out & pipeline patterns |
-| `CONCEPT-BUILDER-RUN` | Developer Runbooks | Runbook | [builder/runbooks.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/builder/runbooks.md) | CLI commands for build, lint & sync |
-| `CONCEPT-BUILDER-GUIDE`| Skill Authoring Guide | Authoring Guide | [builder/skill_authoring_guide.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/builder/skill_authoring_guide.md) | 3-level progressive disclosure guide |
-| `CONCEPT-BUILDER-GRILL`| Socratic Grilling Engine | Interactive Engine | [builder/grilling_and_interview_engine.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/builder/grilling_and_interview_engine.md) | Interrogation loop & branch-walking |
-| `CONCEPT-SENTRY-PII` | Security & PII Policy | Security Policy | [sentry/security_and_pii.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/security_and_pii.md) | Zero-PII sanitization & regex scans |
-| `CONCEPT-SENTRY-OSS` | OSS Compliance Spec | Compliance Spec | [sentry/oss_compliance_spec.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/oss_compliance_spec.md) | Apache-2.0 & SPDX license headers |
-| `CONCEPT-SENTRY-EVALS` | Evaluation Framework | Evaluation Framework | [sentry/evaluation_harness_framework.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/evaluation_harness_framework.md) | 3-tier evaluation & routing collision test |
-| `CONCEPT-SENTRY-GUARD` | Anti-Rationalization & DoD | Security & Quality Policy | [sentry/anti_rationalization_and_guardrails.md](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/sentry/anti_rationalization_and_guardrails.md) | Anti-rationalizations, red flags & DoD |
+| `CONCEPT-SCOUT-MAP` | Codebase Map | Codebase Map | [scout/codebase_map.md](../../.gemini/knowledge/scout/codebase_map.md) | Monorepo layout, directory hierarchy & boundaries |
+| `CONCEPT-SCOUT-INV` | Full Skills Taxonomy | Inventory | [scout/skill_inventory.md](../../.gemini/knowledge/scout/skill_inventory.md) | 16 core verbs + 12 preferred domain skills |
+| `CONCEPT-SCOUT-LAND` | Ecosystem Landscape | Ecosystem Landscape | [scout/reference_repos_landscape.md](../../.gemini/knowledge/scout/reference_repos_landscape.md) | Addy Osmani, Matt Pocock, Superpowers, Codex, Cursor |
+| `CONCEPT-ANALYST-DEC` | Design Decisions | Design Decision | [analyst/design_decisions.md](../../.gemini/knowledge/analyst/design_decisions.md) | 2-tier scoping, token economics & laziness |
+| `CONCEPT-ANALYST-ATTR` | Attribution Matrix | Attribution Matrix | [analyst/attribution_matrix.md](../../.gemini/knowledge/analyst/attribution_matrix.md) | Creator credits & upstream provenance |
+| `CONCEPT-ANALYST-COMP` | Comparative Analysis | Comparative Analysis | [analyst/framework_comparative_analysis.md](../../.gemini/knowledge/analyst/framework_comparative_analysis.md) | Lifecycle vs. autonomy vs. token trade-offs |
+| `CONCEPT-ANALYST-LING` | Leading Words & Linguistics | Linguistic Heuristic | [analyst/leading_words_and_heuristics.md](../../.gemini/knowledge/analyst/leading_words_and_heuristics.md) | Model priors, info hierarchy & failure modes |
+| `CONCEPT-ARCH-SCHEMA` | Data Contracts | Data Contract | [architecture/data_contracts.md](../../.gemini/knowledge/architecture/data_contracts.md) | YAML frontmatter schemas & structure |
+| `CONCEPT-ARCH-INSTALL` | Installer Specification | Architecture Spec | [architecture/installer_spec.md](../../.gemini/knowledge/architecture/installer_spec.md) | Multi-runtime symlinks & JIT bootstrapper |
+| `CONCEPT-ARCH-COMPILER`| Docs Compiler Pipeline | Pipeline Architecture | [architecture/docs_compiler_pipeline.md](../../.gemini/knowledge/architecture/docs_compiler_pipeline.md) | Stitch 4-theme compilation pipeline |
+| `CONCEPT-ARCH-OVERLAY` | Profile-Overlay Engine | Architecture Spec | [architecture/profile_overlay_spec.md](../../.gemini/knowledge/architecture/profile_overlay_spec.md) | 3-tier persona resolution & PII isolation |
+| `CONCEPT-ARCH-COMPAT` | Cross-Platform Spec | Architecture Spec | [architecture/cross_platform_compatibility_spec.md](../../.gemini/knowledge/architecture/cross_platform_compatibility_spec.md) | Multi-harness compatibility mapping |
+| `CONCEPT-ARCH-ORCH` | Orchestration Catalog | Architecture Catalog | [architecture/orchestration_patterns_catalog.md](../../.gemini/knowledge/architecture/orchestration_patterns_catalog.md) | Endorsed fan-out & pipeline patterns |
+| `CONCEPT-BUILDER-RUN` | Developer Runbooks | Runbook | [builder/runbooks.md](../../.gemini/knowledge/builder/runbooks.md) | CLI commands for build, lint & sync |
+| `CONCEPT-BUILDER-GUIDE`| Skill Authoring Guide | Authoring Guide | [builder/skill_authoring_guide.md](../../.gemini/knowledge/builder/skill_authoring_guide.md) | 3-level progressive disclosure guide |
+| `CONCEPT-BUILDER-GRILL`| Socratic Grilling Engine | Interactive Engine | [builder/grilling_and_interview_engine.md](../../.gemini/knowledge/builder/grilling_and_interview_engine.md) | Interrogation loop & branch-walking |
+| `CONCEPT-SENTRY-PII` | Security & PII Policy | Security Policy | [sentry/security_and_pii.md](../../.gemini/knowledge/sentry/security_and_pii.md) | Zero-PII sanitization & regex scans |
+| `CONCEPT-SENTRY-OSS` | OSS Compliance Spec | Compliance Spec | [sentry/oss_compliance_spec.md](../../.gemini/knowledge/sentry/oss_compliance_spec.md) | Apache-2.0 & SPDX license headers |
+| `CONCEPT-SENTRY-EVALS` | Evaluation Framework | Evaluation Framework | [sentry/evaluation_harness_framework.md](../../.gemini/knowledge/sentry/evaluation_harness_framework.md) | 3-tier evaluation & routing collision test |
+| `CONCEPT-SENTRY-GUARD` | Anti-Rationalization & DoD | Security & Quality Policy | [sentry/anti_rationalization_and_guardrails.md](../../.gemini/knowledge/sentry/anti_rationalization_and_guardrails.md) | Anti-rationalizations, red flags & DoD |
 
 ---
 

@@ -8,21 +8,21 @@ This document serves as the **Single Source of Truth** for preferred agent skill
 
 > [!IMPORTANT]
 > **Zero Practice Redefinition**: `prompt` is a **Meta-Orchestrator**, not a domain practitioner. It does NOT redefine how specifications, testing, security, or documentation should be written. Instead, it systematically **composes, delegates to, and weaves** the authoritative global skills into the generated prompt deck:
-> - **Socratic Grilling & Q&A** ➔ Delegated to [`grill`](file:///Users/ksprashanth/code/github/agent-skills/skills/grill)
-> - **Specification & Source Grounding** ➔ Delegated to [`spec`](file:///Users/ksprashanth/code/github/agent-skills/skills/spec)
-> - **Task Decomposition & Dependency DAGs** ➔ Delegated to [`plan`](file:///Users/ksprashanth/code/github/agent-skills/skills/plan)
-> - **TDD & Prove-It Verification** ➔ Delegated to [`test`](file:///Users/ksprashanth/code/github/agent-skills/skills/test)
-> - **EGA Dual-Verification & Blinded 6-Persona Rubrics** ➔ Delegated to [`verify`](file:///Users/ksprashanth/code/github/skills-expectation-harness/skills/expectation-harness)
-> - **Code Review & Fowler Smells** ➔ Delegated to [`review`](file:///Users/ksprashanth/code/github/agent-skills/skills/review)
-> - **Anti-AI Bloat & Code Simplification** ➔ Delegated to [`unslop`](file:///Users/ksprashanth/code/github/agent-skills/skills/unslop)
-> - **Knowledge Bundles & OKF Indexing** ➔ Delegated to [`catalog`](file:///Users/ksprashanth/code/github/skills-knowledge-catalog/skills/knowledge-catalog)
-> - **Documentation & Stitch 4-Theme HTML** ➔ Delegated to [`docs`](file:///Users/ksprashanth/code/github/skills-documentation/skills/documentation)
-> - **Canonical Symlink & JIT Bootstrapper** ➔ Delegated to [`sync`](file:///Users/ksprashanth/code/github/agent-skill-sync/skills/skill-sync)
-> - **Google Open Source Compliance** ➔ Delegated to [`google-oss`](file:///Users/ksprashanth/code/github/gcx-make-google-oss/skills/make-google-oss)
-> - **Codelab Scaffolding & Validation** ➔ Delegated to [`codelab`](file:///Users/ksprashanth/code/github/skills-codelab-creator/skills/codelab-creator)
-> - **Linguistic Voice & Persona Profiling** ➔ Delegated to [`human-voice`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/human-voice)
-> - **Writing Companion & Profile-Overlay** ➔ Delegated to [`copy-write`](file:///Users/ksprashanth/code/github/copy-write-bara)
-> - **Multimodal Infographic & Diagram Gen** ➔ Delegated to [`image-gen`](file:///Users/ksprashanth/code/github/skills-image-gen-expert/skills/image-gen-expert)
+> - **Socratic Grilling & Q&A** ➔ Delegated to `grill` — `agent-skills/skills/grill`
+> - **Specification & Source Grounding** ➔ Delegated to `spec` — `agent-skills/skills/spec`
+> - **Task Decomposition & Dependency DAGs** ➔ Delegated to `plan` — `agent-skills/skills/plan`
+> - **TDD & Prove-It Verification** ➔ Delegated to `test` — `agent-skills/skills/test`
+> - **EGA Dual-Verification & Blinded 6-Persona Rubrics** ➔ Delegated to `verify` — `skills-expectation-harness/skills/expectation-harness`
+> - **Code Review & Fowler Smells** ➔ Delegated to `review` — `agent-skills/skills/review`
+> - **Anti-AI Bloat & Code Simplification** ➔ Delegated to `unslop` — `agent-skills/skills/unslop`
+> - **Knowledge Bundles & OKF Indexing** ➔ Delegated to `catalog` — `skills-knowledge-catalog/skills/knowledge-catalog`
+> - **Documentation & Stitch 4-Theme HTML** ➔ Delegated to `docs` — `skills-documentation/skills/documentation`
+> - **Canonical Symlink & JIT Bootstrapper** ➔ Delegated to `sync` — `agent-skill-sync/skills/skill-sync`
+> - **Google Open Source Compliance** ➔ Delegated to `google-oss` — `gcx-make-google-oss/skills/make-google-oss`
+> - **Codelab Scaffolding & Validation** ➔ Delegated to `codelab` — `skills-codelab-creator/skills/codelab-creator`
+> - **Linguistic Voice & Persona Profiling** ➔ Delegated to `human-voice` — `agent-skill-forge/skills/human-voice`
+> - **Writing Companion & Profile-Overlay** ➔ Delegated to `copy-write` — `copy-write-bara`
+> - **Multimodal Infographic & Diagram Gen** ➔ Delegated to `image-gen` — `skills-image-gen-expert/skills/image-gen-expert`
 
 ---
 
