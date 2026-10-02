@@ -199,18 +199,21 @@ def validate_aliases():
     return errors
 
 
-def validate_dag_harness(repo_root):
+def validate_dag_harness(repo_root, harness_root=REPO_ROOT):
     """
     Validates canonical Markdown DAG specifications and templates across skills/
     fixtures and references using skills/work/scripts/dag_validator.py.
+
+    The DAGs come from ``repo_root``; the validator comes from ``harness_root``,
+    the checkout this script lives in. The validator is tooling, not data.
     """
     errors = []
     warnings = []
-    dag_script = os.path.join(repo_root, 'skills', 'work', 'scripts', 'dag_validator.py')
+    dag_script = os.path.join(harness_root, 'skills', 'work', 'scripts', 'dag_validator.py')
     if not os.path.exists(dag_script):
         return 0, [f"Missing DAG validator harness: {dag_script}"], []
 
-    sys.path.insert(0, os.path.join(repo_root, 'skills', 'work', 'scripts'))
+    sys.path.insert(0, os.path.join(harness_root, 'skills', 'work', 'scripts'))
     try:
         from dag_validator import DAGValidator
     except Exception as ex:
@@ -305,10 +308,37 @@ def iter_dispatch_briefs(repo_root):
                 except ValueError as ex:
                     yield rel, line, f"unparseable dispatch payload: {ex}"
                     continue
-                payloads = data.get('Subagents', [data]) if isinstance(data, dict) else []
-                for payload in payloads:
-                    if isinstance(payload, dict) and 'Prompt' in payload:
-                        yield rel, line, payload
+                yield from _payloads_in(rel, line, data)
+
+
+def _payloads_in(rel, line, data):
+    """The dispatch payloads in one parsed block, or why it is malformed.
+
+    A block is a dispatch if it carries ``Subagents`` or a top-level
+    ``Prompt``; anything else is unrelated JSON and is ignored. Inside a
+    dispatch nothing is skipped: an entry the lint cannot check is an error,
+    because skipping it is how a brief with no prompt at all used to pass.
+    """
+    if not isinstance(data, dict):
+        return
+    if 'Subagents' in data:
+        entries = data['Subagents']
+        if not isinstance(entries, list):
+            yield rel, line, "malformed dispatch payload: 'Subagents' is not a list"
+            return
+        for i, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                yield rel, line, f"malformed dispatch payload: Subagents[{i}] is not an object"
+            elif not isinstance(entry.get('Prompt'), str):
+                who = entry.get('Role') or f"Subagents[{i}]"
+                yield rel, line, f"malformed dispatch payload: {who} has no string Prompt"
+            else:
+                yield rel, line, entry
+    elif 'Prompt' in data:
+        if isinstance(data['Prompt'], str):
+            yield rel, line, data
+        else:
+            yield rel, line, "malformed dispatch payload: Prompt is not a string"
 
 
 def validate_dispatch_briefs(repo_root):
@@ -342,20 +372,27 @@ def validate_dispatch_briefs(repo_root):
     return errors
 
 
-def main():
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate skills, DAG fixtures and dispatch briefs.")
+    parser.add_argument('--repo-root', default=REPO_ROOT,
+                        help="Tree to validate (default: this checkout). The verifier "
+                             "fixtures under tests/fixtures/ are run through this.")
+    repo_root = os.path.abspath(parser.parse_args(argv).repo_root)
+
     print("=" * 65)
     print("🔍 Agent Skill Forge — Skill Validation & PII Audit")
     print("=" * 65)
 
-    core_dir = os.path.join(REPO_ROOT, 'skills')
-    pref_dir = os.path.join(REPO_ROOT, 'preferred')
+    core_dir = os.path.join(repo_root, 'skills')
+    pref_dir = os.path.join(repo_root, 'preferred')
 
     core_count, core_errs, core_warns = validate_skill_dir(core_dir, 'core')
     pref_count, pref_errs, pref_warns = validate_skill_dir(pref_dir, 'preferred')
-    dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
+    dag_count, dag_errs, dag_warns = validate_dag_harness(repo_root)
     alias_errs = validate_aliases()
-    path_errs = scan_host_paths(REPO_ROOT)
-    brief_errs = validate_dispatch_briefs(REPO_ROOT)
+    path_errs = scan_host_paths(repo_root)
+    brief_errs = validate_dispatch_briefs(repo_root)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
     print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
