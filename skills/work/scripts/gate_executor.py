@@ -681,7 +681,12 @@ def _gate_recorded_exit_zero(ctx: GateContext,
             details={"exit_code": result["exit_code"]},
         )
 
-    accepted = frozenset(accept) if accept is not None else accepted_run_gates(ctx.gate)
+    # A gate always answers for its own runs. The ``--cmd`` branch above records
+    # under ``ctx.gate``; without it in the lookup, ``victory_cert --cmd`` passed
+    # once and the DAG transition that followed -- same gate, same tree, no
+    # command -- searched only ``accept`` and refused for want of a run.
+    accepted = (frozenset(accept) if accept is not None
+                else accepted_run_gates(ctx.gate)) | {ctx.gate}
     record = latest_run(ctx.base_dir, ctx.task, gates=accepted)
     if record is None:
         return GateResult(

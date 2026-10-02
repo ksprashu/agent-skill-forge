@@ -390,13 +390,25 @@ One of them did not. Mutation-checking the batch — reverting each fix and conf
 
 Extending the sweep to the gate executor killed all nine guards mutated, but checking *what each death asserted on* — rather than only that something went red — found a second weakness. All three `victory_cert` refusals died on `result.reason`, never on `assertFalse(result.passed)`: in a bare fixture the gate refuses anyway for want of a recorded verification run, so disabling the unfinished-task check moved the refusal downstream instead of removing it. The tests noticed the changed sentence, so they were not dead, but nothing in them established that an unfinished task *blocks certification* — only that it is mentioned first. Two tests now start from the fixture that genuinely certifies, making the guard under test the single difference; both die on `True is not false: certified a project with an unfinished task`. A mutation that survives and a mutation that kills for the wrong reason are equally uninformative, and only the second looks like success.
 
+**Fourth round on the same PR:**
+
+Five findings, all real. Four were listed only in the review body as "previously missed" and had no inline thread.
+
+- **`victory_cert` could not reuse its own run.** `check --cmd` records under the calling gate, but the gate's lookup searched only its `accept` set, so the documented sequence — `victory_cert --cmd` passes, then the DAG transition re-evaluates the same gate with no command — refused for want of a run it had just recorded. A gate now always answers for its own runs (`accepted | {ctx.gate}`); runs recorded under any other gate still do not count.
+- **`arbiter_eval.py` ran the benchmark from the caller's directory.** Both candidates were benchmarked against the same code, so the timings compared nothing. The benchmark now runs inside each candidate's `--*-dir`, and its exit code is recorded and reported. A failed run gets no timing, because a benchmark that crashed in 0.1 s is not fast.
+- **An unbalanced quote in `--alpha-test` crashed `arbiter_eval.py` with a traceback.** `shlex.split` raises `ValueError`; it is now a failed invocation (exit 2, `unparseable command`), the same rule `gate_executor.run_command` already followed.
+- **`check_stdlib_only.py` still pooled module names within a root.** The round-two fix stopped roots vouching for each other, but inside one root `scripts/deep/helper.py` still cleared `import helper` in `scripts/a.py`, and a nested `scripts/vendor/requests.py` would hide a real `import requests` everywhere in the root. Local names are now computed per importer: its own directory, plus the base directory of the package it sits in, which is what Python actually puts on `sys.path`.
+- **`competitive_branching.md` claimed the arbiter counted tests and assertions.** It counts neither. The paragraph now lists what is measured and says outright that tests and assertions are not counted.
+
+Twelve regression tests cover the five. Every fix was reverted, along with three adjacent guards (accept-all-gates lookup, timing on a failed benchmark, directories without `__init__.py` counted as packages), and each of the eight mutations failed the test written for it, on its own assertion. The negative control for `victory_cert` needed a rewrite first. Its first draft recorded a foreign run through an unregistered gate, which fails closed and writes nothing, so the test would have passed against any lookup at all. It now records the run directly and asserts that it exists before asking whether it counts.
+
 **Still open, deliberately:**
 
 - **W-10** as above: harness-level, not script-level.
 - **W-07 and W-08 have no executor.** Both are now correct prose in the dispatch briefs, and prose is L1. Nothing fails if a future edit drops the grounding line from a brief. A linter over the dispatch payloads in `SKILL.md` would close that; it is not written.
 - **Attested gates check form, not correctness.** `gate_executor.py attest` rejects an attestation that is unsigned, self-signed, cites missing or empty artifacts, or was written against a different revision of either the code or the evidence it cites. It cannot check whether the reviewer was right, and nothing can. That ceiling is stated in the module docstring so the next reader does not mistake the gate for more than it is.
 
-Repository state after remediation: **688 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
+Repository state after remediation: **699 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
 
 ---
 

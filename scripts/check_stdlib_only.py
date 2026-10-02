@@ -80,22 +80,39 @@ def iter_python_files(root: Path) -> Iterable[Path]:
         yield path
 
 
-def local_module_names(roots: Sequence[Path]) -> Set[str]:
-    """Modules importable because they sit next to the importer.
+def _modules_in(directory: Path) -> Set[str]:
+    """What ``import x`` finds when ``directory`` is on ``sys.path``."""
+    names: Set[str] = set()
+    for child in directory.iterdir():
+        if child.name in SKIP_DIR_NAMES:
+            continue
+        if child.is_file() and child.suffix == ".py":
+            names.add(child.stem)
+        elif child.is_dir() and (child / "__init__.py").exists():
+            names.add(child.name)
+    return names
+
+
+def local_module_names(importer: Path) -> Set[str]:
+    """Modules importable because they sit next to *this* importer.
 
     ``scaffold_work.py`` imports ``visual_engine`` from its own scripts
     directory. That is not a dependency; it is the same codebase.
+
+    Computed per importer, not per root. A root-wide list let
+    ``scripts/deep/helper.py`` vouch for ``import helper`` in ``scripts/a.py``,
+    which cannot resolve it -- and let a nested file named after a third-party
+    package hide that dependency everywhere in the root. Python puts the
+    running script's directory on ``sys.path``, so that is what is local: the
+    importer's siblings, and, for a module inside a package, the siblings of
+    the directory the package was imported from.
     """
-    names: Set[str] = set()
-    for root in roots:
-        if not root.exists():
-            continue
-        for path in iter_python_files(root):
-            names.add(path.stem)
-            names.add(path.parent.name)
-        for child in root.rglob("*"):
-            if child.is_dir() and (child / "__init__.py").exists():
-                names.add(child.name)
+    names = _modules_in(importer.parent)
+    base = importer.parent
+    while (base / "__init__.py").exists():
+        base = base.parent
+    if base != importer.parent:
+        names |= _modules_in(base)
     return names
 
 
@@ -114,9 +131,10 @@ def imported_modules(tree: ast.AST) -> Iterable[Tuple[int, str]]:
 def scan(repo_root: Path, roots: Sequence[str] = ENFORCED_ROOTS) -> List[str]:
     """Every non-stdlib import under ``roots``. One line per violation.
 
-    The allow-list is computed per root, not as one union across all of them.
-    These trees are not mutually importable at runtime: nothing under ``hooks/``
-    can ``import`` a module that exists only in ``scripts/``. Pooling the names
+    The allow-list is computed per importer -- see ``local_module_names`` --
+    and never as one union across roots. These trees are not mutually
+    importable at runtime: nothing under ``hooks/`` can ``import`` a module
+    that exists only in ``scripts/``. Pooling the names
     meant a file in one root vouched for an identically-named import in
     another, so a genuine missing dependency could hide behind a local module
     that merely shared its name.
@@ -131,8 +149,9 @@ def scan(repo_root: Path, roots: Sequence[str] = ENFORCED_ROOTS) -> List[str]:
         if not root.exists():
             violations.append(f"{root}: enforced root does not exist")
             continue
-        allowed = stdlib | local_module_names([root]) | CROSS_ROOT_IMPORTS.get(str(rel), frozenset())
+        shared = stdlib | CROSS_ROOT_IMPORTS.get(str(rel), frozenset())
         for path in iter_python_files(root):
+            allowed = shared | local_module_names(path)
             try:
                 tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             except SyntaxError as exc:
