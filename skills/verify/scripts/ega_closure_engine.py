@@ -29,31 +29,50 @@ import json
 import subprocess
 from pathlib import Path
 
-def run_cmd(cmd, cwd=None):
-    """Executes a shell command and returns stdout, stderr, returncode."""
-    res = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=cwd)
+# Refusing to push here by default. Pushing is irreversible and outward
+# facing, and this module runs as a side effect of a *verification* pass:
+# nobody asking "did my work pass the gate?" is asking to publish it. Callers
+# that genuinely want it opt in with push=True.
+PROTECTED_BRANCHES = {"main", "master", "trunk", "develop", "release"}
+
+
+def run_cmd(argv, cwd=None):
+    """Runs a command given as an argument vector and returns stdout, stderr, returncode.
+
+    No shell. The commit message is task-derived text that reaches this
+    function verbatim; interpolating it into a shell string made any goal
+    summary containing a backtick or $(...) an arbitrary command. Passing an
+    argv list removes the shell from the path entirely, so no quoting or
+    stripping is required to be correct.
+    """
+    res = subprocess.run(argv, shell=False, capture_output=True, text=True, cwd=cwd)
     return res.stdout.strip(), res.stderr.strip(), res.returncode
 
 def is_git_repo(repo_dir):
-    out, _, code = run_cmd("git rev-parse --is-inside-work-tree", cwd=repo_dir)
+    out, _, code = run_cmd(["git", "rev-parse", "--is-inside-work-tree"], cwd=repo_dir)
     return code == 0 and out == "true"
 
-def execute_git_closure(short_id, goal_summary, domain, repo_dir):
-    """Executes git status check, conventional commit, and optional git push."""
+def execute_git_closure(short_id, goal_summary, domain, repo_dir, push=False):
+    """Executes git status check and a conventional commit.
+
+    Pushes only when `push` is True and the current branch is not protected.
+    """
     if not is_git_repo(repo_dir):
         print(f"[Closure Engine] Notice: {repo_dir} is not a git repository. Skipping git commit.")
         return False, "Not a git repo"
 
     # Check git status
-    status_out, _, _ = run_cmd("git status --porcelain", cwd=repo_dir)
+    status_out, _, _ = run_cmd(["git", "status", "--porcelain"], cwd=repo_dir)
     if not status_out:
         print("[Closure Engine] Working tree clean. No uncommitted changes.")
         return True, "Clean working tree"
 
     print(f"[Closure Engine] Uncommitted changes detected:\n{status_out}")
 
-    # Stage files
-    run_cmd("git add -A", cwd=repo_dir)
+    # Tracked files only. `git add -A` also swept up untracked work that
+    # happened to be in the tree — scratch files, unrelated experiments —
+    # into a commit the user did not write.
+    run_cmd(["git", "add", "-u"], cwd=repo_dir)
 
     # Determine conventional commit prefix based on domain
     domain_norm = domain.lower() if domain else "general"
@@ -65,37 +84,51 @@ def execute_git_closure(short_id, goal_summary, domain, repo_dir):
     elif domain_norm in ["python", "node", "javascript", "ts", "go"]:
         prefix = "feat"
 
-    # Clean goal summary for commit title
-    clean_goal = goal_summary.replace('"', '').replace("'", "").strip()
+    # Collapse whitespace so the subject line stays one line. Quotes are left
+    # alone: with an argv list there is no shell to confuse, and stripping them
+    # only corrupted summaries that legitimately contained one.
+    clean_goal = " ".join(goal_summary.split())
     if len(clean_goal) > 60:
         clean_goal = clean_goal[:57] + "..."
 
     commit_msg = f"{prefix}({short_id.lower()}): {clean_goal}\n\nEGA-Grounded Closure Signoff\nShort ID: {short_id}\nDomain: {domain}"
 
     # Execute Commit
-    commit_out, commit_err, commit_code = run_cmd(f'git commit -m "{commit_msg}"', cwd=repo_dir)
+    commit_out, commit_err, commit_code = run_cmd(["git", "commit", "-m", commit_msg], cwd=repo_dir)
     if commit_code != 0:
         print(f"[Closure Engine Warning] Git commit failed: {commit_err or commit_out}")
         return False, commit_err or commit_out
 
     print(f"[Closure Engine] Git Commit Successful: {prefix}({short_id.lower()}): {clean_goal}")
 
-    # Check for git remote & push if upstream exists
-    remote_out, _, remote_code = run_cmd("git remote -v", cwd=repo_dir)
-    if remote_code == 0 and remote_out:
-        branch_out, _, _ = run_cmd("git branch --show-current", cwd=repo_dir)
-        branch = branch_out or "main"
-        push_out, push_err, push_code = run_cmd(f"git push origin {branch}", cwd=repo_dir)
-        if push_code == 0:
-            print(f"[Closure Engine] Git Push Successful -> origin/{branch}")
-        else:
-            print(f"[Closure Engine Notice] Git push skipped/failed (no upstream or auth required): {push_err or push_out}")
-    else:
+    if not push:
+        print("[Closure Engine] Local commit persisted. Push not requested.")
+        return True, "Git closure completed (local)"
+
+    branch_out, _, _ = run_cmd(["git", "branch", "--show-current"], cwd=repo_dir)
+    branch = branch_out.strip()
+    if not branch:
+        print("[Closure Engine Notice] Detached HEAD — nothing pushed.")
+        return True, "Git closure completed (local)"
+    if branch in PROTECTED_BRANCHES:
+        print(f"[Closure Engine Notice] '{branch}' is protected — nothing pushed. "
+              f"Open a branch and a PR instead.")
+        return True, "Git closure completed (local)"
+
+    remote_out, _, remote_code = run_cmd(["git", "remote", "-v"], cwd=repo_dir)
+    if remote_code != 0 or not remote_out:
         print("[Closure Engine Notice] No git remote configured. Local commit persisted.")
+        return True, "Git closure completed (local)"
+
+    push_out, push_err, push_code = run_cmd(["git", "push", "origin", branch], cwd=repo_dir)
+    if push_code == 0:
+        print(f"[Closure Engine] Git Push Successful -> origin/{branch}")
+    else:
+        print(f"[Closure Engine Notice] Git push skipped/failed (no upstream or auth required): {push_err or push_out}")
 
     return True, "Git closure completed"
 
-def execute_domain_closure(harness_dir):
+def execute_domain_closure(harness_dir, push=False):
     """Executes full domain-aware closure for a completed EGA harness directory."""
     harness_path = Path(harness_dir)
     graph_file = harness_path / "task_graph.json"
@@ -131,18 +164,20 @@ def execute_domain_closure(harness_dir):
     print(f"[Closure Engine] Manifest saved to {manifest_file}")
 
     # 2. Execute Git Closure
-    execute_git_closure(short_id, goal, domain, repo_dir)
+    execute_git_closure(short_id, goal, domain, repo_dir, push=push)
 
     print(f"=======================================================\n")
     return True
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: ega_closure_engine.py <HARNESS_DIR>")
+    args = [a for a in sys.argv[1:] if a != "--push"]
+    push = "--push" in sys.argv[1:]
+    if len(args) < 1:
+        print("Usage: ega_closure_engine.py <HARNESS_DIR> [--push]")
         sys.exit(1)
 
-    harness_dir = sys.argv[1]
-    success = execute_domain_closure(harness_dir)
+    harness_dir = args[0]
+    success = execute_domain_closure(harness_dir, push=push)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
