@@ -465,6 +465,47 @@ class TestVictoryCertGate(unittest.TestCase):
                              "certified without knowing any task's status")
             self.assertIn("task statuses", result.reason)
 
+    # -- A run recorded by victory_cert --cmd answers for victory_cert --------
+    #
+    # The --cmd branch records under the gate's own name, and the no-command
+    # branch -- which is what dag_validator --set-status uses -- searched only
+    # the exit_0 aliases. So the documented check passed, and the transition
+    # that should follow it refused on the same tree.
+
+    def test_the_documented_check_then_transition_sequence_completes(self):
+        with ProjectFixture() as fx:
+            fx.write("VICTORY.md", substantial("Victory certificate"))
+            statuses = {"worker": "PASSED", "victory": "PASSED"}
+            first = GE.evaluate_gate("victory_cert", "victory", fx.root,
+                                     outputs=["VICTORY.md"], all_statuses=statuses,
+                                     command=f"{sys.executable} -m pytest tests -q")
+            self.assertTrue(first.passed, first.reason)
+            second = GE.evaluate_gate("victory_cert", "victory", fx.root,
+                                      outputs=["VICTORY.md"], all_statuses=statuses)
+            self.assertTrue(second.passed,
+                            f"victory_cert could not reuse its own run: {second.reason}")
+
+    def test_another_gates_run_still_does_not_answer_for_victory_cert(self):
+        """Accepting a gate's own runs must not reopen the cross-gate ledger.
+
+        The foreign run is written straight to the ledger. Recording it through
+        ``evaluate_gate`` does not work: an unregistered gate name fails closed
+        and records nothing, which would leave this test refusing for want of
+        *any* run -- passing without exercising the cross-gate check at all.
+        """
+        with ProjectFixture() as fx:
+            fx.write("VICTORY.md", substantial("Victory certificate"))
+            green = GE.run_command(f"{sys.executable} -m pytest tests -q", fx.root)
+            self.assertEqual(0, green["exit_code"], "precondition: the foreign run is green")
+            GE.record_run(fx.root, "victory", "lint_pass", green)
+            self.assertEqual(["lint_pass"], [r.get("gate") for r in GE.load_runs(fx.root, "victory")],
+                             "precondition: a current, green run exists under another gate")
+            result = GE.evaluate_gate("victory_cert", "victory", fx.root,
+                                      outputs=["VICTORY.md"],
+                                      all_statuses={"worker": "PASSED", "victory": "PASSED"})
+            self.assertFalse(result.passed, "a lint run certified the project")
+            self.assertIn("No clean verification run", result.reason)
+
     def test_full_certification_passes_when_everything_holds(self):
         with ProjectFixture() as fx:
             fx.write("VICTORY.md", substantial("Victory certificate"))

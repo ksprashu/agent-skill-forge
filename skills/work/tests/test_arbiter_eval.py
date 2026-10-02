@@ -290,6 +290,44 @@ class TestImplementationMeasurement(unittest.TestCase):
         self.assertNotIn("15 pts", report)
 
 
+class TestBenchmarkRunsAgainstEachCandidate(unittest.TestCase):
+    """One shared command; the working directory is what aims it.
+
+    It used to run from ``.`` for both, so ``--alpha-dir``/``--beta-dir`` only
+    changed the line counts and the benchmark timed one tree twice. The probe
+    here exits 0 only when it can see its candidate's marker file, so it can
+    tell which directory it was actually standing in.
+    """
+
+    PROBE = (f'{sys.executable} -c "import pathlib, sys; '
+             f'sys.exit(0 if pathlib.Path(\'ALPHA_MARKER\').exists() else 3)"')
+
+    def test_the_benchmark_runs_inside_each_candidates_directory(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            (Path(a) / "ALPHA_MARKER").write_text("", encoding="utf-8")
+            alpha = measure_candidate("A", None, self.PROBE, a)
+            beta = measure_candidate("B", None, self.PROBE, b)
+        self.assertEqual(0, alpha["bench_exit_code"],
+                         "the benchmark did not run inside Alpha's directory")
+        self.assertEqual(3, beta["bench_exit_code"],
+                         "Beta's benchmark ran somewhere it could see Alpha's code")
+
+    def test_a_benchmark_that_failed_is_not_reported_as_fast(self):
+        """A command that never started takes 0.0s, which reads as a winner."""
+        missing = str(Path(tempfile.gettempdir()) / "arbiter-no-such-candidate-dir")
+        result = measure_candidate("A", None, f"{sys.executable} -c pass", missing)
+        self.assertNotEqual(0, result["bench_exit_code"])
+        self.assertIsNone(result["bench_duration_s"])
+
+    def test_the_report_shows_the_benchmark_exit_code(self):
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            (Path(a) / "ALPHA_MARKER").write_text("", encoding="utf-8")
+            report = render_report(compare_candidates(
+                measure_candidate("A", None, self.PROBE, a),
+                measure_candidate("B", None, self.PROBE, b)))
+        self.assertIn("| Benchmark exit code | 0 | 3 |", report)
+
+
 class TestCodeMetrics(unittest.TestCase):
     def test_metrics_are_measured_from_real_files(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -331,6 +369,12 @@ class TestExecutionSafety(unittest.TestCase):
 
     def test_empty_command_is_an_invocation_error(self):
         self.assertEqual(2, run_command("   ")[0])
+
+    def test_an_unbalanced_quote_is_an_invocation_error_not_a_traceback(self):
+        """The commands are agent-authored; a half-written one must not crash."""
+        code, _out, err, _dur = run_command("pytest -k 'not slow")
+        self.assertEqual(2, code)
+        self.assertIn("unparseable command", err)
 
     def test_timeout_is_enforced(self):
         code, _out, err, _dur = run_command(

@@ -141,12 +141,16 @@ python3.12 skills/work/scripts/arbiter_eval.py \
   --output-report .agents/orchestrator/arbiter_evidence.md
 ```
 The report contains measurements, not a ranking: each candidate's test exit
-code, test count, assertion count, source and test line counts, and any
-benchmark output. Where a fact settles the question mechanically — one suite
+code and wall clock, and the source file count, total lines, median and largest
+file size, and files over 150 lines under its `--*-dir`. With `--bench-cmd`, the
+one benchmark command runs inside each candidate's directory and the report
+records its exit code and wall clock — not its output, and a failed run gets no
+timing, since a command that never started is not a fast benchmark. It does not
+count tests or assertions; read the suites for that. Where a fact settles the question mechanically — one suite
 green and the other red — the report says so (`SELECT_ALPHA`, `SELECT_BETA`,
 `BOTH_REJECTED`). Where it does not, the verdict is `JUDGEMENT_REQUIRED` and the
 Arbiter decides.
 
 - **One candidate green, one red**: merge the green one. The report already says which.
-- **Both green**: read both implementations. Line counts and assertion counts do not tell you which design will survive the next change; that is the judgement you were spawned to make.
+- **Both green**: read both implementations. Line counts do not tell you which design will survive the next change; that is the judgement you were spawned to make.
 - Results advance to the **Adversarial Committee** for milestone gating.

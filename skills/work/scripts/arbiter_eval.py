@@ -108,7 +108,12 @@ def run_command(cmd: str, cwd: str = ".", timeout: int = 900) -> tuple[int, str,
     injection path. If a pipeline is genuinely needed, put it in a script and
     invoke the script.
     """
-    argv = shlex.split(cmd)
+    try:
+        argv = shlex.split(cmd)
+    except ValueError as exc:
+        # An unbalanced quote in an agent-authored command is a failed
+        # invocation, not a crash. Same rule as gate_executor.run_command.
+        return 2, "", f"unparseable command: {exc}", 0.0
     if not argv:
         return 2, "", "empty command", 0.0
     start = time.perf_counter()
@@ -326,7 +331,15 @@ def count_code_metrics(dir_path: str) -> dict:
 
 def measure_candidate(name: str, test_cmd: str | None, bench_cmd: str | None,
                       code_dir: str, timeout: int = 900) -> dict:
-    """Measure a candidate. Every field here is an observation, not a rating."""
+    """Measure a candidate. Every field here is an observation, not a rating.
+
+    The benchmark runs *inside* ``code_dir``. It is one shared command, so the
+    working directory is the only thing that can point it at one candidate
+    rather than the other; run from ``.`` it timed the same code twice and
+    reported the difference as if it meant something. Test commands are given
+    per candidate and keep running from the invocation directory, which is what
+    the documented ``--alpha-test "pytest tests/alpha"`` form assumes.
+    """
     print(f"Measuring {name}...", file=sys.stderr)
     result = {
         "name": name,
@@ -337,6 +350,7 @@ def measure_candidate(name: str, test_cmd: str | None, bench_cmd: str | None,
         "test_passed": None,
         "test_duration_s": None,
         "bench_run": False,
+        "bench_exit_code": None,
         "bench_duration_s": None,
         "code_metrics": count_code_metrics(code_dir),
     }
@@ -345,8 +359,9 @@ def measure_candidate(name: str, test_cmd: str | None, bench_cmd: str | None,
         result.update(test_run=True, test_exit_code=code, test_passed=(code == 0),
                       test_duration_s=round(duration, 3))
     if bench_cmd:
-        _c, _o, _e, duration = run_command(bench_cmd, cwd=".", timeout=timeout)
-        result.update(bench_run=True, bench_duration_s=round(duration, 3))
+        code, _o, _e, duration = run_command(bench_cmd, cwd=code_dir, timeout=timeout)
+        result.update(bench_run=True, bench_exit_code=code,
+                      bench_duration_s=round(duration, 3) if code == 0 else None)
     return result
 
 
@@ -493,6 +508,7 @@ def render_implementation_report(data: dict) -> str:
 | Test command | `{alpha['test_cmd'] or 'none supplied'}` | `{beta['test_cmd'] or 'none supplied'}` |
 | Test exit code | {cell(alpha['test_exit_code'])} | {cell(beta['test_exit_code'])} |
 | Test wall clock | {cell(alpha['test_duration_s'], 's')} | {cell(beta['test_duration_s'], 's')} |
+| Benchmark exit code | {cell(alpha['bench_exit_code'])} | {cell(beta['bench_exit_code'])} |
 | Benchmark wall clock | {cell(alpha['bench_duration_s'], 's')} | {cell(beta['bench_duration_s'], 's')} |
 | Source files | {am['file_count']} | {bm['file_count']} |
 | Total lines | {am['total_lines']} | {bm['total_lines']} |
@@ -548,7 +564,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--beta-dir", default=".", help="Path to Worker Beta code")
     parser.add_argument("--alpha-test", help="Test command for Alpha (argv, not a shell line)")
     parser.add_argument("--beta-test", help="Test command for Beta (argv, not a shell line)")
-    parser.add_argument("--bench-cmd", help="Benchmark command run against both candidates")
+    parser.add_argument("--bench-cmd", help="Benchmark command, run once inside each candidate's --*-dir")
     parser.add_argument("--design-alpha", help="Path to Proposal Alpha markdown")
     parser.add_argument("--design-beta", help="Path to Proposal Beta markdown")
     parser.add_argument("--output-scorecard", "--output-report",

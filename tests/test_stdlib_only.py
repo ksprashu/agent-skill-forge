@@ -164,6 +164,46 @@ class TestRootsDoNotVouchForEachOther(ScanCase):
         self.assertTrue(any("dag_validator" in p for p in problems), problems)
 
 
+class TestLocalMeansNextToTheImporter(ScanCase):
+    """Within one root, too, only what the importer can reach is local.
+
+    The per-root fix still pooled every descendant of the root, so a file in a
+    subdirectory vouched for a same-named import anywhere above or beside it.
+    """
+
+    def test_a_module_in_a_subdirectory_does_not_vouch_for_its_parent(self):
+        write(self.root, "scripts/deep/helper.py", "X = 1\n")
+        write(self.root, "scripts/a.py", "import helper\n")
+        problems = self.scan()
+        self.assertTrue(any("scripts/a.py" in p and "'helper'" in p for p in problems),
+                        problems)
+
+    def test_a_nested_file_cannot_hide_a_third_party_package(self):
+        """``scripts/vendor/requests.py`` must not clear ``import requests``."""
+        write(self.root, "scripts/vendor/requests.py", "X = 1\n")
+        write(self.root, "scripts/a.py", "import requests\n")
+        self.assertTrue(any("scripts/a.py" in p and "requests" in p for p in self.scan()))
+
+    def test_a_package_next_to_the_importer_is_local(self):
+        write(self.root, "scripts/engine/__init__.py", "")
+        write(self.root, "scripts/engine/core.py", "X = 1\n")
+        write(self.root, "scripts/a.py", "from engine.core import X\n")
+        self.assertEqual([], self.scan())
+
+    def test_a_module_inside_a_package_sees_the_directory_it_was_imported_from(self):
+        """Like ``visual_engine``: imported from scripts/, so scripts/ is on the path."""
+        write(self.root, "scripts/engine/__init__.py", "")
+        write(self.root, "scripts/engine/core.py", "import helper\n")
+        write(self.root, "scripts/helper.py", "X = 1\n")
+        self.assertEqual([], self.scan())
+
+    def test_a_plain_subdirectory_is_not_a_package_and_is_not_importable(self):
+        """No ``__init__.py``: the directory name is not an import either."""
+        write(self.root, "scripts/tools/thing.py", "X = 1\n")
+        write(self.root, "scripts/a.py", "import tools\n")
+        self.assertTrue(any("'tools'" in p for p in self.scan()))
+
+
 class TestRepositoryIsClean(unittest.TestCase):
     def test_the_enforced_roots_are_clean_today(self):
         problems = checker.scan(REPO_ROOT)
