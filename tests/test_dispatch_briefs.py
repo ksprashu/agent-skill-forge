@@ -21,6 +21,7 @@ These tests are what keeps the next edit from quietly undoing the fix.
 """
 
 import json
+import subprocess
 import sys
 import tempfile
 import textwrap
@@ -128,6 +129,75 @@ class TestUnknownsFailClosed(BriefCase):
         errors = self.lint(fence(brief))
         self.assertEqual(1, len(errors), errors)
         self.assertIn("cites skills/nope/SKILL.md, which does not exist", errors[0])
+
+
+class TestMalformedDispatchesFailClosed(BriefCase):
+    """Inside a dispatch nothing is skipped; outside one, nothing is a dispatch."""
+
+    def lint_json(self, data):
+        return self.lint(f"```json\n{json.dumps(data)}\n```\n")
+
+    def test_a_subagent_with_a_role_but_no_prompt_fails(self):
+        errors = self.lint_json({"Subagents": [{"Role": "Acceptance Reviewer"}]})
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("Acceptance Reviewer has no string Prompt", errors[0])
+
+    def test_a_non_string_prompt_fails(self):
+        errors = self.lint_json({"Subagents": [{"Role": "Victory Auditor", "Prompt": ["x"]}]})
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("has no string Prompt", errors[0])
+
+    def test_subagents_that_is_not_a_list_fails(self):
+        errors = self.lint_json({"Subagents": {"Role": "Victory Auditor", "Prompt": "x"}})
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("'Subagents' is not a list", errors[0])
+
+    def test_a_subagent_that_is_not_an_object_fails(self):
+        errors = self.lint_json({"Subagents": ["Victory Auditor"]})
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("Subagents[0] is not an object", errors[0])
+
+    def test_one_malformed_entry_does_not_hide_the_good_ones(self):
+        errors = self.lint_json({"Subagents": [{"Role": "Victory Auditor"},
+                                               {"Role": "Acceptance Reviewer", "Prompt": "x"}]})
+        self.assertEqual(2, len(errors), errors)
+
+    def test_json_that_is_not_a_dispatch_is_ignored(self):
+        """Like the ask_question choice card: JSON, but no Subagents and no Prompt."""
+        self.assertEqual([], self.lint_json({"question": "Alpha or Beta?", "options": ["A", "B"]}))
+
+
+class TestTheCliRejectsTheKnownBadFixture(unittest.TestCase):
+    """ENGINEERING_STANDARD V1/V2, through the entry point CI actually runs.
+
+    The helper-level tests above stay green if ``main`` stops counting brief
+    errors; these do not.
+    """
+
+    FIXTURES = REPO_ROOT / "tests" / "fixtures" / "dispatch_briefs"
+
+    def run_cli(self, fixture):
+        return subprocess.run(
+            [sys.executable, str(REPO_ROOT / "scripts" / "validate_skills.py"),
+             "--repo-root", str(self.FIXTURES / fixture)],
+            capture_output=True, text=True, encoding="utf-8")
+
+    def test_the_known_bad_fixture_exits_non_zero_for_its_briefs(self):
+        proc = self.run_cli("known_bad")
+        self.assertEqual(1, proc.returncode, proc.stdout + proc.stderr)
+        errors = [ln.strip() for ln in proc.stdout.split("Errors Found:", 1)[-1].splitlines()
+                  if ln.strip()]
+        self.assertTrue(errors and all(e.startswith("[Brief:") for e in errors),
+                        f"the fixture must fail for its briefs and nothing else: {errors}")
+        for expected in ("Acceptance Reviewer is not pointed at .gemini/knowledge/ (W-07)",
+                         "does not cite skills/unslop/SKILL.md (W-08)",
+                         "Adversarial Challenger has no string Prompt",
+                         "no grounding contract for role 'Freelance Optimiser'"):
+            self.assertIn(expected, proc.stdout)
+
+    def test_the_known_good_fixture_is_accepted(self):
+        proc = self.run_cli("known_good")
+        self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
 
 class TestEveryBriefFileIsScanned(BriefCase):
