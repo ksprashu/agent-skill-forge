@@ -388,13 +388,15 @@ Fourteen regression tests cover the three.
 
 One of them did not. Mutation-checking the batch — reverting each fix and confirming its tests go red — found that swapping `atomic_write` for a plain `Path.write_text` left the whole suite green. `test_the_write_is_atomic` asserted that the content was replaced and no temp file remained, both of which a truncating write also satisfies: it was named for a property it never checked, which is the failure this review exists to catch, in the test added to close it. It is now split in two, and the half carrying the claim writes a lone surrogate so the encode fails *after* the file is opened — no mock, and the truncating version empties the DAG where `atomic_write` loses only its temp file.
 
+Extending the sweep to the gate executor killed all nine guards mutated, but checking *what each death asserted on* — rather than only that something went red — found a second weakness. All three `victory_cert` refusals died on `result.reason`, never on `assertFalse(result.passed)`: in a bare fixture the gate refuses anyway for want of a recorded verification run, so disabling the unfinished-task check moved the refusal downstream instead of removing it. The tests noticed the changed sentence, so they were not dead, but nothing in them established that an unfinished task *blocks certification* — only that it is mentioned first. Two tests now start from the fixture that genuinely certifies, making the guard under test the single difference; both die on `True is not false: certified a project with an unfinished task`. A mutation that survives and a mutation that kills for the wrong reason are equally uninformative, and only the second looks like success.
+
 **Still open, deliberately:**
 
 - **W-10** as above: harness-level, not script-level.
 - **W-07 and W-08 have no executor.** Both are now correct prose in the dispatch briefs, and prose is L1. Nothing fails if a future edit drops the grounding line from a brief. A linter over the dispatch payloads in `SKILL.md` would close that; it is not written.
 - **Attested gates check form, not correctness.** `gate_executor.py attest` rejects an attestation that is unsigned, self-signed, cites missing or empty artifacts, or was written against a different revision of either the code or the evidence it cites. It cannot check whether the reviewer was right, and nothing can. That ceiling is stated in the module docstring so the next reader does not mistake the gate for more than it is.
 
-Repository state after remediation: **686 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
+Repository state after remediation: **688 tests pass**; `validate_skills.py`, `autowire.py --check`, `check_stdlib_only.py` and a strict `forensic_audit.py` over the tree (excluding the deliberately-fake fixture corpus) all exit 0.
 
 ---
 

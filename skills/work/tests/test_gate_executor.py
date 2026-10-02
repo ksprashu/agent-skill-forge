@@ -426,6 +426,45 @@ class TestVictoryCertGate(unittest.TestCase):
             self.assertFalse(result.passed)
             self.assertIn("Forensic audit failed", result.reason)
 
+    # -- Each refusal needs a fixture where it is the *only* refusal ---------
+    #
+    # The three tests above assert on result.reason, and their assertFalse is
+    # vacuous: in a bare fixture victory_cert refuses anyway, because there is
+    # no recorded verification run. Disable the unfinished-task check and the
+    # gate still fails -- just further down, with a different sentence. The
+    # tests notice via the reason string, so they are not dead, but nothing
+    # there establishes that an unfinished task *blocks certification*; it
+    # establishes only that it is mentioned first.
+    #
+    # These two start from the fixture that genuinely certifies, so the thing
+    # under test is the single difference. Remove the guard and the gate
+    # returns passed=True.
+
+    def _ready_to_certify(self, fx):
+        """The exact setup from the passing case below."""
+        fx.write("VICTORY.md", substantial("Victory certificate"))
+        GE.evaluate_gate("exit_0", "victory", fx.root,
+                         command=f"{sys.executable} -m pytest tests -q")
+
+    def test_one_unfinished_task_is_enough_to_refuse_an_otherwise_ready_project(self):
+        with ProjectFixture() as fx:
+            self._ready_to_certify(fx)
+            result = GE.evaluate_gate(
+                "victory_cert", "victory", fx.root, outputs=["VICTORY.md"],
+                all_statuses={"worker": "PENDING", "victory": "PASSED"})
+            self.assertFalse(result.passed,
+                             "certified a project with an unfinished task")
+            self.assertIn("worker", result.reason)
+
+    def test_absent_statuses_refuse_an_otherwise_ready_project(self):
+        with ProjectFixture() as fx:
+            self._ready_to_certify(fx)
+            result = GE.evaluate_gate("victory_cert", "victory", fx.root,
+                                      outputs=["VICTORY.md"])
+            self.assertFalse(result.passed,
+                             "certified without knowing any task's status")
+            self.assertIn("task statuses", result.reason)
+
     def test_full_certification_passes_when_everything_holds(self):
         with ProjectFixture() as fx:
             fx.write("VICTORY.md", substantial("Victory certificate"))
