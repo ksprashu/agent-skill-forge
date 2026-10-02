@@ -117,14 +117,14 @@ right.
       "TypeName": "self",
       "Model": "inherit",
       "Workspace": "branch",
-      "Prompt": "Implement Milestone 1 using Approach A in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_alpha/handoff.md."
+      "Prompt": "Implement Milestone 1 using Approach A in branch workspace. Required inputs: .agents/design/DESIGN.md.\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nOutput handoff to .agents/worker_alpha/handoff.md."
     },
     {
       "Role": "Worker Beta — Approach B",
       "TypeName": "self",
       "Model": "inherit",
       "Workspace": "branch",
-      "Prompt": "Implement Milestone 1 using Approach B in branch workspace. Required inputs: .agents/design/DESIGN.md. Output handoff to .agents/worker_beta/handoff.md."
+      "Prompt": "Implement Milestone 1 using Approach B in branch workspace. Required inputs: .agents/design/DESIGN.md.\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nOutput handoff to .agents/worker_beta/handoff.md."
     }
   ]
 }
