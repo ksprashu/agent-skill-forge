@@ -85,8 +85,12 @@ if [ ${#PASS_ARGS[@]} -gt 0 ]; then
 elif [ -t 0 ]; then
     python3 "$SCRIPT_DIR/sync_skills.py" --interactive --fix
 else
+    # Additive. This is the curl-pipe-bash and CI path, where nobody is
+    # watching and nobody consented to a removal: defaulting to --prune meant
+    # the documented one-liner deleted skills these directories already held.
+    # Pruning is available, but it has to be asked for.
     echo "🔄 Synchronizing skills across AI developer tools..."
-    python3 "$SCRIPT_DIR/sync_skills.py" --prune --fix
+    python3 "$SCRIPT_DIR/sync_skills.py" --fix
 fi
 
 # ------------------------------------------------------------------------------
