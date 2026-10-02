@@ -55,6 +55,17 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import sync_skills  # noqa: E402
 
 
+def isolated_env(home: Path) -> dict:
+    """Environment for a sync_skills.py subprocess that cannot reach the real hubs.
+
+    Every hub path is ``~``-relative and expanded at run time, so pointing both
+    variables at a scratch directory confines the whole run — links, copies,
+    prunes and the skills.json registries — to it. A run without this installs
+    into, and with --prune deletes from, the contributor's own home.
+    """
+    return dict(os.environ, HOME=str(home), USERPROFILE=str(home))
+
+
 def write_skill(directory: Path, name: str) -> Path:
     """Create a plausible skill directory, the way another repo would."""
     path = directory / name
@@ -258,6 +269,7 @@ class ReparseAttributeDecoding(unittest.TestCase):
         )
         self.assertFalse(sync_skills.has_reparse_attribute(st))
 
+    @unittest.skipIf(sys.platform == "win32", "Windows stat results carry st_file_attributes")
     def test_a_real_posix_stat_result_is_handled(self):
         """st_file_attributes is absent here; that must not raise."""
         st = os.lstat(str(REPO_ROOT))
@@ -305,15 +317,152 @@ class UnresolvedSelectorsDoNotArmPrune(unittest.TestCase):
         self.assertEqual(unknown, [])
         self.assertTrue(resolved)
 
+    def test_aliases_resolve_to_their_canonical_skill(self):
+        """The sync installs an alias only alongside its canonical skill, so an
+        alias left as-is selected nothing and still armed strict pruning."""
+        names, unknown = sync_skills.validate_skill_names("prompt-writer")
+        self.assertEqual(unknown, [])
+        self.assertEqual(names, ["prompt"])
+
+    def test_an_alias_and_its_canonical_name_select_once(self):
+        names, _ = sync_skills.validate_skill_names("prompt, prompt-writer")
+        self.assertEqual(names, ["prompt"])
+
     def test_typo_with_prune_exits_zero_and_warns(self):
-        proc = subprocess.run(
-            [sys.executable, SYNC, "--skills", "brainstrom", "--prune"],
-            capture_output=True, text=True,
-        )
+        with tempfile.TemporaryDirectory() as home:
+            proc = subprocess.run(
+                [sys.executable, SYNC, "--skills", "brainstrom", "--prune"],
+                capture_output=True, text=True, env=isolated_env(Path(home)),
+            )
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("brainstrom", proc.stderr)
         self.assertIn("default sweep", proc.stderr,
                       "an all-unresolved selection must say it is not pruning to empty")
+
+
+class SyncAgainstAScratchHome(unittest.TestCase):
+    """End to end through the CLI, with every hub under a temporary HOME."""
+
+    def setUp(self):
+        self.home = Path(tempfile.mkdtemp(prefix="forge_home_"))
+        self.hub = self.home / ".claude" / "skills"
+        self.hub.mkdir(parents=True)
+        self.elsewhere = self.home / "other-repo"
+
+    def tearDown(self):
+        shutil.rmtree(self.home, ignore_errors=True)
+
+    def sync(self, *args):
+        proc = subprocess.run([sys.executable, SYNC, *args], capture_output=True,
+                              text=True, env=isolated_env(self.home))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        return proc.stdout
+
+    def test_an_alias_selection_does_not_prune_its_own_skill(self):
+        self.sync("--skills", "prompt", "--fix")
+        installed = self.hub / "prompt"
+        self.assertTrue(os.path.lexists(installed), "precondition: prompt was installed")
+
+        self.sync("--skills", "prompt-writer", "--prune", "--fix")
+        self.assertTrue(os.path.lexists(installed),
+                        "selecting an alias pruned the skill it names")
+        self.assertTrue(os.path.lexists(self.hub / "prompt-writer"),
+                        "the alias itself should be installed alongside it")
+
+    def test_a_foreign_directory_at_a_selected_name_survives_fix(self):
+        for mode in ((), ("--copy",)):
+            with self.subTest(mode=mode or "link"):
+                victim = write_skill(self.hub, "prompt")
+                out = self.sync("--skills", "prompt", "--fix", *mode)
+                self.assertFalse(sync_skills.is_reparse_point(str(victim)),
+                                 "a foreign directory was replaced with our link")
+                self.assertFalse((victim / sync_skills.OWNER_MARKER).exists(),
+                                 "a foreign directory was replaced with our copy")
+                self.assertTrue((victim / "SKILL.md").exists())
+                self.assertIn("[FOREIGN CONFLICT] prompt", out)
+                shutil.rmtree(victim)
+
+    def test_a_foreign_link_at_a_selected_name_is_not_repointed(self):
+        foreign = write_skill(self.elsewhere, "prompt")
+        for mode in ((), ("--copy",)):
+            with self.subTest(mode=mode or "link"):
+                link = self.hub / "prompt"
+                os.symlink(foreign, link)
+                self.sync("--skills", "prompt", "--fix", *mode)
+                self.assertEqual(sync_skills.link_destination(str(link)), str(foreign),
+                                 "a link owned by another repo was repointed or replaced")
+                link.unlink()
+
+    def test_our_own_misdirected_link_is_still_repointed(self):
+        """The control: the guard must not freeze links this repo wrote."""
+        link = self.hub / "prompt"
+        os.symlink(REPO_ROOT / "skills" / "plan", link)
+        self.assertTrue(sync_skills.is_forge_owned(str(link)), "precondition: ours")
+
+        self.sync("--skills", "prompt", "--fix")
+        self.assertTrue(os.path.realpath(link).endswith(os.sep + "prompt"),
+                        f"our own link was left pointing at {os.path.realpath(link)}")
+
+
+class CopiesAndLinksPruneAlike(unittest.TestCase):
+    """A --copy install is the same skill stored differently; prune must agree."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="forge_copies_"))
+        self.hub = self.tmp / "hub"
+        self.hub.mkdir()
+        self.available = sync_skills.discover_all_skills()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def install(self, name, copy):
+        target = self.hub / name
+        canonical = sync_skills.ALIASES.get(name, name)
+        sync_skills.create_link(self.available[canonical]["path"], str(target), copy_mode=copy)
+        self.assertTrue(sync_skills.is_forge_owned(str(target)), "precondition: ours")
+        self.assertEqual(sync_skills.is_reparse_point(str(target)), not copy,
+                         "precondition: installed in the requested form")
+        return target
+
+    def prune(self, allowed, strict):
+        sync_skills.clean_stale_and_orphan_links(
+            str(self.hub), {n: self.available[n]["path"] for n in allowed},
+            prune=True, strict_prune=strict)
+
+    def test_an_explicitly_deselected_alias_is_removed(self):
+        for copy in (False, True):
+            with self.subTest(copy=copy):
+                alias = self.install("prompt-writer", copy)
+                self.prune(["plan"], strict=True)
+                self.assertFalse(os.path.lexists(alias),
+                                 "an alias survived an explicit selection that excludes it")
+
+    def test_an_alias_of_a_selected_skill_is_kept(self):
+        for copy in (False, True):
+            with self.subTest(copy=copy):
+                alias = self.install("prompt-writer", copy)
+                self.prune(["prompt"], strict=True)
+                self.assertTrue(os.path.lexists(alias))
+                sync_skills.remove_path_or_link(str(alias))
+
+    def test_plain_prune_keeps_an_available_skill_outside_the_selection(self):
+        name = "performance-optimization"
+        self.assertNotIn(name, sync_skills.CORE_SKILLS, "precondition: not a default skill")
+        for copy in (False, True):
+            with self.subTest(copy=copy):
+                kept = self.install(name, copy)
+                self.prune([], strict=False)
+                self.assertTrue(os.path.lexists(kept),
+                                "plain --prune removed an available skill it should keep")
+                sync_skills.remove_path_or_link(str(kept))
+
+    def test_plain_prune_still_removes_a_copy_of_a_retired_skill(self):
+        """The control: the default sweep must not keep every marked copy."""
+        retired = write_skill(self.hub, "a-skill-this-repo-retired")
+        (retired / sync_skills.OWNER_MARKER).write_text("x\n", encoding="utf-8")
+        self.prune([], strict=False)
+        self.assertFalse(retired.exists())
 
 
 @unittest.skipIf(sys.platform == "win32", "install.sh is the POSIX entry point")
@@ -400,9 +549,16 @@ class ClosureEngineUsesNoShell(unittest.TestCase):
         import ega_closure_engine  # noqa: E402
         self.engine = ega_closure_engine
         self.tmp = Path(tempfile.mkdtemp(prefix="forge_closure_"))
+        # Nothing is inherited from the contributor's git config: signing is
+        # off locally (a global commit.gpgsign with no usable key fails the
+        # seed commit), and the branch is set rather than left to
+        # init.defaultBranch, which the protected-branch test depends on.
         subprocess.run(["git", "init", "-q", str(self.tmp)], check=True)
-        subprocess.run(["git", "-C", str(self.tmp), "config", "user.email", "t@example.com"], check=True)
-        subprocess.run(["git", "-C", str(self.tmp), "config", "user.name", "Test"], check=True)
+        for setting in (["symbolic-ref", "HEAD", "refs/heads/main"],
+                        ["config", "user.email", "t@example.com"],
+                        ["config", "user.name", "Test"],
+                        ["config", "commit.gpgsign", "false"]):
+            subprocess.run(["git", "-C", str(self.tmp), *setting], check=True)
         (self.tmp / "seed.txt").write_text("seed\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(self.tmp), "add", "seed.txt"], check=True)
         subprocess.run(["git", "-C", str(self.tmp), "commit", "-qm", "seed"], check=True)
@@ -514,6 +670,14 @@ class ClosureEngineUsesNoShell(unittest.TestCase):
         )
         self.assertIn("seed.txt", files)
         self.assertNotIn("scratch.txt", files, "git add -A swept up untracked work")
+
+    def test_only_untracked_files_is_a_clean_tree(self):
+        """git add -u stages nothing here, so the old status check led to an
+        empty commit and reported a closure with nothing to do as a failure."""
+        (self.tmp / "scratch.txt").write_text("unrelated experiment\n", encoding="utf-8")
+        ok, detail = self.engine.execute_git_closure("EGA-7", "tidy up", "python", str(self.tmp))
+        self.assertTrue(ok, detail)
+        self.assertEqual(detail, "Clean working tree")
 
     def test_protected_branch_is_never_pushed(self):
         """A reachable remote, so refusing is the only reason nothing arrives."""

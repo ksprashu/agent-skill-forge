@@ -384,10 +384,16 @@ def validate_skill_names(skills_arg):
     and a typo should not be fatal. `unknown` is reported separately so callers
     can keep an unresolved name from counting as an explicit selection, which
     is the part that was actually dangerous — see main().
+
+    Aliases come back as their canonical skill. Counting an alias as resolved
+    while passing it through unchanged armed strict pruning with an allow-list
+    the sync never matched — it installs an alias only alongside its canonical
+    skill — so `--skills prompt-writer --prune` deleted `prompt` itself.
     """
     names = [s.strip() for s in skills_arg.split(',') if s.strip()]
+    names = list(dict.fromkeys(ALIASES.get(n, n) for n in names))
     known = discover_all_skills()
-    unknown = [n for n in names if n not in known and n not in ALIASES]
+    unknown = [n for n in names if n not in known]
     return names, unknown
 
 
@@ -801,28 +807,30 @@ def clean_stale_and_orphan_links(skills_dir, allowed_skills, prune=False, strict
             continue
 
         # Everything from here down is ours, confirmed by destination or by
-        # the ownership marker.
-        if is_reparse_point(item_path):
-            target_exists = os.path.exists(item_path)
-            if strict_prune:
-                is_allowed = item in allowed_skills or (item in ALIASES and ALIASES[item] in allowed_skills)
-            else:
-                is_allowed = item in allowed_skills or item in ALIASES or (item in all_available and target_exists)
+        # the ownership marker. Links and marked copies answer to the same
+        # allow-list: a --copy install is the same skill stored differently,
+        # and giving copies their own rule meant plain --prune deleted copied
+        # skills an equivalent link kept, while copied aliases survived an
+        # explicit deselection.
+        linked = is_reparse_point(item_path)
+        target_exists = os.path.exists(item_path)
+        if strict_prune:
+            is_allowed = item in allowed_skills or ALIASES.get(item) in allowed_skills
+        else:
+            is_allowed = item in allowed_skills or item in ALIASES or (item in all_available and target_exists)
 
-            if not target_exists or not is_allowed:
+        if not target_exists or not is_allowed:
+            if not linked:
+                reason = "STALE COPY / NOT SELECTED"
+            else:
                 reason = "BROKEN" if not target_exists else "STALE / NOT SELECTED"
-                print(f"  [{reason}] {item} in {skills_dir}")
-                if prune:
-                    remove_link(item_path)
-                    print(f"    -> Removed: {item_path}")
-        elif os.path.isdir(item_path) and item not in allowed_skills and item not in ALIASES:
-            # A --copy install that is no longer selected. Reached only when
-            # the ownership marker is present, so this cannot be the user's
-            # own directory that happens to share a skill name.
-            print(f"  [NON-GLOBAL DIR] {item} in {skills_dir}")
+            print(f"  [{reason}] {item} in {skills_dir}")
             if prune:
-                shutil.rmtree(item_path)
-                print(f"    -> Removed directory: {item_path}")
+                if linked:
+                    remove_link(item_path)
+                else:
+                    shutil.rmtree(item_path)
+                print(f"    -> Removed: {item_path}")
 
 
 def sync_skills_json(fix=False):
@@ -1025,6 +1033,16 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
             if not os.path.exists(src_path):
                 continue
             target_link = os.path.join(target_dir, name)
+            # Cleanup above leaves foreign entries alone; so must this. Every
+            # branch below that finds something already here replaces it, and
+            # an entry that merely shares a skill's name belongs to whoever put
+            # it there — a foreign directory was rmtree'd and a foreign link
+            # repointed on every --fix, the step the installers always run.
+            if (os.path.lexists(target_link) or is_link(target_link)) and not is_forge_owned(target_link):
+                dest = link_destination(target_link)
+                where = f" -> {dest}" if dest else ""
+                print(f"  [FOREIGN CONFLICT] {name}{where} is owned elsewhere; not replaced")
+                continue
             if not os.path.exists(target_link) and not is_link(target_link):
                 print(f"  [MISSING] {name}")
                 if fix:
