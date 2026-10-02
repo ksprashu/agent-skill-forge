@@ -838,8 +838,13 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
 
     project_gemini_skills = os.path.join(project_dir, '.gemini', 'skills')
     project_agents_skills = os.path.join(project_dir, '.agents', 'skills')
-    os.makedirs(project_gemini_skills, exist_ok=True)
-    os.makedirs(project_agents_skills, exist_ok=True)
+    if fix:
+        # Deferred until --fix. Creating these unconditionally made the dry run
+        # leave two empty directories in someone else's project, which is both
+        # a write the caller did not ask for and the exact "it looked like it
+        # installed" confusion the [WOULD BOOTSTRAP] wording exists to end.
+        os.makedirs(project_gemini_skills, exist_ok=True)
+        os.makedirs(project_agents_skills, exist_ok=True)
 
     for skill in skill_names:
         skill = skill.strip()
@@ -859,10 +864,16 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
         for target_dir in [project_gemini_skills, project_agents_skills]:
             target_link = os.path.join(target_dir, skill)
             if not os.path.exists(target_link) and not is_link(target_link):
-                print(f"  [BOOTSTRAP] {skill} ({skill_info['type']}) -> {target_link}")
                 if fix:
+                    print(f"  [BOOTSTRAP] {skill} ({skill_info['type']}) -> {target_link}")
                     create_link(src_path, target_link, copy_mode=copy_mode)
                     print(f"    -> Created entry to {src_path}")
+                else:
+                    # Without --fix nothing is written. Saying BOOTSTRAP here
+                    # read as a completed install, and the empty directory it
+                    # left behind was only noticed downstream.
+                    print(f"  [WOULD BOOTSTRAP] {skill} ({skill_info['type']}) -> "
+                          f"{target_link}  (dry run; re-run with --fix to create it)")
             else:
                 print(f"  [ALREADY PRESENT] {skill} in {target_dir}")
 

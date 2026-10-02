@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
 ```
 
 ### **6.2 Path Hygiene**
-**Never use hardcoded absolute paths** (e.g., `/Users/yourname/...`). Hardcoded paths cause environments to break for other users and AI agents.
+**Never use hardcoded absolute paths** (e.g., `/Users/yourname/...`). <!-- host-path-ok --> Hardcoded paths cause environments to break for other users and AI agents.
 - **Prefer Relative Paths:** Use paths relative to the project root.
 - **Use Environment Variables:** Use `process.env` (Node) or `os.environ` (Python) for dynamic locations.
 - **Home Expansion:** Use `~` or platform-agnostic home directory lookups.

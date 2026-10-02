@@ -3,7 +3,7 @@
 <SYSTEM_CONTEXT>
 Short ID: PRMT-E94A
 Target Domain: Autonomous AI Agent Lifecycle & Dynamic Project Intelligence
-Workspace: /Users/ksprashanth/code/github/agent-skill-forge
+Workspace: <WORKSPACE_ROOT>
 Standards: 4-Tier Memory Hierarchy, Antigravity Hooks (hooks.json), Zero External Dependencies
 </SYSTEM_CONTEXT>
 

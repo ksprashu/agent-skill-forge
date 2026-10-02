@@ -141,11 +141,18 @@ def trigger_html_compilation(deliverable_path, node=None):
         print(f"[HTML Presentation] Skipped (Internal artifact '{filename}' kept as plain Markdown).")
         return
 
+    # Search order: an explicit override, the installed skill, then a sibling
+    # checkout. The first entry used to be one contributor's home directory,
+    # which meant the compiler was only ever found on that one machine.
     compiler_candidates = [
-        Path("/Users/ksprashanth/code/github/skills-documentation/skills/documentation/scripts/compile_docs.py"),
-        Path.home() / ".gemini" / "skills" / "documentation" / "scripts" / "compile_docs.py"
+        Path(p) for p in (os.environ.get("DOCS_COMPILER_PATH"),) if p
+    ] + [
+        Path.home() / ".gemini" / "skills" / "documentation" / "scripts" / "compile_docs.py",
+        Path.home() / ".claude" / "skills" / "documentation" / "scripts" / "compile_docs.py",
+        Path(__file__).resolve().parents[2] / "docs" / "scripts" / "compile_docs.py",
     ]
-    
+
+
     compiler = None
     for cand in compiler_candidates:
         if cand.exists():

@@ -111,4 +111,4 @@ Skills must support two distribution paths:
 * [Anthropic Skills Standard & Creator](https://github.com/anthropics/skills)
 * [Addy Osmani Agent Skills](https://github.com/addyosmani/agent-skills)
 * [Matt Pocock Skills Catalog](https://github.com/mattpocock/skills)
-* [Open Knowledge Format (OKF) Specification](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/knowledge/index.md)
+* [Open Knowledge Format (OKF) Specification](../.gemini/knowledge/index.md)

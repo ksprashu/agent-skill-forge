@@ -35,6 +35,9 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import gate_executor  # noqa: E402
+
 if sys.platform == "win32":
     import io
     if hasattr(sys.stdout, "buffer") and getattr(sys.stdout, "encoding", "").lower() != "utf-8":
@@ -796,7 +799,6 @@ class DAGValidator:
         for nid in sorted(nodes.keys()):
             node = nodes[nid]
             status_cls = f"status-{node.status.value.lower()}"
-            title_escaped = node.title.replace('"', "'")
             lines.append(f'    {node.id}["{node.id}<br/>[{node.mode.value}] <b>{node.status.value}</b>"]:::{status_cls}')
 
         # 2. Dependency Edges (dep --> dependent)
@@ -1140,6 +1142,81 @@ def print_human_report(report: ValidationReport, quiet: bool = False) -> None:
     print()
 
 
+OVERRIDE_HEADING = "## Gate Overrides"
+
+
+def atomic_write(path: str, content: str) -> None:
+    """Replace a file in one step, or not at all.
+
+    ``open(path, "w")`` truncates before it writes. An exception, a full disk
+    or a signal between those two moments leaves the caller's DAG — the record
+    of every task and gate in the project — truncated or empty. Writing a
+    sibling temp file and renaming it over the target means a reader sees
+    either the old content or the new one.
+    """
+    target = Path(path)
+    tmp = target.with_name(f".{target.name}.tmp-{os.getpid()}")
+    try:
+        with open(tmp, "w", encoding="utf-8") as fh:
+            fh.write(content)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, target)
+    finally:
+        # os.replace consumed it on the happy path; this is the failure path.
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def append_override_log(content: str, notes: List[str]) -> str:
+    """Record forced transitions inside the DAG document itself.
+
+    A `--force-status` that left no trace would put the override in a shell
+    history nobody reads. Writing it into the artifact means the next reader of
+    the DAG sees that a gate was bypassed and why.
+    """
+    from datetime import datetime, timezone
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    block = f"\n{OVERRIDE_HEADING}\n\nForced past a failing gate on {stamp}:\n\n"
+    block += "\n".join(notes) + "\n"
+    if OVERRIDE_HEADING in content:
+        return content.rstrip("\n") + "\n" + "\n".join(notes) + "\n"
+    return content.rstrip("\n") + "\n" + block
+
+
+def enforce_gates(nodes: Dict[str, TaskNode], status_updates: Dict[str, str],
+                  base_dir: str, *, timeout: int = gate_executor.DEFAULT_TIMEOUT,
+                  source_dir: Optional[str] = None) -> List[gate_executor.GateResult]:
+    """Evaluate the gate behind every requested PASSED transition.
+
+    Only PASSED is gated. Moving a task to RUNNING, BLOCKED or FAILED is
+    reporting; moving it to PASSED is a claim, and a claim needs a predicate.
+    Returns the failures, empty when every transition is permitted.
+    """
+    current = {tid: node.status.value for tid, node in nodes.items()}
+    current.update({tid: st.upper() for tid, st in status_updates.items()})
+
+    failures: List[gate_executor.GateResult] = []
+    for task_id, requested in status_updates.items():
+        if requested.strip().upper() != TaskStatus.PASSED.value:
+            continue
+        node = nodes.get(task_id)
+        if node is None:
+            failures.append(gate_executor.GateResult(
+                gate="unknown", task=task_id, kind="unknown", passed=False,
+                reason=f"Task {task_id!r} is not declared in this DAG."))
+            continue
+        result = gate_executor.evaluate_gate(
+            node.gate, task_id, base_dir, outputs=node.outputs,
+            all_statuses=current, timeout=timeout, source_dir=source_dir)
+        if not result.passed:
+            failures.append(result)
+    return failures
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Lightweight Markdown DAG Validator & Mermaid Harness (skills/work)",
@@ -1152,7 +1229,11 @@ def main() -> None:
     parser.add_argument("--base-dir", default=".", help="Base directory for relative artifact paths (default: .)")
     parser.add_argument("--mermaid", action="store_true", help="Print generated Mermaid diagram to stdout")
     parser.add_argument("--update-file", action="store_true", help="Update the Markdown file in-place with new statuses and Mermaid diagram")
-    parser.add_argument("--set-status", action="append", default=[], metavar="TASK=STATUS", help="Set task status (e.g., --set-status worker_alpha=PASSED)")
+    parser.add_argument("--set-status", action="append", default=[], metavar="TASK=STATUS", help="Set task status (e.g., --set-status worker_alpha=PASSED). Transitions to PASSED are refused unless the task's gate passes.")
+    parser.add_argument("--force-status", action="store_true", help="Write PASSED even though the gate failed. Requires --reason; stamps the DAG with '(forced)' so the override is visible in the artifact, not just in a shell history.")
+    parser.add_argument("--reason", default=None, help="Written justification for --force-status")
+    parser.add_argument("--gate-timeout", type=int, default=gate_executor.DEFAULT_TIMEOUT, help=f"Seconds a gate command may run (default: {gate_executor.DEFAULT_TIMEOUT})")
+    parser.add_argument("--source-dir", default=None, help="Subdirectory holding the code, for gate freshness digests and audit scope")
     parser.add_argument("--ready-frontier", action="store_true", help="Print only ready frontier task IDs (space-separated)")
     parser.add_argument("--json", action="store_true", help="Output validation report as structured JSON")
     parser.add_argument("--format", choices=["text", "json", "mermaid"], default="text", help="Output format (default: text)")
@@ -1199,6 +1280,38 @@ def main() -> None:
         check_mermaid=args.check_mermaid
     )
 
+    # Gate enforcement. A PASSED transition is a claim about the world, so it is
+    # checked against the world before it is written anywhere.
+    override_notes: List[str] = []
+    if status_updates:
+        pre_report = validator.validate(content)
+        failures = enforce_gates(
+            pre_report.nodes, status_updates, args.base_dir,
+            timeout=args.gate_timeout, source_dir=args.source_dir)
+        if failures:
+            if not args.force_status:
+                if not args.quiet:
+                    print("❌ Gate check failed; status not written.\n", file=sys.stderr)
+                    for result in failures:
+                        print(f"   • [{result.task}] gate `{result.gate}` "
+                              f"({result.kind}): {result.reason}", file=sys.stderr)
+                    print("\n   Satisfy the gate, or override deliberately with "
+                          "--force-status --reason '<why>'.", file=sys.stderr)
+                sys.exit(3)
+            if not (args.reason or "").strip():
+                if not args.quiet:
+                    print("Error: --force-status requires --reason explaining the override",
+                          file=sys.stderr)
+                sys.exit(2)
+            for result in failures:
+                override_notes.append(
+                    f"- `{result.task}` forced to PASSED over failing gate "
+                    f"`{result.gate}` — {result.reason} — reason given: "
+                    f"{args.reason.strip()}")
+            if not args.quiet:
+                print(f"⚠️  {len(failures)} gate(s) overridden by --force-status",
+                      file=sys.stderr)
+
     # In-place file update
     if args.update_file:
         if not file_path:
@@ -1207,9 +1320,33 @@ def main() -> None:
             sys.exit(2)
         try:
             updated_content = validator.update_markdown_content(content, status_updates)
-            with open(file_path, "w", encoding="utf-8") as fh:
-                fh.write(updated_content)
+            if override_notes:
+                updated_content = append_override_log(updated_content, override_notes)
+
+            # Validate the candidate before it reaches the disk. Writing first
+            # and validating after meant a task could be persisted as PASSED
+            # with an upstream dependency still pending: the command exited
+            # non-zero, which reads as a refusal, while the invalid status sat
+            # in the file. Only errors this update *introduces* block it --
+            # refusing on pre-existing ones would make a broken DAG
+            # unrepairable by the tool that reports it broken.
+            before = set(validator.validate(content).errors)
+            introduced = [e for e in validator.validate(updated_content).errors
+                          if e not in before]
+            if introduced:
+                if not args.quiet:
+                    print(f"Error: refusing to write {file_path} -- this update would "
+                          f"introduce {len(introduced)} validation error(s):", file=sys.stderr)
+                    for err in introduced:
+                        print(f"   • {err}", file=sys.stderr)
+                    print("\n   The file is unchanged. Fix the transition, or satisfy the "
+                          "dependency first.", file=sys.stderr)
+                sys.exit(3)
+
+            atomic_write(file_path, updated_content)
             content = updated_content
+        except SystemExit:
+            raise
         except Exception as ex:
             if not args.quiet:
                 print(f"Error updating {file_path}: {ex}", file=sys.stderr)

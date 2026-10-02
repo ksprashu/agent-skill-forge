@@ -77,5 +77,5 @@ Defines the core `User` model attributes and SQLite table constraints.
 *   **NEVER** create concept documents without required frontmatter (`type`, `title`, `description`).
 *   **NEVER** allow orphaned concept files; every `.md` file must be indexed in `index.md`.
 *   **NEVER** allow dead links in `index.md`; every link must resolve to an existing concept document on disk.
-*   **NEVER** hardcode private machine paths (`file:///Users/...`) or credentials; use workspace-relative paths.
+*   **NEVER** hardcode private machine paths (`file:///Users/...`) or credentials; use workspace-relative paths. <!-- host-path-ok -->
 *   **NEVER** leave unresolved placeholders (`TBD`, `TODO`, `FIXME`, `as an AI`).

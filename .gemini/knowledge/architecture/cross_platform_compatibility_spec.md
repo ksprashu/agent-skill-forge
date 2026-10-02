@@ -2,7 +2,7 @@
 type: "Architecture Spec"
 title: "Cross-Platform Interoperability Specification"
 description: "Multi-runtime compatibility mapping across Claude Code, Google Antigravity IDE, Gemini CLI, Cursor MDC, OpenAI Codex, and OpenCode."
-resource: "file:///Users/ksprashanth/code/github/agent-skills/docs/comparison.md"
+resource: "https://github.com/addyosmani/agent-skills/blob/bcab6a1b8503100e8618c3b4e32cc78de43de769/docs/comparison.md"
 tags: ["architecture", "compatibility", "multi-platform", "claude-code", "cursor", "codex", "gemini-cli", "antigravity"]
 ---
 

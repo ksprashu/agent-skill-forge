@@ -42,10 +42,10 @@ The Antigravity runtime pipes JSON directly to the script via standard input (`s
 {
   "conversationId": "95e4ec5c-10ab-420f-abbd-af7553e5fac1",
   "workspacePaths": [
-    "/Users/ksprashanth/code/github/agent-skill-forge"
+    "<WORKSPACE_ROOT>"
   ],
-  "transcriptPath": "/Users/ksprashanth/.gemini/antigravity/brain/95e4ec5c-10ab-420f-abbd-af7553e5fac1/.system_generated/logs/transcript.jsonl",
-  "artifactDirectoryPath": "/Users/ksprashanth/.gemini/antigravity/brain/95e4ec5c-10ab-420f-abbd-af7553e5fac1",
+  "transcriptPath": "~/.gemini/antigravity/brain/95e4ec5c-10ab-420f-abbd-af7553e5fac1/.system_generated/logs/transcript.jsonl",
+  "artifactDirectoryPath": "~/.gemini/antigravity/brain/95e4ec5c-10ab-420f-abbd-af7553e5fac1",
   "modelName": "gemini-2.5-pro",
   "terminationReason": "DONE",
   "fullyIdle": true

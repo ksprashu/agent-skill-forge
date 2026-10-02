@@ -2,7 +2,7 @@
 type: "Authoring Guide"
 title: "Agent Skill Authoring & Progressive Disclosure Handbook"
 description: "Authoritative design patterns, 3-level progressive disclosure hierarchies, and formatting guidelines for authoring agent skills."
-resource: "file:///Users/ksprashanth/code/github/agent-skill-forge/docs/skill_authoring_guide.md"
+resource: "../../../docs/skill_authoring_guide.md"
 tags: ["builder", "authoring", "skills", "progressive-disclosure", "best-practices"]
 ---
 

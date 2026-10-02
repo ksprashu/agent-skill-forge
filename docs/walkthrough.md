@@ -31,19 +31,19 @@ graph TD
 ### Components Delivered
 
 1. **Skill Definition & Commands**
-   - [skills/continuous-alignment/SKILL.md](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/SKILL.md): Comprehensive skill manual with `/align`, `/evolve`, and `/prune-memory` commands.
+   - [skills/continuous-alignment/SKILL.md](../skills/continuous-alignment/SKILL.md): Comprehensive skill manual with `/align`, `/evolve`, and `/prune-memory` commands.
 2. **Turn-Completion Distillation Engine**
-   - [skills/continuous-alignment/scripts/distill_session.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/distill_session.py): Sub-second (< 15ms) transcript parser with secret redaction and semantic deduplication.
+   - [skills/continuous-alignment/scripts/distill_session.py](../skills/continuous-alignment/scripts/distill_session.py): Sub-second (< 15ms) transcript parser with secret redaction and semantic deduplication.
 3. **Rule Synchronization & 200-Line Budget Enforcer**
-   - [skills/continuous-alignment/scripts/sync_agents_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/sync_agents_rules.py): Atomic updater enforcing a strict 200-line limit on root [AGENTS.md](file:///Users/ksprashanth/code/github/agent-skill-forge/AGENTS.md), routing subsystem rules to `.agents/rules/`.
+   - [skills/continuous-alignment/scripts/sync_agents_rules.py](../skills/continuous-alignment/scripts/sync_agents_rules.py): Atomic updater enforcing a strict 200-line limit on root [AGENTS.md](../AGENTS.md), routing subsystem rules to `.agents/rules/`.
 4. **Living ADR & Roadmap Compiler**
-   - [skills/continuous-alignment/scripts/compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/scripts/compile_roadmap.py): Compiles MADRs in `.gemini/knowledge/ADRs/` and updates [docs/ROADMAP.md](file:///Users/ksprashanth/code/github/agent-skill-forge/docs/ROADMAP.md) with SVG branching timelines.
+   - [skills/continuous-alignment/scripts/compile_roadmap.py](../skills/continuous-alignment/scripts/compile_roadmap.py): Compiles MADRs in `.gemini/knowledge/ADRs/` and updates [docs/ROADMAP.md](ROADMAP.md) with SVG branching timelines.
 5. **Antigravity Lifecycle Hook Manifests**
-   - [.agents/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.agents/hooks.json) & [.gemini/hooks.json](file:///Users/ksprashanth/code/github/agent-skill-forge/.gemini/hooks.json): Configured `Stop` and `PreInvocation` event triggers.
+   - [.agents/hooks.json](../.agents/hooks.json) & [.gemini/hooks.json](../.gemini/hooks.json): Configured `Stop` and `PreInvocation` event triggers.
 6. **Comprehensive Test Suite**
-   - [skills/continuous-alignment/tests/test_distill.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_distill.py)
-   - [skills/continuous-alignment/tests/test_sync_rules.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_sync_rules.py)
-   - [skills/continuous-alignment/tests/test_compile_roadmap.py](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/continuous-alignment/tests/test_compile_roadmap.py)
+   - [skills/continuous-alignment/tests/test_distill.py](../skills/continuous-alignment/tests/test_distill.py)
+   - [skills/continuous-alignment/tests/test_sync_rules.py](../skills/continuous-alignment/tests/test_sync_rules.py)
+   - [skills/continuous-alignment/tests/test_compile_roadmap.py](../skills/continuous-alignment/tests/test_compile_roadmap.py)
 
 ---
 

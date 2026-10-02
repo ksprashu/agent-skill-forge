@@ -2,7 +2,7 @@
 type: "Comparative Analysis"
 title: "Agent Skill Frameworks Comparative Matrix & Trade-Offs"
 description: "In-depth comparative analysis of architecture, token economy, evaluation rigor, and orchestration models across major skill repositories."
-resource: "file:///Users/ksprashanth/code/github/agent-skills/docs/comparison.md"
+resource: "https://github.com/addyosmani/agent-skills/blob/bcab6a1b8503100e8618c3b4e32cc78de43de769/docs/comparison.md"
 tags: ["analyst", "comparative-analysis", "benchmarks", "tradeoffs", "token-economy"]
 ---
 
