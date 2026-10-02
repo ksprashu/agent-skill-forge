@@ -246,6 +246,102 @@ def validate_dag_harness(repo_root):
     return valid_count, errors, warnings
 
 
+#: Where the work skill's dispatch briefs live. Each ```json block in these
+#: files is a payload the Orchestrator copies into ``invoke_subagent``.
+DISPATCH_BRIEF_FILES = ('skills/work/SKILL.md', 'skills/work/references/*.md')
+
+#: The grounding path every judging or building subagent is pointed at (W-07).
+KNOWLEDGE_GROUNDING = '.gemini/knowledge/'
+
+#: What each dispatch brief must point its subagent at, keyed by exact Role.
+#: ``knowledge`` is W-07: read the project's knowledge catalog before working.
+#: ``skills`` is W-08: sibling skills cited by path, so the brief delegates to
+#: them instead of restating a rubric that then drifts. Both were closed in
+#: prose, and prose is L1 -- nothing failed when a brief lost its grounding
+#: line. A role missing from this table fails too, so a new role has to decide
+#: its grounding on purpose rather than inherit none by default.
+BRIEF_CONTRACTS = {
+    'Design Architect Alpha': {'knowledge': True, 'skills': ()},
+    'Design Architect Beta': {'knowledge': True, 'skills': ()},
+    'Architectural Arbiter': {'knowledge': True, 'skills': ()},
+    'Architectural Design Reviewer': {'knowledge': True,
+                                      'skills': ('skills/review/SKILL.md',)},
+    '5-Axis Code Reviewer': {'knowledge': True,
+                             'skills': ('skills/review/SKILL.md', 'skills/unslop/SKILL.md')},
+    'Adversarial Challenger': {'knowledge': True, 'skills': ('skills/test/SKILL.md',)},
+    'Acceptance Reviewer': {'knowledge': True, 'skills': ()},
+    'Worker Alpha — Approach A': {'knowledge': True, 'skills': ()},
+    'Worker Beta — Approach B': {'knowledge': True, 'skills': ()},
+    'Observability & Audit Specialist': {'knowledge': True, 'skills': ()},
+    # Runs a deterministic script over the tree; there is nothing to ground.
+    'Forensic Integrity Auditor': {'knowledge': False, 'skills': ()},
+    # Executes cold from a clean checkout. Prior context is what it must not have.
+    'Victory Auditor': {'knowledge': False, 'skills': ()},
+}
+
+_JSON_FENCE = re.compile(r'^([ \t]*)```json[ \t]*\n(.*?)^\1```', re.M | re.S)
+_CITED_SKILL_PATH = re.compile(r'skills/[\w./-]+?\.md')
+
+
+def iter_dispatch_briefs(repo_root):
+    """Yield ``(relpath, line, payload_or_error)`` for every ```json block.
+
+    A block that does not parse is yielded as the error string: a brief the
+    linter cannot read is a brief it cannot vouch for.
+    """
+    import glob
+    import json
+    import textwrap
+
+    for pattern in DISPATCH_BRIEF_FILES:
+        for path in sorted(glob.glob(os.path.join(repo_root, pattern))):
+            rel = os.path.relpath(path, repo_root).replace(os.sep, '/')
+            with open(path, 'r', encoding='utf-8') as fh:
+                text = fh.read()
+            for m in _JSON_FENCE.finditer(text):
+                line = text.count('\n', 0, m.start()) + 1
+                try:
+                    data = json.loads(textwrap.dedent(m.group(2)))
+                except ValueError as ex:
+                    yield rel, line, f"unparseable dispatch payload: {ex}"
+                    continue
+                payloads = data.get('Subagents', [data]) if isinstance(data, dict) else []
+                for payload in payloads:
+                    if isinstance(payload, dict) and 'Prompt' in payload:
+                        yield rel, line, payload
+
+
+def validate_dispatch_briefs(repo_root):
+    """Check every dispatch brief against ``BRIEF_CONTRACTS``. Returns errors."""
+    errors = []
+    for rel, line, payload in iter_dispatch_briefs(repo_root):
+        where = f"[Brief: {rel}:{line}]"
+        if isinstance(payload, str):
+            errors.append(f"{where} {payload}")
+            continue
+        prompt = str(payload.get('Prompt', ''))
+        role = payload.get('Role')
+        for cited in sorted(set(_CITED_SKILL_PATH.findall(prompt))):
+            if not os.path.isfile(os.path.join(repo_root, cited)):
+                errors.append(f"{where} {role or 'payload'!s} cites {cited}, which does not exist")
+        if role is None:
+            # The heartbeat tick goes to the Orchestrator itself, not a subagent.
+            if not prompt.startswith('Heartbeat tick'):
+                errors.append(f"{where} dispatch payload has no Role, so no grounding contract applies")
+            continue
+        contract = BRIEF_CONTRACTS.get(role)
+        if contract is None:
+            errors.append(f"{where} no grounding contract for role {role!r}; "
+                          f"add it to BRIEF_CONTRACTS in scripts/validate_skills.py")
+            continue
+        if contract['knowledge'] and KNOWLEDGE_GROUNDING not in prompt:
+            errors.append(f"{where} {role} is not pointed at {KNOWLEDGE_GROUNDING} (W-07)")
+        for skill in contract['skills']:
+            if skill not in prompt:
+                errors.append(f"{where} {role} does not cite {skill} (W-08)")
+    return errors
+
+
 def main():
     print("=" * 65)
     print("🔍 Agent Skill Forge — Skill Validation & PII Audit")
@@ -259,16 +355,18 @@ def main():
     dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
     alias_errs = validate_aliases()
     path_errs = scan_host_paths(REPO_ROOT)
+    brief_errs = validate_dispatch_briefs(REPO_ROOT)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
     print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
     print(f"Validated {len(ALIASES)} Skill Aliases against reserved namespaces.")
     print(f"Scanned the tree for machine-specific absolute paths "
           f"({len(HOST_PATH_EXEMPT)} documented exemptions).")
+    print(f"Checked /work dispatch briefs against {len(BRIEF_CONTRACTS)} role grounding contracts.")
     print(f"Total Skills: {core_count + pref_count}\n")
 
     all_warnings = core_warns + pref_warns + dag_warns
-    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs
+    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs + brief_errs
 
     if all_warnings:
         print("⚠️  Warnings:")
