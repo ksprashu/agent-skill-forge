@@ -62,7 +62,11 @@ def execute_git_closure(short_id, goal_summary, domain, repo_dir, push=False):
         return False, "Not a git repo"
 
     # Check git status
-    status_out, _, _ = run_cmd(["git", "status", "--porcelain"], cwd=repo_dir)
+    # Tracked changes only, matching what `git add -u` below will stage. An
+    # untracked scratch file used to count as a change, stage nothing, and fail
+    # the commit -- a closure with nothing to commit reported as an error.
+    status_out, _, _ = run_cmd(["git", "status", "--porcelain", "--untracked-files=no"],
+                               cwd=repo_dir)
     if not status_out:
         print("[Closure Engine] Working tree clean. No uncommitted changes.")
         return True, "Clean working tree"
