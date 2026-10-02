@@ -393,6 +393,21 @@ class SyncAgainstAScratchHome(unittest.TestCase):
                                  "a link owned by another repo was repointed or replaced")
                 link.unlink()
 
+    def test_a_skill_the_user_overrides_takes_its_aliases_with_it(self):
+        """Cleanup removed `planning` as superseded and the sync re-linked it,
+        so every --prune --fix churned it and the opted-out skill stayed
+        reachable under its alias."""
+        commands = self.home / ".claude" / "commands"
+        commands.mkdir(parents=True)
+        (commands / "plan.md").write_text("# my own /plan\n", encoding="utf-8")
+
+        self.sync("--skills", "plan", "--prune", "--fix")
+        self.assertFalse(os.path.lexists(self.hub / "plan"), "precondition: /plan is the user's")
+        self.assertFalse(os.path.lexists(self.hub / "planning"),
+                         "the alias of a superseded skill was installed anyway")
+        self.assertTrue(os.path.lexists(self.home / ".agents" / "skills" / "planning"),
+                        "harnesses without the override still get the alias")
+
     def test_our_own_misdirected_link_is_still_repointed(self):
         """The control: the guard must not freeze links this repo wrote."""
         link = self.hub / "prompt"
