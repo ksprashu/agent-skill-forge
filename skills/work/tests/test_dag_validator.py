@@ -549,8 +549,12 @@ class TestDAGValidator(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertNotIn("PENDING", f.read_text(encoding="utf-8"))
 
-    def test_the_write_is_atomic(self):
-        """A crash mid-write must not truncate the caller's DAG."""
+    def test_the_write_replaces_the_content_and_leaves_no_temp_file(self):
+        """The happy path only. Named for what it checks, not for atomicity.
+
+        This passes just as well against ``Path.write_text`` -- see the test
+        below for the one that does not.
+        """
         import dag_validator as DV
         target = Path(self.test_dir) / "atomic.md"
         target.write_text("original\n", encoding="utf-8")
@@ -558,6 +562,29 @@ class TestDAGValidator(unittest.TestCase):
         self.assertEqual("replacement\n", target.read_text(encoding="utf-8"))
         self.assertEqual([], [p for p in target.parent.iterdir()
                               if p.name.startswith(".atomic.md.tmp")])
+
+    def test_a_failed_write_leaves_the_original_intact(self):
+        """The assertion that actually distinguishes atomic_write.
+
+        Swapping ``atomic_write`` for a plain ``Path.write_text`` left the
+        whole suite green, so nothing held that fix in place: the test above
+        was named for a property it never checked. This one bites. A lone
+        surrogate cannot be encoded as UTF-8, so the write raises *after* the
+        file has been opened -- the real shape of a crash mid-write, with no
+        mock involved. A truncating write has emptied the caller's DAG by that
+        point; atomic_write has only damaged a temp file, which it removes.
+        """
+        import dag_validator as DV
+        target = Path(self.test_dir) / "atomic.md"
+        target.write_text("ORIGINAL TASK RECORD\n", encoding="utf-8")
+        with self.assertRaises(UnicodeEncodeError):
+            DV.atomic_write(str(target), "replacement\ud800")
+        self.assertEqual("ORIGINAL TASK RECORD\n",
+                         target.read_text(encoding="utf-8"),
+                         "a failed write destroyed the task record")
+        self.assertEqual([], [p for p in target.parent.iterdir()
+                              if p.name.startswith(".atomic.md.tmp")],
+                         "the temp file outlived the failure that created it")
 
     def test_multi_token_backticks_split(self):
         md = """
