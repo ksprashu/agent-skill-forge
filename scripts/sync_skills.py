@@ -1014,7 +1014,10 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
                                    strict_native=strict_native, ignore_native=ignore_native)
 
         # Subtract what this harness already ships, so the forge does not shadow it.
-        harness_targets_map = {n: p for n, p in all_targets.items() if n not in skipped}
+        # Aliases go with their skill: cleanup removes them as superseded, and
+        # keeping them here re-created them on the same run.
+        harness_targets_map = {n: p for n, p in all_targets.items()
+                               if n not in skipped and ALIASES.get(n) not in skipped}
         for name, info in sorted(skipped.items()):
             tag = 'YOURS' if info['source'] == 'local' else 'NATIVE'
             owner = 'your own' if info['source'] == 'local' else hlabel
