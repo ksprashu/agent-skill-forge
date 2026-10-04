@@ -95,13 +95,13 @@ The Project Orchestrator is the central coordinator of the teamwork system. It t
          "Role": "Design Architect Alpha",
          "TypeName": "self",
          "Model": "inherit",
-         "Prompt": "Author Architectural Proposal Alpha for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nFocus on modularity, clear interface contracts, error resilience, minimal dependencies, and include 3 mandatory Mermaid models (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
+         "Prompt": "Author Architectural Proposal Alpha for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nFocus on modularity, clear interface contracts, error resilience, minimal dependencies, and include 3 mandatory Mermaid models (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
        },
        {
          "Role": "Design Architect Beta",
          "TypeName": "self",
          "Model": "inherit",
-         "Prompt": "Author Architectural Proposal Beta for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nExplore an alternative storage, concurrency, or interface pattern with concrete schemas, trade-offs, and 3 mandatory Mermaid models (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
+         "Prompt": "Author Architectural Proposal Beta for this project.\nRequired Inputs: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nExplore an alternative storage, concurrency, or interface pattern with concrete schemas, trade-offs, and 3 mandatory Mermaid models (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
        }
      ]
    }

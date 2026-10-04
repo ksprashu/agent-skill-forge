@@ -199,18 +199,21 @@ def validate_aliases():
     return errors
 
 
-def validate_dag_harness(repo_root):
+def validate_dag_harness(repo_root, harness_root=REPO_ROOT):
     """
     Validates canonical Markdown DAG specifications and templates across skills/
     fixtures and references using skills/work/scripts/dag_validator.py.
+
+    The DAGs come from ``repo_root``; the validator comes from ``harness_root``,
+    the checkout this script lives in. The validator is tooling, not data.
     """
     errors = []
     warnings = []
-    dag_script = os.path.join(repo_root, 'skills', 'work', 'scripts', 'dag_validator.py')
+    dag_script = os.path.join(harness_root, 'skills', 'work', 'scripts', 'dag_validator.py')
     if not os.path.exists(dag_script):
         return 0, [f"Missing DAG validator harness: {dag_script}"], []
 
-    sys.path.insert(0, os.path.join(repo_root, 'skills', 'work', 'scripts'))
+    sys.path.insert(0, os.path.join(harness_root, 'skills', 'work', 'scripts'))
     try:
         from dag_validator import DAGValidator
     except Exception as ex:
@@ -246,29 +249,161 @@ def validate_dag_harness(repo_root):
     return valid_count, errors, warnings
 
 
-def main():
+#: Where the work skill's dispatch briefs live. Each ```json block in these
+#: files is a payload the Orchestrator copies into ``invoke_subagent``.
+DISPATCH_BRIEF_FILES = ('skills/work/SKILL.md', 'skills/work/references/*.md')
+
+#: The grounding path every judging or building subagent is pointed at (W-07).
+KNOWLEDGE_GROUNDING = '.gemini/knowledge/'
+
+#: What each dispatch brief must point its subagent at, keyed by exact Role.
+#: ``knowledge`` is W-07: read the project's knowledge catalog before working.
+#: ``skills`` is W-08: sibling skills cited by path, so the brief delegates to
+#: them instead of restating a rubric that then drifts. Both were closed in
+#: prose, and prose is L1 -- nothing failed when a brief lost its grounding
+#: line. A role missing from this table fails too, so a new role has to decide
+#: its grounding on purpose rather than inherit none by default.
+BRIEF_CONTRACTS = {
+    'Design Architect Alpha': {'knowledge': True, 'skills': ()},
+    'Design Architect Beta': {'knowledge': True, 'skills': ()},
+    'Architectural Arbiter': {'knowledge': True, 'skills': ()},
+    'Architectural Design Reviewer': {'knowledge': True,
+                                      'skills': ('skills/review/SKILL.md',)},
+    '5-Axis Code Reviewer': {'knowledge': True,
+                             'skills': ('skills/review/SKILL.md', 'skills/unslop/SKILL.md')},
+    'Adversarial Challenger': {'knowledge': True, 'skills': ('skills/test/SKILL.md',)},
+    'Acceptance Reviewer': {'knowledge': True, 'skills': ()},
+    'Worker Alpha — Approach A': {'knowledge': True, 'skills': ()},
+    'Worker Beta — Approach B': {'knowledge': True, 'skills': ()},
+    'Observability & Audit Specialist': {'knowledge': True, 'skills': ()},
+    # Runs a deterministic script over the tree; there is nothing to ground.
+    'Forensic Integrity Auditor': {'knowledge': False, 'skills': ()},
+    # Executes cold from a clean checkout. Prior context is what it must not have.
+    'Victory Auditor': {'knowledge': False, 'skills': ()},
+}
+
+_JSON_FENCE = re.compile(r'^([ \t]*)```json[ \t]*\n(.*?)^\1```', re.M | re.S)
+_CITED_SKILL_PATH = re.compile(r'skills/[\w./-]+?\.md')
+
+
+def iter_dispatch_briefs(repo_root):
+    """Yield ``(relpath, line, payload_or_error)`` for every ```json block.
+
+    A block that does not parse is yielded as the error string: a brief the
+    linter cannot read is a brief it cannot vouch for.
+    """
+    import glob
+    import json
+    import textwrap
+
+    for pattern in DISPATCH_BRIEF_FILES:
+        for path in sorted(glob.glob(os.path.join(repo_root, pattern))):
+            rel = os.path.relpath(path, repo_root).replace(os.sep, '/')
+            with open(path, 'r', encoding='utf-8') as fh:
+                text = fh.read()
+            for m in _JSON_FENCE.finditer(text):
+                line = text.count('\n', 0, m.start()) + 1
+                try:
+                    data = json.loads(textwrap.dedent(m.group(2)))
+                except ValueError as ex:
+                    yield rel, line, f"unparseable dispatch payload: {ex}"
+                    continue
+                yield from _payloads_in(rel, line, data)
+
+
+def _payloads_in(rel, line, data):
+    """The dispatch payloads in one parsed block, or why it is malformed.
+
+    A block is a dispatch if it carries ``Subagents`` or a top-level
+    ``Prompt``; anything else is unrelated JSON and is ignored. Inside a
+    dispatch nothing is skipped: an entry the lint cannot check is an error,
+    because skipping it is how a brief with no prompt at all used to pass.
+    """
+    if not isinstance(data, dict):
+        return
+    if 'Subagents' in data:
+        entries = data['Subagents']
+        if not isinstance(entries, list):
+            yield rel, line, "malformed dispatch payload: 'Subagents' is not a list"
+            return
+        for i, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                yield rel, line, f"malformed dispatch payload: Subagents[{i}] is not an object"
+            elif not isinstance(entry.get('Prompt'), str):
+                who = entry.get('Role') or f"Subagents[{i}]"
+                yield rel, line, f"malformed dispatch payload: {who} has no string Prompt"
+            else:
+                yield rel, line, entry
+    elif 'Prompt' in data:
+        if isinstance(data['Prompt'], str):
+            yield rel, line, data
+        else:
+            yield rel, line, "malformed dispatch payload: Prompt is not a string"
+
+
+def validate_dispatch_briefs(repo_root):
+    """Check every dispatch brief against ``BRIEF_CONTRACTS``. Returns errors."""
+    errors = []
+    for rel, line, payload in iter_dispatch_briefs(repo_root):
+        where = f"[Brief: {rel}:{line}]"
+        if isinstance(payload, str):
+            errors.append(f"{where} {payload}")
+            continue
+        prompt = str(payload.get('Prompt', ''))
+        role = payload.get('Role')
+        for cited in sorted(set(_CITED_SKILL_PATH.findall(prompt))):
+            if not os.path.isfile(os.path.join(repo_root, cited)):
+                errors.append(f"{where} {role or 'payload'!s} cites {cited}, which does not exist")
+        if role is None:
+            # The heartbeat tick goes to the Orchestrator itself, not a subagent.
+            if not prompt.startswith('Heartbeat tick'):
+                errors.append(f"{where} dispatch payload has no Role, so no grounding contract applies")
+            continue
+        contract = BRIEF_CONTRACTS.get(role)
+        if contract is None:
+            errors.append(f"{where} no grounding contract for role {role!r}; "
+                          f"add it to BRIEF_CONTRACTS in scripts/validate_skills.py")
+            continue
+        if contract['knowledge'] and KNOWLEDGE_GROUNDING not in prompt:
+            errors.append(f"{where} {role} is not pointed at {KNOWLEDGE_GROUNDING} (W-07)")
+        for skill in contract['skills']:
+            if skill not in prompt:
+                errors.append(f"{where} {role} does not cite {skill} (W-08)")
+    return errors
+
+
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate skills, DAG fixtures and dispatch briefs.")
+    parser.add_argument('--repo-root', default=REPO_ROOT,
+                        help="Tree to validate (default: this checkout). The verifier "
+                             "fixtures under tests/fixtures/ are run through this.")
+    repo_root = os.path.abspath(parser.parse_args(argv).repo_root)
+
     print("=" * 65)
     print("🔍 Agent Skill Forge — Skill Validation & PII Audit")
     print("=" * 65)
 
-    core_dir = os.path.join(REPO_ROOT, 'skills')
-    pref_dir = os.path.join(REPO_ROOT, 'preferred')
+    core_dir = os.path.join(repo_root, 'skills')
+    pref_dir = os.path.join(repo_root, 'preferred')
 
     core_count, core_errs, core_warns = validate_skill_dir(core_dir, 'core')
     pref_count, pref_errs, pref_warns = validate_skill_dir(pref_dir, 'preferred')
-    dag_count, dag_errs, dag_warns = validate_dag_harness(REPO_ROOT)
+    dag_count, dag_errs, dag_warns = validate_dag_harness(repo_root)
     alias_errs = validate_aliases()
-    path_errs = scan_host_paths(REPO_ROOT)
+    path_errs = scan_host_paths(repo_root)
+    brief_errs = validate_dispatch_briefs(repo_root)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
     print(f"Validated {dag_count} Markdown DAG Workflow Specifications.")
     print(f"Validated {len(ALIASES)} Skill Aliases against reserved namespaces.")
     print(f"Scanned the tree for machine-specific absolute paths "
           f"({len(HOST_PATH_EXEMPT)} documented exemptions).")
+    print(f"Checked /work dispatch briefs against {len(BRIEF_CONTRACTS)} role grounding contracts.")
     print(f"Total Skills: {core_count + pref_count}\n")
 
     all_warnings = core_warns + pref_warns + dag_warns
-    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs
+    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs + brief_errs
 
     if all_warnings:
         print("⚠️  Warnings:")
