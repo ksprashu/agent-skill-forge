@@ -370,13 +370,13 @@ reviews is theatre.
       "Role": "Design Architect Alpha",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are Design Architect Alpha.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor a modular, robust architectural proposal with explicit schemas, interfaces, error handling, trade-offs, and 3 mandatory Mermaid diagrams (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
+      "Prompt": "You are Design Architect Alpha.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_alpha.md\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor a modular, robust architectural proposal with explicit schemas, interfaces, error handling, trade-offs, and 3 mandatory Mermaid diagrams (flowchart TD system architecture, C4 component block with quoted nodes, and sequenceDiagram with autonumber). Send completion message when written."
     },
     {
       "Role": "Design Architect Beta",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are Design Architect Beta.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor an alternative architectural proposal exploring distinct storage, concurrency, or interface paradigms with clear trade-offs and 3 mandatory Mermaid diagrams (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
+      "Prompt": "You are Design Architect Beta.\nAuthoritative specification: .agents/SPEC.md\nWorking directory: .agents/design/proposals/\nOutput: .agents/design/proposals/proposal_beta.md\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\n\nFollow skills/work/references/competitive_branching.md and skills/work/references/visual_production_guide.md:\nAuthor an alternative architectural proposal exploring distinct storage, concurrency, or interface paradigms with clear trade-offs and 3 mandatory Mermaid diagrams (flowchart TD, C4 component block, sequenceDiagram with autonumber). Send completion message when written."
     }
   ]
 }
@@ -416,13 +416,13 @@ which inverts the point of review.
       "Role": "5-Axis Code Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Audit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
+      "Prompt": "Grounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nAudit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
     },
     {
       "Role": "Adversarial Challenger",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Author hostile edge-case and boundary tests against the implementation. Follow skills/test/SKILL.md. Record the run as evidence rather than asserting it in prose:\npython3.12 skills/work/scripts/gate_executor.py record --task task_m1_challenger --cmd '<your test command>'\nThat call exits non-zero if the suite is red. Output .agents/m1_challenger/handoff.md."
+      "Prompt": "Grounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nAuthor hostile edge-case and boundary tests against the implementation. Follow skills/test/SKILL.md. Record the run as evidence rather than asserting it in prose:\npython3.12 skills/work/scripts/gate_executor.py record --task task_m1_challenger --cmd '<your test command>'\nThat call exits non-zero if the suite is red. Output .agents/m1_challenger/handoff.md."
     },
     {
       "Role": "Forensic Integrity Auditor",
@@ -442,7 +442,7 @@ which inverts the point of review.
       "Role": "Acceptance Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "You are the Acceptance Reviewer.\nRequired Inputs: .agents/SPEC.md, .agents/evidence/\n\nSystematically audit every requirement R1..Rn and acceptance criterion AC1..ACk in .agents/SPEC.md against physical test suites and diffs. For each one, cite the test that covers it or record that none does.\nOutput report to .agents/acceptance_review/report.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_acceptance_review --gate acceptance_pass --verdict PASS --reviewer-role acceptance-reviewer --worker-role implementer --evidence .agents/acceptance_review/report.md --summary '<which requirements are covered and which are not>'\nSend completion message."
+      "Prompt": "You are the Acceptance Reviewer.\nRequired Inputs: .agents/SPEC.md, .agents/evidence/\nGrounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\n\nSystematically audit every requirement R1..Rn and acceptance criterion AC1..ACk in .agents/SPEC.md against physical test suites and diffs. For each one, cite the test that covers it or record that none does.\nOutput report to .agents/acceptance_review/report.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_acceptance_review --gate acceptance_pass --verdict PASS --reviewer-role acceptance-reviewer --worker-role implementer --evidence .agents/acceptance_review/report.md --summary '<which requirements are covered and which are not>'\nSend completion message."
     }
   ]
 }
