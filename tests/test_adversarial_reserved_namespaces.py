@@ -339,14 +339,18 @@ class TestScriptExecutionSubprocess(unittest.TestCase):
     def test_sync_skills_prune_fix_script_exit_code_0(self):
         """Run python3.12 scripts/sync_skills.py --prune --fix and assert exit code 0."""
         script_path = REPO_ROOT / "scripts" / "sync_skills.py"
-        res = subprocess.run(
-            [sys.executable, str(script_path), "--prune", "--fix"],
-            cwd=str(REPO_ROOT),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-        )
+        # A scratch HOME: every hub is ~-relative, and without this the run
+        # installs into, and prunes, the contributor's real skill directories.
+        with tempfile.TemporaryDirectory() as home:
+            res = subprocess.run(
+                [sys.executable, str(script_path), "--prune", "--fix"],
+                cwd=str(REPO_ROOT),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=dict(os.environ, HOME=home, USERPROFILE=home),
+            )
         self.assertEqual(
             res.returncode,
             0,
