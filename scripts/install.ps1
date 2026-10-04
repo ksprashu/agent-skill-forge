@@ -125,8 +125,11 @@ if ($PassArgs.Count -gt 0) {
 } elseif ($Interactive) {
     & $PythonExe "$ScriptDir\sync_skills.py" --interactive --fix
 } else {
+    # Additive, matching install.sh. The non-interactive path is CI and
+    # piped-script installs, where a default that removes things nobody
+    # agreed to remove is not a default worth having.
     Write-Host "🔄 Synchronizing skills across AI developer tools using $PythonExe..." -ForegroundColor Yellow
-    & $PythonExe "$ScriptDir\sync_skills.py" --prune --fix
+    & $PythonExe "$ScriptDir\sync_skills.py" --fix
 }
 
 # $ErrorActionPreference does not apply to a native process's exit code, so
