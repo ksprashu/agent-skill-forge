@@ -2,7 +2,7 @@
 
 > **Purpose:** Exhaustive, deterministic inspection checklist covering all 8 Quality Engineering (QE) dimensions.
 > **Usage:** Used during Phase 2 (Micro Dataflow Deep Dive) in Mode A PR reviews and Pass 2 (Layered Architectural Audit) in Mode B repository audits.
-> **Standard:** Read on-demand per Progressive Disclosure rules. Every finding generated against these checkpoints must be logged using the atomic defect schema in [`schemas.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/review/references/schemas.md).
+> **Standard:** Read on-demand per Progressive Disclosure rules. Every finding generated against these checkpoints must be logged using the atomic defect schema in [`schemas.md`](schemas.md).
 
 ---
 

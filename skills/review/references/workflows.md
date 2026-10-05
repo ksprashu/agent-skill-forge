@@ -4,7 +4,7 @@
 > **Router Dispatch:**
 > - `/review` or `/review --diff` $\rightarrow$ **Mode A: Pull Request / Local Diff Review Pipeline**
 > - `/review --repo` or `/review --audit` $\rightarrow$ **Mode B: Macro Repository Quality Engineering Audit Pipeline**
-> **Standard:** Read on-demand per Progressive Disclosure rules. Every finding produced across these pipelines must conform to [`schemas.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/review/references/schemas.md).
+> **Standard:** Read on-demand per Progressive Disclosure rules. Every finding produced across these pipelines must conform to [`schemas.md`](schemas.md).
 
 ---
 
@@ -137,7 +137,7 @@ sequenceDiagram
    - *Axiom 5: Authorization* — Does this function enforce tenant bounding (`org_id`) and role permissions before accessing or mutating data?
 
 3. **Cross-Check with the 8-Axis Checklist:**
-   - Systematically cross-examine modified lines against [`checklist.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/review/references/checklist.md).
+   - Systematically cross-examine modified lines against [`checklist.md`](checklist.md).
 
 ---
 
@@ -165,7 +165,7 @@ sequenceDiagram
 
 ### Phase 4: Severity Triage & Badging
 
-**Objective:** Classify each finding using the standardized severity taxonomy defined in [`schemas.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/review/references/schemas.md).
+**Objective:** Classify each finding using the standardized severity taxonomy defined in [`schemas.md`](schemas.md).
 
 1. **Assign Standardized Severity Badges:**
    - 🔴 **`[P0: Critical - Blocker]`**: Security exploit, data corruption, critical path crash. Zero workaround. Hard merge blocker.
@@ -339,7 +339,7 @@ flowchart TD
 
 ### Pass 5: Executive Audit Report Generation
 
-**Objective:** Emit the formal Executive Audit Report formatted per [`schemas.md`](file:///Users/ksprashanth/code/github/agent-skill-forge/skills/review/references/schemas.md).
+**Objective:** Emit the formal Executive Audit Report formatted per [`schemas.md`](schemas.md).
 
 1. **Compile Executive Dashboard:**
    - Include Executive Summary, Findings Scorecard, Module Heatmap, Full Itemized Defect Log, and Sign-off Criteria.
