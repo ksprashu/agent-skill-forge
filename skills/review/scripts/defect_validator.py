@@ -184,7 +184,7 @@ class DefectValidator:
     """Enforces Atomic Defect Schema on markdown defect documentation."""
 
     def __init__(self) -> None:
-        pass
+        self.uninspected: List[str] = list(UNINSPECTED_SURFACE)
 
     def validate_defect_chunk(self, chunk: str, defect_index: int = 1) -> Dict[str, Any]:
         """Validate a single defect block against the Atomic Defect Schema."""
