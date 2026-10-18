@@ -1,0 +1,9 @@
+{
+  "skill": "unslop",
+  "test_cases": [
+    {"input": "unslop this paragraph", "should_trigger": true},
+    {"input": "make this sound less like AI", "should_trigger": true},
+    {"input": "rewrite the docs in my voice", "should_trigger": true},
+    {"input": "fix the bug in the auth handler", "should_trigger": false}
+  ]
+}
