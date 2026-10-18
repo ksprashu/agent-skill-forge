@@ -1,83 +1,42 @@
 ---
 name: unslop
-description: Strip AI boilerplate, fluff words, and redundant single-use wrappers from code, text, analyses, and designs. Trigger via /unslop or when cleaning outputs.
+description: "Rewrite all human-readable text (prose, docs, comments, analyses, UI copy) to remove AI smells and match Prashanth's pragmatic Dev Advocate voice: clear, direct, concrete, human, and free of fluff. Apply by default to every substantial text output."
+type: workflow
+lifecycle: active
 ---
 
-# Unslop: Universal Anti-Bloat & Simplification Engine
+# Unslop — Clear Voice for Every Text Output
 
-Strip AI tells, defensive boilerplate, sterile prose, and unnecessary complexity across code, prose, system analyses, and visual designs.
+Strip AI tells and rewrite into Prashanth's voice: pragmatic, direct, technically grounded, and human. Make the writing clear, concrete, and pleasant to read.
 
----
+**Apply by default** to all human-readable text: explanations, docs, comments, commit messages, analyses, UI copy, emails, and similar. Skip only pure code logic, machine formats (JSON, YAML schemas, exact API payloads), or when the user explicitly says "raw" or "no unslop".
 
-## 🎯 Goal
-Eliminate low-signal clutter while preserving 100% of functional behavior, meaning, and accuracy. Subtract before you add.
+## Core Workflow
 
----
+1. **Detect** AI smells and bloat (see `references/ai-smells.md`).
+2. **Subtract** fluff, throat-clearing, promotional padding, and unnecessary wrappers first.
+3. **Rewrite** into the target voice using the principles in `references/writing-principles.md` and the persona in `references/voice_and_tone.md`.
+4. **Verify** that facts, technical accuracy, and required constraints are unchanged. Never invent details or soften precision.
+5. **Output** the cleaned version. Prefer the rewritten text over commentary about the rewrite unless asked.
 
-## 📋 Step-by-Step Workflow
+## When to Apply
 
-1. **Detect AI Bloat**:
-   * **In Code**: Paranoid internal type-checks, single-use wrapper classes, verbose restatement comments, over-nested conditionals.
-   * **In Text / Prose**: Buzzwords (*delve*, *testament*, *tapestry*, *demystify*, *furthermore*), em-dashes (`—`), bolding the first 3 words of every bullet.
-   * **In Analysis / Specs**: Fluffy pseudo-academic introductions, repetitive summaries, speculation without data.
-   * **In Diagrams / UI**: Superfluous borders, excessive container nesting, gratuitous decorative shapes.
-2. **Subtract First**: Delete or inline unnecessary abstractions, wrappers, and preamble before editing core logic.
-3. **Flatten & Tighten**: Replace nested constructs with early returns; replace wordy sentences with direct statements.
-4. **Verify Integrity**: Guarantee code tests pass, specs retain exact requirements, and prose retains factual substance.
+- Every substantial explanation, documentation, comment, analysis, or UI string.
+- Code comments and commit messages (keep them short and factual).
+- Do **not** rewrite executable code logic, type signatures, or machine-readable structures.
 
----
+## References
 
-## 💡 Concrete Examples Across Domains
+- `references/voice_and_tone.md` — Prashanth's actual voice and preferences (source of truth).
+- `references/writing-principles.md` — Zinsser + practical clarity rules (the quality bar).
+- `references/ai-smells.md` — Patterns to remove.
 
-### 1. Code Simplification
-**Before (AI Slop):**
-```typescript
-class StringFormatterService {
-  public static sanitizeAndTrim(input: string | null | undefined): string {
-    if (input === null || input === undefined) return '';
-    return input.trim().toLowerCase();
-  }
-}
+Read the voice and principles files when the text is longer than a few sentences or when the output will be read by humans.
 
-export function processUsername(user: { name: string }) {
-  const formatted = StringFormatterService.sanitizeAndTrim(user.name);
-  return `user_${formatted}`;
-}
-```
-**After (Unslopped):**
-```typescript
-export function processUsername(user: { name: string }) {
-  return `user_${(user.name ?? '').trim().toLowerCase()}`;
-}
-```
+## Hard Constraints
 
-### 2. Prose & Article Simplification
-**Before (AI Slop):**
-```markdown
-In today's fast-paced digital landscape, it's crucial to delve into the tapestry of microservices. Furthermore, this innovative approach stands as a testament to modern architectural excellence.
-```
-**After (Unslopped):**
-```markdown
-Microservices separate system responsibilities into independently deployable units, reducing deployment blast radiuses.
-```
-
-### 3. Architecture & Analysis Simplification
-**Before (AI Slop):**
-```markdown
-## Executive Strategic Overview
-In this comprehensive analysis, we embark on a thorough exploration of database latency paradigms to unlock maximum synergies across our operational ecosystem...
-```
-**After (Unslopped):**
-```markdown
-## Problem & Metrics
-Database p95 query latency currently spikes to 420ms under 1,000 req/s due to unindexed foreign keys on `orders.user_id`.
-```
-
----
-
-## 🚫 Hard Constraints
-
-*   **NEVER** change public API signatures or return types.
-*   **NEVER** delete security/validation checks at untrusted boundaries (HTTP inputs, user forms, file uploads).
-*   **NEVER** remove comments explaining hardware quirks, non-obvious business rules, or concurrency locks.
-*   **NEVER** alter the factual meaning or constraints of a specification or analysis.
+- Preserve 100% of factual meaning, technical accuracy, and constraints.
+- Do not add hype, marketing language, or decorative filler.
+- Prefer short, concrete sentences. Active voice. One clear idea per sentence where practical.
+- Keep the writing human and readable — not rigid or mechanical.
+- If the original is already clean and in voice, leave it mostly alone.
