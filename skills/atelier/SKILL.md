@@ -47,6 +47,12 @@ Do not activate for pure code, data queries, or short factual answers.
    - Short or conversational pieces → rich markdown with tables, bold labels, and short paragraphs.
    Apply one memorable element (a strong header treatment, a single accent color used sparingly, distinctive type pairing) and keep everything else quiet.
 
+   **Use visuals liberally when they improve clarity or impact.** Not every section needs an image, but include graphics, diagrams, icons, or infographics wherever they help the reader understand faster than text alone:
+   - Generate custom diagrams, icons, or conceptual illustrations when the subject benefits from them.
+   - Source relevant existing images or charts via search when appropriate and available.
+   - Prefer generated visuals (including high-quality image generation) for original diagrams, process flows, or subject-specific illustrations.
+   - Embed visuals with clear captions and ensure they reinforce the content rather than decorate it.
+
 6. **Critique and deliver.** Ensure scannability (tables for comparisons, bullets for lists, short paragraphs), sufficient contrast, consistent spacing, and that the result feels specific to this subject. Deliver the file or formatted content.
 
 ## Design Principles (Mandatory)
@@ -56,6 +62,7 @@ Do not activate for pure code, data queries, or short factual answers.
 - **Restraint.** Spend boldness in one place. Remove one accessory before finishing.
 - **Typography carries personality.** Choose type deliberately. Line length under ~80 characters for body. Distinct roles for display vs body.
 - **Tables and scannability.** Prefer tables for any comparison, metrics, or multi-item data. Bold key terms and labels.
+- **Visuals where they help.** Use diagrams, icons, generated illustrations, or sourced images liberally when they convey information faster or more clearly than text. Caption them and tie them to the content.
 - **Accessibility floor.** Maintain readable contrast. Respect reduced-motion where relevant. Do not rely on color alone.
 
 ## Output Preferences
