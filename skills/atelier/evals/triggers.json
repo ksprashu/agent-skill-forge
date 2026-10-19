@@ -1,0 +1,25 @@
+{
+  "skill": "atelier",
+  "test_cases": [
+    {
+      "input": "Write a research brief on agent orchestration advances",
+      "should_trigger": true
+    },
+    {
+      "input": "Create a daily technology signal digest",
+      "should_trigger": true
+    },
+    {
+      "input": "Prepare a professional one-page decision memo",
+      "should_trigger": true
+    },
+    {
+      "input": "What is the capital of France?",
+      "should_trigger": false
+    },
+    {
+      "input": "Write a Python function to sort a list",
+      "should_trigger": false
+    }
+  ]
+}
