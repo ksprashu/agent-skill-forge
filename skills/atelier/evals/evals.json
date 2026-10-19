@@ -1,0 +1,35 @@
+{
+  "skill": "atelier",
+  "test_cases": [
+    {
+      "name": "research_brief",
+      "input": "Write a research brief on the latest advances in agent orchestration for enterprise AI. Make it look professional and scannable.",
+      "assertions": [
+        "Activates atelier",
+        "Produces structured output with sections and tables",
+        "Avoids generic AI aesthetic defaults",
+        "Grounds visual choices in the subject of AI agents"
+      ]
+    },
+    {
+      "name": "daily_digest",
+      "input": "Create a daily technology signal digest covering AI model releases and cloud infrastructure news. Make it visual and easy to scan.",
+      "assertions": [
+        "Activates atelier",
+        "Uses clear hierarchy and tables or bullets",
+        "Invents a subject-specific design direction",
+        "Prefers professional format or rich structured markdown"
+      ]
+    },
+    {
+      "name": "decision_memo",
+      "input": "Prepare a one-page decision memo on whether to adopt a new inference platform. Include options, tradeoffs, and a recommendation.",
+      "assertions": [
+        "Activates atelier",
+        "Structures with recommendation, options table, and clear sections",
+        "Applies restraint and one memorable element",
+        "Does not use fixed theme presets"
+      ]
+    }
+  ]
+}
