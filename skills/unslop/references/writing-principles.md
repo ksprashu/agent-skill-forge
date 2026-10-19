@@ -10,7 +10,8 @@ Distilled from Zinsser (*On Writing Well*), Strunk & White, and practical lesson
 
 ## Practical Rules
 - Prefer active voice. Name who does what.
-- One clear idea per sentence where practical. When two short related actions or results follow naturally, combine them with "and" rather than forcing a full stop.
+- One clear idea per sentence where practical. When two short related actions or results follow naturally, combine them with "and".
+- Keep short contextual framing and concrete value terms when they add orientation or meaning (e.g. "even in today's cloud computing landscape", "measurable", "best practice", specific architecture names). Cut only the inflation around them.
 - Use concrete, specific language. Prefer precise nouns and verbs over abstractions and intensifiers.
 - Omit needless words: "in order to" → "to"; "due to the fact that" → "because"; "it is important to note that" → just state the fact.
 - Vary sentence length a little so the prose has rhythm. Avoid long strings of identical structure.
