@@ -8,7 +8,7 @@ These are rewrites produced under the unslop principles so you can check whether
 In the contemporary cloud computing paradigm, it is crucial to delve into the multifaceted challenges associated with latency optimization. Furthermore, unindexed foreign keys can serve as a significant bottleneck, underscoring the importance of proactive database management strategies that leverage modern indexing techniques to enhance overall system performance.
 
 **Unslopped**
-Query latency hits 420 ms under load because the foreign key on `orders.user_id` has no index. Add the index and the p95 drops.
+Database optimisation is important even in today's cloud computing landscape. Foreign-key indexes measurably improve overall system performance and scalability.
 
 ## Sample 2 — Code Comment
 
@@ -24,7 +24,7 @@ Query latency hits 420 ms under load because the foreign key on `orders.user_id`
 It is important to note that before commencing the deployment process, one must ensure that all prerequisite configurations have been meticulously validated. This critical step stands as a testament to our commitment to operational excellence and helps foster a robust deployment pipeline.
 
 **Unslopped**
-Before you deploy, check that the required configs are set. The pipeline fails otherwise.
+Before deployment, ensure the required configs have been set and validated against the guidelines. This is a best practice for reliable deployment pipelines.
 
 ## Sample 4 — Analysis Note
 
@@ -32,4 +32,4 @@ Before you deploy, check that the required configs are set. The pipeline fails o
 The innovative architecture showcases a groundbreaking approach that not only addresses current scalability concerns but also positions the system for future growth in an increasingly complex digital landscape.
 
 **Unslopped**
-The design splits the service into independent units so each can scale on its own. That removes the single bottleneck we hit last quarter.
+Microservices architecture addresses scalability of distributed systems by splitting the system into independent deployable units.
