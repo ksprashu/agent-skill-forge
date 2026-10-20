@@ -100,7 +100,7 @@ Developer Mode or an elevated shell; the script warns if you have neither, and
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
 
 ```bash
-# Install ONLY Content, Creative & Authoring skills (codelab, voice, copy-write, image-gen)
+# Install ONLY Content, Creative & Authoring skills (codelab, voice, copy-write, image-gen, atelier)
 # Prunes unselected skills like plan, spec, test, etc.
 bash scripts/install.sh --content --prune
 
@@ -136,7 +136,7 @@ python3 scripts/sync_skills.py --list-clusters
 
 ## 🌟 Core Skills Taxonomy (4 Clusters)
 
-The 19 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
+The 20 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*
@@ -160,7 +160,7 @@ The 19 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, and synthesizes diagrams.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, and produces distinctive human-grade reports and briefs.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
@@ -169,6 +169,7 @@ The 19 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`cognitive-profiler`](./skills/cognitive-profiler)** | `/cognitive-profiler`, `/profile-me` | User Slash | **Agent Communication Profiler**: Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`. |
 | **[`copy-write`](./skills/copy-write)** | `/copy-write` | User Slash | **Technical Prose Companion**: Drafts articles, documentation, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`). |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | User Slash | **Multimodal Diagram & Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI graphics using Gemini Flash Image with style consistency. |
+| **[`atelier`](./skills/atelier)** | (auto on reports/briefs) | Auto / Slash | **Distinctive Human-Grade Output**: Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and liberal use of diagrams and images. Avoids generic AI aesthetics. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
 *Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*

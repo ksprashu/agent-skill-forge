@@ -40,7 +40,8 @@
     "knowledge-catalog": "Maintain a durable progressive-disclosure codebase memory.",
     "oss-compliance": "Audit licensing headers and scrub internal references.",
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
-    "skill-sync": "Manage skill installation across agent runtimes."
+    "skill-sync": "Manage skill installation across agent runtimes.",
+    "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests)."
   },
 
   "skill_capabilities": {
@@ -69,6 +70,7 @@
     "human-voice": "voice-profiling",
     "copy-write": "technical-copy",
     "image-gen": "image-generation",
+    "atelier": "human-grade-output",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",

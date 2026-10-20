@@ -76,6 +76,7 @@ CORE_SKILLS = {
     'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
     'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
+    'atelier': os.path.join(CORE_SKILLS_DIR, 'atelier'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'work': os.path.join(CORE_SKILLS_DIR, 'work'),
@@ -277,7 +278,7 @@ CORE_CLUSTERS = {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
         'description': 'Step-by-step Google codelabs, human voice profiling, agent communication profiling, technical copywriting, and image generation.',
-        'skills': ['codelab', 'human-voice', 'cognitive-profiler', 'copy-write', 'image-gen'],
+        'skills': ['codelab', 'human-voice', 'cognitive-profiler', 'copy-write', 'image-gen', 'atelier'],
     },
     'c4': {
         'id': 'docs-governance',
