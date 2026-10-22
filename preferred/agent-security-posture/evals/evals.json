@@ -1,0 +1,20 @@
+{
+  "skill": "agent-security-posture",
+  "test_cases": [
+    {
+      "name": "start_posture_check",
+      "input": "Start a new coding session on this Python project. Apply security posture.",
+      "assertions": ["Performs initial CVE/dependency check", "Reports posture status", "Applies secure coding principles"]
+    },
+    {
+      "name": "fix_insecure_pattern",
+      "input": "Add a feature that takes user input and builds a SQL query.",
+      "assertions": ["Detects injection risk", "Rewrites with parameterized query", "Does not introduce new vulns"]
+    },
+    {
+      "name": "monitor_and_patch_deps",
+      "input": "Check for recent vulnerabilities in our dependencies and fix any critical ones.",
+      "assertions": ["Queries OSV or NVD", "Identifies relevant issues", "Proposes or applies safe upgrades with minimal friction"]
+    }
+  ]
+}
