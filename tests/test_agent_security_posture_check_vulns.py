@@ -70,6 +70,10 @@ class FakeServer(http.server.BaseHTTPRequestHandler):
             return self._send(200, b"{not json")
         if FakeServer.mode == "listjson":
             return self._send(200, [])
+        if FakeServer.mode == "nullresults":
+            return self._send(200, {"results": [None] * len(body["queries"])})
+        if FakeServer.mode == "badvulns":
+            return self._send(200, {"results": [{"vulns": ["GHSA-x"]}] * len(body["queries"])})
         queries = body["queries"]
         if FakeServer.mode == "short":
             return self._send(200, {"results": [{}]})
@@ -235,6 +239,47 @@ class CheckVulnsTest(unittest.TestCase):
         self.assertEqual(report["status"], "unavailable")
         self.assertEqual(report["unresolved"], ["line 1: -r directive not followed"])
 
+    def test_attached_short_option_makes_result_partial(self):
+        path = self.write("requirements.txt", "-rbase.txt\n-e./local-pkg\n")
+        code, report, _ = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["unresolved"], ["line 1: -r directive not followed",
+                                                "line 2: -e directive not followed"])
+        self.assertNotIn("base.txt", json.dumps(report))
+
+    def test_null_result_entries_are_unavailable(self):
+        FakeServer.mode = "nullresults"
+        code, report, _ = self.run_script("lockfile", str(self.npm_lock()))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["packages_checked"], 0)
+
+    def test_malformed_vuln_entries_are_unavailable(self):
+        FakeServer.mode = "badvulns"
+        code, report, _ = self.run_script("lockfile", str(self.npm_lock()))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["status"], "unavailable")
+
+    def test_poetry_and_cargo_non_registry_sources_are_unresolved(self):
+        poetry = self.write("poetry.lock",
+                            '[[package]]\nname = "requests"\nversion = "2.32.3"\n\n'
+                            '[[package]]\nname = "inhouse"\nversion = "1.0.0"\n'
+                            '[package.source]\ntype = "git"\nurl = "https://u:tok@git.example/x.git"\n')
+        cargo_dir = self.dir / "c"
+        cargo_dir.mkdir()
+        cargo = cargo_dir / "Cargo.lock"
+        cargo.write_text(
+            '[[package]]\nname = "app"\nversion = "0.1.0"\n\n'
+            '[[package]]\nname = "serde"\nversion = "1.0.200"\n'
+            'source = "registry+https://github.com/rust-lang/crates.io-index"\n\n'
+            '[[package]]\nname = "forked"\nversion = "1.0.0"\n'
+            'source = "git+https://u:tok@git.example/forked#abc"\n', encoding="utf-8")
+        code, report, err = self.run_script("lockfile", str(poetry), str(cargo))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["packages_checked"], 2)
+        self.assertEqual(sorted(report["unresolved"]),
+                         ["forked (non-crates.io source)", "inhouse (non-PyPI source)"])
+        self.assertNotIn("tok", json.dumps(report) + err + json.dumps(FakeServer.seen_bodies))
+
     def test_hash_continuation_lines_are_not_unresolved(self):
         path = self.write("requirements.txt",
                           "requests==2.32.3 \\\n    --hash=sha256:abc\n"
@@ -297,7 +342,8 @@ class CheckVulnsTest(unittest.TestCase):
         self.assertEqual(end, "2026-10-22T12:00:00.000")
 
     def test_parsers_read_each_supported_format(self):
-        cargo = '[[package]]\nname = "serde"\nversion = "1.0.200"\n'
+        cargo = ('[[package]]\nname = "serde"\nversion = "1.0.200"\n'
+                 'source = "registry+https://github.com/rust-lang/crates.io-index"\n')
         poetry = '[[package]]\nname = "requests"\nversion = "2.32.3"\n'
         gosum = ("golang.org/x/net v0.23.0 h1:abc=\n"
                  "golang.org/x/net v0.23.0/go.mod h1:def=\n")

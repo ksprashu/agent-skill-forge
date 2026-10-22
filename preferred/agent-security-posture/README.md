@@ -51,7 +51,7 @@ A strong posture means continuous monitoring + proactive remediation that stays 
 | `SKILL.md` | Core workflow, authority rules, principles, mandatory checks, hooks guidance, and quick OWASP reference. This is what the agent loads. |
 | `references/owasp-agentic-2026.md` | Distilled OWASP Top 10 for Agentic Applications 2026 (ASI01–ASI10) with descriptions and agent-focused mitigations. |
 | `references/monitoring-sources.md` | NVD/OSV API quick reference, MCP server options, signal sources, and practical query patterns. |
-| `scripts/check_vulns.py` | Stdlib Python helper. `lockfile` mode checks resolved versions (package-lock.json, requirements.txt pins, poetry.lock, Cargo.lock, go.sum) against OSV.dev; `recent` mode lists NVD CVEs from a dated window. Exit 0 clean, 1 advisories, 2 unavailable or partial, 64 usage. Tests: `tests/test_agent_security_posture_check_vulns.py`. |
+| `scripts/check_vulns.py` | Stdlib Python helper. `lockfile` mode checks resolved versions (package-lock.json, requirements.txt pins, poetry.lock, Cargo.lock, go.sum) against OSV.dev, sending only public-registry versions (git, path and alternate-registry entries are reported unresolved, never transmitted); `recent` mode lists NVD CVEs from a dated window. Exit 0 clean, 1 advisories, 2 unavailable or partial, 64 usage. Tests: `tests/test_agent_security_posture_check_vulns.py`. |
 | `evals/` | Test cases and trigger phrases for skill quality. |
 | `CHANGELOG.md` | Version history. |
 

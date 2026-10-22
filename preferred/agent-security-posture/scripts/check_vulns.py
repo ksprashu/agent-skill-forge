@@ -149,6 +149,8 @@ def parse_requirements(text: str) -> tuple[list[dict], list[str]]:
             continue
         if line.startswith("-"):
             option = re.split(r"[\s=]", line, maxsplit=1)[0]
+            if not option.startswith("--") and len(option) > 2:
+                option = option[:2]  # pip accepts -rbase.txt, -e./pkg
             if option in _REQ_INCLUDES:
                 unresolved.append(f"line {lineno}: {option} directive not "
                                   "followed")
@@ -164,24 +166,50 @@ def parse_requirements(text: str) -> tuple[list[dict], list[str]]:
     return pkgs, unresolved
 
 
-def _toml_packages(text: str, ecosystem: str) -> tuple[list[dict], list[str]]:
-    data = tomllib.loads(text)
-    pkgs, unresolved = [], []
-    for p in data.get("package") or []:
-        if p.get("name") and p.get("version"):
-            pkgs.append({"ecosystem": ecosystem, "name": p["name"],
-                         "version": p["version"]})
-        else:
-            unresolved.append(str(p.get("name", "?")))
-    return pkgs, unresolved
+# Cargo.lock source strings that mean the public crates.io registry.
+_CRATES_IO_SOURCES = (
+    "registry+https://github.com/rust-lang/crates.io-index",
+    "sparse+https://index.crates.io/",
+)
 
 
 def parse_poetry(text: str) -> tuple[list[dict], list[str]]:
-    return _toml_packages(text, "PyPI")
+    """Only packages without a [package.source] table come from PyPI. Git,
+    URL, path and alternate-index sources can carry the same name and version
+    as a PyPI release while being different code, so they are unresolved."""
+    pkgs, unresolved = [], []
+    for p in tomllib.loads(text).get("package") or []:
+        name, version = p.get("name"), p.get("version")
+        if not name:
+            unresolved.append("unnamed package")
+        elif p.get("source"):
+            unresolved.append(f"{name} (non-PyPI source)")
+        elif not version:
+            unresolved.append(f"{name} (no version)")
+        else:
+            pkgs.append({"ecosystem": "PyPI", "name": name, "version": version})
+    return pkgs, unresolved
 
 
 def parse_cargo(text: str) -> tuple[list[dict], list[str]]:
-    return _toml_packages(text, "crates.io")
+    """Entries with no source are local workspace or path crates, not
+    third-party releases, and are skipped. Git and alternate-registry sources
+    are unresolved; only crates.io sources are sent."""
+    pkgs, unresolved = [], []
+    for p in tomllib.loads(text).get("package") or []:
+        name, version, source = p.get("name"), p.get("version"), p.get("source")
+        if not source:
+            continue
+        if not name:
+            unresolved.append("unnamed package")
+        elif source not in _CRATES_IO_SOURCES:
+            unresolved.append(f"{name} (non-crates.io source)")
+        elif not version:
+            unresolved.append(f"{name} (no version)")
+        else:
+            pkgs.append({"ecosystem": "crates.io", "name": name,
+                         "version": version})
+    return pkgs, unresolved
 
 
 def parse_gosum(text: str) -> tuple[list[dict], list[str]]:
@@ -264,6 +292,17 @@ def _host(url: str) -> str:
     return urllib.parse.urlsplit(url).netloc or url
 
 
+def _valid_osv_result(result: object) -> bool:
+    """One querybatch entry: an object whose optional vulns list holds
+    objects with string IDs. Anything else is unusable, not clean."""
+    if not isinstance(result, dict):
+        return False
+    vulns = result.get("vulns", [])
+    return isinstance(vulns, list) and all(
+        isinstance(v, dict) and isinstance(v.get("id"), str) and v["id"]
+        for v in vulns)
+
+
 def osv_check(pkgs: list[dict]) -> tuple[list[dict], list[str], int]:
     """Return (advisories, problems, packages_checked).
 
@@ -285,11 +324,13 @@ def osv_check(pkgs: list[dict]) -> tuple[list[dict], list[str], int]:
             problems.append("OSV returned a result list that does not match "
                             "the query list")
             continue
+        if not all(_valid_osv_result(r) for r in results):
+            problems.append("OSV returned malformed result entries")
+            continue
         checked += len(chunk)
         for pkg, result in zip(chunk, results):
-            ids = [v.get("id") for v in (result or {}).get("vulns") or []
-                   if v.get("id")]
-            if (result or {}).get("next_page_token"):
+            ids = [v["id"] for v in result.get("vulns") or []]
+            if result.get("next_page_token"):
                 problems.append(f"OSV has more advisories for {pkg['name']} "
                                 "than one page; listed IDs are incomplete")
             if ids:
