@@ -72,6 +72,7 @@ TIMEOUT_S = 20
 MAX_RETRY_WAIT_S = 10
 OSV_BATCH = 1000
 NVD_MAX_DAYS = 120
+NVD_PAGE = 2000  # NVD's maximum page size
 SEVERITIES = ("CRITICAL", "HIGH", "MEDIUM", "LOW")
 
 # Lockfile basename -> parser name. Only files that pin resolved versions.
@@ -94,6 +95,19 @@ class SourceError(Exception):
 
 # ---------------------------------------------------------------- parsing
 
+# A registry release version: 1.2.3, 1.2.3-beta.1, 1.2.3+build. Anything else
+# (git URLs, file: paths, tarball URLs, aliases) is not sent anywhere, because
+# it can carry credentials or local paths and doesn't name a registry release.
+_REGISTRY_VERSION = re.compile(r"^v?\d+(\.\d+){0,3}([-+][0-9A-Za-z.+-]+)?$")
+
+
+def _npm_record(name: str, version: str | None,
+                pkgs: list[dict], unresolved: list[str]) -> None:
+    if version and _REGISTRY_VERSION.match(version):
+        pkgs.append({"ecosystem": "npm", "name": name, "version": version})
+    else:
+        unresolved.append(f"{name} (no registry version)")
+
 
 def parse_npm(text: str) -> tuple[list[dict], list[str]]:
     data = json.loads(text)
@@ -102,41 +116,51 @@ def parse_npm(text: str) -> tuple[list[dict], list[str]]:
         if not key:  # "" is the root project itself
             continue
         name = meta.get("name") or key.split("node_modules/")[-1]
-        version = meta.get("version")
         if meta.get("link"):
             continue
-        if version:
-            pkgs.append({"ecosystem": "npm", "name": name, "version": version})
-        else:
-            unresolved.append(name)
+        _npm_record(name, meta.get("version"), pkgs, unresolved)
     if not data.get("packages"):  # lockfileVersion 1
         def walk(deps: dict) -> None:
             for name, meta in deps.items():
-                if meta.get("version"):
-                    pkgs.append({"ecosystem": "npm", "name": name,
-                                 "version": meta["version"]})
-                else:
-                    unresolved.append(name)
+                _npm_record(name, meta.get("version"), pkgs, unresolved)
                 walk(meta.get("dependencies") or {})
         walk(data.get("dependencies") or {})
     return pkgs, unresolved
 
 
 _REQ_PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[^\]]*\])?\s*===?\s*([^\s;#]+)")
+_REQ_NAME = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)")
+# Options that add dependencies from elsewhere. They aren't followed, so the
+# result is incomplete. Their arguments are never copied into the report.
+_REQ_INCLUDES = ("-r", "--requirement", "-c", "--constraint",
+                 "-e", "--editable")
 
 
 def parse_requirements(text: str) -> tuple[list[dict], list[str]]:
+    """Pinned lines become packages. Everything else that adds a dependency
+    is reported as unresolved by line number and package name only, never by
+    its text, which can hold URLs with credentials or local paths."""
     pkgs, unresolved = [], []
-    for raw in text.splitlines():
-        line = raw.split("#", 1)[0].strip()
-        if not line or line.startswith("-"):
+    continued = False
+    for lineno, raw in enumerate(text.splitlines(), start=1):
+        is_continuation, continued = continued, raw.rstrip().endswith("\\")
+        line = raw.split(" #", 1)[0].strip().rstrip("\\").strip()
+        if not line or line.startswith("#") or is_continuation:
             continue
+        if line.startswith("-"):
+            option = re.split(r"[\s=]", line, maxsplit=1)[0]
+            if option in _REQ_INCLUDES:
+                unresolved.append(f"line {lineno}: {option} directive not "
+                                  "followed")
+            continue  # index URLs, hashes and other global options
         m = _REQ_PIN.match(line)
         if m:
             pkgs.append({"ecosystem": "PyPI", "name": m.group(1),
                          "version": m.group(3)})
-        else:
-            unresolved.append(line)
+            continue
+        name = _REQ_NAME.match(line)
+        label = name.group(1) if name else "unnamed requirement"
+        unresolved.append(f"line {lineno}: {label} (not pinned with ==)")
     return pkgs, unresolved
 
 
@@ -227,9 +251,12 @@ def _request(url: str, *, body: dict | None = None,
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise SourceError(f"cannot reach {_host(url)}: {exc}") from exc
         try:
-            return json.loads(raw)
+            decoded = json.loads(raw)
         except ValueError as exc:
             raise SourceError(f"unparseable JSON from {_host(url)}") from exc
+        if not isinstance(decoded, dict):
+            raise SourceError(f"unexpected JSON shape from {_host(url)}")
+        return decoded
     raise SourceError(f"no response from {_host(url)}")
 
 
@@ -283,7 +310,7 @@ def nvd_recent(days: int, severity: str,
                now: dt.datetime | None = None) -> tuple[dict, list[str]]:
     start, end = nvd_window(days, now or dt.datetime.now(dt.timezone.utc))
     params = {"cvssV3Severity": severity, "pubStartDate": start,
-              "pubEndDate": end, "resultsPerPage": "50"}
+              "pubEndDate": end, "resultsPerPage": str(NVD_PAGE)}
     url = os.environ.get("ASP_NVD_URL", DEFAULT_NVD) + "?" + \
         urllib.parse.urlencode(params)
     headers = {}
@@ -298,9 +325,14 @@ def nvd_recent(days: int, severity: str,
     if not isinstance(vulns, list) or not isinstance(total, int):
         return {"window": [start, end]}, ["NVD response missing "
                                           "vulnerabilities or totalResults"]
-    ids = [v.get("cve", {}).get("id") for v in vulns if v.get("cve", {}).get("id")]
+    ids = [v.get("cve", {}).get("id") for v in vulns
+           if isinstance(v, dict) and v.get("cve", {}).get("id")]
+    problems = []
+    if total > len(ids):
+        problems.append(f"NVD reports {total} CVEs but returned {len(ids)}; "
+                        "the list is incomplete")
     return {"window": [start, end], "severity": severity,
-            "total": total, "listed": ids}, []
+            "total": total, "listed": ids}, problems
 
 
 # ---------------------------------------------------------------- main

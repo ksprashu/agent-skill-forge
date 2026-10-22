@@ -44,8 +44,9 @@ import check_vulns  # noqa: E402
 class FakeServer(http.server.BaseHTTPRequestHandler):
     """Behaviour is set per test through class attributes."""
 
-    mode = "ok"           # ok | vulns | error500 | badjson | short
+    mode = "ok"           # ok | vulns | error500 | badjson | listjson | short
     nvd_total = 0
+    nvd_returned = None   # None means return all nvd_total entries
     seen_bodies: list = []
     seen_paths: list = []
 
@@ -67,6 +68,8 @@ class FakeServer(http.server.BaseHTTPRequestHandler):
             return self._send(500, {"error": "boom"})
         if FakeServer.mode == "badjson":
             return self._send(200, b"{not json")
+        if FakeServer.mode == "listjson":
+            return self._send(200, [])
         queries = body["queries"]
         if FakeServer.mode == "short":
             return self._send(200, {"results": [{}]})
@@ -85,7 +88,8 @@ class FakeServer(http.server.BaseHTTPRequestHandler):
         qs = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
         if "pubStartDate" in qs and "pubEndDate" not in qs:
             return self._send(404, {})
-        vulns = [{"cve": {"id": f"CVE-2026-{i:05d}"}} for i in range(FakeServer.nvd_total)]
+        count = FakeServer.nvd_total if FakeServer.nvd_returned is None else FakeServer.nvd_returned
+        vulns = [{"cve": {"id": f"CVE-2026-{i:05d}"}} for i in range(count)]
         return self._send(200, {"totalResults": FakeServer.nvd_total,
                                 "vulnerabilities": vulns})
 
@@ -105,6 +109,7 @@ class CheckVulnsTest(unittest.TestCase):
     def setUp(self):
         FakeServer.mode = "ok"
         FakeServer.nvd_total = 0
+        FakeServer.nvd_returned = None
         FakeServer.seen_bodies = []
         FakeServer.seen_paths = []
         self.tmp = tempfile.TemporaryDirectory()
@@ -184,7 +189,7 @@ class CheckVulnsTest(unittest.TestCase):
         code, report, _ = self.run_script("lockfile", str(path))
         self.assertEqual(code, 2)
         self.assertEqual(report["status"], "partial")
-        self.assertEqual(report["unresolved"], ["flask>=3"])
+        self.assertEqual(report["unresolved"], ["line 2: flask (not pinned with ==)"])
 
     def test_server_error_is_unavailable_not_clean(self):
         FakeServer.mode = "error500"
@@ -204,7 +209,64 @@ class CheckVulnsTest(unittest.TestCase):
         code, report, _ = self.run_script("lockfile", str(self.npm_lock()))
         self.assertEqual(code, 2)
 
+    def test_wrong_shape_json_is_unavailable(self):
+        FakeServer.mode = "listjson"
+        code, report, _ = self.run_script("lockfile", str(self.npm_lock()))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["status"], "unavailable")
+
+    def test_credentials_in_requirements_never_reach_output(self):
+        secret = "s3cr3t-t0ken-value"
+        path = self.write("requirements.txt",
+                          "requests==2.32.3\n"
+                          f"private-client @ https://user:{secret}@pkgs.example.invalid/c.whl\n")
+        code, report, err = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        self.assertNotIn(secret, json.dumps(report))
+        self.assertNotIn(secret, err)
+        self.assertNotIn(secret, json.dumps(FakeServer.seen_bodies))
+        self.assertEqual(report["unresolved"],
+                         ["line 2: private-client (not pinned with ==)"])
+
+    def test_include_directive_makes_result_partial(self):
+        path = self.write("requirements.txt", "-r base.txt\n")
+        code, report, _ = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["status"], "unavailable")
+        self.assertEqual(report["unresolved"], ["line 1: -r directive not followed"])
+
+    def test_hash_continuation_lines_are_not_unresolved(self):
+        path = self.write("requirements.txt",
+                          "requests==2.32.3 \\\n    --hash=sha256:abc\n"
+                          "--index-url https://pypi.org/simple\n")
+        code, report, _ = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 0)
+        self.assertEqual(report["unresolved"], [])
+
+    def test_npm_git_source_is_not_sent(self):
+        secret = "gh-t0ken-value"
+        path = self.write("package-lock.json", json.dumps({
+            "lockfileVersion": 1,
+            "dependencies": {
+                "private-lib": {"version": f"git+https://u:{secret}@github.example/x.git"},
+                "express": {"version": "4.19.2"},
+            }}))
+        code, report, err = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        sent = json.dumps(FakeServer.seen_bodies)
+        self.assertNotIn(secret, sent)
+        self.assertNotIn(secret, json.dumps(report) + err)
+        self.assertEqual(report["packages_checked"], 1)
+        self.assertEqual(report["unresolved"], ["private-lib (no registry version)"])
+
     # --- recent mode -------------------------------------------------------
+
+    def test_recent_incomplete_page_is_partial(self):
+        FakeServer.nvd_total = 51
+        FakeServer.nvd_returned = 50
+        code, report, _ = self.run_script("recent")
+        self.assertEqual(code, 2)
+        self.assertEqual(report["status"], "partial")
 
     def test_recent_sends_both_dates(self):
         FakeServer.nvd_total = 3
