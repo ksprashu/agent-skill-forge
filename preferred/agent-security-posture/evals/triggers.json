@@ -1,0 +1,21 @@
+{
+  "skill": "agent-security-posture",
+  "test_cases": [
+    {
+      "input": "Apply strong security posture and monitor for vulnerabilities while coding.",
+      "should_trigger": true
+    },
+    {
+      "input": "Scan for CVEs and fix any issues in the code before proceeding.",
+      "should_trigger": true
+    },
+    {
+      "input": "Make the AI agent always check security on every turn without slowing me down.",
+      "should_trigger": true
+    },
+    {
+      "input": "Write a simple hello world function.",
+      "should_trigger": false
+    }
+  ]
+}
