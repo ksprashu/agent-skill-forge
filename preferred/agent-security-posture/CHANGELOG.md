@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-22 (outside sources)
+- New `references/audit-method.md`: the finding test, three verdicts (confirmed, needs_validation, rejected), severity anchors, checker-is-never-the-finder, local-only evidence. Adapted from Cloudflare's security-audit skill (MIT) at c1c8a8c, with a hand-off to that skill for full codebase audits.
+- New `references/readonly-infra-audit.md`: read-only audit of a GitHub org, DNS/CDN accounts and hosts, with masking, skip-and-record for mutating checks, and a fixed report shape.
+- GitHub Advisory Database (reviewed and malware sets) added to the monitoring sources.
+- SKILL.md gains a Modes section and points triage at the audit method.
+- Registered in the d2 security cluster, the preferred catalog and the README.
+
 ## 2026-10-22 (review fixes)
 Changes from a four-agent review of commit 3c29a1e, plus the owner's decision on agent autonomy.
 - Trigger scoped to coding work: runs when code, dependencies, agent tools or MCP config change, or on request. No scans on text-only tasks; no routine status written to shared logs.

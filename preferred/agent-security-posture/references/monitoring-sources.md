@@ -15,7 +15,15 @@
   - Example: `{"package":{"name":"requests","ecosystem":"PyPI"},"version":"2.28.0"}`
   - Batch for lockfiles: `scripts/check_vulns.py lockfile <path>` sends one `/v1/querybatch` per 1,000 packages, with ecosystem, name and version only. Docs: https://osv.dev/api
 
-- **CISA KEV**, **EPSS** (FIRST), **GitHub Advisories**, vendor feeds.
+- **GitHub Advisory Database**: <https://github.com/advisories?query=type%3Areviewed>
+  - Three sets: `reviewed` (curated by GitHub, with affected and fixed version ranges; about 34,000 on 22 Oct 2026), `unreviewed` (imported, much larger and noisier), and `malware` (known malicious packages, a separate supply-chain signal).
+  - OSV.dev imports the reviewed GHSA records, so `check_vulns.py lockfile` already covers them. Query GitHub directly to cross-check one package or to look for malware advisories:
+    - `gh api '/advisories?type=reviewed&ecosystem=npm&affects=lodash@4.17.20'`
+    - `gh api '/advisories?type=malware&ecosystem=npm&affects=<package>'`
+  - Filters include `ecosystem`, `affects` (`package` or `package@version`), `severity`, `cve_id`, `published` and `updated`. Prefer `reviewed` for decisions; treat `unreviewed` as a lead to confirm.
+  - Inference: the endpoint shape is from GitHub's REST documentation and wasn't run from a sandbox whose GitHub token is repo-scoped.
+
+- **CISA KEV**, **EPSS** (FIRST), vendor feeds.
 
 ## Signal Sources (untrusted leads)
 
