@@ -101,12 +101,31 @@ class SourceError(Exception):
 _REGISTRY_VERSION = re.compile(r"^v?\d+(\.\d+){0,3}([-+][0-9A-Za-z.+-]+)?$")
 
 
-def _npm_record(name: str, version: str | None,
+# Hosts whose tarballs are the public npm registry. A version string alone
+# doesn't prove the source: a git, file or private-registry entry can carry
+# "1.2.3" too, and OSV would then vouch for code it never saw.
+_NPM_PUBLIC_HOSTS = ("registry.npmjs.org", "registry.yarnpkg.com")
+
+
+def _npm_public(resolved: object) -> bool:
+    if not isinstance(resolved, str):
+        return False
+    parts = urllib.parse.urlsplit(resolved)
+    return parts.scheme == "https" and parts.hostname in _NPM_PUBLIC_HOSTS
+
+
+def _npm_record(name: str, meta: dict,
                 pkgs: list[dict], unresolved: list[str]) -> None:
-    if version and _REGISTRY_VERSION.match(version):
-        pkgs.append({"ecosystem": "npm", "name": name, "version": version})
-    else:
+    """Send only entries resolved from the public registry with a release
+    version. Everything else is unresolved by name; its URL or path is never
+    kept."""
+    version = meta.get("version")
+    if not (isinstance(version, str) and _REGISTRY_VERSION.match(version)):
         unresolved.append(f"{name} (no registry version)")
+    elif not _npm_public(meta.get("resolved")):
+        unresolved.append(f"{name} (not from the public npm registry)")
+    else:
+        pkgs.append({"ecosystem": "npm", "name": name, "version": version})
 
 
 def parse_npm(text: str) -> tuple[list[dict], list[str]]:
@@ -115,20 +134,29 @@ def parse_npm(text: str) -> tuple[list[dict], list[str]]:
     for key, meta in (data.get("packages") or {}).items():
         if not key:  # "" is the root project itself
             continue
-        name = meta.get("name") or key.split("node_modules/")[-1]
-        if meta.get("link"):
-            continue
-        _npm_record(name, meta.get("version"), pkgs, unresolved)
+        if "node_modules/" not in key:
+            continue  # a workspace package: the project's own code
+        if not isinstance(meta, dict) or meta.get("link"):
+            continue  # a symlink to a workspace package
+        name = meta.get("name") or key.rsplit("node_modules/", 1)[-1]
+        _npm_record(name, meta, pkgs, unresolved)
     if not data.get("packages"):  # lockfileVersion 1
         def walk(deps: dict) -> None:
             for name, meta in deps.items():
-                _npm_record(name, meta.get("version"), pkgs, unresolved)
+                if not isinstance(meta, dict):
+                    unresolved.append(f"{name} (unreadable entry)")
+                    continue
+                _npm_record(name, meta, pkgs, unresolved)
                 walk(meta.get("dependencies") or {})
         walk(data.get("dependencies") or {})
     return pkgs, unresolved
 
 
-_REQ_PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[^\]]*\])?\s*===?\s*([^\s;#]+)")
+_REQ_PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(\[[^\]]*\])?\s*===?\s*([^;#]+)")
+# One exact release, e.g. 2.32.3, 1.0.0rc1, 2.0.post1. Wildcards (2.*) and
+# compound specifiers (==2.32.3,!=2.32.2) name a range, not a version.
+_EXACT_PY_VERSION = re.compile(r"^v?\d+(\.\d+)*([._-]?(a|b|rc|post|dev)\d*)*(\+[0-9A-Za-z.]+)?$",
+                               re.IGNORECASE)
 _REQ_NAME = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)")
 # Options that add dependencies from elsewhere. They aren't followed, so the
 # result is incomplete. Their arguments are never copied into the report.
@@ -157,8 +185,13 @@ def parse_requirements(text: str) -> tuple[list[dict], list[str]]:
             continue  # index URLs, hashes and other global options
         m = _REQ_PIN.match(line)
         if m:
-            pkgs.append({"ecosystem": "PyPI", "name": m.group(1),
-                         "version": m.group(3)})
+            version = m.group(3).strip()
+            if _EXACT_PY_VERSION.match(version):
+                pkgs.append({"ecosystem": "PyPI", "name": m.group(1),
+                             "version": version})
+            else:
+                unresolved.append(f"line {lineno}: {m.group(1)} "
+                                  "(not one exact version)")
             continue
         name = _REQ_NAME.match(line)
         label = name.group(1) if name else "unnamed requirement"
@@ -366,8 +399,12 @@ def nvd_recent(days: int, severity: str,
     if not isinstance(vulns, list) or not isinstance(total, int):
         return {"window": [start, end]}, ["NVD response missing "
                                           "vulnerabilities or totalResults"]
-    ids = [v.get("cve", {}).get("id") for v in vulns
-           if isinstance(v, dict) and v.get("cve", {}).get("id")]
+    if not all(isinstance(v, dict) and isinstance(v.get("cve"), dict)
+               and isinstance(v["cve"].get("id"), str) and v["cve"]["id"]
+               for v in vulns):
+        return {"window": [start, end]}, ["NVD returned malformed "
+                                          "vulnerability entries"]
+    ids = [v["cve"]["id"] for v in vulns]
     problems = []
     if total > len(ids):
         problems.append(f"NVD reports {total} CVEs but returned {len(ids)}; "

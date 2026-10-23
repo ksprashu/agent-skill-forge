@@ -89,6 +89,8 @@ class FakeServer(http.server.BaseHTTPRequestHandler):
         FakeServer.seen_paths.append(self.path)
         if FakeServer.mode == "error500":
             return self._send(500, {})
+        if FakeServer.mode == "nullcve":
+            return self._send(200, {"totalResults": 1, "vulnerabilities": [{"cve": None}]})
         qs = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
         if "pubStartDate" in qs and "pubEndDate" not in qs:
             return self._send(404, {})
@@ -143,8 +145,10 @@ class CheckVulnsTest(unittest.TestCase):
             "lockfileVersion": 3,
             "packages": {
                 "": {"name": "app", "version": "1.0.0"},
-                "node_modules/lodash": {"version": "4.17.20"},
-                "node_modules/express": {"version": "4.19.2"},
+                "node_modules/lodash": {"version": "4.17.20",
+                                        "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.20.tgz"},
+                "node_modules/express": {"version": "4.19.2",
+                                         "resolved": "https://registry.npmjs.org/express/-/express-4.19.2.tgz"},
             }}))
 
     # --- usage errors (T4: negative tests) ---------------------------------
@@ -280,6 +284,45 @@ class CheckVulnsTest(unittest.TestCase):
                          ["forked (non-crates.io source)", "inhouse (non-PyPI source)"])
         self.assertNotIn("tok", json.dumps(report) + err + json.dumps(FakeServer.seen_bodies))
 
+    def test_npm_git_resolved_and_workspace_entries_are_not_sent(self):
+        # PR #5 review (ChatGPT, Grok Bot): a registry-looking version with a
+        # git source, and a workspace path, were both sent as public packages.
+        secret = "ws-t0ken"
+        path = self.write("package-lock.json", json.dumps({
+            "lockfileVersion": 3,
+            "packages": {
+                "": {"name": "app", "version": "1.0.0"},
+                "packages/internal-lib": {"name": "internal-lib", "version": "1.0.0"},
+                "node_modules/internal-lib": {"resolved": "packages/internal-lib", "link": True},
+                "node_modules/forked": {"version": "1.2.3",
+                                        "resolved": f"git+ssh://git@github.example/o/forked.git#{secret}"},
+                "node_modules/mirrored": {"version": "2.0.0",
+                                          "resolved": "https://npm.private.example/mirrored-2.0.0.tgz"},
+                "node_modules/express": {"version": "4.19.2",
+                                         "resolved": "https://registry.npmjs.org/express/-/express-4.19.2.tgz"},
+            }}))
+        code, report, err = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["packages_checked"], 1)
+        self.assertEqual(sorted(report["unresolved"]),
+                         ["forked (not from the public npm registry)",
+                          "mirrored (not from the public npm registry)"])
+        sent = json.dumps(FakeServer.seen_bodies)
+        self.assertNotIn("internal-lib", sent)
+        self.assertNotIn("forked", sent)
+        self.assertNotIn(secret, sent + json.dumps(report) + err)
+
+    def test_non_exact_python_pins_are_unresolved(self):
+        # PR #5 review: ==2.* and compound specifiers were reported as checked.
+        path = self.write("requirements.txt",
+                          "requests==2.*\nurllib3==2.2.1,!=2.2.0\nidna==3.7\n")
+        code, report, _ = self.run_script("lockfile", str(path))
+        self.assertEqual(code, 2)
+        self.assertEqual(report["packages_checked"], 1)
+        self.assertEqual(report["unresolved"],
+                         ["line 1: requests (not one exact version)",
+                          "line 2: urllib3 (not one exact version)"])
+
     def test_hash_continuation_lines_are_not_unresolved(self):
         path = self.write("requirements.txt",
                           "requests==2.32.3 \\\n    --hash=sha256:abc\n"
@@ -294,7 +337,8 @@ class CheckVulnsTest(unittest.TestCase):
             "lockfileVersion": 1,
             "dependencies": {
                 "private-lib": {"version": f"git+https://u:{secret}@github.example/x.git"},
-                "express": {"version": "4.19.2"},
+                "express": {"version": "4.19.2",
+                            "resolved": "https://registry.npmjs.org/express/-/express-4.19.2.tgz"},
             }}))
         code, report, err = self.run_script("lockfile", str(path))
         self.assertEqual(code, 2)
@@ -305,6 +349,24 @@ class CheckVulnsTest(unittest.TestCase):
         self.assertEqual(report["unresolved"], ["private-lib (no registry version)"])
 
     # --- recent mode -------------------------------------------------------
+
+    def test_recent_null_cve_entry_is_unavailable(self):
+        # PR #5 review: {"cve": null} raised AttributeError instead of exit 2.
+        FakeServer.mode = "nullcve"
+        code, report, _ = self.run_script("recent")
+        self.assertEqual(code, 2)
+        self.assertEqual(report["status"], "unavailable")
+
+    def test_nvd_validation_in_process(self):
+        original = check_vulns._request
+        try:
+            check_vulns._request = lambda *a, **k: {"totalResults": 1,
+                                                    "vulnerabilities": [{"cve": None}]}
+            nvd, problems = check_vulns.nvd_recent(7, "HIGH")
+        finally:
+            check_vulns._request = original
+        self.assertTrue(problems)
+        self.assertNotIn("listed", nvd)
 
     def test_recent_incomplete_page_is_partial(self):
         FakeServer.nvd_total = 51
