@@ -37,7 +37,7 @@ If you can't fill one in, it isn't a finding yet. A missing best practice, a gue
 | `needs_validation` | A source-grounded hypothesis blocked on one exact missing fact (a deployment setting, proxy behaviour, identity policy). State the fact and a safe way for the owner to check it | **No** |
 | `rejected` | Disproved; record why so it isn't rediscovered | No |
 
-`needs_validation` is not "low-confidence confirmed". Don't attach a severity to it, and don't block work on it.
+`needs_validation` is not "low-confidence confirmed". Don't attach a severity to it. Independent safe work carries on, but a specific action that depends on the unresolved fact stays paused until the fact is checked: not being able to test something safely is never permission to go ahead.
 
 ## Severity, for confirmed findings only
 

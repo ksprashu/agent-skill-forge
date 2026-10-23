@@ -73,7 +73,7 @@ Explain the finding and the proposed action, then wait.
 ## Reporting findings
 
 - Give location and type: file, line, package, advisory ID.
-- Never copy a secret's value, a private record, or a booking or account identifier into findings, comments, commits or shared documents.
+- Never copy a secret's value (or any fragment or hash of it), a private record, or a booking or account identifier into findings, comments, commits or shared documents.
 - When sending data to an outside service, send only what the query needs: ecosystem, package name and version. Never whole private lockfiles, repository paths or credentials.
 
 ## When a source can't be reached

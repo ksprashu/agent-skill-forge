@@ -475,7 +475,7 @@ def interactive_wizard():
     print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
-    print("  [all]     Complete Forge (All 30 Core & Domain Skills)")
+    print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
     print("  [custom]  Enter comma-separated skill names")
     print("-" * 74)
 

@@ -6,6 +6,7 @@
 - GitHub Advisory Database (reviewed and malware sets) added to the monitoring sources.
 - SKILL.md gains a Modes section and points triage at the audit method.
 - Registered in the d2 security cluster, the preferred catalog and the README.
+- Review fixes (ChatGPT, Grok Bot): secrets in audit reports by location and type only, no fragments or hashes; read-only judged by effect with known command traps; report gains a verdict field, a confirmed-only top 10, and unscored hardening and needs-validation sections; needs_validation pauses only the dependent action; GHSA endpoints marked tested; source note for the infra-audit checklist; stale counts and wording fixed.
 
 ## 2026-10-22 (review fixes)
 Changes from a four-agent review of commit 3c29a1e, plus the owner's decision on agent autonomy.

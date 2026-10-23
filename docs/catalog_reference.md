@@ -58,7 +58,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 
 ---
 
-## 🛠️ 2. Preferred Domain-Specific Skills (12 Skills across 4 Clusters)
+## 🛠️ 2. Preferred Domain-Specific Skills (13 Skills across 4 Clusters)
 
 The 13 Preferred Domain Skills are located in `preferred/` and can be installed via NPX or linked globally via `scripts/sync_skills.py --clusters d1,d2...` or `--domain`.
 
