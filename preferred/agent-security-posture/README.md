@@ -51,7 +51,7 @@ A strong posture means continuous monitoring + proactive remediation that stays 
 | `SKILL.md` | Core workflow, authority rules, principles, mandatory checks, hooks guidance, and quick OWASP reference. This is what the agent loads. |
 | `references/owasp-agentic-2026.md` | Distilled OWASP Top 10 for Agentic Applications 2026 (ASI01–ASI10) with descriptions and agent-focused mitigations. |
 | `references/monitoring-sources.md` | NVD/OSV API quick reference, MCP server options, signal sources, and practical query patterns. |
-| `scripts/check_vulns.py` | Stdlib Python helper. `lockfile` mode checks resolved versions (package-lock.json, requirements.txt pins, poetry.lock, Cargo.lock, go.sum) against OSV.dev, sending only public-registry versions (git, path and alternate-registry entries are reported unresolved, never transmitted); `recent` mode lists NVD CVEs from a dated window. Exit 0 clean, 1 advisories, 2 unavailable or partial, 64 usage. Tests: `tests/test_agent_security_posture_check_vulns.py`. |
+| `scripts/check_vulns.py` | Stdlib Python helper. `lockfile` mode checks resolved versions (package-lock.json, pnpm-lock.yaml, yarn.lock classic and berry, requirements.txt pins, poetry.lock, uv.lock, Pipfile.lock, Cargo.lock, go.mod, go.sum, Gemfile.lock, gradle.lockfile, and pom.xml explicit versions) against OSV.dev, sending only public-registry versions (git, path and alternate-registry entries, and unresolved Maven properties, are reported unresolved, never transmitted); `lockfile --enrich` adds OSV aliases, CISA KEV membership, FIRST EPSS scores and GHSA details (via `gh`) to each advisory; `recent` mode lists NVD CVEs from a dated window. Exit 0 clean, 1 advisories, 2 unavailable or partial, 64 usage. Tests: `tests/test_agent_security_posture_check_vulns.py`. |
 | `evals/` | Test cases and trigger phrases for skill quality. |
 | `CHANGELOG.md` | Version history. |
 
@@ -148,7 +148,7 @@ The skill actively maps work to:
 
 ## Related Skills
 
-- `security-and-hardening` — classic web-app threat modeling, STRIDE, OWASP Web Top 10 patterns, secret hygiene.
+- `security-review` — code-level security review of a diff, PR or repository: STRIDE-lite threat model, scanners (semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor), lead triage, OWASP Top 10 2025 / ASVS 5 / CWE Top 25 findings in the shared JSON contract. It replaces the retired `security-and-hardening`, and calls this skill's `check_vulns.py --enrich` for live advisories.
 - This skill focuses on agent- and harness-specific risks, dependency checks and authorisation boundaries during coding work.
 
 ## License & Attribution

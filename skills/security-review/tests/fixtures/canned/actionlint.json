@@ -1,0 +1,11 @@
+[
+ {
+  "message": "\"github.event.pull_request.title\" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks for more details",
+  "filepath": ".github/workflows/ci.yml",
+  "line": 9,
+  "column": 24,
+  "kind": "expression",
+  "snippet": "      - run: echo \"${{ github.event.pull_request.title }}\"\n                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "end_column": 54
+ }
+]
