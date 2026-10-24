@@ -36,7 +36,9 @@
       "npx_command": "npx skills add addyosmani/agent-skills --skill security-and-hardening",
       "github_url": "https://github.com/addyosmani/agent-skills/tree/main/skills/security-and-hardening",
       "local_sync": "python3 scripts/sync_skills.py --project . --skills security-and-hardening",
-      "tags": ["security", "owasp", "cwe", "sast", "auth"]
+      "tags": ["security", "owasp", "cwe", "sast", "auth"],
+      "lifecycle": "retired",
+      "replaced_by": "security-review"
     },
     {
       "name": "agent-security-posture",

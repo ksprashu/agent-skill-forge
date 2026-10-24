@@ -96,7 +96,7 @@
         "code-review": {
           "provider": "/review",
           "coverage": "partial",
-          "note": "The built-in reviews a GitHub pull request. The review skill runs a five-axis audit over an arbitrary working diff, with no PR required."
+          "note": "The built-in reviews a GitHub pull request. The review skill runs an eight-axis review plus style, executing the repo linters, over a working diff, a PR, or the whole repo, and gates on a JSON findings document."
         }
       },
       "reserved": []

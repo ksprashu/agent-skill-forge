@@ -107,7 +107,7 @@ bash scripts/install.sh --content --prune
 # Install specific clusters (e.g., Content C3 + Full-Stack D1)
 bash scripts/install.sh --clusters c3,d1
 
-# Install only Quality & Verification skills (test, verify, review, unslop)
+# Install only Quality & Verification skills (test, verify, review, security-review, pr-review-loop, unslop)
 bash scripts/install.sh --clusters c2 --prune
 
 # Install all Core skills (C1, C2, C3, C4)
@@ -116,7 +116,7 @@ bash scripts/install.sh --core
 # Install all Preferred Domain skills (D1, D2, D3, D4)
 bash scripts/install.sh --domain
 
-# Install the COMPLETE Forge (All 31 Core + Domain skills)
+# Install the COMPLETE Forge (All 35 Core + Domain skills)
 bash scripts/install.sh --all
 
 # Bootstrap specific clusters into a local project workspace only (.gemini/skills)
@@ -136,7 +136,7 @@ python3 scripts/sync_skills.py --list-clusters
 
 ## 🌟 Core Skills Taxonomy (4 Clusters)
 
-The 20 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
+The 22 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*
@@ -150,13 +150,15 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`prompt`](./skills/prompt)** | `/prompt` | User Slash | **Meta-Task & Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into intent directives, model tier selection, and DAG task graphs (`task_graph.json`). |
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
-*Enforces TDD, static verifiers, blinded judge rubrics, architectural reviews, and slop elimination.*
+*Enforces TDD, static verifiers, blinded judge rubrics, grounded code and security reviews, the PR review loop, and slop elimination.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
 | **[`test`](./skills/test)** | `/test` | Autonomous | **TDD & Prove-It Reproduction**: Enforces writing failing tests first to prove bug reproduction before modifying production code. Guarantees bug fixes are permanent. |
 | **[`verify`](./skills/verify)** | `/verify`, `/ega` | Autonomous | **Deterministic & Judged Verification**: Expectation-Grounded Alignment (EGA) running deterministic static check scripts alongside blinded multi-persona dynamic judge rubrics. |
-| **[`review`](./skills/review)** | `/review` | Autonomous | **8-Axis Code & Architecture Review**: Diff (`--diff`) and repository (`--repo`) modes across scope, correctness, security, reliability, performance, data integrity, tests and observability, with schema-validated findings and drop-in remediations. |
+| **[`review`](./skills/review)** | `/review` | Autonomous | **8-Axis Grounded Code Review**: Runs the repo's linters and type checkers, then reviews across scope/architecture, correctness, security, reliability, performance, data integrity, tests and observability, plus style cited against the repo's config and the language's canonical guide. Emits schema-validated findings (P0–P3, nit) and SARIF; `--pr`, `--rereview` and `--ci` modes. |
+| **[`security-review`](./skills/security-review)** | `/security-review` | Autonomous | **Grounded Security Review**: Runs semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor and native audits as leads, then confirms each against a six-element finding test. Grounded in OWASP Top 10 2025, ASVS 5.0, CWE Top 25, OWASP LLM and API Top 10, and GitHub Actions hardening. Same findings schema and P0–P3 scale as `review`. |
+| **[`pr-review-loop`](./skills/pr-review-loop)** | `/pr-review-loop` | Autonomous | **PR Review Loop (author side)**: Works the review threads on your PR until the `pr-guardian/verdict` gate is green: fix and reply with the SHA, push back with `/ai-review wontfix:`, or escalate to a human. Never resolves a thread it has not addressed. |
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
@@ -195,7 +197,7 @@ The 13 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for pr
 *   **[`api-and-interface-design`](./preferred/api-and-interface-design)**: Hyrum's law guardrails, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility.
 
 ### 🛡️ Cluster D2: Security, Diagnostics & Reliability (`security`)
-*   **[`security-and-hardening`](./preferred/security-and-hardening)**: Trust boundary mapping, STRIDE threat modeling, OWASP Top 10 mitigations, and secret sanitization.
+*   **[`security-and-hardening`](./preferred/security-and-hardening)** (retired): replaced by the core [`security-review`](./skills/security-review) skill. The folder stays so existing installs do not break.
 *   **[`agent-security-posture`](./preferred/agent-security-posture)**: Security posture for coding agents: untrusted-content authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, and a read-only infrastructure audit mode.
 *   **[`debugging-and-error-recovery`](./preferred/debugging-and-error-recovery)**: Systematic 6-step root cause analysis, stack trace deconstruction, and Stop-the-Line discipline.
 *   **[`observability-and-instrumentation`](./preferred/observability-and-instrumentation)**: Structured JSON logging, OpenTelemetry distributed tracing, RED/USE metrics, and alert rules.
@@ -286,7 +288,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`spec`** | **Addy Osmani** | [`addyosmani/agent-skills/source-driven-development`](https://github.com/addyosmani/agent-skills) | Source-grounded specification engine with official API doc citations. |
 | **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
 | **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
-| **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | 5-axis code and architectural review framework. |
+| **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | Code review framework; extended in the forge to eight axes plus grounded style, executed linters and machine-readable findings. |
 | **`work`** | **Google DeepMind Antigravity Team** | Google Antigravity Teamwork Architecture | Fully open, decoupled multi-agent swarm with Sentinel, Dispatch-Only Orchestrator, Explorers, Competitive Workers, Adversarial Quartet, and Victory Auditor. |
 | **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
 | **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
