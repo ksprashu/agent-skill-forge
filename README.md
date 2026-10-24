@@ -116,7 +116,7 @@ bash scripts/install.sh --core
 # Install all Preferred Domain skills (D1, D2, D3, D4)
 bash scripts/install.sh --domain
 
-# Install the COMPLETE Forge (All 31 Core + Domain skills)
+# Install the COMPLETE Forge (All 35 Core + Domain skills)
 bash scripts/install.sh --all
 
 # Bootstrap specific clusters into a local project workspace only (.gemini/skills)
