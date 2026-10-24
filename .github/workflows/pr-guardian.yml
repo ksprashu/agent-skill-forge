@@ -27,14 +27,13 @@ jobs:
         (github.event.action == 'labeled' || startsWith(github.event.comment.body, '/ai-review escalate'))
         && 'verdict' || 'review' }}
       cancel-in-progress: true
-    uses: ksprashu/pr-guardian/.github/workflows/review.yml@0c3905f8bda79189e4ccbade55f69eec9cc31aa2
+    uses: ksprashu/pr-guardian/.github/workflows/review.yml@d6c777ca804224197780d294d5e936a8cf7e16e4
     with:
-      guardian_ref: 0c3905f8bda79189e4ccbade55f69eec9cc31aa2
+      guardian_ref: d6c777ca804224197780d294d5e936a8cf7e16e4
     permissions:
       contents: read
       pull-requests: write
       issues: write
       statuses: write
-      security-events: write
     secrets:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
