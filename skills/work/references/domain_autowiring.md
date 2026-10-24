@@ -40,10 +40,10 @@ if the two disagree, so a row cannot rot here without breaking the build.
 |------------------|-----------------------------------|--------------|------------------------|
 | **Database, Schema & API Contracts** | `preferred/api-and-interface-design` | Explorer, Worker | Relational normalization, migration immutability, zero dummy seeds. |
 | **Observability & Logging** | `preferred/observability-and-instrumentation` | Explorer, Worker | Structured JSON logs, sensitive data scrubbing, /api/health. |
-| **Security & RBAC** | `preferred/security-and-hardening` | Challenger, Auditor | OWASP Top 10, constant-time token comparison, brute-force mitigation. |
+| **Security & RBAC** | `skills/security-review` | Challenger, Auditor | Scanner leads triaged by the six-element test; OWASP Top 10 2025, ASVS 5.0, CWE Top 25, constant-time token comparison, brute-force mitigation. |
 | **CI/CD & Workflows** | `preferred/ci-cd-and-automation` | Worker, Reviewer | Deterministic caching, GitHub Actions, zero-secret hygiene. |
 | **Testing & TDD** | `skills/test` & `skills/verify` | Challenger, Worker | Red-Green-Refactor, static verifier scripts, blinded rubrics. |
-| **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 5-axis review, boilerplate stripping, zero AI fluff. |
+| **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 8-axis review plus style, boilerplate stripping, zero AI fluff. |
 | **Performance & Benchmarking** | `preferred/performance-optimization` & `preferred/benchmark-harness` | Challenger, Worker | Latency budgets, p99 regression gates, memory leak detection. |
 
 Run `autowire.py --list` to print the matrix together with each skill's

@@ -66,6 +66,8 @@ CORE_SKILLS = {
     'test': os.path.join(CORE_SKILLS_DIR, 'test'),
     'verify': os.path.join(CORE_SKILLS_DIR, 'verify'),
     'review': os.path.join(CORE_SKILLS_DIR, 'review'),
+    'security-review': os.path.join(CORE_SKILLS_DIR, 'security-review'),
+    'pr-review-loop': os.path.join(CORE_SKILLS_DIR, 'pr-review-loop'),
     'unslop': os.path.join(CORE_SKILLS_DIR, 'unslop'),
     'docs': os.path.join(CORE_SKILLS_DIR, 'docs'),
     'catalog': os.path.join(CORE_SKILLS_DIR, 'catalog'),
@@ -115,6 +117,8 @@ ALIASES = {
     'teamwork': 'work',
     'team': 'work',
     'swarm': 'work',
+    'secreview': 'security-review',
+    'review-loop': 'pr-review-loop',
 }
 
 ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
@@ -271,8 +275,8 @@ CORE_CLUSTERS = {
     'c2': {
         'id': 'test-review',
         'name': 'Quality & Verification',
-        'description': 'TDD prove-it reproduction, static verification rubrics, code reviews, and slop stripping.',
-        'skills': ['test', 'verify', 'review', 'unslop'],
+        'description': 'TDD prove-it reproduction, static verification rubrics, grounded code and security reviews, the PR review loop, and slop stripping.',
+        'skills': ['test', 'verify', 'review', 'security-review', 'pr-review-loop', 'unslop'],
     },
     'c3': {
         'id': 'content-creative',
@@ -315,9 +319,9 @@ DOMAIN_CLUSTERS = {
     'd2': {
         'id': 'security',
         'name': 'Security, Diagnostics & Reliability',
-        'description': 'OWASP threat modeling & hardening, agent security posture and dependency checks, root-cause debugging checklist, OpenTelemetry & structured logging.',
+        'description': 'Code security review (scanners + OWASP/ASVS/CWE), agent security posture and dependency checks, root-cause debugging checklist, OpenTelemetry & structured logging.',
         'skills': [
-            'security-and-hardening',
+            'security-review',
             'agent-security-posture',
             'debugging-and-error-recovery',
             'observability-and-instrumentation',
@@ -473,7 +477,7 @@ def interactive_wizard():
 
     print("\n⚡ QUICK PRESETS:")
     print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
-    print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
+    print("  [core]    All 22 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
     print("  [custom]  Enter comma-separated skill names")
@@ -1202,7 +1206,7 @@ def main():
     parser.add_argument('--skills', type=str, help="Comma-separated skill names to install/bootstrap")
     parser.add_argument('--clusters', type=str, help="Comma-separated cluster codes or presets (c1, c2, c3, c4, d1, d2, d3, d4, content, core, domain, all)")
     parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
-    parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
+    parser.add_argument('--core', action='store_true', help="Install all 22 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
     parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
@@ -1246,7 +1250,7 @@ def main():
     if args.list_available:
         all_skills = discover_all_skills()
         print(f"Agent Skill Forge Catalog ({len(all_skills)} total skills):")
-        print("\n🌟 Core Global Skills (18 Action Verbs):")
+        print("\n🌟 Core Global Skills (22 Action Verbs):")
         for name in sorted(CORE_SKILLS.keys()):
             path = CORE_SKILLS[name]
             print(f"  - {name:22} -> {path}")
