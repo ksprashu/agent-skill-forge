@@ -9,7 +9,7 @@ Self-certification by implementing agents is the leading cause of software regre
 | Role | Phase | Core Mission | Method | Veto Power? |
 |------|-------|-------------|--------|-------------|
 | **Design Reviewer** | Per Milestone | Architectural & Schema Adherence | Compares implementation AST and interfaces against `.agents/design/DESIGN.md`. | **BLOCKING** on Drift |
-| **5-Axis Code Reviewer** | Per Milestone | Code Quality, Security & Slop Audit | Inspects git diffs against Correctness, Security, Performance, Architecture, and Readability. | **BLOCKING** on Critical |
+| **5-Axis Code Reviewer** | Per Milestone | Code Quality, Security & Slop Audit | Inspects git diffs against the eight review axes plus style. | **BLOCKING** on Critical |
 | **Adversarial Challenger** | Per Milestone | Hostile Failure Hunting & Edge Stress | Authors runnable hostile tests for race conditions, boundary overflows, and payload corruption. | **EMPIRICAL BLOCKING** |
 | **Forensic Integrity Auditor** | Per Milestone | Anti-Mock & Cheat Detection | Deterministic AST checks for mock facades, tautologies, test tampering, and SHA-256 ledgering. | **BINARY VETO** |
 | **Acceptance Reviewer** | Post-Milestone | Requirements & AC Verification | Systematically audits implementation against every checkbox in `.agents/SPEC.md`. | **BLOCKING** on Incomplete |
@@ -30,12 +30,10 @@ The Design Reviewer guards against architectural drift and contract mutations:
 ---
 
 ### B. 5-Axis Code Reviewer Protocol (`.agents/m{i}_code_rev/`)
-Audits changes across five core engineering axes using `skills/review` and `skills/unslop`:
-1. **Correctness**: Logic edge cases, nullability, missing error handling, off-by-one errors.
-2. **Security**: Injection vulnerabilities, credential leaks, unvalidated inputs, missing auth gates.
-3. **Performance**: N+1 database queries, unbounded memory allocations, missing indices.
-4. **Architecture**: Boundary violations, circular imports, interface contract deviations.
-5. **Readability & Unslop**: Strips redundant abstractions, AI boilerplate, and fluff.
+Audits changes with `skills/review` (its eight axes plus style: scope/architecture, correctness,
+security, reliability, performance, data integrity, tests, observability) and strips slop with
+`skills/unslop`. Security findings are handed to `skills/security-review`. The axis rubrics live in
+`skills/review/SKILL.md`; do not restate them here.
 - Emits `.agents/m{i}_code_rev/review.md`. Requires `review_pass`.
 
 ---
