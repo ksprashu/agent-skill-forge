@@ -228,19 +228,21 @@ got skipped were the ones that would have failed.
 
 | Job | What it runs | Blocks on |
 |---|---|---|
-| `tests` (ubuntu + macos) | `check_stdlib_only.py`, then `pytest -q` | any failure |
+| `tests` | `check_stdlib_only.py`, then `pytest -q` | any failure |
 | `validate` | `validate_skills.py` (frontmatter, reserved namespaces, PII, host paths), `autowire.py --check` | non-zero exit |
 | `gates` | `gate_executor.py list`, `dag_validator.py --check-mermaid` on every committed fixture, scaffold all six topologies and resolve every gate cell | an unresolvable gate, table/diagram drift |
 | `forensics` | strict audit of the tree; strict audit of `fixtures/known_good`; strict audit of `fixtures/known_fake` | any violation — **and on `known_fake` exiting 0** |
-| `install` (ubuntu + macos + windows) | installer scripts parse; `sync_skills.py` dry run writes nothing and `--fix` writes something reachable | a syntax error, a dry run that writes, a `--fix` that does not |
+| `install` | `install.sh` (`bash -n`) and `install.ps1` (`pwsh` AST parser) parse; `sync_skills.py` dry run writes nothing and `--fix` writes something reachable in both symlink and `--copy` modes | a syntax error, a dry run that writes, a `--fix` that does not |
 
 The `known_fake` row is the important one. It is the test that the tests work: a
 verifier that passes a corpus of deliberately fake code is broken, and the
 failure is silent unless something checks.
 
-The matrix spans `ubuntu-latest` and `macos-latest` because every Windows-path
-defect in this repo would have been caught by a Linux run; `install` adds
-`windows-latest` because that is where the installer diverges.
+All five jobs run on `ubuntu-latest`: every Windows-path and CRLF check in the
+suite is simulated in-process, `ubuntu-latest` ships with `pwsh` pre-installed
+to parse-check `install.ps1`, and `sync_skills.py` exercises both symlink and
+`--copy` modes directly on Linux without paying the 10x macOS or 1.7x Windows
+runner multipliers.
 
 Adding a check to CI is not optional garnish on a new verifier. A verifier that
 nothing runs is L1 prose with a shebang.
