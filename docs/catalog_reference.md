@@ -58,9 +58,9 @@ The Core Skills can be installed individually or in functional clusters using `b
 
 ---
 
-## 🛠️ 2. Preferred Domain-Specific Skills (12 Skills across 4 Clusters)
+## 🛠️ 2. Preferred Domain-Specific Skills (13 Skills across 4 Clusters)
 
-The 12 Preferred Domain Skills are located in `preferred/` and can be installed via NPX or linked globally via `scripts/sync_skills.py --clusters d1,d2...` or `--domain`.
+The 13 Preferred Domain Skills are located in `preferred/` and can be installed via NPX or linked globally via `scripts/sync_skills.py --clusters d1,d2...` or `--domain`.
 
 ### 🌐 Cluster D1: Full-Stack & Quality (`fullstack`)
 
@@ -76,6 +76,7 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 | Cluster | Slug | Category | NPX Install Command | Capabilities & Frameworks |
 | :--- | :--- | :--- | :--- | :--- |
 | **D2** | **`security-and-hardening`** | Security & Sentry | `npx skills add addyosmani/agent-skills --skill security-and-hardening` | Threat modeling, OWASP Top 10 mitigations, input sanitization, and secret protection. |
+| **D2** | **`agent-security-posture`** | Security & Sentry | `npx skills add ksprashu/agent-skill-forge --skill agent-security-posture` | Agent authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, read-only infrastructure audits. |
 | **D2** | **`debugging-and-error-recovery`**| Diagnostics | `npx skills add addyosmani/agent-skills --skill debugging-and-error-recovery` | Systematic root cause analysis, stack trace deconstruction, and defensive error isolation. |
 | **D2** | **`observability-and-instrumentation`**| Ops & Telemetry | `npx skills add addyosmani/agent-skills --skill observability-and-instrumentation` | Structured JSON logs, OpenTelemetry distributed tracing, Prometheus metrics, and alert rules. |
 
@@ -118,4 +119,4 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
-| **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
+| **Preferred Skills (13)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |

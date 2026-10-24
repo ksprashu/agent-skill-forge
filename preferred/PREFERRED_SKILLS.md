@@ -69,7 +69,7 @@ npx skills add addyosmani/agent-skills --skill <skill-name>
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills security-and-hardening`
     *   **Remote:** `npx skills add addyosmani/agent-skills --skill security-and-hardening`
 *   **`agent-security-posture`**
-    *   **What it does:** Always-on forward security posture for AI coding agents and harnesses. Monitors CVEs (NVD/OSV), OWASP Agentic/LLM Top 10, applies secure coding and reviews on every turn, fixes issues with minimal friction using hooks and skills.
+    *   **What it does:** Scoped security posture for coding agents: authority rules for untrusted content, OSV/NVD dependency checks with a tested helper, secret handling, finding verdicts and severity, and a read-only infrastructure audit mode. Runs when code, dependencies or agent tools change, or on request.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills agent-security-posture`
     *   **Remote:** (local preferred skill)
 *   **`debugging-and-error-recovery`**
