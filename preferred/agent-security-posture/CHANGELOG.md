@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 (check_vulns coverage and enrichment)
+- `check_vulns.py lockfile` reads pnpm-lock.yaml (v5, v6, v9), yarn.lock (classic and berry), uv.lock, Pipfile.lock, Gemfile.lock, gradle.lockfile, go.mod and Maven pom.xml. Line parsers, no YAML library. pom.xml sends explicit versions only: unresolved `${properties}`, ranges and parent-managed versions are reported unresolved (exit 2), a DOCTYPE or ENTITY declaration is refused (exit 64), and a `coverage_notes` entry says transitive dependencies were not checked.
+- go.sum no longer over-reports: `/go.mod`-only lines (versions read during resolution but never built) are not counted. When go.mod and go.sum from one directory are both passed, go.mod is read; packages are de-duplicated across files.
+- New `--enrich`: OSV aliases per advisory, CISA KEV membership and date added, FIRST EPSS score and percentile for CVE aliases, and GHSA severity, CVSS score, CWEs, summary and URL through `gh api /advisories/<id>` (id checked against a strict pattern, no shell). Only advisory ids leave the machine. A failed or missing source (including gh not on PATH) is a problem: status partial, exit 2, and the source's field is null rather than false.
+- Tests: canned fixtures for every new format (credentials in git/tarball URLs never reach output or request bodies), go.sum/go.mod counting, and enrichment against a local fake server and a fake gh, including a KEV-listed versus not-listed differentiation test. No live network.
+
 ## 2026-10-22 (outside sources)
 - New `references/audit-method.md`: the finding test, three verdicts (confirmed, needs_validation, rejected), severity anchors, checker-is-never-the-finder, local-only evidence. Adapted from Cloudflare's security-audit skill (MIT) at c1c8a8c, with a hand-off to that skill for full codebase audits.
 - New `references/readonly-infra-audit.md`: read-only audit of a GitHub org, DNS/CDN accounts and hosts, with masking, skip-and-record for mutating checks, and a fixed report shape.

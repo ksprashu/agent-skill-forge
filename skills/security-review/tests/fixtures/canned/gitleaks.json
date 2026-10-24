@@ -1,0 +1,42 @@
+[
+ {
+  "RuleID": "github-pat",
+  "Description": "Uncovered a GitHub Personal Access Token, potentially leading to unauthorized repository access and sensitive content exposure.",
+  "StartLine": 1,
+  "EndLine": 1,
+  "StartColumn": 17,
+  "EndColumn": 56,
+  "Match": "GITHUB_TOKEN = \"__SECRET__\"",
+  "Secret": "__SECRET__",
+  "File": "config.py",
+  "SymlinkFile": "",
+  "Commit": "",
+  "Entropy": 4.553056,
+  "Author": "Someone",
+  "Email": "someone@example.invalid",
+  "Date": "",
+  "Message": "",
+  "Tags": [],
+  "Fingerprint": "config.py:github-pat:1"
+ },
+ {
+  "RuleID": "github-pat",
+  "Description": "Uncovered a GitHub Personal Access Token, potentially leading to unauthorized repository access and sensitive content exposure.",
+  "StartLine": 7,
+  "EndLine": 1,
+  "StartColumn": 17,
+  "EndColumn": 56,
+  "Match": "GITHUB_TOKEN = \"__SECRET__\"",
+  "Secret": "__SECRET__",
+  "File": "/REPO/old/settings.py",
+  "SymlinkFile": "",
+  "Commit": "0123456789abcdef0123456789abcdef01234567",
+  "Entropy": 4.553056,
+  "Author": "Someone",
+  "Email": "someone@example.invalid",
+  "Date": "",
+  "Message": "",
+  "Tags": [],
+  "Fingerprint": "x"
+ }
+]

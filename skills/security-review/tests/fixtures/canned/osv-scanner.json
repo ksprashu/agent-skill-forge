@@ -1,0 +1,240 @@
+{
+ "results": [
+  {
+   "source": {
+    "path": "/REPO/requirements.txt",
+    "type": "lockfile"
+   },
+   "packages": [
+    {
+     "package": {
+      "name": "flask",
+      "version": "0.12.2",
+      "ecosystem": "PyPI",
+      "purl": "pkg:pypi/flask@0.12.2"
+     },
+     "groups": [
+      {
+       "ids": [
+        "PYSEC-2018-66",
+        "GHSA-562c-5r94-xh97"
+       ],
+       "aliases": [
+        "CVE-2018-1000656",
+        "GHSA-562c-5r94-xh97",
+        "PYSEC-2018-66"
+       ],
+       "max_severity": "8.7"
+      },
+      {
+       "ids": [
+        "PYSEC-2019-179",
+        "GHSA-5wv5-4vpf-pj6m"
+       ],
+       "aliases": [
+        "CVE-2019-1010083",
+        "GHSA-5wv5-4vpf-pj6m",
+        "PYSEC-2019-179"
+       ],
+       "max_severity": "8.7"
+      },
+      {
+       "ids": [
+        "PYSEC-2023-62",
+        "GHSA-m2qf-hxjv-5gpq"
+       ],
+       "aliases": [
+        "CVE-2023-30861",
+        "GHSA-m2qf-hxjv-5gpq",
+        "PYSEC-2023-62"
+       ],
+       "max_severity": "8.7"
+      },
+      {
+       "ids": [
+        "PYSEC-2026-2151",
+        "GHSA-68rp-wp8r-4726"
+       ],
+       "aliases": [
+        "CVE-2026-27205",
+        "GHSA-68rp-wp8r-4726",
+        "PYSEC-2026-2151"
+       ],
+       "max_severity": "4.3"
+      }
+     ],
+     "vulnerabilities": [
+      {
+       "aliases": [
+        "CVE-2018-1000656",
+        "GHSA-562c-5r94-xh97"
+       ],
+       "id": "PYSEC-2018-66",
+       "modified": "2023-11-08T03:59:39.887416Z",
+       "published": "2018-08-20T19:31:00Z",
+       "schema_version": "1.7.3",
+       "database_specific": {
+        "severity": "HIGH",
+        "cwe_ids": [
+         "CWE-20"
+        ]
+       }
+      },
+      {
+       "aliases": [
+        "CVE-2019-1010083",
+        "GHSA-5wv5-4vpf-pj6m"
+       ],
+       "id": "PYSEC-2019-179",
+       "modified": "2023-11-08T04:00:40.602062Z",
+       "published": "2019-07-17T14:15:00Z",
+       "schema_version": "1.7.3"
+      },
+      {
+       "aliases": [
+        "CVE-2023-30861",
+        "GHSA-m2qf-hxjv-5gpq"
+       ],
+       "id": "PYSEC-2023-62",
+       "modified": "2023-11-08T04:12:28.231927Z",
+       "published": "2023-05-02T18:15:00Z",
+       "schema_version": "1.7.3"
+      },
+      {
+       "aliases": [
+        "CVE-2026-27205",
+        "GHSA-68rp-wp8r-4726"
+       ],
+       "id": "PYSEC-2026-2151",
+       "modified": "2026-07-13T07:15:25.033843440Z",
+       "published": "2026-02-21T06:17:00.910Z",
+       "schema_version": "1.7.5",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
+         "type": "CVSS_V3"
+        }
+       ]
+      },
+      {
+       "aliases": [
+        "CVE-2018-1000656",
+        "PYSEC-2018-66"
+       ],
+       "database_specific": {
+        "cwe_ids": [
+         "CWE-20"
+        ],
+        "github_reviewed": true,
+        "github_reviewed_at": "2020-06-16T21:00:05Z",
+        "nvd_published_at": null,
+        "severity": "HIGH"
+       },
+       "id": "GHSA-562c-5r94-xh97",
+       "modified": "2025-02-21T05:29:40.872529Z",
+       "published": "2018-08-23T19:10:40Z",
+       "schema_version": "1.9.0",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+         "type": "CVSS_V3"
+        },
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "summary": "Flask is vulnerable to Denial of Service via incorrect encoding of JSON data"
+      },
+      {
+       "aliases": [
+        "CVE-2019-1010083",
+        "PYSEC-2019-179"
+       ],
+       "database_specific": {
+        "cwe_ids": [
+         "CWE-400"
+        ],
+        "github_reviewed": true,
+        "github_reviewed_at": "2019-07-19T04:59:45Z",
+        "nvd_published_at": "2019-07-17T14:15:00Z",
+        "severity": "HIGH"
+       },
+       "id": "GHSA-5wv5-4vpf-pj6m",
+       "modified": "2024-09-20T21:24:25.140560Z",
+       "published": "2019-07-19T16:12:46Z",
+       "schema_version": "1.9.0",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+         "type": "CVSS_V3"
+        },
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "summary": "Pallets Project Flask is vulnerable to Denial of Service via Unexpected memory usage"
+      },
+      {
+       "aliases": [
+        "CVE-2026-27205",
+        "PYSEC-2026-2151"
+       ],
+       "database_specific": {
+        "cwe_ids": [
+         "CWE-524"
+        ],
+        "github_reviewed": true,
+        "github_reviewed_at": "2026-02-19T20:45:41Z",
+        "nvd_published_at": "2026-02-21T06:17:00Z",
+        "severity": "LOW"
+       },
+       "id": "GHSA-68rp-wp8r-4726",
+       "modified": "2026-09-10T03:49:54.354981590Z",
+       "published": "2026-02-19T20:45:41Z",
+       "schema_version": "1.9.0",
+       "severity": [
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:P/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "summary": "Flask session does not add `Vary: Cookie` header when accessed in some ways"
+      },
+      {
+       "aliases": [
+        "CVE-2023-30861",
+        "PYSEC-2023-62"
+       ],
+       "database_specific": {
+        "cwe_ids": [
+         "CWE-539"
+        ],
+        "github_reviewed": true,
+        "github_reviewed_at": "2023-05-01T19:22:20Z",
+        "nvd_published_at": "2023-05-02T18:15:52Z",
+        "severity": "HIGH"
+       },
+       "id": "GHSA-m2qf-hxjv-5gpq",
+       "modified": "2026-09-10T03:50:01.763387498Z",
+       "published": "2023-05-01T19:22:20Z",
+       "schema_version": "1.9.0",
+       "severity": [
+        {
+         "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+         "type": "CVSS_V3"
+        },
+        {
+         "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N",
+         "type": "CVSS_V4"
+        }
+       ],
+       "summary": "Flask vulnerable to possible disclosure of permanent session cookie due to missing Vary: Cookie header"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

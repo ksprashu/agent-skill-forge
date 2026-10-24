@@ -1,6 +1,6 @@
 ---
 name: agent-security-posture
-description: "Keep a strong, low-friction security posture in AI coding agents and harnesses. Use when code, dependencies, agent tools or MCP configuration change, or when asked for a security review, a vulnerability or CVE check, a read-only security audit of their GitHub org, DNS/CDN accounts or hosts, or to fix a detected risk. Applies secure-coding behaviour throughout authorised coding work; does not run scans on text-only or document-only tasks."
+description: "Keep a strong, low-friction security posture in AI coding agents and harnesses. Use when dependencies, agent tools or MCP configuration change, or when asked for a vulnerability or CVE check of a lockfile, a review of agent tool or MCP permissions, a read-only security audit of their GitHub org, DNS/CDN accounts or hosts, or to fix a detected risk. Applies secure-coding behaviour throughout authorised coding work; does not run scans on text-only or document-only tasks. For a code-level security review of a diff, PR or repository, use security-review instead."
 type: workflow
 lifecycle: active
 ---
@@ -10,6 +10,18 @@ lifecycle: active
 Keep the agent, its code, its dependencies, its tools and its environment secure while doing the primary work. Catch problems early, fix what the task already authorises, and ask before anything with effects outside the task.
 
 **Scope.** Secure behaviour applies throughout authorised coding work. Active scans run only when code, dependencies, tools or deployment boundaries change, or when the user asks. A run that only reads or writes text needs no CVE sweep.
+
+**Division of labour.**
+- **This skill** owns agent behaviour, agent tools and MCP servers, the
+  harness, dependency advisories (`check_vulns.py`), and read-only
+  infrastructure audits.
+- **The `security-review` skill** owns code-level security review of a diff,
+  a PR or a repository. That covers threat modelling, the semgrep, gitleaks,
+  trivy, actionlint and zizmor scans, lead triage, and OWASP/ASVS/CWE findings
+  in the shared JSON contract.
+- When asked to "security review" code, use `security-review` if it is
+  installed. It calls this skill's `check_vulns.py --enrich` for live
+  advisories and `references/audit-method.md` for triage.
 
 ## Authority
 
@@ -21,7 +33,8 @@ Keep the agent, its code, its dependencies, its tools and its environment secure
 ## Modes
 
 - **Coding session (default)**: the workflow below.
-- **Full codebase audit or pen test**, only when explicitly asked: hand off to Cloudflare's `security-audit` skill (installing it needs approval). Read `references/audit-method.md` for why and how.
+- **Code security review** of a diff, PR or repository: hand off to `security-review`.
+- **Full codebase audit or pen test**, only when explicitly asked: start with `security-review --repo`. For an adversarial multi-agent audit beyond that, Cloudflare's `security-audit` skill is an option (installing it needs approval). Read `references/audit-method.md` for why and how.
 - **Read-only infrastructure audit** of a GitHub org, DNS or CDN accounts, or hosts, only when explicitly asked: Read `references/readonly-infra-audit.md` and follow it. It changes nothing.
 
 ## What the agent may do without asking again
@@ -49,7 +62,7 @@ Explain the finding and the proposed action, then wait.
    ```
    Keep the result in the session. Do not write a routine posture status to shared logs, queues or documents.
 
-2. **On every code change**, apply the Mandatory Checks below to the changed code. Fix clear issues within the authority above.
+2. **On every code change**, apply the Mandatory Checks below to the changed code. Fix clear issues within the authority above. These checks are the lightweight in-session habit. A full review with scanners and findings is `security-review`'s job.
 
 3. **Triage before blocking.** Read `references/audit-method.md` for the finding test (a lower-trust principal, a crossed boundary, a concrete result), the three verdicts and the severity anchors. A CVSS score or a matching component alone is not an exploitable risk. Stop the specific unsafe action for a confirmed critical or high; carry on with independent safe work.
 
