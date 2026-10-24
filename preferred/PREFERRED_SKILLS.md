@@ -68,6 +68,10 @@ npx skills add addyosmani/agent-skills --skill <skill-name>
     *   **What it does:** Builds threat models, enforces OWASP Top 10 mitigations, remediates CWE vulnerabilities, and secures input boundaries.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills security-and-hardening`
     *   **Remote:** `npx skills add addyosmani/agent-skills --skill security-and-hardening`
+*   **`agent-security-posture`**
+    *   **What it does:** Scoped security posture for coding agents: authority rules for untrusted content, OSV/NVD dependency checks with a tested helper, secret handling, finding verdicts and severity, and a read-only infrastructure audit mode. Runs when code, dependencies or agent tools change, or on request.
+    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills agent-security-posture`
+    *   **Remote:** (local preferred skill)
 *   **`debugging-and-error-recovery`**
     *   **What it does:** Deconstructs stack traces, isolates minimal reproducible examples, and applies defensive error recovery.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills debugging-and-error-recovery`
