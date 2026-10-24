@@ -479,7 +479,7 @@ def interactive_wizard():
     print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     print("  [core]    All 22 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
-    print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
+    print("  [all]     Complete Forge (All 35 Core & Domain Skills)")
     print("  [custom]  Enter comma-separated skill names")
     print("-" * 74)
 
@@ -1205,7 +1205,7 @@ def main():
     parser.add_argument('--project', type=str, help="Target project workspace for JIT skill bootstrapping")
     parser.add_argument('--skills', type=str, help="Comma-separated skill names to install/bootstrap")
     parser.add_argument('--clusters', type=str, help="Comma-separated cluster codes or presets (c1, c2, c3, c4, d1, d2, d3, d4, content, core, domain, all)")
-    parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
+    parser.add_argument('--all', action='store_true', help="Install all 35 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 22 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
     parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
