@@ -21,10 +21,10 @@ Available globally or installable in focused sections:
 *   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `copy-write`, `image-gen`
 *   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
 
-### 🛠️ Domain Clusters (12 Preferred Skills)
+### 🛠️ Domain Clusters (13 Preferred Skills)
 Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally:
 *   **Cluster D1: Full-Stack & Quality (`fullstack`)**: `frontend-ui-engineering`, `performance-optimization`, `browser-testing-with-devtools`, `api-and-interface-design`
-*   **Cluster D2: Security, Diagnostics & Reliability (`security`)**: `security-and-hardening`, `debugging-and-error-recovery`, `observability-and-instrumentation`
+*   **Cluster D2: Security, Diagnostics & Reliability (`security`)**: `security-and-hardening`, `agent-security-posture`, `debugging-and-error-recovery`, `observability-and-instrumentation`
 *   **Cluster D3: DevOps & Workflows (`devops`)**: `ci-cd-and-automation`, `git-workflow-and-versioning`, `deprecation-and-migration`
 *   **Cluster D4: AI & Evaluation (`ai`)**: `context-engineering`, `benchmark-harness`
 

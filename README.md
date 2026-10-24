@@ -186,7 +186,7 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 
 ## 🛠️ Preferred Domain Skills Taxonomy (4 Clusters)
 
-The 12 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for project-scoped bootstrapping or selective global installation:
+The 13 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for project-scoped bootstrapping or selective global installation:
 
 ### 🌐 Cluster D1: Full-Stack & Quality (`fullstack`)
 *   **[`frontend-ui-engineering`](./preferred/frontend-ui-engineering)**: Modern CSS (`:has()`, container queries, View Transitions), accessible components, and slop-free design systems.
@@ -196,6 +196,7 @@ The 12 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for pr
 
 ### 🛡️ Cluster D2: Security, Diagnostics & Reliability (`security`)
 *   **[`security-and-hardening`](./preferred/security-and-hardening)**: Trust boundary mapping, STRIDE threat modeling, OWASP Top 10 mitigations, and secret sanitization.
+*   **[`agent-security-posture`](./preferred/agent-security-posture)**: Security posture for coding agents: untrusted-content authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, and a read-only infrastructure audit mode.
 *   **[`debugging-and-error-recovery`](./preferred/debugging-and-error-recovery)**: Systematic 6-step root cause analysis, stack trace deconstruction, and Stop-the-Line discipline.
 *   **[`observability-and-instrumentation`](./preferred/observability-and-instrumentation)**: Structured JSON logging, OpenTelemetry distributed tracing, RED/USE metrics, and alert rules.
 
@@ -299,7 +300,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
-| **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
+| **Preferred Skills (13)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
 
 ---
 
@@ -358,7 +359,7 @@ gate without adding theatre.
 ```
 agent-skill-forge/
 ├── skills/                     # Core Universal Global Action Verbs
-├── preferred/                  # 12 Curated Domain-Specific Skills (JIT)
+├── preferred/                  # 13 Curated Domain-Specific Skills (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
 ├── config/

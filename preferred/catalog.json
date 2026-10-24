@@ -39,6 +39,15 @@
       "tags": ["security", "owasp", "cwe", "sast", "auth"]
     },
     {
+      "name": "agent-security-posture",
+      "category": "Security & Sentry",
+      "description": "Scoped security posture for coding agents: authority rules for untrusted content, OSV/NVD dependency checks with a tested helper, secret handling, finding verdicts and severity, and a read-only infrastructure audit mode.",
+      "npx_command": "npx skills add ksprashu/agent-skill-forge --skill agent-security-posture",
+      "github_url": "https://github.com/ksprashu/agent-skill-forge/tree/main/preferred/agent-security-posture",
+      "local_sync": "python3 scripts/sync_skills.py --project . --skills agent-security-posture",
+      "tags": ["security", "agents", "dependencies", "cve", "owasp"]
+    },
+    {
       "name": "deprecation-and-migration",
       "category": "Database & Infrastructure",
       "description": "Expand/Contract schema evolution, non-blocking database operations, and zero-downtime API versioning.",
