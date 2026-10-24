@@ -156,7 +156,7 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | :--- | :--- | :--- | :--- |
 | **[`test`](./skills/test)** | `/test` | Autonomous | **TDD & Prove-It Reproduction**: Enforces writing failing tests first to prove bug reproduction before modifying production code. Guarantees bug fixes are permanent. |
 | **[`verify`](./skills/verify)** | `/verify`, `/ega` | Autonomous | **Deterministic & Judged Verification**: Expectation-Grounded Alignment (EGA) running deterministic static check scripts alongside blinded multi-persona dynamic judge rubrics. |
-| **[`review`](./skills/review)** | `/review` | Autonomous | **5-Axis Code & Architecture Review**: Audits changes across correctness, security, performance, architecture, and readability with line-by-line remediation diffs. |
+| **[`review`](./skills/review)** | `/review` | Autonomous | **8-Axis Code & Architecture Review**: Diff (`--diff`) and repository (`--repo`) modes across scope, correctness, security, reliability, performance, data integrity, tests and observability, with schema-validated findings and drop-in remediations. |
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)

@@ -15,11 +15,11 @@ Route requests based on invocation trigger and scope:
 
 - **Mode A: Pull Request / Local Diff Review** (Default: `/review` or `/review --diff`):
   Focused review on staged diffs (`git diff --staged`) or active feature PRs. Trace execution dataflow (`Route -> Service -> DB -> Egress`). Emit badged inline feedback with drop-in Before/After remediations.
-  > **Instruction:** Read `references/workflows.md#mode-a-micro-pr-diff-review` for the full 6-Phase PR review lifecycle.
+  > **Instruction:** Read `references/workflows.md#2-mode-a-pull-request--local-diff-review-pipeline` for the full 6-Phase PR review lifecycle.
 
 - **Mode B: Macro Repository QE Audit** (`/review --repo` or `/review --audit`):
-  Comprehensive top-to-bottom health audit of the entire codebase or release candidate. Map topology, run automated tool baseline, conduct 4-tier layered audit, and generate the formal Executive Audit Report (Scorecard + Heatmap).
-  > **Instruction:** Read `references/workflows.md#mode-b-macro-repository-qe-audit` for the 5-Pass audit methodology.
+  Comprehensive top-to-bottom health audit of the entire codebase or release candidate. Map topology, run the repo's own linters and type checkers, conduct 4-tier layered audit, and generate the formal Executive Audit Report (Scorecard + Heatmap).
+  > **Instruction:** Read `references/workflows.md#3-mode-b-macro-repository-quality-engineering-audit-pipeline` for the 5-Pass audit methodology.
 
 ---
 
@@ -68,14 +68,15 @@ Never speculate or debate theoretical bugs. Act as an active adversary:
 
 ## 5. Level 3 Mechanical Enforcement
 
-Integrate deterministic S9 toolchain scripts to ground review facts and enforce schema validity:
+Two deterministic S9 scripts ground the review. What each one does, and does not do:
 
-1. **Fact Collection**: Collect diff stats, topology, and static tool status into `evidence.json`:
+1. **Fact Collection**: `review_collector.py` writes diff stats (files, lines, the >500-line flag), manifests, repository topology, and which linters, type checkers, test runners and CI systems are *configured* (by their config files) to `evidence.json`. It does not run those tools and does not read CI status:
    ```bash
-   python3.12 skills/review/scripts/review_collector.py --diff   # Mode A (PR review)
-   python3.12 skills/review/scripts/review_collector.py --repo   # Mode B (Repo audit)
+   python3.12 skills/review/scripts/review_collector.py --diff --out evidence.json   # Mode A (PR review)
+   python3.12 skills/review/scripts/review_collector.py --repo --out evidence.json   # Mode B (Repo audit)
    ```
-2. **Defect Schema Validation**: Verify all findings conform to the Atomic Defect Schema before submission:
+   Then run the configured tools yourself (for example `ruff check`, `tsc --noEmit`) and read CI with `gh pr checks <n>`. Report anything you could not run as not inspected, never as passed.
+2. **Defect Schema Validation**: `defect_validator.py` checks every defect against the Atomic Defect Schema (P3, Suggestion and Question entries need only a badge and location), and fails a report whose stated verdict contradicts its defects (APPROVED with an open P0/P1, CERTIFIED with an open P0-P2):
    ```bash
    python3.12 skills/review/scripts/defect_validator.py --file <report.md>
    ```
@@ -93,7 +94,7 @@ Every defect finding must adhere to the Atomic Defect Schema (`[DEFECT-###]` or 
 ## 7. Hard Constraints
 
 - **NEVER** approve changes with unresolved P0 (Critical) or P1 (High) findings.
-- **NEVER** review unverified PRs if CI or automated static baselines are failing.
+- **NEVER** review unverified PRs if CI or automated static baselines are failing (check them yourself: the collector only detects which tools are configured).
 - **NEVER** read diffs in alphabetical order; trace execution dataflow (`Route -> Service -> DB -> Egress`).
 - **NEVER** omit exact file paths and line numbers from recommendations.
 - **NEVER** downgrade P0/P1 blockers to meet delivery schedules.

@@ -175,11 +175,19 @@ jobs:
             # worth pinning: the dry run must create nothing, and --fix must
             # create something reachable.
             python3 scripts/sync_skills.py --project "$workdir" --skills work $mode
-            if [ -e "$workdir/.gemini/skills/work" ]; then
-              echo "FAIL: the dry run created $workdir/.gemini/skills/work"
+            target="$workdir/.gemini/skills/work"
+            if [ -e "$target" ] || [ -L "$target" ]; then
+              echo "FAIL: the dry run created $target"
               exit 1
             fi
             python3 scripts/sync_skills.py --project "$workdir" --skills work --fix $mode
-            test -f "$workdir/.gemini/skills/work/SKILL.md" \
+            test -f "$target/SKILL.md" \
               || { echo "sync_skills.py --fix $mode wrote no SKILL.md under $workdir"; ls -R "$workdir"; exit 1; }
+            # The two modes must differ: a symlink by default, an owned copy with --copy.
+            if [ "$mode" = "--copy" ]; then
+              { [ ! -L "$target" ] && [ -f "$target/.forge-owned" ]; } \
+                || { echo "FAIL: --copy did not write an owned directory at $target"; exit 1; }
+            else
+              [ -L "$target" ] || { echo "FAIL: default mode did not symlink $target"; exit 1; }
+            fi
           done

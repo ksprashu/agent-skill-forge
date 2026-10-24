@@ -39,10 +39,15 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
-import re
 import subprocess
+import re
 import sys
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
+
+try:
+    import tomllib
+except ImportError:  # Python < 3.11: fall back to table headers
+    tomllib = None  # type: ignore[assignment]
 
 # Strict console UTF-8 safety
 if sys.platform == "win32":
@@ -92,6 +97,41 @@ UNINSPECTED_SURFACE: List[str] = [
     "third-party cloud service permissions and remote state",
 ]
 
+GIT_TIMEOUT_S = 60
+
+
+def _git(args: List[str], cwd: Path) -> subprocess.CompletedProcess:
+    """Run git with an argument list, shell=False and a deadline (a wedged index lock or a
+    slow filesystem must not hang the collector)."""
+    return subprocess.run(
+        ["git", *args],
+        cwd=str(cwd),
+        capture_output=True,
+        text=True,
+        shell=False,
+        check=False,
+        timeout=GIT_TIMEOUT_S,
+    )
+
+
+def _pyproject_tools(path: Path) -> Dict[str, Any]:
+    """Return the [tool] table of pyproject.toml, or {} if it is missing or unparseable.
+
+    Without tomllib, returns {name: {}} for every uncommented [tool.<name>...] header.
+    """
+    if tomllib is None:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            return {}
+        return {m: {} for m in re.findall(r'(?m)^[ \t]*\[\[?[ \t]*tool\.([A-Za-z0-9_-]+)', text)}
+    try:
+        with path.open("rb") as fh:
+            tool = tomllib.load(fh).get("tool", {})
+    except (OSError, tomllib.TOMLDecodeError):
+        return {}
+    return tool if isinstance(tool, dict) else {}
+
 
 class ReviewCollector:
     """Collects empirical repository and diff facts without qualitative judgement."""
@@ -104,34 +144,10 @@ class ReviewCollector:
     def is_git_repo(self) -> bool:
         """Check if target_path is within a git working tree."""
         try:
-            res = subprocess.run(
-                ["git", "rev-parse", "--is-inside-work-tree"],
-                cwd=str(self.target_path),
-                capture_output=True,
-                text=True,
-                shell=False,
-                check=False,
-            )
-            return res.returncode == 0 and res.stdout.strip() == "true"
-        except Exception:
+            res = _git(["rev-parse", "--is-inside-work-tree"], self.target_path)
+        except (OSError, subprocess.TimeoutExpired):
             return False
-
-    def get_git_root(self) -> Optional[Path]:
-        """Return the root path of the git repository."""
-        try:
-            res = subprocess.run(
-                ["git", "rev-parse", "--show-toplevel"],
-                cwd=str(self.target_path),
-                capture_output=True,
-                text=True,
-                shell=False,
-                check=False,
-            )
-            if res.returncode == 0:
-                return Path(res.stdout.strip()).resolve()
-        except Exception:
-            pass
-        return None
+        return res.returncode == 0 and res.stdout.strip() == "true"
 
     def collect_diff(
         self,
@@ -157,82 +173,62 @@ class ReviewCollector:
             ref_args = [base_ref]
             effective_ref = base_ref
         else:
-            # Check if HEAD exists
-            head_check = subprocess.run(
-                ["git", "rev-parse", "--verify", "HEAD"],
-                cwd=str(self.target_path),
-                capture_output=True,
-                text=True,
-                shell=False,
-                check=False,
-            )
-            if head_check.returncode == 0:
+            if _git(["rev-parse", "--verify", "HEAD"], self.target_path).returncode == 0:
                 ref_args = ["HEAD"]
                 effective_ref = "HEAD"
             else:
                 ref_args = ["--cached"]
                 effective_ref = "--cached (initial commit)"
 
-        # Run git diff --numstat
-        cmd_numstat = ["git", "diff", *ref_args, "--numstat"]
-        res_numstat = subprocess.run(
-            cmd_numstat,
-            cwd=str(self.target_path),
-            capture_output=True,
-            text=True,
-            shell=False,
-            check=False,
-        )
+        # -z keeps paths verbatim: renames and copies are separate NUL-terminated fields
+        # instead of "old => new" / "dir/{old => new}" text.
+        res_numstat = _git(["diff", *ref_args, "--numstat", "-z"], self.target_path)
         if res_numstat.returncode != 0:
             raise RuntimeError(
                 f"git diff --numstat failed (exit {res_numstat.returncode}): {res_numstat.stderr.strip()}"
             )
-
-        # Run git diff --name-status
-        cmd_name_status = ["git", "diff", *ref_args, "--name-status"]
-        res_name_status = subprocess.run(
-            cmd_name_status,
-            cwd=str(self.target_path),
-            capture_output=True,
-            text=True,
-            shell=False,
-            check=False,
-        )
+        res_name_status = _git(["diff", *ref_args, "--name-status", "-z"], self.target_path)
         if res_name_status.returncode != 0:
             raise RuntimeError(
                 f"git diff --name-status failed (exit {res_name_status.returncode}): {res_name_status.stderr.strip()}"
             )
 
-        # Parse name-status: map file path to status
+        # name-status -z: "<status>\0<path>\0", or "R<score>\0<old>\0<new>\0" for renames/copies
         status_map: Dict[str, str] = {}
-        for line in res_name_status.stdout.strip().splitlines():
-            line = line.strip()
-            if not line:
+        tokens = res_name_status.stdout.split("\0")
+        i = 0
+        while i < len(tokens):
+            code = tokens[i]
+            if not code:
+                i += 1
                 continue
-            parts = line.split(maxsplit=1)
-            if len(parts) == 2:
-                status_code, fpath = parts[0], parts[1]
-                # If renamed, fpath has "old -> new" or tab separation
-                if "\t" in fpath:
-                    fpath = fpath.split("\t")[-1]
-                status_map[fpath] = status_code
+            if code[0] in "RC" and i + 2 < len(tokens):
+                status_map[tokens[i + 2]] = code
+                i += 3
+            elif i + 1 < len(tokens):
+                status_map[tokens[i + 1]] = code
+                i += 2
+            else:
+                break
 
-        # Parse numstat: lines inserted, lines deleted, file path
+        # numstat -z: "<ins>\t<del>\t<path>\0", or "<ins>\t<del>\t\0<old>\0<new>\0" for renames
         insertions = 0
         deletions = 0
         file_stats: List[Dict[str, Any]] = []
         modified_files: List[str] = []
-
-        for line in res_numstat.stdout.strip().splitlines():
-            line = line.strip()
-            if not line:
+        tokens = res_numstat.stdout.split("\0")
+        i = 0
+        while i < len(tokens):
+            parts = tokens[i].split("\t")
+            if len(parts) != 3:
+                i += 1
                 continue
-            parts = line.split(maxsplit=2)
-            if len(parts) < 3:
-                continue
-            ins_str, del_str, fpath = parts[0], parts[1], parts[2]
-            if "\t" in fpath:
-                fpath = fpath.split("\t")[-1]
+            ins_str, del_str, fpath = parts
+            if fpath == "" and i + 2 < len(tokens):
+                fpath = tokens[i + 2]
+                i += 3
+            else:
+                i += 1
 
             is_binary = ins_str == "-" and del_str == "-"
             ins = 0 if is_binary else int(ins_str)
@@ -315,29 +311,21 @@ class ReviewCollector:
                     add_tool("prettier", "formatter", match.relative_to(self.target_path).as_posix())
                     break
 
+        pyproject = self.target_path / "pyproject.toml"
+        pyproject_tools = _pyproject_tools(pyproject) if pyproject.is_file() else {}
+
         # Ruff
         for fname in ["ruff.toml", ".ruff.toml"]:
             f = self.target_path / fname
             if f.is_file():
                 add_tool("ruff", "linter_formatter", fname)
                 break
-        pyproject = self.target_path / "pyproject.toml"
-        if pyproject.is_file() and "ruff" not in found_names:
-            try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[tool.ruff]" in content:
-                    add_tool("ruff", "linter_formatter", "pyproject.toml")
-            except Exception:
-                pass
+        if "ruff" in pyproject_tools:
+            add_tool("ruff", "linter_formatter", "pyproject.toml")
 
         # Black
-        if pyproject.is_file() and "black" not in found_names:
-            try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[tool.black]" in content:
-                    add_tool("black", "formatter", "pyproject.toml")
-            except Exception:
-                pass
+        if "black" in pyproject_tools:
+            add_tool("black", "formatter", "pyproject.toml")
 
         # Flake8
         if (self.target_path / ".flake8").is_file():
@@ -372,24 +360,14 @@ class ReviewCollector:
             if (self.target_path / fname).is_file():
                 add_tool("mypy", "typechecker", fname)
                 break
-        if pyproject.is_file() and "mypy" not in found_names:
-            try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[tool.mypy]" in content:
-                    add_tool("mypy", "typechecker", "pyproject.toml")
-            except Exception:
-                pass
+        if "mypy" in pyproject_tools:
+            add_tool("mypy", "typechecker", "pyproject.toml")
 
         # Pyright
         if (self.target_path / "pyrightconfig.json").is_file():
             add_tool("pyright", "typechecker", "pyrightconfig.json")
-        elif pyproject.is_file() and "pyright" not in found_names:
-            try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[tool.pyright]" in content:
-                    add_tool("pyright", "typechecker", "pyproject.toml")
-            except Exception:
-                pass
+        elif "pyright" in pyproject_tools:
+            add_tool("pyright", "typechecker", "pyproject.toml")
 
         # 3. Test Runners
         # Vitest
@@ -411,13 +389,8 @@ class ReviewCollector:
             if (self.target_path / fname).is_file():
                 add_tool("pytest", "test_runner", fname)
                 break
-        if pyproject.is_file() and "pytest" not in found_names:
-            try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[tool.pytest]" in content or "[tool.pytest.ini_options]" in content:
-                    add_tool("pytest", "test_runner", "pyproject.toml")
-            except Exception:
-                pass
+        if "pytest" in pyproject_tools:
+            add_tool("pytest", "test_runner", "pyproject.toml")
 
         # Cargo test
         if (self.target_path / "Cargo.toml").is_file():
@@ -523,23 +496,6 @@ class ReviewCollector:
             report["detected_test_runners"] = [t["name"] for t in tools if t["category"] == "test_runner"]
 
         return report
-
-
-def collect_evidence(
-    target_path: Path | str = ".",
-    include_diff: bool = True,
-    include_repo: bool = True,
-    base_ref: Optional[str] = None,
-    staged_only: bool = False,
-) -> Dict[str, Any]:
-    """Helper entrypoint for programmatic evidence collection."""
-    collector = ReviewCollector(target_path=target_path)
-    return collector.collect_all(
-        include_diff=include_diff,
-        include_repo=include_repo,
-        base_ref=base_ref,
-        staged_only=staged_only,
-    )
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

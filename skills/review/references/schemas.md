@@ -287,6 +287,6 @@ When concluding a macro repository audit (`/review --repo`), aggregate all findi
 ## 5. Next Actions & Sign-off Criteria
 1. **Mandatory Blockers:** Remediate all 2 P0 defects and 3 P1 defects.
 2. **Empirical Verification:** Execute all reproducer tests in `test/challenger/` and verify pass.
-3. **Automated Baseline:** Re-run `review_collector.py --repo` to confirm zero static baseline errors.
+3. **Automated Baseline:** Re-run the linters and type checkers that `review_collector.py --repo` lists as configured, and confirm zero errors.
 4. **Re-Audit Sign-Off:** Schedule Phase 4 re-audit for final certification.
 ````

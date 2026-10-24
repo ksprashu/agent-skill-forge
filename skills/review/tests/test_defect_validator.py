@@ -448,5 +448,154 @@ data = json.loads(cookie)
         )
 
 
+
+SCHEMAS_MD = SKILL_DIR / "references" / "schemas.md"
+
+
+def _schemas_block(after_heading: str) -> str:
+    """Return the ````markdown block that follows a heading in references/schemas.md."""
+    text = SCHEMAS_MD.read_text(encoding="utf-8")
+    rest = text[text.index(after_heading):]
+    start = rest.index("````markdown\n") + len("````markdown\n")
+    return rest[start:rest.index("\n````", start)]
+
+
+class TestDefectValidatorRegressions(unittest.TestCase):
+    """Regressions from pr-guardian review R-001, R-002 and R-003."""
+
+    def setUp(self) -> None:
+        self.validator = DV.DefectValidator()
+        self.base = TestDefectValidatorSchemaRules.BASE_VALID_TEMPLATE
+
+    def test_schemas_md_concrete_exemplar_passes(self) -> None:
+        """R-001: the skill's own exemplar ("Vulnerability / Defect Description") validates."""
+        result = self.validator.validate(_schemas_block("### Concrete Exemplar: Atomic Defect"))
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(result["defects_count"], 1)
+
+    def test_schemas_md_mode_a_template_passes(self) -> None:
+        """R-003: the Mode A report template (a defect plus summary sections) validates."""
+        result = self.validator.validate(_schemas_block("## 3. Pull Request Review Output Template"))
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(result["defects_count"], 1)
+
+    def test_headingless_prose_is_rejected(self) -> None:
+        """R-001 T4: lines that merely start with section words are not section headings."""
+        text = ("# [DEFECT-001] [P1: High] a.py:1\nDescription x\nImpact x\nRepro x\n"
+                "Fix x\n```\ncode\n```\nVerification x\n")
+        result = self.validator.validate(text)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("Missing required section 'Description'" in e for e in result["errors"]))
+
+    def test_fix_word_in_description_does_not_bind_remediation(self) -> None:
+        """R-001: a prose line starting with "Fix" no longer stands in for the remediation."""
+        text = self.base.replace(
+            "Unbounded cache growth causes memory exhaustion.",
+            "Unbounded cache growth causes memory exhaustion.\nFix this soon.",
+        ).replace("## Drop-in Remediation\n", "")
+        result = self.validator.validate(text)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("Drop-in Remediation" in e for e in result["errors"]))
+
+    def test_hash_comments_inside_remediation_fence(self) -> None:
+        """R-002: '# Gate' / '# Verification' comments in the code block do not end the section."""
+        text = self.base.replace(
+            "```typescript\n// Before:\n// cache.set(k, v);\n// After:\ncache.setWithEviction(k, v, 1000);\n```",
+            "```python\n# Gate: ensure caller is authenticated\n# Verification: see below\n"
+            "cache.set_with_eviction(k, v, 1000)\n```",
+        )
+        result = self.validator.validate(text)
+        self.assertTrue(result["valid"], result["errors"])
+
+    def test_remediation_ends_at_next_heading(self) -> None:
+        """R-002 T4: a code block in a later section does not satisfy the remediation."""
+        text = self.base.replace(
+            "```typescript\n// Before:\n// cache.set(k, v);\n// After:\ncache.setWithEviction(k, v, 1000);\n```",
+            "Use an LRU.\n\n## Notes\n```\nunrelated\n```",
+        )
+        result = self.validator.validate(text)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("fenced code block" in e for e in result["errors"]))
+
+    def test_zero_defect_report_passes(self) -> None:
+        """R-003: an APPROVED review with no defects is valid with zero defects."""
+        text = ("# Pull Request Quality Engineering Review\n\n**Review Status:** APPROVED\n\n"
+                "## 1. Executive Summary & Macro Intent\nClean change.\n\n"
+                "## 2. Findings Summary\n- 🔴 **P0 (Critical):** 0\n")
+        result = self.validator.validate(text)
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual(result["defects_count"], 0)
+
+    def test_question_and_p3_entries_are_non_blocking(self) -> None:
+        """R-003: [Question] and [P3: ...] entries need a badge and location only."""
+        text = (self.base
+                + "\n### [Question] Max retries\n`src/config/limits.py:L14`: does 5 match the gateway timeout?\n"
+                + "\n### [P3: Low - Suggestion/Nit] Rename helper\n`src/util.py:9`: `do_it` could be `flush`.\n")
+        result = self.validator.validate(text)
+        self.assertTrue(result["valid"], result["errors"])
+        self.assertEqual([f["tier"] for f in result["findings"]],
+                         ["blocking", "non-blocking", "non-blocking"])
+
+    def test_question_without_location_is_rejected(self) -> None:
+        """R-003 T4: non-blocking entries still need a file:line location."""
+        result = self.validator.validate(self.base + "\n### [Question] Why polling?\nNo location here.\n")
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("Defect 2: Missing valid file:line" in e for e in result["errors"]))
+
+    def test_unbadged_second_defect_is_detected(self) -> None:
+        """R-003 T4: a second defect without a badge heading is not silently merged."""
+        second = self.base.replace("# [DEFECT-001] [P0: Critical] Memory leak in cache",
+                                   "## Second leak in store")
+        result = self.validator.validate(self.base + "\n" + second)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("2 Description sections" in e for e in result["errors"]))
+
+    def test_unbadged_defect_before_first_heading_is_detected(self) -> None:
+        """R-003 T4: defect sections before the first badged heading are reported."""
+        first = self.base.replace("# [DEFECT-001] [P0: Critical] Memory leak in cache",
+                                  "# Leak without badge")
+        result = self.validator.validate(first + "\n" + self.base)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("before the first defect heading" in e for e in result["errors"]))
+
+
+class TestDefectValidatorVerdictGate(unittest.TestCase):
+    """R-004: the report verdict is checked against its defects, not self-certified."""
+
+    def setUp(self) -> None:
+        self.validator = DV.DefectValidator()
+        self.p0 = TestDefectValidatorSchemaRules.BASE_VALID_TEMPLATE
+
+    def _report(self, status_line: str, body: str) -> str:
+        defect = body.replace("\n## ", "\n#### ").replace("# [DEFECT", "### [DEFECT")
+        return f"# Review\n\n{status_line}\n\n## Findings\n\n" + defect
+
+    def test_approved_with_open_p0_is_rejected(self) -> None:
+        result = self.validator.validate(self._report("**Review Status:** APPROVED", self.p0))
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("open P0/P1" in e for e in result["errors"]), result["errors"])
+
+    def test_changes_requested_with_open_p0_passes(self) -> None:
+        result = self.validator.validate(self._report("**Review Status:** CHANGES REQUESTED", self.p0))
+        self.assertTrue(result["valid"], result["errors"])
+
+    def test_certified_with_open_p2_is_rejected(self) -> None:
+        p2 = self.p0.replace("[P0: Critical]", "[P2: Medium]")
+        result = self.validator.validate(self._report("**Certification Verdict:** CERTIFIED", p2))
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("CERTIFIED" in e for e in result["errors"]), result["errors"])
+
+    def test_conditionally_approved_with_p2_passes(self) -> None:
+        p2 = self.p0.replace("[P0: Critical]", "[P2: Medium]")
+        result = self.validator.validate(
+            self._report("**Certification Verdict:** CONDITIONALLY APPROVED", p2))
+        self.assertTrue(result["valid"], result["errors"])
+
+    def test_template_option_list_is_not_a_verdict(self) -> None:
+        result = self.validator.validate(
+            self._report("**Review Status:** [ CHANGES REQUESTED | APPROVED ]", self.p0))
+        self.assertTrue(result["valid"], result["errors"])
+
+
 if __name__ == "__main__":
     unittest.main()

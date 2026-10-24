@@ -53,8 +53,8 @@ sequenceDiagram
     participant Validator as defect_validator.py
 
     Author->>Sentinel: /review --diff
-    Sentinel->>Collector: Execute review_collector.py --diff
-    Collector-->>Sentinel: evidence.json (diff stats, CI status, modified files)
+    Sentinel->>Collector: Execute review_collector.py --diff --out evidence.json
+    Collector-->>Sentinel: evidence.json (diff stats, modified files, configured tools)
     
     alt Phase 0 Gate Fails (CI red or >500 lines)
         Sentinel-->>Author: Reject / Alert with remediation guidance
@@ -78,18 +78,18 @@ sequenceDiagram
 
 1. **Execute Evidence Collector:**
    ```bash
-   python3.12 skills/review/scripts/review_collector.py --diff
+   python3.12 skills/review/scripts/review_collector.py --diff --out evidence.json
    ```
-   Inspect generated `evidence.json`.
+   Inspect `evidence.json`. It holds diff facts and the tools the repo has configured; it does not run them or read CI.
 
-2. **CI Status Gate:**
-   - Check if project unit tests, typechecks, or linters are failing on the current branch.
+2. **CI Status Gate** (reviewer check, no script):
+   - Read CI with `gh pr checks <n>` and run the configured linters and type checkers from `evidence.json`. Check if project unit tests, typechecks, or linters are failing on the current branch.
    - **Gate Decision:** If CI is red or build fails, halt review immediately.
    - **Remediation Message:**
      > "CI is currently failing with compilation/test errors. Per engineering standards, code review requires a passing automated baseline. Please resolve build and test failures before requesting review."
 
 3. **Diff Size Gate (<500 Lines of Logic):**
-   - Count modified lines of functional logic (excluding lockfiles, generated protobufs, mock fixtures, and snapshots).
+   - Start from `diff_exceeds_500_lines` and `file_stats` in `evidence.json`, which count every changed line. Count modified lines of functional logic (excluding lockfiles, generated protobufs, mock fixtures, and snapshots).
    - **Gate Decision:** If functional changes exceed 500 lines, flag a structural review warning.
    - **Recommendation:** Advise the author to split the work into stacked PRs:
      - *PR 1:* Database migrations & shared schemas.
@@ -240,9 +240,9 @@ flowchart TD
 
 1. **Execute Evidence Collector in Repository Mode:**
    ```bash
-   python3.12 skills/review/scripts/review_collector.py --repo
+   python3.12 skills/review/scripts/review_collector.py --repo --out evidence.json
    ```
-   The script inspects the repository, runs installed static analysis tools, and outputs `evidence.json`.
+   The script maps topology and manifests and lists the static analysis tools the repo configures. It does not run them: run each one from the matrix below yourself, and record any you could not run as not inspected.
 
 2. **Automated Baseline Verification Matrix:**
 
@@ -330,7 +330,7 @@ flowchart TD
    - Calculate total defects by severity level (P0, P1, P2, P3).
    - Construct the Findings Heatmap by Module to pinpoint high-risk subsystems.
 
-3. **Determine Certification Verdict:**
+3. **Determine Certification Verdict** (`defect_validator.py` fails a report whose verdict contradicts its defects):
    - **`REJECTED`**: One or more P0 Critical or P1 High blockers remain open.
    - **`CONDITIONALLY APPROVED`**: Zero P0/P1 blockers; P2 findings exist with approved remediation timeline.
    - **`CERTIFIED`**: Zero P0, P1, or P2 blockers; codebase satisfies all 8 QE inspection axes.
