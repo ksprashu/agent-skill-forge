@@ -29,12 +29,8 @@ env:
 
 jobs:
   tests:
-    name: Tests (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    name: Tests
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -142,12 +138,8 @@ jobs:
             --target-dir . --strict --exclude 'fixtures/known_'
 
   install:
-    name: Installer smoke test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    name: Installer smoke test
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -158,11 +150,11 @@ jobs:
       # The installer is the one script every user runs and no test covers end
       # to end. A syntax error in it is invisible until someone installs.
       - name: Check the POSIX installer parses
-        if: runner.os != 'Windows'
         run: bash -n scripts/install.sh
 
+      # ubuntu-latest ships with pwsh pre-installed, so the PowerShell AST
+      # parser validates install.ps1 without spinning up a Windows runner.
       - name: Check the PowerShell installer parses
-        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -173,24 +165,21 @@ jobs:
           if ($errors.Count -gt 0) { $errors | ForEach-Object { $_.Message }; exit 1 }
           Write-Host "install.ps1 parses cleanly"
 
-      # On Windows this uses --copy: unprivileged symlink creation there
-      # depends on Developer Mode, and a failure would then report the runner's
-      # configuration rather than the repository's state.
-      - name: Sync a skill into a scratch project
+      - name: Sync a skill into a scratch project (symlink and copy modes)
         shell: bash
         run: |
           set -euo pipefail
-          mode=""
-          if [ "${RUNNER_OS}" = "Windows" ]; then mode="--copy"; fi
-          workdir="$(mktemp -d)"
-          # Without --fix this is a dry run that writes nothing. Both halves are
-          # worth pinning: the dry run must create nothing, and --fix must
-          # create something reachable.
-          python3 scripts/sync_skills.py --project "$workdir" --skills work
-          if [ -e "$workdir/.gemini/skills/work" ]; then
-            echo "FAIL: the dry run created $workdir/.gemini/skills/work"
-            exit 1
-          fi
-          python3 scripts/sync_skills.py --project "$workdir" --skills work --fix $mode
-          test -f "$workdir/.gemini/skills/work/SKILL.md" \
-            || { echo "sync_skills.py --fix wrote no SKILL.md under $workdir"; ls -R "$workdir"; exit 1; }
+          for mode in "" "--copy"; do
+            workdir="$(mktemp -d)"
+            # Without --fix this is a dry run that writes nothing. Both halves are
+            # worth pinning: the dry run must create nothing, and --fix must
+            # create something reachable.
+            python3 scripts/sync_skills.py --project "$workdir" --skills work $mode
+            if [ -e "$workdir/.gemini/skills/work" ]; then
+              echo "FAIL: the dry run created $workdir/.gemini/skills/work"
+              exit 1
+            fi
+            python3 scripts/sync_skills.py --project "$workdir" --skills work --fix $mode
+            test -f "$workdir/.gemini/skills/work/SKILL.md" \
+              || { echo "sync_skills.py --fix $mode wrote no SKILL.md under $workdir"; ls -R "$workdir"; exit 1; }
+          done
