@@ -59,6 +59,11 @@ import tempfile
 import time
 from typing import Any, Callable
 
+try:
+    import tomllib
+except ImportError:  # Python < 3.11: fall back to matching table headers
+    tomllib = None  # type: ignore[assignment]
+
 if sys.platform == "win32":
     for _stream in (sys.stdout, sys.stderr):
         if hasattr(_stream, "reconfigure"):
@@ -66,6 +71,7 @@ if sys.platform == "win32":
 
 COLLECTOR_VERSION = "2.0.0"
 DEFAULT_TIMEOUT = 120
+GIT_TIMEOUT_S = 60
 OUTPUT_CHAR_LIMIT = 20_000
 ISSUE_LIMIT = 200
 REPO_FILE_LIMIT = 2_000
@@ -115,8 +121,13 @@ MD = (".md", ".markdown")
 # --- small helpers -----------------------------------------------------------
 
 def _git(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", *args], cwd=str(cwd), capture_output=True, text=True,
-                          shell=False, check=False)
+    """Run git with a timeout; a hung call comes back as a failed process."""
+    try:
+        return subprocess.run(["git", *args], cwd=str(cwd), capture_output=True, text=True,
+                              shell=False, check=False, timeout=GIT_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(["git", *args], 124, "",
+                                           f"git {args[0]} timed out after {GIT_TIMEOUT_S}s")
 
 
 def _read(path: Path) -> str:
@@ -140,9 +151,25 @@ def _first_glob(root: Path, patterns: tuple[str, ...]) -> str | None:
     return None
 
 
+_TOOL_HEADER = re.compile(r"(?m)^[ \t]*\[\[?[ \t]*tool\.([A-Za-z0-9_-]+)")
+
+
+def _pyproject_tools(path: Path) -> list[str]:
+    """Names under [tool.*] in a pyproject.toml; [] if it is missing or malformed."""
+    text = _read(path)
+    if not text:
+        return []
+    if tomllib is None:
+        return sorted(set(_TOOL_HEADER.findall(text)))
+    try:
+        tool = tomllib.loads(text).get("tool", {})
+    except (tomllib.TOMLDecodeError, ValueError):
+        return []
+    return sorted(tool) if isinstance(tool, dict) else []
+
+
 def _pyproject_has(root: Path, table: str) -> bool:
-    return f"[{table}]" in _read(root / "pyproject.toml") or \
-        f"[{table}." in _read(root / "pyproject.toml")
+    return table.split(".", 1)[1] in _pyproject_tools(root / "pyproject.toml")
 
 
 def _package_json(root: Path) -> dict[str, Any]:
