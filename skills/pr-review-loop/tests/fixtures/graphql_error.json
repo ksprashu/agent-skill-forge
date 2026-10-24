@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "message": "Could not resolve to a PullRequest with the number of 9999."
+    }
+  ],
+  "data": {
+    "repository": {
+      "pullRequest": null
+    }
+  }
+}
