@@ -1,21 +1,14 @@
 {
   "skill": "agent-security-posture",
   "test_cases": [
-    {
-      "input": "Apply strong security posture and monitor for vulnerabilities while coding.",
-      "should_trigger": true
-    },
-    {
-      "input": "Scan for CVEs and fix any issues in the code before proceeding.",
-      "should_trigger": true
-    },
-    {
-      "input": "Make the AI agent always check security on every turn without slowing me down.",
-      "should_trigger": true
-    },
-    {
-      "input": "Write a simple hello world function.",
-      "should_trigger": false
-    }
+    {"input": "Apply strong security posture and monitor for vulnerabilities while coding.", "should_trigger": true},
+    {"input": "Scan for CVEs and fix any issues in the code before proceeding.", "should_trigger": true},
+    {"input": "Upgrade our npm dependencies and check none of them have known vulnerabilities.", "should_trigger": true},
+    {"input": "Add this new MCP server to my agent config.", "should_trigger": true},
+    {"input": "Write a simple hello world function.", "should_trigger": false},
+    {"input": "Rename this variable to something clearer.", "should_trigger": false},
+    {"input": "Explain what a CVE is.", "should_trigger": false},
+    {"input": "Summarise this security news article for me.", "should_trigger": false},
+    {"input": "Append a status line to the team's planning document.", "should_trigger": false}
   ]
 }
