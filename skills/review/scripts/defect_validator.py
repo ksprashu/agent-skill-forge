@@ -152,6 +152,13 @@ VERDICT_PATTERN = re.compile(
 )
 
 
+SEVERITY_LINE_PATTERN = re.compile(
+    r'(?im)^[ \t]*[-*]?[ \t]*\**[ \t]*Severity[ \t]*:?\**[ \t]*:?[ \t]*\[?[ \t]*'
+    r'(?:P([0-3])\b|(Critical)|(Important))'
+)
+DEFECT_ID_PATTERN = re.compile(r'\[DEFECT-\d+\]', re.IGNORECASE)
+
+
 def severity_rank(heading: str) -> Optional[int]:
     """0-3 from a defect heading's badge ([P0:] .. [P3:], [Critical]=0, [Important]=2)."""
     m = re.search(r'\[P([0-3]):', heading, re.IGNORECASE)
@@ -164,6 +171,23 @@ def severity_rank(heading: str) -> Optional[int]:
     if re.search(r'\[(?:Suggestion|Question)', heading, re.IGNORECASE):
         return 3
     return None
+
+
+def chunk_severity(chunk: str) -> Optional[int]:
+    """Severity of one defect chunk: the heading badge, else its '- **Severity:**' line.
+
+    A [DEFECT-###] heading with neither counts as P1, so an unstated severity blocks
+    an APPROVED verdict instead of slipping past it.
+    """
+    masked = mask_fences(chunk).lstrip()
+    heading = masked.split("\n", 1)[0]
+    rank = severity_rank(heading)
+    if rank is not None:
+        return rank
+    m = SEVERITY_LINE_PATTERN.search(masked)
+    if m:
+        return int(m.group(1)) if m.group(1) else (0 if m.group(2) else 2)
+    return 1 if DEFECT_ID_PATTERN.search(heading) else None
 
 
 def verdict_errors(text: str, ranks: List[Optional[int]]) -> List[str]:
@@ -393,11 +417,17 @@ class DefectValidator:
         chunks: List[str] = []
         for i, head in enumerate(heads):
             level = len(head.group(1))
-            end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
-            for h in ANY_HEADING_PATTERN.finditer(masked, head.end(), end):
+            limit = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+            end = limit
+            for h in ANY_HEADING_PATTERN.finditer(masked, head.end(), limit):
                 if len(h.group(1)) <= level:
                     end = h.start()
                     break
+            if REQUIRED_SECTIONS[0]["pattern"].search(masked[end:limit]):
+                errors.append(
+                    "Defect sections appear outside a defect heading; "
+                    "a defect is missing its Defect ID or badge heading."
+                )
             chunks.append(text[head.start():end])
         return chunks, errors
 
@@ -420,7 +450,7 @@ class DefectValidator:
             findings.append(finding)
             all_errors.extend(finding["errors"])
         all_errors.extend(verdict_errors(
-            text, [severity_rank(mask_fences(c).lstrip().split("\n", 1)[0]) for c in chunks]))
+            text, [chunk_severity(c) for c in chunks]))
 
         return {
             "source": source_name,

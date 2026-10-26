@@ -550,6 +550,20 @@ class TestDefectValidatorRegressions(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertTrue(any("2 Description sections" in e for e in result["errors"]))
 
+    def test_unbadged_defect_at_same_level_is_detected(self) -> None:
+        """R-025: a badgeless defect at the first defect's heading level is not dropped."""
+        second = self.base.replace("# [DEFECT-001] [P0: Critical] Memory leak in cache",
+                                   "# Second leak in store")
+        result = self.validator.validate(self.base + "\n" + second)
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("outside a defect heading" in e for e in result["errors"]),
+                        result["errors"])
+
+    def test_summary_section_after_defect_still_passes(self) -> None:
+        """R-025 T4: a same-level heading without defect sections is not an error."""
+        result = self.validator.validate(self.base + "\n# Summary\n\nOne defect found.\n")
+        self.assertTrue(result["valid"], result["errors"])
+
     def test_unbadged_defect_before_first_heading_is_detected(self) -> None:
         """R-003 T4: defect sections before the first badged heading are reported."""
         first = self.base.replace("# [DEFECT-001] [P0: Critical] Memory leak in cache",
@@ -584,6 +598,28 @@ class TestDefectValidatorVerdictGate(unittest.TestCase):
         result = self.validator.validate(self._report("**Certification Verdict:** CERTIFIED", p2))
         self.assertFalse(result["valid"])
         self.assertTrue(any("CERTIFIED" in e for e in result["errors"]), result["errors"])
+
+    def test_defect_id_heading_takes_severity_from_metadata(self) -> None:
+        """R-026: [DEFECT-###] without a badge uses its '- **Severity:** P0' line."""
+        body = self.p0.replace("[DEFECT-001] [P0: Critical]", "[DEFECT-001]").replace(
+            "- **Location**", "- **Severity:** P0: Critical\n- **Location**")
+        result = self.validator.validate(self._report("**Review Status:** APPROVED", body))
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("open P0/P1" in e for e in result["errors"]), result["errors"])
+
+    def test_defect_id_heading_without_severity_counts_as_blocking(self) -> None:
+        """R-026: a [DEFECT-###] with no stated severity blocks APPROVED rather than passing."""
+        body = self.p0.replace("[DEFECT-001] [P0: Critical]", "[DEFECT-001]")
+        result = self.validator.validate(self._report("**Review Status:** APPROVED", body))
+        self.assertFalse(result["valid"])
+        self.assertTrue(any("open P0/P1" in e for e in result["errors"]), result["errors"])
+
+    def test_metadata_p3_on_defect_id_heading_allows_approved(self) -> None:
+        """R-026 T4: a metadata P3 is not blocking, so APPROVED stands."""
+        body = self.p0.replace("[DEFECT-001] [P0: Critical]", "[DEFECT-001]").replace(
+            "- **Location**", "- **Severity:** P3: Low\n- **Location**")
+        result = self.validator.validate(self._report("**Review Status:** APPROVED", body))
+        self.assertFalse(any("open P0/P1" in e for e in result["errors"]), result["errors"])
 
     def test_conditionally_approved_with_p2_passes(self) -> None:
         p2 = self.p0.replace("[P0: Critical]", "[P2: Medium]")

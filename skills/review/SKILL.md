@@ -76,7 +76,7 @@ Two deterministic S9 scripts ground the review. What each one does, and does not
    python3.12 skills/review/scripts/review_collector.py --repo --out evidence.json   # Mode B (Repo audit)
    ```
    Then run the configured tools yourself (for example `ruff check`, `tsc --noEmit`) and read CI with `gh pr checks <n>`. Report anything you could not run as not inspected, never as passed.
-2. **Defect Schema Validation**: `defect_validator.py` checks every defect against the Atomic Defect Schema (P3, Suggestion and Question entries need only a badge and location), and fails a report whose stated verdict contradicts its defects (APPROVED with an open P0/P1, CERTIFIED with an open P0-P2):
+2. **Defect Schema Validation**: `defect_validator.py` checks every defect against the Atomic Defect Schema (P3, Suggestion and Question entries need only a badge and location), and fails a report whose stated verdict contradicts its defects (APPROVED with an open P0/P1, CERTIFIED with an open P0-P2). A `[DEFECT-###]` heading without a badge takes its severity from the `- **Severity:**` line, and counts as P1 if it has none:
    ```bash
    python3.12 skills/review/scripts/defect_validator.py --file <report.md>
    ```
