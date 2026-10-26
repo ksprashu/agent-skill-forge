@@ -20,8 +20,9 @@
   reply.py --thread-id PRRT_x --body "free text"
   add --dry-run to print the mutation and variables instead of sending
 
-It only replies. It never resolves a thread: resolution is the reviewer's call
-once the next round confirms the fix or accepts the pushback.
+It only replies. It never resolves a thread: that waits until pr-guardian's
+next round replies status=fixed or status=accepted_pushback, and then the
+author resolves it with resolve.py.
 
 Exit codes:
   0   reply posted (or, with --dry-run, mutation printed)

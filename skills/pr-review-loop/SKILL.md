@@ -17,9 +17,13 @@ open, and the branch also requires every conversation to be resolved.
 
 - **Never push to `main`.** All work goes through a PR branch. If you are on the
   default branch, create a branch first.
-- **Never resolve a thread yourself** to make the count go down. The reviewer
-  resolves threads after it confirms a fix or accepts pushback, and it reopens
-  anything resolved without a real fix.
+- **Never resolve a thread the reviewer hasn't verified.** pr-guardian can't
+  resolve threads. When it confirms a fix it replies "Verified fixed", and when
+  it accepts pushback it replies "Pushback accepted", each carrying a
+  `pr-guardian:status ... status=fixed|accepted_pushback` marker. Only then do
+  you resolve the thread, with `resolve.py`. Resolving earlier, or resolving a
+  thread you haven't addressed, is gaming the reviewer: it marks the finding
+  `reopened` next round.
 - **Never game the reviewer.** No `# noqa`, `nosec`, `eslint-disable`,
   `@SuppressWarnings` or similar without a written justification on the same
   line that would convince a human. No deleting or skipping tests. No weakening
@@ -48,6 +52,9 @@ done), `1` (work remains), `2` (`gh` missing or the API failed: fix auth with
   `rounds_since_raised`, `last_comment_by`.
 - `threads.reopened`: findings you (or someone) marked resolved that the
   reviewer reopened. Treat each one as a fix that did not work.
+- `threads.ready_to_resolve`: open threads whose latest pr-guardian reply is
+  `status=fixed` or `status=accepted_pushback`. Resolve these in step 1a.
+  Each open entry also carries `latest_bot_status`.
 - `threads.unparsed`: threads whose pr-guardian marker is malformed. They still
   block the merge. Read them by hand.
 - `threads.other_open`: unresolved threads from humans. Answer these too.
@@ -58,6 +65,20 @@ done), `1` (work remains), `2` (`gh` missing or the API failed: fix auth with
 
 `escalation_signals` are facts (counts, timestamps), not instructions. You
 decide what they mean in step 3.
+
+### 1a. Resolve what the reviewer verified
+
+For each entry in `threads.ready_to_resolve`:
+
+```bash
+python3 <skill-dir>/scripts/resolve.py --pr <N> --thread-id <PRRT_...> [--repo owner/name]
+```
+
+`resolve.py` re-reads the thread and refuses (exit `1`) unless pr-guardian's
+latest reply in it is `status=fixed` or `status=accepted_pushback`. A later
+`still_open` or `reopened` reply, or none at all, means it is not yours to
+resolve yet. Don't resolve any other thread: open findings without that
+status go on to step 2.
 
 ### 2. Triage
 
@@ -114,7 +135,8 @@ python3 <skill-dir>/scripts/reply.py --thread-id <PRRT_...> \
 ```
 
 Use `--dry-run` to preview. `reply.py` refuses an empty wontfix reason. It
-only replies. It never resolves.
+only replies. It never resolves: resolving waits for the reviewer's verdict
+(step 1a, next round).
 
 To escalate, post on the PR (not in a thread):
 `gh pr comment <N> --body "/ai-review escalate: <why, citing finding ids and rounds>"`.
@@ -132,8 +154,9 @@ gh pr checks <N> --watch
 ```
 
 Then go back to step 1. The reviewer re-reviews the whole PR on every push: it
-can raise new findings, reopen fake-resolved ones, accept or reject your
-pushback.
+can raise new findings, mark fake-resolved ones `reopened`, verify your fixes,
+and accept or reject your pushback. Threads it verifies show up in
+`threads.ready_to_resolve` for you to resolve.
 
 ### 8. Stop
 

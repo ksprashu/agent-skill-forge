@@ -10,7 +10,7 @@ command per comment. Put any extra explanation on later lines.
 
 | Command | Where | Who | Effect |
 |---|---|---|---|
-| `/ai-review wontfix: <reason>` | Reply **inside the finding's thread** | PR author | Next round the reviewer weighs the reason. It either accepts (status `accepted_pushback`, thread resolved, never re-raised) or rejects with a counter-argument and the thread stays open. |
+| `/ai-review wontfix: <reason>` | Reply **inside the finding's thread** | PR author | Next round the reviewer weighs the reason. It either accepts (replies "Pushback accepted" with status `accepted_pushback`; you then resolve the thread, and it is never re-raised) or rejects with a counter-argument and the thread stays open. |
 | `/ai-review escalate: <why>` | **PR comment** (conversation tab), not a thread | PR author | The bot adds the `needs-human` label. `pr-guardian/verdict` stays failing until the owner applies `human-override`. |
 | `/ai-review` (alone) | PR comment | Repo owner only | Forces a re-review without a push. Coming from anyone else it does nothing, so don't post it. |
 
@@ -70,7 +70,7 @@ the reviewer.
 | Marker | Where |
 |---|---|
 | `<!-- pr-guardian:finding id=R-001 severity=P1 -->` | First line of a finding thread's first comment. `id` matches `^[A-Z][A-Z0-9]*-[0-9]{3,}$`; `severity` is `P0`-`P3` (or `nit`). Fields may be in any order. |
-| `<!-- pr-guardian:status id=R-001 status=reopened -->` | In a pr-guardian reply. `status` is one of `new`, `still_open`, `reopened`, `fixed`, `accepted_pushback`. |
+| `<!-- pr-guardian:status id=R-001 status=reopened -->` | In a pr-guardian reply. `status` is one of `new`, `still_open`, `reopened`, `fixed`, `accepted_pushback`. `fixed` comes with "Verified fixed" and `accepted_pushback` with "Pushback accepted": once the **latest** pr-guardian reply in a thread carries one of those two, the PR author resolves the thread (`resolve.py`). pr-guardian itself never resolves. |
 | `<!-- pr-guardian:nits -->` | The single nits summary PR comment. |
 
 A thread whose first comment has a pr-guardian marker that is not well-formed
@@ -84,9 +84,11 @@ python3 <skill-dir>/scripts/review_state.py --pr 42 --repo owner/name
 python3 <skill-dir>/scripts/review_state.py --pr 42 --check-name "pr-guardian/verdict" --bot-login my-app
 python3 <skill-dir>/scripts/reply.py --thread-id PRRT_kwDO... --fixed a1b2c3d --note "..."
 python3 <skill-dir>/scripts/reply.py --thread-id PRRT_kwDO... --wontfix "..." --dry-run
+python3 <skill-dir>/scripts/resolve.py --pr 42 --thread-id PRRT_kwDO...   # only after status=fixed|accepted_pushback
 gh pr comment 42 --body "/ai-review escalate: ..."
 gh pr checks 42 --watch
 ```
 
 Thread ids (`PRRT_...`) come from `threads.open[].thread_id` in the
-`review_state.py` output.
+`review_state.py` output; the ones you may resolve are in
+`threads.ready_to_resolve[].thread_id`.

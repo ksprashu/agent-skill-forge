@@ -97,6 +97,30 @@ class TestDifferentiation(unittest.TestCase):
         self.assertEqual(a["pending_wontfix"], [])
 
 
+class TestReadyToResolve(unittest.TestCase):
+    """pr-guardian replies; the author resolves only what it has verified."""
+
+    def test_only_verified_threads_are_ready(self):
+        code, state = run_fixture("verified_open")
+        self.assertEqual(code, 1)
+        ready = sorted(e["finding_id"] for e in state["threads"]["ready_to_resolve"])
+        self.assertEqual(ready, ["R-001", "R-002"])
+        by_id = {e["finding_id"]: e for e in state["threads"]["open"]}
+        self.assertEqual(by_id["R-001"]["latest_bot_status"], "fixed")
+        self.assertEqual(by_id["R-002"]["latest_bot_status"], "accepted_pushback")
+        self.assertEqual(by_id["R-003"]["latest_bot_status"], "still_open")
+        self.assertIsNone(by_id["R-004"]["latest_bot_status"])
+        self.assertIsNone(by_id["R-005"]["latest_bot_status"])
+
+    def test_open_p1_has_nothing_ready(self):
+        _, state = run_fixture("open_p1")
+        self.assertEqual(state["threads"]["ready_to_resolve"], [])
+
+    def test_resolved_threads_are_not_listed(self):
+        _, state = run_fixture("all_resolved")
+        self.assertEqual(state["threads"]["ready_to_resolve"], [])
+
+
 class TestMarkerParsing(unittest.TestCase):
 
     def test_valid_marker(self):

@@ -25,6 +25,9 @@ escalate. `escalation_signals` lists facts (counts, timestamps), never advice.
 Markers it reads (see references/commands.md):
   first line of a thread's first comment   <!-- pr-guardian:finding id=R-001 severity=P1 -->
   in a pr-guardian reply                   <!-- pr-guardian:status id=R-001 status=reopened -->
+An open thread whose latest pr-guardian reply says status=fixed or
+status=accepted_pushback is listed under threads.ready_to_resolve: the reviewer
+has verified it, and resolving it is now the PR author's job (resolve.py).
   in the nits summary PR comment           <!-- pr-guardian:nits -->
 Engineer commands it reads: `/ai-review wontfix: <reason>` (thread reply) and
 `/ai-review escalate: <why>` (PR comment).
@@ -59,6 +62,9 @@ ID_PATTERN = r"^[A-Z][A-Z0-9]*-[0-9]{3,}$"
 SEVERITIES = ("P0", "P1", "P2", "P3", "nit")
 BLOCKING_SEVERITIES = ("P0", "P1", "P2", "P3")
 STATUSES = ("new", "still_open", "reopened", "fixed", "accepted_pushback")
+# A thread is the author's to resolve once pr-guardian's latest reply in it
+# carries one of these statuses. pr-guardian replies; it does not resolve.
+VERIFIED_STATUSES = ("fixed", "accepted_pushback")
 
 DEFAULT_CHECK = "pr-guardian/verdict"
 DEFAULT_BOT_LOGINS = ("github-actions", "pr-guardian")
@@ -277,12 +283,15 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         fid = fields["id"]
         threads_by_id.setdefault(fid, []).append(t.get("id"))
         statuses: list[str] = []
+        latest_bot_status: str | None = None
         wontfix: list[dict[str, Any]] = []
         for c in comments[1:]:
             is_bot = _login(c) in bots
             if is_bot:
-                for s in parse_status_markers(c.get("body", "")):
-                    statuses.append(s["status"])
+                own = [s["status"] for s in parse_status_markers(c.get("body", ""))
+                       if s.get("id", fid) == fid]
+                statuses.extend(own)
+                latest_bot_status = own[-1] if own else None
             else:
                 for m in WONTFIX.finditer(c.get("body", "")):
                     bot_after = [b for b in comments if _login(b) in bots
@@ -299,6 +308,8 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         last = comments[-1] if comments else {}
         entry = {**base, "finding_id": fid, "severity": fields["severity"],
                  "reopen_events": reopen_events, "last_status": statuses[-1] if statuses else None,
+                 "latest_bot_status": latest_bot_status,
+                 "ready_to_resolve": latest_bot_status in VERIFIED_STATUSES,
                  "rounds_since_raised": rounds_open, "wontfix_replies": len(wontfix),
                  "last_comment_by": "pr-guardian" if _login(last) in bots else "engineer",
                  "first_comment_excerpt": "\n".join((first.get("body") or "").splitlines()[1:])[:400]}
@@ -363,6 +374,7 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         "threads": {
             "open": open_,
             "reopened": [e for e in open_ if e["reopen_events"] > 0],
+            "ready_to_resolve": [e for e in open_ if e["ready_to_resolve"]],
             "resolved": resolved,
             "unparsed": unparsed,
             "other_open": other_open,
