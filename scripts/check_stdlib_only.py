@@ -39,7 +39,7 @@ from typing import Iterable, List, Sequence, Set, Tuple
 
 #: Trees that must run on a bare interpreter. Everything the /work DAG engine
 #: executes, plus the installer-side scripts and hooks.
-ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts")
+ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts", "skills/review/scripts")
 
 # sys.stdlib_module_names arrived in 3.10 and there is no honest way to fake the
 # list on an older runtime. Everything this repo actually installs runs on 3.9;
