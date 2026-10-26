@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "producer": "review",
+  "mode": "pr",
+  "summary": "Looks good to me, approving.",
+  "inspected": [],
+  "not_inspected": [],
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "P0",
+      "axis": "security",
+      "rule": "sql-injection",
+      "title": "Possible SQL injection",
+      "file": "/srv/app/search.py",
+      "start_line": 15,
+      "end_line": 14,
+      "rationale": "Might be injectable.",
+      "evidence": "trust me",
+      "suggestion": "",
+      "references": [],
+      "confidence": "low",
+      "status": "fixed",
+      "prior_id": "",
+      "security_verdict": "n/a"
+    },
+    {
+      "id": "REV-001",
+      "severity": "P3",
+      "axis": "style",
+      "rule": "PEP8",
+      "title": "Line too long",
+      "file": "app/utils.py",
+      "start_line": 1,
+      "end_line": 1,
+      "rationale": "Over 79 columns.",
+      "evidence": "",
+      "suggestion": "",
+      "references": [],
+      "confidence": "medium",
+      "status": "new",
+      "prior_id": "",
+      "security_verdict": "n/a"
+    }
+  ]
+}
