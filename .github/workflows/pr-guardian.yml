@@ -27,9 +27,9 @@ jobs:
         (github.event.action == 'labeled' || startsWith(github.event.comment.body, '/ai-review escalate'))
         && 'verdict' || 'review' }}
       cancel-in-progress: true
-    uses: ksprashu/pr-guardian/.github/workflows/review.yml@d6c777ca804224197780d294d5e936a8cf7e16e4
+    uses: ksprashu/pr-guardian/.github/workflows/review.yml@e4ab1858f0ca1d70567e790f22879199f2ecae22
     with:
-      guardian_ref: d6c777ca804224197780d294d5e936a8cf7e16e4
+      guardian_ref: e4ab1858f0ca1d70567e790f22879199f2ecae22
     permissions:
       contents: read
       pull-requests: write
