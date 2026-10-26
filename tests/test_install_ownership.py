@@ -224,9 +224,9 @@ class ReparseAttributeDecoding(unittest.TestCase):
     """The one part of the junction fix that does not need a Windows kernel.
 
     ``test_junction_is_detected_without_isjunction`` above is skipped off
-    Windows, and the Tests CI matrix is ubuntu+macos, so today it runs
-    nowhere. Rather than leave the whole fix resting on that, the fix is split
-    where the platform dependency actually is.
+    Windows, and the Tests CI job runs on ubuntu-latest, so today it runs
+    only on a Windows developer checkout. Rather than leave the whole fix
+    resting on that, the fix is split where the platform dependency actually is.
 
     Whether ``shutil.rmtree`` follows a junction, and whether ``lstat`` sets
     the reparse bit on one, are Windows behaviours and are not tested here.
