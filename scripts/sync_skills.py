@@ -57,7 +57,8 @@ GEMINI_CONFIG_SKILLS_DIR = os.path.expanduser('~/.gemini/config/skills')
 CLAUDE_SKILLS_DIR = os.path.expanduser('~/.claude/skills')
 ANTIGRAVITY_CLI_SKILLS_DIR = os.path.expanduser('~/.gemini/antigravity-cli/skills')
 
-# 15 Core Global Skills (1-Word Primary Action Verbs)
+# Core global skills (1-word primary action verbs). Counts are not hardcoded
+# anywhere: they drifted every time a skill was added or removed.
 CORE_SKILLS = {
     'prompt': os.path.join(CORE_SKILLS_DIR, 'prompt'),
     'grill': os.path.join(CORE_SKILLS_DIR, 'grill'),
@@ -81,7 +82,6 @@ CORE_SKILLS = {
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'work': os.path.join(CORE_SKILLS_DIR, 'work'),
     'profile': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
-    'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
 }
 
 # The four-gate spine. These live in .upstream/ and are fetched at install time
@@ -473,9 +473,9 @@ def interactive_wizard():
 
     print("\n⚡ QUICK PRESETS:")
     print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
-    print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
-    print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
-    print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
+    print("  [core]    All Core Action Skills (c1, c2, c3, c4)")
+    print("  [domain]  All Preferred Domain Skills (d1, d2, d3, d4)")
+    print("  [all]     Complete Forge (All Core & Domain Skills)")
     print("  [custom]  Enter comma-separated skill names")
     print("-" * 74)
 
@@ -1201,8 +1201,8 @@ def main():
     parser.add_argument('--project', type=str, help="Target project workspace for JIT skill bootstrapping")
     parser.add_argument('--skills', type=str, help="Comma-separated skill names to install/bootstrap")
     parser.add_argument('--clusters', type=str, help="Comma-separated cluster codes or presets (c1, c2, c3, c4, d1, d2, d3, d4, content, core, domain, all)")
-    parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
-    parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
+    parser.add_argument('--all', action='store_true', help="Install all core and domain skills")
+    parser.add_argument('--core', action='store_true', help="Install all core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
     parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")

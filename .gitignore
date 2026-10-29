@@ -31,3 +31,9 @@ TEST_READY.md
 
 # Reference-only upstream skills, fetched at install time (never vendored)
 .upstream/
+
+# Agent session state committed inside a skill ships with `npx skills add`
+skills/*/.gemini/
+skills/*/**/.gemini/
+preferred/*/.gemini/
+.antigravitycli/
