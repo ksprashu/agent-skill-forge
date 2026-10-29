@@ -16,4 +16,12 @@ A register is how the same person writes differently by channel. This file defin
 - **Medium**: published or shareable long-form → R3. A decision or planning document → R4. Notes to self or inline comments → R5.
 - **Polish**: R1 and R5 may keep live-only shorthand. R2, R3, and R4 never do.
 
+## R3 Grounding Rules (apply whatever the profile says)
+
+Technical articles, docs, and keynotes carry claims readers will act on:
+
+- Check every CLI flag, API parameter, config key, and preview-vs-GA status against official docs before writing it. Never invent one.
+- Introduce a product or tool with a landing link and a docs link: `[Product](landing) ([Docs](docs))`.
+- End long-form technical posts with a `References & Further Reading` section listing the sources used.
+
 Code comments and commit messages take no register. They get `unslop` only, plus the profile's spelling rule if it has one.

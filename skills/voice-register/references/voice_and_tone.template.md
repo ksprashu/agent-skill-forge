@@ -1,6 +1,6 @@
 # Voice and Tone — <Your Name>
 
-Copy this file to `~/.gemini/personas/default/voice_and_tone.md` (shared with `copy-write`) or to `references/voice_and_tone.local.md` (private, this clone only), then replace every `<...>`. Delete sections you don't need. Concrete examples beat adjectives.
+Copy this file to `~/.gemini/personas/default/voice_and_tone.md` (shared home persona) or to `references/voice_and_tone.local.md` (private, this clone only), then replace every `<...>`. Delete sections you don't need. Concrete examples beat adjectives.
 
 ## Core Persona
 <One or two sentences: role, stance, what you value in writing.>

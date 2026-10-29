@@ -69,12 +69,10 @@ CORE_SKILLS = {
     'unslop': os.path.join(CORE_SKILLS_DIR, 'unslop'),
     'docs': os.path.join(CORE_SKILLS_DIR, 'docs'),
     'catalog': os.path.join(CORE_SKILLS_DIR, 'catalog'),
-    'sync': os.path.join(CORE_SKILLS_DIR, 'sync'),
     'google-oss': os.path.join(CORE_SKILLS_DIR, 'google-oss'),
     'codelab': os.path.join(CORE_SKILLS_DIR, 'codelab'),
     'human-voice': os.path.join(CORE_SKILLS_DIR, 'human-voice'),
     'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
-    'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
     'voice-register': os.path.join(CORE_SKILLS_DIR, 'voice-register'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'atelier': os.path.join(CORE_SKILLS_DIR, 'atelier'),
@@ -104,10 +102,8 @@ ALIASES = {
     'documentation': 'docs',
     'compile-docs': 'docs',
     'knowledge-catalog': 'catalog',
-    'skill-sync': 'sync',
     'make-google-oss': 'google-oss',
     'codelab-creator': 'codelab',
-    'copy-write-bara': 'copy-write',
     'image-gen-expert': 'image-gen',
     'extract-human-voice': 'human-voice',
     'profile-me': 'cognitive-profiler',
@@ -278,14 +274,14 @@ CORE_CLUSTERS = {
     'c3': {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
-        'description': 'Step-by-step Google codelabs, human voice profiling and channel registers, agent communication profiling, technical copywriting, and image generation.',
-        'skills': ['codelab', 'human-voice', 'voice-register', 'cognitive-profiler', 'copy-write', 'image-gen', 'atelier'],
+        'description': 'Step-by-step Google codelabs, human voice profiling and channel registers, agent communication profiling, image generation, and human-grade reports.',
+        'skills': ['codelab', 'human-voice', 'voice-register', 'cognitive-profiler', 'image-gen', 'atelier'],
     },
     'c4': {
         'id': 'docs-governance',
         'name': 'Knowledge & Governance',
         'description': 'Documentation compilation, OKF knowledge catalog, Google OSS hygiene, and continuous alignment.',
-        'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment', 'sync'],
+        'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment'],
     },
     'c5': {
         'id': 'spine',
@@ -473,7 +469,7 @@ def interactive_wizard():
         print(f"       Skills      : {skills_str}")
 
     print("\n⚡ QUICK PRESETS:")
-    print("  [content] Content & Creative only (codelab, human-voice, voice-register, cognitive-profiler, copy-write, image-gen)")
+    print("  [content] Content & Creative only (codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
@@ -1205,7 +1201,7 @@ def main():
     parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
-    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
     parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")
