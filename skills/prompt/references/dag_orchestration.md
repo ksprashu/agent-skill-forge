@@ -72,7 +72,7 @@ When operating in Heavyweight Mode, `prompt-writer` compiles user requirements i
     "test",
     "review",
     "verify",
-    "security-and-hardening"
+    "agent-security-posture"
   ],
   "nodes": [
     {
@@ -83,7 +83,7 @@ When operating in Heavyweight Mode, `prompt-writer` compiles user requirements i
       "prompt_file": "tasks/task_01_scan.md",
       "type_name": "research",
       "subagent_role": "Scout - Vulnerability & Path Auditor",
-      "subagent_skills": ["review", "security-and-hardening"],
+      "subagent_skills": ["review", "agent-security-posture"],
       "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": [],
@@ -106,7 +106,7 @@ When operating in Heavyweight Mode, `prompt-writer` compiles user requirements i
       "prompt_file": "tasks/task_02_pool.md",
       "type_name": "self",
       "subagent_role": "Builder - Concurrency Engineer",
-      "subagent_skills": ["spec", "test", "security-and-hardening"],
+      "subagent_skills": ["spec", "test", "agent-security-posture"],
       "model_tier": "inherit",
       "workspace_mode": "branch",
       "dependencies": ["task_01"],

@@ -64,7 +64,7 @@ python3 ~/code/github/agent-skill-sync/skills/skill-sync/scripts/sync_skills.py 
 1. **Frontend & UI Engineering** (`frontend-ui-engineering`): Modern CSS, `:has()`, Container Queries, View Transitions, anti-AI component design.
 2. **Performance Optimization** (`performance-optimization`): Core Web Vitals (CWV), LCP/INP budgets, memory leak detection, "Neutral is a revert".
 3. **API & Interface Design** (`api-and-interface-design`): Hyrum's law, discriminated unions, idempotent routes, backward compatibility.
-4. **Security & Hardening** (`security-and-hardening`): Trust boundary mapping, OWASP Top 10, CWE mitigations, secret scanning.
+4. **Agent Security Posture** (`agent-security-posture`): Untrusted-content authority rules, OSV/NVD dependency checks, secret handling, finding verdicts.
 5. **Database Deprecation & Migration** (`deprecation-and-migration`): Expand/Contract schema evolution, non-blocking index additions, AlloyDB/PostgreSQL migrations.
 6. **Browser DevTools Testing** (`browser-testing-with-devtools`): Headless Chrome debugging, console log captures, network payload inspection.
 7. **Observability & Instrumentation** (`observability-and-instrumentation`): Structured JSON logging, OpenTelemetry tracing, Prometheus metrics.

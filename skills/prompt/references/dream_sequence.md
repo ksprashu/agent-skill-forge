@@ -44,7 +44,7 @@ During execution of a `task_graph.json`, the Manager thread enforces the **Never
 ### Step 1: Challenger Adversarial Probe
 When the Producer completes an implementation node, the Manager launches a specialized **Challenger Subagent**:
 - **Role**: `Challenger - Adversarial Fuzzer & Stress Tester`
-- **Attached Skills**: `review`, `test`, `security-and-hardening`
+- **Attached Skills**: `review`, `test`, `agent-security-posture`
 - **Model**: `inherit`
 - **Directive**: Actively attempt to break the implementation with boundary fuzzing, race conditions, memory leaks, or unhandled exceptions.
 
