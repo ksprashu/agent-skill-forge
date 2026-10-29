@@ -95,6 +95,23 @@ SPINE_SKILLS = {
 UPSTREAM_SPINE = {'echo', 'grill', 'done', 'brainstorm', 'research', 'doubt',
                   'prove', 'bar', 'scope', 'land', 'nudge'}
 
+
+def upstream_lock_names():
+    """Skill names pinned in config/upstream.lock.json, fetched or not.
+
+    Lets the installers tell "declared but not fetched yet" apart from a typo.
+    A missing or unreadable lock file is not fatal here: it just means no name
+    gets the fetch hint.
+    """
+    try:
+        with open(UPSTREAM_LOCK_FILE, 'r', encoding='utf-8') as f:
+            return set(json.load(f).get('skills', {}))
+    except (OSError, ValueError):
+        return set()
+
+
+NOT_FETCHED_HINT = "run scripts/fetch_upstream.py, then sync again"
+
 # Backward-Compatible Aliases
 ALIASES = {
     'prompt-writer': 'prompt',
@@ -300,6 +317,10 @@ CORE_CLUSTERS = {
 # install time, and --core must stay a local, offline-capable selection.
 CORE_AGGREGATE = ('c1', 'c2', 'c3', 'c4')
 
+# Every domain skill except agent-security-posture is addyosmani/agent-skills,
+# pinned in config/upstream.lock.json and materialised into .upstream/ by
+# scripts/fetch_upstream.py. Nothing here is vendored. Until the fetch has run,
+# those names are reported as NOT FETCHED and skipped, never as an error.
 DOMAIN_CLUSTERS = {
     'd1': {
         'id': 'fullstack',
@@ -315,9 +336,8 @@ DOMAIN_CLUSTERS = {
     'd2': {
         'id': 'security',
         'name': 'Security, Diagnostics & Reliability',
-        'description': 'OWASP threat modeling & hardening, agent security posture and dependency checks, root-cause debugging checklist, OpenTelemetry & structured logging.',
+        'description': 'Agent security posture and dependency checks, root-cause debugging checklist, OpenTelemetry & structured logging.',
         'skills': [
-            'security-and-hardening',
             'agent-security-posture',
             'debugging-and-error-recovery',
             'observability-and-instrumentation',
@@ -335,11 +355,10 @@ DOMAIN_CLUSTERS = {
     },
     'd4': {
         'id': 'ai',
-        'name': 'AI & Evaluation',
-        'description': 'Context window token management and universal AI assistant benchmark evaluation harness.',
+        'name': 'AI & Context',
+        'description': 'Context window token management: rules files, context packing, and session hygiene.',
         'skills': [
             'context-engineering',
-            'benchmark-harness',
         ],
     },
 }
@@ -474,7 +493,7 @@ def interactive_wizard():
     print("\n⚡ QUICK PRESETS:")
     print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
-    print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
+    print("  [domain]  All Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 31 Core & Domain Skills)")
     print("  [custom]  Enter comma-separated skill names")
     print("-" * 74)
@@ -999,6 +1018,8 @@ def sync_global_skills(prune=False, fix=False, copy_mode=False, selected_skills=
             exists = os.path.exists(os.path.join(path, 'SKILL.md'))
             status = "EXISTS" if exists else "MISSING CANONICAL SOURCE"
             print(f"  - {name:32} -> {path} [{status}]")
+        elif name in upstream_lock_names():
+            print(f"  ! {name:32} [NOT FETCHED] {NOT_FETCHED_HINT}")
         else:
             print(f"  ! {name:32} [NOT FOUND IN FORGE]")
 
@@ -1116,7 +1137,10 @@ def bootstrap_project_skills(project_dir, skill_names, fix=False, copy_mode=Fals
 
         skill_info = all_skills.get(skill)
         if not skill_info:
-            print(f"  [NOT FOUND LOCALLY] {skill} — Try pulling via: npx skills add <package> --skill {skill}")
+            if skill in upstream_lock_names():
+                print(f"  [NOT FETCHED] {skill} — {NOT_FETCHED_HINT}")
+            else:
+                print(f"  [NOT FOUND LOCALLY] {skill} — Try pulling via: npx skills add <package> --skill {skill}")
             continue
 
         src_path = skill_info['path']
@@ -1203,7 +1227,7 @@ def main():
     parser.add_argument('--clusters', type=str, help="Comma-separated cluster codes or presets (c1, c2, c3, c4, d1, d2, d3, d4, content, core, domain, all)")
     parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
-    parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
+    parser.add_argument('--domain', action='store_true', help="Install the preferred domain skills (d1, d2, d3, d4; most are fetched from upstream)")
     parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
@@ -1251,9 +1275,13 @@ def main():
             path = CORE_SKILLS[name]
             print(f"  - {name:22} -> {path}")
         print("\n🛠️ Preferred Domain Skills (On-Demand JIT):")
-        for name, info in sorted(all_skills.items()):
-            if info['type'] == 'preferred':
-                print(f"  - {name:32} -> {info['path']}")
+        for c in DOMAIN_CLUSTERS.values():
+            for name in c['skills']:
+                info = all_skills.get(name)
+                if info and info['type'] in ('preferred', 'upstream'):
+                    print(f"  - {name:32} -> {info['path']}")
+                else:
+                    print(f"  - {name:32} [NOT FETCHED] {NOT_FETCHED_HINT}")
         return
 
     if args.interactive:

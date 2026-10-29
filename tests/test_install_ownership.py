@@ -462,7 +462,7 @@ class CopiesAndLinksPruneAlike(unittest.TestCase):
                 sync_skills.remove_path_or_link(str(alias))
 
     def test_plain_prune_keeps_an_available_skill_outside_the_selection(self):
-        name = "performance-optimization"
+        name = "agent-security-posture"
         self.assertNotIn(name, sync_skills.CORE_SKILLS, "precondition: not a default skill")
         for copy in (False, True):
             with self.subTest(copy=copy):

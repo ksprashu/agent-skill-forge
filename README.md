@@ -36,9 +36,10 @@ python3 hooks/design_gate.py --status           # is it open, and why
 FORGE_GATE=off claude                           # bypass for one session
 ```
 
-Eleven of the twelve spine skills are **not written here**. They are referenced
-from upstream repositories at pinned commit SHAs and fetched at install time —
-nothing is vendored, nothing is forked. See
+Eleven of the twelve spine skills are **not written here**, and neither are
+the `addyosmani/agent-skills` domain skills. They are referenced from upstream
+repositories at pinned commit SHAs and fetched at install time — nothing is
+vendored, nothing is forked. See
 [§ Reference-Only Upstream Skills](#-reference-only-upstream-skills).
 
 ### One spine, every harness
@@ -116,7 +117,7 @@ bash scripts/install.sh --core
 # Install all Preferred Domain skills (D1, D2, D3, D4)
 bash scripts/install.sh --domain
 
-# Install the COMPLETE Forge (All 31 Core + Domain skills)
+# Install the COMPLETE Forge (all Core + Domain skills)
 bash scripts/install.sh --all
 
 # Bootstrap specific clusters into a local project workspace only (.gemini/skills)
@@ -186,28 +187,26 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 
 ## 🛠️ Preferred Domain Skills Taxonomy (4 Clusters)
 
-The 13 Preferred Domain Skills are stored in [`preferred/`](./preferred/) for project-scoped bootstrapping or selective global installation:
+Preferred domain skills are for project-scoped bootstrapping or selective global installation. All but one come from [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT): they are pinned in [`config/upstream.lock.json`](./config/upstream.lock.json) and fetched into `.upstream/` at install time, not vendored. [`agent-security-posture`](./preferred/agent-security-posture) is the one local skill in [`preferred/`](./preferred/). If the fetch has not run, the installers list the upstream names as `[NOT FETCHED]` and skip them.
 
 ### 🌐 Cluster D1: Full-Stack & Quality (`fullstack`)
-*   **[`frontend-ui-engineering`](./preferred/frontend-ui-engineering)**: Modern CSS (`:has()`, container queries, View Transitions), accessible components, and slop-free design systems.
-*   **[`performance-optimization`](./preferred/performance-optimization)**: Core Web Vitals (CWV) budgets (LCP $\le 2.5$s, INP $\le 200$ms), memory leak diagnosis, and layout thrashing fixes.
-*   **[`browser-testing-with-devtools`](./preferred/browser-testing-with-devtools)**: Headless Chrome DevTools automation, runtime console trapping, and live DOM inspection via MCP.
-*   **[`api-and-interface-design`](./preferred/api-and-interface-design)**: Hyrum's law guardrails, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility.
+*   **[`frontend-ui-engineering`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/frontend-ui-engineering)**: Modern CSS (`:has()`, container queries, View Transitions), accessible components, and slop-free design systems.
+*   **[`performance-optimization`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/performance-optimization)**: Core Web Vitals (CWV) budgets (LCP $\le 2.5$s, INP $\le 200$ms), memory leak diagnosis, and layout thrashing fixes.
+*   **[`browser-testing-with-devtools`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/browser-testing-with-devtools)**: Headless Chrome DevTools automation, runtime console trapping, and live DOM inspection via MCP.
+*   **[`api-and-interface-design`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/api-and-interface-design)**: Hyrum's law guardrails, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility.
 
 ### 🛡️ Cluster D2: Security, Diagnostics & Reliability (`security`)
-*   **[`security-and-hardening`](./preferred/security-and-hardening)**: Trust boundary mapping, STRIDE threat modeling, OWASP Top 10 mitigations, and secret sanitization.
 *   **[`agent-security-posture`](./preferred/agent-security-posture)**: Security posture for coding agents: untrusted-content authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, and a read-only infrastructure audit mode.
-*   **[`debugging-and-error-recovery`](./preferred/debugging-and-error-recovery)**: Systematic 6-step root cause analysis, stack trace deconstruction, and Stop-the-Line discipline.
-*   **[`observability-and-instrumentation`](./preferred/observability-and-instrumentation)**: Structured JSON logging, OpenTelemetry distributed tracing, RED/USE metrics, and alert rules.
+*   **[`debugging-and-error-recovery`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/debugging-and-error-recovery)**: Systematic 6-step root cause analysis, stack trace deconstruction, and Stop-the-Line discipline.
+*   **[`observability-and-instrumentation`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/observability-and-instrumentation)**: Structured JSON logging, OpenTelemetry distributed tracing, RED/USE metrics, and alert rules.
 
 ### 🚀 Cluster D3: DevOps & Workflows (`devops`)
-*   **[`ci-cd-and-automation`](./preferred/ci-cd-and-automation)**: Multi-platform GitHub Actions workflows, matrix testing, deterministic caching, and automated release gates.
-*   **[`git-workflow-and-versioning`](./preferred/git-workflow-and-versioning)**: Trunk-based Git workflows, short-lived feature branches, conventional commits, and atomic PRs.
-*   **[`deprecation-and-migration`](./preferred/deprecation-and-migration)**: Expand/Contract database migrations, automated codemods, and zero-downtime schema evolution.
+*   **[`ci-cd-and-automation`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/ci-cd-and-automation)**: Multi-platform GitHub Actions workflows, matrix testing, deterministic caching, and automated release gates.
+*   **[`git-workflow-and-versioning`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/git-workflow-and-versioning)**: Trunk-based Git workflows, short-lived feature branches, conventional commits, and atomic PRs.
+*   **[`deprecation-and-migration`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/deprecation-and-migration)**: Expand/Contract database migrations, automated codemods, and zero-downtime schema evolution.
 
-### 🧠 Cluster D4: AI & Evaluation (`ai`)
-*   **[`context-engineering`](./preferred/context-engineering)**: Token context window budgeting, prompt packing, 5-tier context hierarchy, and progressive memory eviction.
-*   **[`benchmark-harness`](./preferred/benchmark-harness)**: Standardized evaluation suite scoring codebases across 12 standardized engineering use cases with Dual Gemini LLM Judges.
+### 🧠 Cluster D4: AI & Context (`ai`)
+*   **[`context-engineering`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/context-engineering)**: Token context window budgeting, prompt packing, 5-tier context hierarchy, and progressive memory eviction.
 
 👉 See the **[Preferred Skills Guide](./preferred/PREFERRED_SKILLS.md)** for `npx skills` commands and individual installation details.
 
@@ -255,6 +254,24 @@ python3 scripts/fetch_upstream.py --offline  # install from local cache only
 | **`land`** | human | [`Shubhamsaboo/awesome-llm-apps` · first-reader](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/agent_skills/first-reader) | Apache-2.0 |
 | **`nudge`** | human | [`anthropics/skills` · discernment-nudge](https://github.com/anthropics/skills/tree/main/skills/discernment-nudge) | Custom — see upstream `LICENSE.txt` |
 
+The preferred domain skills below are fetched the same way, with no overlay: the
+installed `SKILL.md` is upstream's text plus a provenance block. All are by
+**Addy Osmani**, MIT, pinned at
+[`aeac41d`](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d).
+
+| Skill | Cluster | Upstream | Licence |
+| :--- | :--- | :--- | :--- |
+| **`frontend-ui-engineering`** | d1 | [`addyosmani/agent-skills` · frontend-ui-engineering](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/frontend-ui-engineering) | MIT |
+| **`performance-optimization`** | d1 | [`addyosmani/agent-skills` · performance-optimization](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/performance-optimization) | MIT |
+| **`browser-testing-with-devtools`** | d1 | [`addyosmani/agent-skills` · browser-testing-with-devtools](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/browser-testing-with-devtools) | MIT |
+| **`api-and-interface-design`** | d1 | [`addyosmani/agent-skills` · api-and-interface-design](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/api-and-interface-design) | MIT |
+| **`debugging-and-error-recovery`** | d2 | [`addyosmani/agent-skills` · debugging-and-error-recovery](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/debugging-and-error-recovery) | MIT |
+| **`observability-and-instrumentation`** | d2 | [`addyosmani/agent-skills` · observability-and-instrumentation](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/observability-and-instrumentation) | MIT |
+| **`ci-cd-and-automation`** | d3 | [`addyosmani/agent-skills` · ci-cd-and-automation](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/ci-cd-and-automation) | MIT |
+| **`git-workflow-and-versioning`** | d3 | [`addyosmani/agent-skills` · git-workflow-and-versioning](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/git-workflow-and-versioning) | MIT |
+| **`deprecation-and-migration`** | d3 | [`addyosmani/agent-skills` · deprecation-and-migration](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/deprecation-and-migration) | MIT |
+| **`context-engineering`** | d4 | [`addyosmani/agent-skills` · context-engineering](https://github.com/addyosmani/agent-skills/tree/aeac41d4d005999432bb7312f7ff06383a91d59d/skills/context-engineering) | MIT |
+
 Thank you to **Matt Pocock**, **Addy Osmani**, **Jesse Vincent (obra)**,
 **Affaan Mustafa**, **Shubham Saboo**, and **Anthropic**. The forge is glue
 around your work, not a replacement for it.
@@ -300,7 +317,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
-| **Preferred Skills (13)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
+| **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. |
 
 ---
 
@@ -359,7 +376,7 @@ gate without adding theatre.
 ```
 agent-skill-forge/
 ├── skills/                     # Core Universal Global Action Verbs
-├── preferred/                  # 13 Curated Domain-Specific Skills (JIT)
+├── preferred/                  # Local domain skill + catalog of upstream ones (JIT)
 │   ├── catalog.json            # Machine-readable registry
 │   └── PREFERRED_SKILLS.md     # Quick bootstrap guide
 ├── config/

@@ -148,7 +148,7 @@ The skill actively maps work to:
 
 ## Related Skills
 
-- `security-and-hardening` — classic web-app threat modeling, STRIDE, OWASP Web Top 10 patterns, secret hygiene.
+- `review` — structured code review, including a security dimension for classic web-app issues.
 - This skill focuses on agent- and harness-specific risks, dependency checks and authorisation boundaries during coding work.
 
 ## License & Attribution

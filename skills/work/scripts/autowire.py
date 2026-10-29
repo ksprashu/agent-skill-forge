@@ -21,8 +21,8 @@ directly into subagent prompt briefs". Nothing scanned anything. The matrix in
 that document was a table an agent was trusted to read and apply from memory,
 which meant the paths in it drifted from the filesystem and nobody found out.
 
-This module does the scanning. It walks ``skills/*/SKILL.md`` and
-``preferred/*/SKILL.md``, reads their frontmatter, folds in the tags from
+This module does the scanning. It walks ``skills/*/SKILL.md``,
+``preferred/*/SKILL.md`` and ``.upstream/*/SKILL.md``, reads their frontmatter, folds in the tags from
 ``preferred/catalog.json`` when present, matches a task description against a
 declared domain matrix, and emits the exact injection lines for the dispatch
 payload.
@@ -37,7 +37,11 @@ What it does and does not claim:
 The one thing here that is a hard verdict is ``--check``: every skill path
 named in the matrix must resolve to a real ``SKILL.md`` on disk. A matrix row
 pointing at a skill that was renamed or deleted is a broken brief, and that is
-mechanically decidable, so it exits non-zero.
+mechanically decidable, so it exits non-zero. Paths under ``.upstream/`` are
+the exception that proves it: those skills are pinned in
+``config/upstream.lock.json`` and only appear on disk after
+``scripts/fetch_upstream.py`` runs. Declared but unfetched is reported as NOT
+FETCHED, not as a failure; a ``.upstream/`` path the lock does not declare is.
 
 Exit codes: 0 success, 1 check failed, 2 invocation error.
 """
@@ -52,9 +56,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-SKILL_ROOTS = ("skills", "preferred")
+#: Always present in a forge checkout; default_repo_root anchors on these.
+REQUIRED_ROOTS = ("skills", "preferred")
+UPSTREAM_ROOT = ".upstream"
+#: Scanned in order. ``.upstream/`` exists only once the fetch has run.
+SKILL_ROOTS = REQUIRED_ROOTS + (UPSTREAM_ROOT,)
 SKILL_FILENAME = "SKILL.md"
 CATALOG_RELPATH = Path("preferred") / "catalog.json"
+LOCK_RELPATH = Path("config") / "upstream.lock.json"
+FETCH_HINT = "run scripts/fetch_upstream.py"
 
 
 def default_repo_root() -> Path:
@@ -68,7 +78,7 @@ def default_repo_root() -> Path:
     """
     here = Path(__file__).resolve()
     for candidate in here.parents:
-        if all((candidate / root).is_dir() for root in SKILL_ROOTS):
+        if all((candidate / root).is_dir() for root in REQUIRED_ROOTS):
             return candidate
     return Path.cwd()
 
@@ -131,6 +141,8 @@ class Match:
     terms: List[str] = field(default_factory=list)
     resolved: List[SkillEntry] = field(default_factory=list)
     missing: List[str] = field(default_factory=list)
+    #: Declared in the upstream lock file, not materialised yet.
+    unfetched: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -140,6 +152,7 @@ class Match:
             "instructions": self.domain.instructions,
             "skills": [entry.to_dict() for entry in self.resolved],
             "missing_skills": list(self.missing),
+            "unfetched_skills": list(self.unfetched),
         }
 
 
@@ -149,7 +162,7 @@ class Match:
 DOMAIN_MATRIX: Tuple[Domain, ...] = (
     Domain(
         label="Database, Schema & API Contracts",
-        skills=("preferred/api-and-interface-design",),
+        skills=(".upstream/api-and-interface-design",),
         roles=("Explorer", "Worker"),
         instructions="Relational normalization, migration immutability, zero dummy seeds.",
         triggers=(
@@ -161,7 +174,7 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
     ),
     Domain(
         label="Observability & Logging",
-        skills=("preferred/observability-and-instrumentation",),
+        skills=(".upstream/observability-and-instrumentation",),
         roles=("Explorer", "Worker"),
         instructions="Structured JSON logs, sensitive data scrubbing, /api/health.",
         triggers=(
@@ -173,7 +186,7 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
     ),
     Domain(
         label="Security & RBAC",
-        skills=("preferred/security-and-hardening",),
+        skills=("preferred/agent-security-posture", "skills/review"),
         roles=("Challenger", "Auditor"),
         instructions="OWASP Top 10, constant-time token comparison, brute-force mitigation.",
         triggers=(
@@ -185,7 +198,7 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
     ),
     Domain(
         label="CI/CD & Workflows",
-        skills=("preferred/ci-cd-and-automation",),
+        skills=(".upstream/ci-cd-and-automation",),
         roles=("Worker", "Reviewer"),
         instructions="Deterministic caching, GitHub Actions, zero-secret hygiene.",
         triggers=(
@@ -215,7 +228,7 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
     ),
     Domain(
         label="Performance & Benchmarking",
-        skills=("preferred/performance-optimization", "preferred/benchmark-harness"),
+        skills=(".upstream/performance-optimization",),
         roles=("Challenger", "Worker"),
         instructions="Latency budgets, p99 regression gates, memory leak detection.",
         triggers=(
@@ -275,8 +288,24 @@ def load_catalog_tags(repo_root: Path) -> Dict[str, Tuple[str, ...]]:
     return tags
 
 
+def load_upstream_names(repo_root: Path) -> frozenset:
+    """Skill names pinned in ``config/upstream.lock.json``, fetched or not."""
+    try:
+        payload = json.loads((repo_root / LOCK_RELPATH).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    skills = payload.get("skills", {}) if isinstance(payload, dict) else {}
+    return frozenset(skills) if isinstance(skills, dict) else frozenset()
+
+
+def is_declared_upstream(relpath: str, declared: frozenset) -> bool:
+    """True for ``.upstream/<name>`` when the lock file pins ``<name>``."""
+    root, _, name = relpath.partition("/")
+    return root == UPSTREAM_ROOT and name in declared
+
+
 def discover_skills(repo_root: Path) -> List[SkillEntry]:
-    """Scan ``skills/`` and ``preferred/`` for installed skills."""
+    """Scan ``skills/``, ``preferred/`` and ``.upstream/`` for installed skills."""
     tags = load_catalog_tags(repo_root)
     entries: List[SkillEntry] = []
     for root_name in SKILL_ROOTS:
@@ -374,16 +403,28 @@ def match_domains(
     return matches
 
 
-def resolve(matches: Iterable[Match], entries: Sequence[SkillEntry]) -> List[Match]:
-    """Attach the on-disk skill for each matched path; note the ones missing."""
+def resolve(
+    matches: Iterable[Match],
+    entries: Sequence[SkillEntry],
+    *,
+    declared: frozenset = frozenset(),
+) -> List[Match]:
+    """Attach the on-disk skill for each matched path; note the ones absent.
+
+    ``declared`` is the set of upstream lock names. An absent ``.upstream/``
+    path that the lock pins is unfetched, not missing.
+    """
     by_path = {entry.relpath: entry for entry in entries}
     resolved: List[Match] = []
     for match in matches:
         match.resolved = []
         match.missing = []
+        match.unfetched = []
         for relpath in match.domain.skills:
             entry = by_path.get(relpath)
-            if entry is None:
+            if entry is None and is_declared_upstream(relpath, declared):
+                match.unfetched.append(relpath)
+            elif entry is None:
                 match.missing.append(relpath)
             else:
                 match.resolved.append(entry)
@@ -400,7 +441,8 @@ def autowire(
 ) -> List[Match]:
     """Full pipeline: scan the catalogs, match the task, resolve the paths."""
     entries = discover_skills(repo_root)
-    matches = resolve(match_domains(task, role=role), entries)
+    matches = resolve(match_domains(task, role=role), entries,
+                      declared=load_upstream_names(repo_root))
     if limit is not None and limit >= 0:
         matches = matches[:limit]
     return matches
@@ -416,7 +458,7 @@ def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str
 
     Paths are absolute. The brief tells a subagent to open each file, and that
     subagent is standing in the target project, not in the forge checkout --
-    ``preferred/security-and-hardening/SKILL.md`` resolves against its
+    ``preferred/agent-security-posture/SKILL.md`` resolves against its
     workspace and is not there. Every skill the autowiring named was
     unopenable by the agent instructed to read it, which is the quiet version
     of the feature not working at all.
@@ -438,6 +480,11 @@ def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str
             )
         for missing in match.missing:
             lines.append(f"- MISSING: {missing} — declared in the matrix, absent on disk")
+        for unfetched in match.unfetched:
+            lines.append(
+                f"- NOT FETCHED: {unfetched} — pinned upstream, not on disk yet; "
+                f"{FETCH_HINT}"
+            )
     lines.append(
         "These are keyword matches against the task text, not a judgement about "
         "what the task needs. Read them and apply the ones that apply."
@@ -445,7 +492,12 @@ def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str
     return "\n".join(lines)
 
 
-def render_listing(entries: Sequence[SkillEntry], matrix: Sequence[Domain]) -> str:
+def render_listing(
+    entries: Sequence[SkillEntry],
+    matrix: Sequence[Domain],
+    *,
+    declared: frozenset = frozenset(),
+) -> str:
     """Human-readable dump of the matrix and its resolution status."""
     by_path = {entry.relpath: entry for entry in entries}
     lines = [f"Discovered {len(entries)} skills under {'/, '.join(SKILL_ROOTS)}/", ""]
@@ -453,7 +505,12 @@ def render_listing(entries: Sequence[SkillEntry], matrix: Sequence[Domain]) -> s
         lines.append(f"{domain.label}  [roles: {', '.join(domain.roles)}]")
         for relpath in domain.skills:
             entry = by_path.get(relpath)
-            status = "ok" if entry else "MISSING"
+            if entry:
+                status = "ok"
+            elif is_declared_upstream(relpath, declared):
+                status = "not fetched"
+            else:
+                status = "MISSING"
             detail = f" — {entry.description}" if entry and entry.description else ""
             lines.append(f"  [{status}] {relpath}{detail}")
         lines.append(f"  triggers: {', '.join(domain.triggers)}")
@@ -467,8 +524,12 @@ def render_listing(entries: Sequence[SkillEntry], matrix: Sequence[Domain]) -> s
 
 
 def check_matrix(repo_root: Path, matrix: Sequence[Domain] = DOMAIN_MATRIX) -> List[str]:
-    """Every skill named in the matrix must exist. Returns the failures."""
+    """Every skill named in the matrix must exist or be pinned upstream.
+
+    Returns the failures.
+    """
     entries = {entry.relpath for entry in discover_skills(repo_root)}
+    declared = load_upstream_names(repo_root)
     problems: List[str] = []
     for domain in matrix:
         if not domain.skills:
@@ -476,7 +537,13 @@ def check_matrix(repo_root: Path, matrix: Sequence[Domain] = DOMAIN_MATRIX) -> L
         if not domain.triggers:
             problems.append(f"{domain.label}: has no triggers, so it can never match")
         for relpath in domain.skills:
-            if relpath not in entries:
+            if relpath in entries or is_declared_upstream(relpath, declared):
+                continue
+            if relpath.startswith(f"{UPSTREAM_ROOT}/"):
+                problems.append(
+                    f"{domain.label}: {relpath} is not declared in {LOCK_RELPATH.as_posix()}"
+                )
+            else:
                 problems.append(
                     f"{domain.label}: {relpath}/{SKILL_FILENAME} does not exist"
                 )
@@ -522,11 +589,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             for problem in problems:
                 print(f"error: {problem}", file=sys.stderr)
             return 1
-        print(f"autowire matrix ok: {len(DOMAIN_MATRIX)} domains resolve on disk")
+        print(f"autowire matrix ok: {len(DOMAIN_MATRIX)} domains resolve on disk "
+              f"or are pinned upstream")
         return 0
 
     if args.list:
-        print(render_listing(discover_skills(repo_root), DOMAIN_MATRIX), end="")
+        print(render_listing(discover_skills(repo_root), DOMAIN_MATRIX,
+                             declared=load_upstream_names(repo_root)), end="")
         return 0
 
     if not args.task:

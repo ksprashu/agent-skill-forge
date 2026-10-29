@@ -247,7 +247,7 @@ def load_overlay(entry):
         return f.read().strip()
 
 
-def provenance_block(name, entry):
+def provenance_block(name, entry, has_overlay=True):
     lic = entry.get('license', 'unknown')
     note = entry.get('license_note')
     lines = [
@@ -266,14 +266,22 @@ def provenance_block(name, entry):
     ]
     if note:
         lines.append(f"- Licence note: {note}")
+    lines += ['', 'What is whose, exactly:', '']
+    if has_overlay:
+        lines += [
+            f"- Everything above the `{OVERLAY_HEADING}` heading is the upstream author's",
+            '  text at that commit, unchanged.',
+            f"- The `{OVERLAY_HEADING}` section below it is written by the forge, not by",
+            '  the upstream author. It describes how this skill wires into the forge spine.',
+        ]
+    else:
+        # Domain skills ship with no overlay. Pointing at a heading that is not
+        # there would make the one block meant to be exact about authorship wrong.
+        lines += [
+            "- Everything above this provenance block is the upstream author's text at",
+            '  that commit, unchanged. The forge adds nothing but this block.',
+        ]
     lines += [
-        '',
-        'What is whose, exactly:',
-        '',
-        f"- Everything above the `{OVERLAY_HEADING}` heading is the upstream author's",
-        '  text at that commit, unchanged.',
-        f"- The `{OVERLAY_HEADING}` section below it is written by the forge, not by",
-        '  the upstream author. It describes how this skill wires into the forge spine.',
         f"- One upstream field is rewritten: frontmatter `name:` becomes `{name}`, so the",
         "  skill installs under the forge naming scheme. Every other field is upstream's.",
         '',
@@ -313,7 +321,7 @@ def apply_overlay(skill_dir, name, entry):
         if not text.startswith(OVERLAY_HEADING):
             text = f"{OVERLAY_HEADING}\n\n{text}"
         out += '\n---\n\n' + text + '\n'
-    out += provenance_block(name, entry)
+    out += provenance_block(name, entry, has_overlay=bool(overlay))
 
     with open(skill_md, 'w', encoding='utf-8') as f:
         f.write(out)
