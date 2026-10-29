@@ -116,7 +116,7 @@ bash scripts/install.sh --core
 # Install all Preferred Domain skills (D1, D2, D3, D4)
 bash scripts/install.sh --domain
 
-# Install the COMPLETE Forge (All 31 Core + Domain skills)
+# Install the COMPLETE Forge (all Core + Domain skills)
 bash scripts/install.sh --all
 
 # Bootstrap specific clusters into a local project workspace only (.gemini/skills)
@@ -136,7 +136,7 @@ python3 scripts/sync_skills.py --list-clusters
 
 ## 🌟 Core Skills Taxonomy (4 Clusters)
 
-The 20 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
+The Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*

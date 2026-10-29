@@ -31,7 +31,7 @@ Agent Skill Forge splits skills into two distinct tiers to balance discovery spe
 ```
 
 ### Architectural Benefits:
-1. **Token Window Economy**: Modern LLM agents inject active skill descriptions into their system prompts on every turn. Restricting global scope to 16 core verbs keeps token overhead minimal ($\le 800$ tokens total) and inference latency low.
+1. **Token Window Economy**: Modern LLM agents inject active skill descriptions into their system prompts on every turn. Restricting global scope to a small set of core verbs keeps token overhead minimal ($\le 800$ tokens total) and inference latency low.
 2. **Elimination of Semantic Collisions**: Clear, distinctive 1-word verbs eliminate intent ambiguity between overlapping commands.
 3. **Domain Purity**: A backend Python microservice doesn't need CSS `:has()` rules in its agent context, and a frontend Next.js app doesn't need PostgreSQL WAL tuning instructions.
 

@@ -6,11 +6,11 @@ description: "Comprehensive dictionary, clusters, triggers, and attribution line
 
 # 📚 Skills Catalog Reference & Attribution Matrix
 
-Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 29 skills in **Agent Skill Forge**.
+Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for every skill in **Agent Skill Forge**.
 
 ---
 
-## 🌟 1. Core Universal Action Verbs (17 Skills across 4 Clusters)
+## 🌟 1. Core Universal Action Verbs (4 Clusters)
 
 The Core Skills can be installed individually or in functional clusters using `bash scripts/install.sh --clusters <ids>` (e.g. `--clusters c3` or `--content`).
 
