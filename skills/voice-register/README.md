@@ -4,7 +4,7 @@ Applies a person's writing voice and channel-specific register (quick email, sta
 
 ## Profile Resolution
 1. `references/voice_and_tone.local.md`: private, gitignored
-2. `~/.gemini/personas/default/voice_and_tone.md`: shared with `copy-write`
+2. `~/.gemini/personas/default/voice_and_tone.md`: shared home persona
 3. `references/voice_and_tone.template.md`: neutral baseline
 
 Named profiles in `references/profiles/` (the author's is `ksprashu.md`) apply only when you ask for them or link one into tier 1 or 2:

@@ -18,7 +18,7 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 Available globally or installable in focused sections:
 *   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
-*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `copy-write`, `image-gen`
+*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `image-gen`
 *   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
 
 ### 🛠️ Domain Clusters (13 Preferred Skills)
@@ -48,10 +48,10 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                │                              │                                  │                              │
                │ C3: Content & Creative       │                                  │ D3: DevOps & Workflows       │
                │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
-               │     /copy-write, /image-gen  │                                  │     deprecation-migration    │
+               │ /voice-register, /image-gen  │                                  │     deprecation-migration    │
                │                              │                                  │                              │
                │ C4: Knowledge & Governance   │                                  │ D4: AI & Evaluation          │
-               │     /docs, /catalog, /sync,  │                                  │     context-engineering,     │
+               │     /docs, /catalog,         │                                  │     context-engineering,     │
                │     /google-oss, /align      │                                  │     benchmark-harness        │
                └──────────────────────────────┘                                  └──────────────────────────────┘
 ```
@@ -118,7 +118,7 @@ bash scripts/install.sh --all
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
 *   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for `claat`.
 *   **`/human-voice`** (`skills/human-voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
-*   **`/copy-write`** (`skills/copy-write`): Technical drafting companion for articles, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`).
+*   **`voice-register`** (`skills/voice-register`): Applies your voice profile in the right channel register (email, blog, strategy doc, notes) on top of `unslop`. Profile tiers: `.local.md` > `~/.gemini/personas/default/` > `.template.md`.
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
@@ -126,7 +126,6 @@ bash scripts/install.sh --all
 *   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
 *   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
 *   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
-*   **`/sync`** (`skills/sync`): Manages symlinks across global agent directories and bootstraps domain skills into project workspaces on demand.
 
 ---
 
@@ -143,7 +142,7 @@ For any substantive engineering, refactoring, or feature development task, invok
       │
 [4. /plan]    ────────► Slice into vertical tasks with verification checkpoints
       │
-[5. /sync]    ────────► Bootstrap required JIT domain skills into workspace
+[5. JIT sync] ────────► `scripts/sync_skills.py --project . --skills <names> --fix`
       │
 ┌─────▼────────────────────────────────────────────────────────┐
 │                   THE TDD EXECUTION LOOP                     │
@@ -174,7 +173,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 | **Step 2** | **`/grill`** | **Eliminates all implicit assumptions.** Asks as many questions as necessary—iteratively and strictly *one question at a time* with attached hypotheses—until all architectural, data, UX, and security ambiguities are 100% resolved and the spec is completely fleshed out. |
 | **Step 3** | **`/spec`** | **Prevents hallucinated APIs.** Grounds interfaces in official documentation citations and sets explicit Non-Goals to avoid scope creep. |
 | **Step 4** | **`/plan`** | **Enforces incremental verifiability.** Slices work into small, vertically testable tasks so every component has an isolated pass/fail checkpoint. |
-| **Step 5** | **`/sync` (JIT)** | **Loads domain rules on demand.** Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory. |
+| **Step 5** | **JIT bootstrap (`scripts/sync_skills.py --project`)** | **Loads domain rules on demand.** Injects specialized domain conventions (e.g. modern CSS rules, threat modeling, distributed tracing) without polluting global memory. |
 | **Step 6** | **`/test`** | **Guarantees correctness by construction.** For bugs, writing the failing test first proves reproduction. For new features, it defines expected behavior upfront. |
 | **Step 7** | **`/unslop`** | **Strips AI tells before review.** Inlines redundant single-use helpers, removes defensive wrapper bloat, and eliminates sterile comments while the code diff is fresh. |
 | **Step 8** | **`/verify`** | **Dual-layer deterministic proof.** Runs static deterministic check scripts (`verify_okf.py`) combined with multi-persona blinded LLM judge rubrics. |
@@ -189,7 +188,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 ### A. The Content, Prose & Codelab Pipeline
 Used when authoring documentation, tutorials, technical blogs, or developer keynotes:
 1. **`/human-voice`**: Extracts typing cadence and linguistic markers from past transcripts (stripping PII).
-2. **`/copy-write`** or **`/codelab`**: Generates drafts using the 3-tier Profile-Overlay system (`.local.md` > `~/.gemini/personas/` > `.template.md`).
+2. **`voice-register`** or **`/codelab`**: Generates drafts using the 3-tier Profile-Overlay system (`.local.md` > `~/.gemini/personas/` > `.template.md`).
 3. **`/image-gen`**: Generates high-fidelity visual diagrams and infographics via Gemini Flash Image.
 4. **`/unslop`**: Eliminates AI filler words (*"delve"*, *"leverage"*, *"testament"*, *"in conclusion"*).
 5. **`/docs`**: Compiles the markdown documentation into an interactive, self-contained single-page HTML portal.
@@ -251,7 +250,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` & `/review` |
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` & `compile_docs.py` |
-| Extracting developer voice or drafting technical prose | Invoke `/human-voice` & `/copy-write` |
+| Extracting developer voice or drafting technical prose | Invoke `/human-voice`, then `voice-register` |
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
@@ -267,6 +266,6 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 1. **Never Skip the `/test` Prove-It Step**: For bug fixes, reproduction *is* the proof. Write the failing test before changing a single line of application logic.
 2. **Run `/unslop` Before `/review`**: Always de-slop generated code and documentation before running reviews. It strips trivial helper wrappers and verbose comments that distract from architectural review.
 3. **Keep `AGENTS.md` Under 200 Lines**: Use `/align` regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.
-4. **Use Profile-Overlays for Authentic Voice**: Store personal stylistic preferences in `references/*.local.md` (gitignored). The `copy-write` and `codelab` skills automatically layer this over baseline templates without exposing private data.
+4. **Use Profile-Overlays for Authentic Voice**: Store personal stylistic preferences in `references/*.local.md` (gitignored). The `voice-register` and `codelab` skills automatically layer this over baseline templates without exposing private data.
 5. **Always Bootstrap Project-Scoped**: Never symlink domain skills (like `frontend-ui-engineering` or `security-and-hardening`) into global directories. Use `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills <name>` to keep workspace dependencies isolated and reproducible.
 

@@ -345,7 +345,7 @@ def analyze_linguistics(prompts):
     return stats
 
 def write_canonical_files(prompts, stats, output_dir):
-    """Writes canonical voice_and_tone.md, golden_examples.md and SKILL.md under output directory."""
+    """Writes voice_and_tone.md and voice-samples.md, a profile for the voice-register skill."""
     os.makedirs(output_dir, exist_ok=True)
     
     # Create voice_and_tone.md
@@ -395,8 +395,8 @@ When tools break, redundant parallel loops happen, or designs look generic ("meh
 | Ungrounded assertions or missing API constraints | **Rigor and Fact Verification**: Demands precise verification against source documentation and runtime endpoints (e.g., verifying Preview vs GA features). |
 """)
 
-    # Create golden_examples.md
-    examples_file = os.path.join(output_dir, "golden_examples.md")
+    # Create voice-samples.md
+    examples_file = os.path.join(output_dir, "voice-samples.md")
     with open(examples_file, 'w', encoding='utf-8') as f:
         f.write("# Golden Excerpts: <USER_NICKNAME> Persona Templates\n\n")
         f.write("The following examples demonstrate direct voice templates modeled on high-performance conversations.\n\n")
@@ -415,28 +415,6 @@ When tools break, redundant parallel loops happen, or designs look generic ("meh
             f.write(f"## Example {idx}\n")
             f.write(f"> \"{ex.strip()}\"\n\n")
             f.write("*Analysis: Clear, command-driven framing, demanding robust verification or dense functional deliverables, stripped of corporate fluff.*\n\n---\n\n")
-
-    # Create SKILL.md template
-    skill_template_file = os.path.join(output_dir, "SKILL.md")
-    with open(skill_template_file, 'w', encoding='utf-8') as f:
-        f.write("""---
-name: copy-writer-bara
-description: Persona writing assistant for <USER_NAME> (<USER_NICKNAME>). Replicates his natural, direct, and pragmatic Developer Advocate writing voice across blogs and guides. Use when drafting, reviewing, or styling articles, guides, or public text files.
----
-
-# copy-writer-bara Writing Assistant
-
-You are an expert blogging and communication companion, modeling the real persona synthesized from historical interactions. Your goal is to replicate his direct conversational tone, functional developer-advocacy aesthetic, and command-driven clarity, while maintaining absolute technical accuracy and zero hallucination.
-
-## Core Directives
-1. **Adopt the Persona**: Read `references/voice_and_tone.md` to understand his specific blend of casual, funny, and educational writing.
-2. **Study the Examples**: Review `references/golden_examples.md` to see exactly how this tone manifests in real blog posts.
-3. **Zero Hallucination**: You MUST prioritize factual accuracy over stylistic flair when discussing technical topics.
-
-## Workflows
-1. **Drafting Content**: Structure guides with gap-first introductions. Ensure high density and use info toggles or widgets.
-2. **Reviewing Style**: Ensure spelling aligns with Commonwealth English and remove any non-functional decorative elements.
-""")
 
 def main():
     parser = argparse.ArgumentParser(description="Extract human writing voice and tone from local AI coding tool logs.")
@@ -531,7 +509,7 @@ def main():
     output_dir = args.output_dir if args.output_dir else os.path.join(os.path.dirname(__file__), "..", "output")
     print(f"Writing canonical files to output directory: {output_dir}")
     write_canonical_files(unique_prompts, stats, output_dir)
-    print("Extraction and packaging complete. Canonical files ready!")
+    print("Extraction complete. Copy voice_and_tone.md to ~/.gemini/personas/default/ to use it with voice-register.")
 
 if __name__ == "__main__":
     main()

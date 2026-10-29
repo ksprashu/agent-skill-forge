@@ -21,7 +21,7 @@ This document serves as the **Single Source of Truth** for preferred agent skill
 > - **Google Open Source Compliance** ➔ Delegated to `google-oss` — `gcx-make-google-oss/skills/make-google-oss`
 > - **Codelab Scaffolding & Validation** ➔ Delegated to `codelab` — `skills-codelab-creator/skills/codelab-creator`
 > - **Linguistic Voice & Persona Profiling** ➔ Delegated to `human-voice` — `agent-skill-forge/skills/human-voice`
-> - **Writing Companion & Profile-Overlay** ➔ Delegated to `copy-write` — `copy-write-bara`
+> - **Writing Companion & Profile-Overlay** ➔ Delegated to `voice-register` (on top of `unslop`)
 > - **Multimodal Infographic & Diagram Gen** ➔ Delegated to `image-gen` — `skills-image-gen-expert/skills/image-gen-expert`
 
 ---
@@ -42,11 +42,9 @@ These 15 primary verbs are active globally across Antigravity IDE, Antigravity C
 | **`unslop`** | `/unslop` | Autonomous / Model-invoked | Anti-AI bloat, deletes ghost wrappers/helpers, Laziness Protocol |
 | **`docs`** | `/docs` | User-only (`disable-model-invocation: true`) | Full SDLC doc suite + 4 Stitch themes HTML presentation compiler |
 | **`catalog`** | `/catalog` | Autonomous / Model-invoked | Google Open Knowledge Format (OKF) bundle scaffolding & retrieval |
-| **`sync`** | `/sync` | User-only (`disable-model-invocation: true`) | Canonical symlink manager & JIT project-scoped bootstrapper |
 | **`google-oss`**| `/google-oss` | User-only (`disable-model-invocation: true`) | Google OSS compliance, license sweep, header checks, repo sanitization |
 | **`codelab`** | `/codelab` | User-only (`disable-model-invocation: true`) | Google Codelab scaffolding, polyglot blocks, readability validation |
 | **`human-voice`**| `/human-voice`| User-only (`disable-model-invocation: true`)| Linguistic style markers, conversational pacing, and anti-slop guidelines |
-| **`copy-write`**| `/copy-write` | User-only (`disable-model-invocation: true`) | Writing companion with 3-tier Profile-Overlay voice personalization |
 | **`image-gen`** | `/image-gen` | User-only (`disable-model-invocation: true`) | Multimodal diagram and blog asset generator via Gemini Flash Image |
 
 ---

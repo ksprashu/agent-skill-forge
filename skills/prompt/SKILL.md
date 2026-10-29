@@ -140,7 +140,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
 >    - **Socratic Clarification & Grilling** ➔ Delegated to `grill` via `[/grill](slashCommand;grill)` or native `[/grill-me](slashCommand;grill-me)`
 >    - **Documentation Portals & Guides** ➔ Delegated to `docs` via `[/docs](slashCommand;docs)` and `codelab` via `[/codelab](slashCommand;codelab)`
 >    - **Living Alignment & Rules** ➔ Delegated to `continuous-alignment` via `[/align](slashCommand;align)` or `[/evolve](slashCommand;evolve)`
->    - **Personal Voice & Copywriting** ➔ Delegated to `copy-write` via `[/copy-write](slashCommand;copy-write)`
+>    - **Personal Voice & Copywriting** ➔ Delegated to `unslop` + `voice-register`
 >    - **Diagrams & Visual Assets** ➔ Delegated to `image-gen` via `[/image-gen](slashCommand;image-gen)`
 >    - **Boilerplate Stripping & Slop Cleanup** ➔ Delegated to `unslop` via `[/unslop](slashCommand;unslop)`
 >    - **Autonomous Multi-Agent Swarm** ➔ Delegated to native swarm engine via `[/work](slashCommand;work)`

@@ -22,8 +22,8 @@ Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemin
    python3 scripts/extract_voice.py
    ```
 2. **Automatic PII Scrubbing**: The script sanitizes private emails, corporate domains, and API tokens.
-3. **Inspect Output**: Review generated `output/voice_and_tone.md` and `output/golden_examples.md`.
-4. **Deploy Local Profile**: Copy to `references/voice_and_tone.local.md` for local writing personalization.
+3. **Inspect Output**: Review the generated `output/voice_and_tone.md` and `output/voice-samples.md`. Fill in channel registers by hand using `skills/voice-register/references/voice_and_tone.template.md` as the shape.
+4. **Deploy the Profile**: Copy `voice_and_tone.md` to `~/.gemini/personas/default/voice_and_tone.md`, or to `voice-register`'s gitignored `references/voice_and_tone.local.md`. The `voice-register` skill applies it.
 
 ---
 
