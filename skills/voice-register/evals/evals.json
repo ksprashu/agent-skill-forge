@@ -1,0 +1,25 @@
+{
+  "skill": "voice-register",
+  "test_cases": [
+    {
+      "name": "r2_partner_email_with_author_profile",
+      "input": "Using the ksprashu profile, rewrite as an email to a partner: I hope this email finds you well. I am pleased to inform you that we can leverage our voucher program. However, it is crucial to highlight that participants must enter credit card details. Best regards.",
+      "assertions": ["Opens with 'Hi [Name],' or similar, not 'I hope this email finds you well'", "States the caveat up front with 'The caveat, however, is that...' or equivalent", "Ends with a check-in and 'Thanks,' then 'Prashanth' on its own line", "Contains no em-dash"]
+    },
+    {
+      "name": "r3_blog_commonwealth_spelling",
+      "input": "Using the ksprashu profile, write a two-sentence blog intro about customizing settings that behave differently across the CLI and IDE.",
+      "assertions": ["Uses Commonwealth spelling (customisation/customise, behaviour)", "Contains a first-person friction hook such as 'However while using it, I noticed'", "Contains no AI vocabulary from unslop's ai-smells list"]
+    },
+    {
+      "name": "no_profile_falls_back_to_template",
+      "input": "Rewrite this in my voice: In order to optimize the setup, it is important to note that the --region flag is required. (No local or home voice profile exists.)",
+      "assertions": ["Does not apply the ksprashu profile (no forced -ise spelling, no 'Prashanth' sign-off)", "Says no personal profile was found and points to the template or human-voice", "Preserves the --region flag exactly"]
+    },
+    {
+      "name": "live_shorthand_cleaned_in_polished_doc",
+      "input": "Using the ksprashu profile, turn this note into a polished strategy doc paragraph: pls note oppty to reach more ppl via xfn livestreams eg: L100 sessions",
+      "assertions": ["Removes 'pls', 'oppty', 'ppl', and 'eg:'", "Keeps 'L100'", "Uses R4 structure: blunt, concrete, no hype"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "skill": "voice-register",
+  "test_cases": [
+    {"input": "rewrite the docs in my voice", "should_trigger": true},
+    {"input": "draft this email the way I'd write it to a partner", "should_trigger": true},
+    {"input": "turn these notes into a strategy doc in my register", "should_trigger": true},
+    {"input": "unslop this paragraph", "should_trigger": false},
+    {"input": "fix the bug in the auth handler", "should_trigger": false}
+  ]
+}
