@@ -27,4 +27,4 @@ Borrow the useful parts without the full controlled vocabulary or word counting:
 - Do not force a fixed dictionary or mathematical limits. Beauty and readability come first.
 
 ## Quality Bar
-The output should be something a careful human would be happy to read and learn from. Clear, confident, free of AI tells, and recognizably in voice.
+The output should be something a careful human would be happy to read and learn from. Clear, confident, and free of AI tells. Voice and register come from a profile (see `voice-register`), not from these principles.

@@ -100,7 +100,7 @@ Developer Mode or an elevated shell; the script warns if you have neither, and
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
 
 ```bash
-# Install ONLY Content, Creative & Authoring skills (codelab, voice, copy-write, image-gen, atelier)
+# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, copy-write, image-gen, atelier)
 # Prunes unselected skills like plan, spec, test, etc.
 bash scripts/install.sh --content --prune
 
@@ -157,7 +157,7 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | **[`test`](./skills/test)** | `/test` | Autonomous | **TDD & Prove-It Reproduction**: Enforces writing failing tests first to prove bug reproduction before modifying production code. Guarantees bug fixes are permanent. |
 | **[`verify`](./skills/verify)** | `/verify`, `/ega` | Autonomous | **Deterministic & Judged Verification**: Expectation-Grounded Alignment (EGA) running deterministic static check scripts alongside blinded multi-persona dynamic judge rubrics. |
 | **[`review`](./skills/review)** | `/review` | Autonomous | **8-Axis Code & Architecture Review**: Diff (`--diff`) and repository (`--repo`) modes across scope, correctness, security, reliability, performance, data integrity, tests and observability, with schema-validated findings and drop-in remediations. |
-| **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. |
+| **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. Persona-neutral; pairs with `voice-register` for personal voice. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
 *Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, and produces distinctive human-grade reports and briefs.*
@@ -166,6 +166,7 @@ The 20 Core Action Skills cover the complete end-to-end engineering lifecycle an
 | :--- | :--- | :--- | :--- |
 | **[`codelab`](./skills/codelab)** | `/codelab` | User Slash | **Google Codelab Creator**: 7-phase workflow scaffolding engaging, interactive developer tutorials and workshops formatted for `claat` with automated quality guards. |
 | **[`human-voice`](./skills/human-voice)** | `/human-voice` | User Slash | **Persona & Cadence Profiler**: Scans developer conversation logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization. |
+| **[`voice-register`](./skills/voice-register)** | (auto on "in my voice") | Auto / Slash | **Personal Voice & Channel Registers**: Applies a voice profile (`.local.md` > `personas/` > `.template.md`) across five registers: quick email, stakeholder email, blog, strategy doc, and notes. Composes on top of `unslop`. |
 | **[`cognitive-profiler`](./skills/cognitive-profiler)** | `/cognitive-profiler`, `/profile-me` | User Slash | **Agent Communication Profiler**: Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`. |
 | **[`copy-write`](./skills/copy-write)** | `/copy-write` | User Slash | **Technical Prose Companion**: Drafts articles, documentation, keynotes, and announcements using a 3-tier Profile-Overlay system (`.local.md` > `personas/` > `.template.md`). |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | User Slash | **Multimodal Diagram & Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI graphics using Gemini Flash Image with style consistency. |
@@ -297,6 +298,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice overlay split out of `unslop` (#17). |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |

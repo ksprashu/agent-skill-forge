@@ -75,6 +75,7 @@ CORE_SKILLS = {
     'human-voice': os.path.join(CORE_SKILLS_DIR, 'human-voice'),
     'cognitive-profiler': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
     'copy-write': os.path.join(CORE_SKILLS_DIR, 'copy-write'),
+    'voice-register': os.path.join(CORE_SKILLS_DIR, 'voice-register'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'atelier': os.path.join(CORE_SKILLS_DIR, 'atelier'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
@@ -277,8 +278,8 @@ CORE_CLUSTERS = {
     'c3': {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
-        'description': 'Step-by-step Google codelabs, human voice profiling, agent communication profiling, technical copywriting, and image generation.',
-        'skills': ['codelab', 'human-voice', 'cognitive-profiler', 'copy-write', 'image-gen', 'atelier'],
+        'description': 'Step-by-step Google codelabs, human voice profiling and channel registers, agent communication profiling, technical copywriting, and image generation.',
+        'skills': ['codelab', 'human-voice', 'voice-register', 'cognitive-profiler', 'copy-write', 'image-gen', 'atelier'],
     },
     'c4': {
         'id': 'docs-governance',
@@ -472,7 +473,7 @@ def interactive_wizard():
         print(f"       Skills      : {skills_str}")
 
     print("\n⚡ QUICK PRESETS:")
-    print("  [content] Content & Creative only (codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
+    print("  [content] Content & Creative only (codelab, human-voice, voice-register, cognitive-profiler, copy-write, image-gen)")
     print("  [core]    All 18 Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All 13 Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All 31 Core & Domain Skills)")

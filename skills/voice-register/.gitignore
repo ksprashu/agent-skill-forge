@@ -1,0 +1,12 @@
+# Profile-Overlay Local Overrides (Private Personal Data)
+*.local.md
+references/*.local.md
+*.local.json
+
+# Tool Output and Scratch Dirs
+output/
+private/
+scratch/
+__pycache__/
+*.pyc
+.DS_Store

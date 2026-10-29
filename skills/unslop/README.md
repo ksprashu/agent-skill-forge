@@ -2,6 +2,8 @@
 
 Strips AI-generated over-engineering, defensive wrapper clutter, sterile prose, and repetitive fluff across code, documentation, architectural analyses, and visual designs.
 
+Unslop is persona-neutral. It ships no personal voice, spelling rule, or sign-off, so it works for anyone out of the box. To write in a specific person's voice, install [`voice-register`](../voice-register) alongside it; unslop applies that profile's register as an optional overlay step.
+
 ---
 
 ## 👤 Attribution & Lineage
