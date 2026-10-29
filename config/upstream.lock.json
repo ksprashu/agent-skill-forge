@@ -142,6 +142,107 @@
       "why": "Hands you 2-3 questions tied to what was just produced, so you audit the output instead of swallowing it.",
       "interactive": true,
       "overlay": "nudge.md"
+    },
+
+    "api-and-interface-design": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/api-and-interface-design",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Contract-first module and API design: stable interfaces, typed errors, and backward compatibility under Hyrum's law.",
+      "interactive": false
+    },
+    "browser-testing-with-devtools": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/browser-testing-with-devtools",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Drives Chrome DevTools to inspect the live DOM, console, network, and performance of what was built.",
+      "interactive": false
+    },
+    "ci-cd-and-automation": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/ci-cd-and-automation",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Quality gates in the pipeline: build, test, and release automation that fails fast and stays reproducible.",
+      "interactive": false
+    },
+    "context-engineering": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/context-engineering",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Feeds an agent the right context at the right time: rules files, context packing, and session hygiene.",
+      "interactive": false
+    },
+    "debugging-and-error-recovery": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/debugging-and-error-recovery",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Stop-the-line root-cause debugging: reproduce, localise, fix, and guard with a regression test.",
+      "interactive": false
+    },
+    "deprecation-and-migration": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/deprecation-and-migration",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Removes old systems safely: expand and contract, migration paths, and deprecation that consumers can follow.",
+      "interactive": false
+    },
+    "frontend-ui-engineering": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/frontend-ui-engineering",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Production-quality UI: component structure, design-system fit, accessibility, and responsive layout without the generic AI look.",
+      "interactive": false
+    },
+    "git-workflow-and-versioning": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/git-workflow-and-versioning",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Trunk-based branching, atomic commits, and versioning discipline for changes that review and revert cleanly.",
+      "interactive": false
+    },
+    "observability-and-instrumentation": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/observability-and-instrumentation",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Structured logs, metrics, and traces added deliberately so production behaviour can be explained.",
+      "interactive": false
+    },
+    "performance-optimization": {
+      "gate": "domain",
+      "repo": "addyosmani/agent-skills",
+      "path": "skills/performance-optimization",
+      "ref": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "license": "MIT",
+      "attribution": "Addy Osmani",
+      "why": "Measure first, then fix: Core Web Vitals budgets, profiling, and regressions caught before they ship.",
+      "interactive": false
     }
   }
 }
