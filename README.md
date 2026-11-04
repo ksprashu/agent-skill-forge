@@ -100,7 +100,7 @@ Developer Mode or an elevated shell; the script warns if you have neither, and
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
 
 ```bash
-# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, copy-write, image-gen, atelier)
+# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, cognitive-profiler, copy-write, image-gen, atelier)
 # Prunes unselected skills like plan, spec, test, etc.
 bash scripts/install.sh --content --prune
 
@@ -136,7 +136,7 @@ python3 scripts/sync_skills.py --list-clusters
 
 ## 🌟 Core Skills Taxonomy (4 Clusters)
 
-The 20 Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
+The Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*

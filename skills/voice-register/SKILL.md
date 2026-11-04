@@ -12,7 +12,7 @@ Write in a specific person's voice, in the register that fits the channel. This 
 1. **Resolve the voice profile** (first match wins):
    1. `references/voice_and_tone.local.md`: private override on this machine (gitignored).
    2. `~/.gemini/personas/default/voice_and_tone.md`: shared home persona. `copy-write` reads the same file, so one profile drives both skills.
-   3. `references/voice_and_tone.template.md`: neutral public baseline. Use it to bootstrap a profile; it carries no personal voice.
+   3. `references/voice_and_tone.template.md`: neutral public baseline (carries no personal voice). When resolution falls back here, keep neutral `unslop` prose, tell the user no personal profile was found, and point them to this template or `human-voice` to create one.
 
    `references/profiles/` holds named, committed profiles (for example `ksprashu.md`, the author's card). They are never applied implicitly. Use one only when the user names it, or when one of tiers 1 or 2 is a copy of or link to it.
 2. **Run `unslop` hygiene first.** Remove AI smells, throat-clearing, `-ing` tails, and wrappers before adding any voice.
