@@ -206,6 +206,13 @@ class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
         out = EV.sanitize_text("ssh git.internal.acme.example or https://x.corp.acme.example/a")
         self.assertEqual("ssh <COMPANY_DOMAIN> or <INTERNAL_URL>", out)
 
+    def test_an_email_under_a_supplied_domain_is_redacted_whole(self):
+        saved = list(EV.PII_PATTERNS)
+        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        EV.add_internal_domains(["acme.example"])
+        out = EV.sanitize_text("ask alice.smith@acme.example or oncall@corp.acme.example")
+        self.assertEqual("ask <EMAIL> or <EMAIL>", out)
+
     def test_ordinary_words_are_not_hostnames(self):
         text = "The internal API and corporate docs live in internal-tools.md and localhost."
         self.assertEqual(text, EV.sanitize_text(text))
@@ -245,6 +252,11 @@ class TestMeasuredHabits(unittest.TestCase):
         text = self._draft(["Change the colour of the button please."])
         self.assertIn("US-English by default; 1 Commonwealth spelling seen (colour)", text)
         self.assertNotIn("(seen: colour)", text)
+        self.assertIn("Drafted by human-voice from 1 redacted prompts", text)
+
+    def test_the_header_counts_prompts_not_spellings(self):
+        prompts = ["Change the colour of the button.", "Ship it.", "Run the tests."]
+        self.assertIn("Drafted by human-voice from 3 redacted prompts", self._draft(prompts))
 
     def test_more_than_three_commonwealth_words_switch_the_spelling(self):
         prompts = ["colour it", "optimise it", "prioritise it", "visualise it"]

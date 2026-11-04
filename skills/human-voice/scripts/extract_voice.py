@@ -84,8 +84,9 @@ def add_internal_domains(domains):
 
     Nothing employer-specific ships in this file; pass yours with --internal-domain.
     """
-    # These go first, so a generic pattern can't consume part of the hostname
-    # and leave the supplied domain behind.
+    # These go after the email pattern, so an address under the domain is
+    # redacted whole, and before the generic internal-host patterns, so those
+    # can't consume part of a hostname and leave the supplied domain behind.
     rows = []
     for domain in domains or ():
         domain = domain.strip().lstrip(".")
@@ -93,7 +94,8 @@ def add_internal_domains(domains):
             escaped = re.escape(domain) + r'(?![a-z0-9-])'
             rows.append((r'https?://(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS + _URL_TAIL, '<INTERNAL_URL>'))
             rows.append((r'(?<![a-z0-9-])(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS, '<COMPANY_DOMAIN>'))
-    PII_PATTERNS[:0] = rows
+    at = next(i for i, (_, repl) in enumerate(PII_PATTERNS) if repl == '<INTERNAL_URL>')
+    PII_PATTERNS[at:at] = rows
 
 _current_system_user = getpass.getuser()
 NAME_PATTERNS = [
@@ -398,9 +400,9 @@ def write_canonical_files(prompts, stats, output_dir):
         spelling += " (seen: " + words + ")"
     elif words:
         # Too few to call it British, but worth showing.
-        n = stats["commonwealth_count"]
+        seen = stats["commonwealth_count"]
         spelling += " by default; %d Commonwealth spelling%s seen (%s)" % (
-            n, "" if n == 1 else "s", words)
+            seen, "" if seen == 1 else "s", words)
 
     with open(os.path.join(output_dir, PROFILE_DRAFT), 'w', encoding='utf-8') as f:
         f.write(f"""# Voice and Tone — <Your Name> (draft)
