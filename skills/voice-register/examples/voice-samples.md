@@ -1,73 +1,58 @@
-# Voice Samples — Author Profile (`references/profiles/ksprashu.md`)
+# Voice Samples — Example Profile (`examples/example-profile.md`)
 
-Before/after rewrites across registers. "Before" is generic AI output. "After" is `unslop` plus the author's profile. Names are placeholders.
+Before/after rewrites across registers. "Before" is generic AI output. "After" is `unslop` plus the fictional Sam Rivera profile. Names are placeholders. Your own samples belong next to your profile (for example `~/.gemini/personas/default/voice-samples.md`), not in this repo.
 
-## Sample A — R2: Partner Email (Event Credits and Caveats)
+## Sample A — R2: Stakeholder Email (Launch Date and Risks)
 
 **Before**
-> Subject: Follow-up Regarding Google Cloud Credits for DevFest Hackathon
+> Subject: Update Regarding the Upcoming Service Migration
 >
-> Dear [Name], I hope this email finds you well. In order to support the upcoming DevFest Japan Hackathon, I am pleased to inform you that we can leverage our credit voucher program to bolster participant engagement. However, it is crucial to highlight that participants will be required to navigate the billing setup process by entering their credit card details. Furthermore, due to the fact that provisioning takes time, please ensure your request is submitted well in advance. Best regards, Prashanth
+> Dear [Name], I hope this message finds you well. I wanted to circle back regarding the migration timeline. After careful consideration, we believe it would be prudent to leverage the existing feature flag infrastructure in order to facilitate a seamless transition. It is important to note that there are a few potential risks we should be mindful of. Please do not hesitate to reach out with any questions. Best regards, Sam
 
 **After**
 > Hi [Name],
 >
-> We can provide some credit vouchers for the DevFest Japan Hackathon. The caveat, however, is that participants will need to have their credit card added to the billing account.
+> We'll migrate on Friday 14 March, behind the existing feature flag. Flag off => the old path serves traffic, so the blast radius is small.
 >
-> Give it about a week's time for provisioning once you submit the request, so that there are no last-minute hiccups. Please let me know if this makes sense.
+> Risks:
+> - Cache warm-up adds about 10 minutes of slower responses.
+> - The billing export runs at 02:00 and needs a manual check.
 >
-> Thanks,
-> Prashanth
+> Can you confirm the date by Thursday?
+>
+> Cheers,
+> Sam
 
 ## Sample B — R3: Technical Blog Intro
 
 **Before**
-> In today's rapidly evolving AI development landscape, Google Antigravity stands as a testament to seamless agentic workflows—whether you are leveraging the CLI or spearheading complex builds in the IDE. In this comprehensive deep dive, we will unpack the multifaceted configuration paradigms across the Antigravity ecosystem to ensure a robust developer experience.
+> In today's fast-paced cloud-native landscape, organizations are increasingly embracing infrastructure as code to unlock unprecedented agility. In this comprehensive guide, we will delve into the transformative power of policy-as-code and explore how it can revolutionize your deployment workflows.
 
 **After**
-> Whether you prefer Antigravity CLI, or Antigravity IDE, or one of the other variants, IMHO Antigravity 2.0 is the easiest surface to build with across the terminal and your favourite IDE.
+> Last month a Terraform change deleted a production bucket. The plan looked fine and two people approved it. So we put a policy check in front of every apply, and this post walks through exactly how, with the commands we run.
 >
-> However while using it, I noticed that some customisations that I had set up on one product didn't quite work on one of the other products. This post clarifies which settings apply directly across all Antigravity products, and which ones you need to set up separately.
->
-> *Tip: If you haven't already locked down your workspace permissions, check out [Name]'s post on default allowlists first.*
+> **Gotcha:** the policy runs against the plan JSON, not the HCL, so `terraform show -json` has to be in the pipeline.
 
-## Sample C — R4: Strategy Proposal Diagnosis
+## Sample C — R4: Strategy Proposal
 
 **Before**
 > **Executive Summary**
 >
-> Our current developer advocacy event strategy plays a vital role in fostering community engagement, but it is increasingly clear that our high-touch workshops face significant scalability bottlenecks. Moving forward, it is imperative that we pivot toward a holistic, multi-tiered paradigm that balances broad digital reach with curated in-person experiences.
+> Our current on-call model plays a vital role in maintaining service reliability, but it is increasingly clear that we face significant challenges around engineer burnout. Moving forward, it is imperative that we explore a holistic approach that balances operational excellence with team wellbeing.
 
 **After**
-> **Problem & Strategic Shift**
+> **Recommendation:** move to a follow-the-sun rotation across London and Singapore by Q3.
 >
-> Our awareness and reach has been limited to the people that we immediately touch and then a little more. This is not scalable.
+> Pages outside working hours went from **41** to **67** a month this year, and **3** engineers have left citing on-call. A paved road for runbooks cuts toil, but it doesn't fix the hours.
 >
-> Rather than treating every event as an in-person workshop, we should split our execution into two clear tracks:
-> 1) L100 / Awareness (Virtual & Scalable): Broad-reach livestreams and videos / shorts.
-> 2) L200+ / Deep Enablement (In-Person & Hi-Touch): Focussed Builders Days and Customer 0 post-launch workshops where hands-on lab time measurably moves adoption.
+> **Risk:** handover gaps at the shift boundary.
+> **Rollback plan:** keep the current rota as the secondary for one quarter.
 
-## Sample D — R1: Team Broadcast
+## Sample D — R5: Working Notes (live shorthand stays)
 
 **Before**
-> Hi Team, I wanted to take a moment to express my sincere gratitude for your extraordinary efforts during the Bengaluru event. Everything went smoothly and I look forward to our continued collaboration!
+> I wanted to note that there is currently some work in progress on the authentication module, and to be honest, it might be worth considering a refactor at some point.
 
 **After**
-> Hey folks,
->
-> Many thanks for pulling off an amazing BwG Bengaluru - especially the sleepless night getting the laptops and Qwiklabs / infra ready!
->
-> Hope the wrap-up was smooth? No hiccups no? :-)
->
-> Thanks,
-> Prashanth
-
-## Sample E — Code Comment (no register; spelling rule only)
-
-**Before**
-> // This utility is meticulously designed to normalize and optimize the color behavior of themed components, thereby ensuring a seamless visual experience.
-
-**After**
-> // Normalise theme colours before render.
-
-Identifiers and API names keep their original spelling (`normalizeColor()` stays as is). Only the prose follows the profile.
+> - auth module: wip, tbh needs a refactor => after the migration
+> - TODO(sam): file a ticket w/ the token-refresh repro

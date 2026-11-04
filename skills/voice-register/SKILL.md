@@ -14,7 +14,7 @@ Write in a specific person's voice, in the register that fits the channel. This 
    2. `~/.gemini/personas/default/voice_and_tone.md`: shared home persona. `copy-write` reads the same file, so one profile drives both skills.
    3. `references/voice_and_tone.template.md`: neutral public baseline (carries no personal voice). When resolution falls back here, keep neutral `unslop` prose, tell the user no personal profile was found, and point them to this template or `human-voice` to create one.
 
-   `references/profiles/` holds named, committed profiles (for example `ksprashu.md`, the author's card). They are never applied implicitly. Use one only when the user names it, or when one of tiers 1 or 2 is a copy of or link to it.
+   Named profiles live outside the repo at `~/.gemini/personas/<name>/voice_and_tone.md`. Use one only when the user names it. No personal profile ships with this skill.
 2. **Run `unslop` hygiene first.** Remove AI smells, throat-clearing, `-ing` tails, and wrappers before adding any voice.
 3. **Pick the channel register** from `references/channel-registers.md`: R1 quick internal email, R2 stakeholder or external email, R3 technical blog, R4 strategy doc or proposal, R5 working notes and comments. Infer it from the request (recipient, medium, length). Ask only when two registers would produce materially different output.
 4. **Apply the profile's fingerprints** for that register: spelling, punctuation, transitions, lexicon, greeting, body shape, sign-off.
@@ -25,8 +25,8 @@ Write in a specific person's voice, in the register that fits the channel. This 
 
 - `references/channel-registers.md`: what each register controls, independent of any one person.
 - `references/voice_and_tone.template.md`: blank profile to copy into tier 1 or 2.
-- `references/profiles/ksprashu.md`: the author's empirical voice card, a worked example of a full profile.
-- `examples/voice-samples.md`: before/after rewrites across registers using the author's profile.
+- `examples/example-profile.md`: a complete profile for a fictional person, showing what a filled-in template looks like. Never apply it unless the user asks for it by name.
+- `examples/voice-samples.md`: before/after rewrites across registers using the example profile.
 - `examples/voice-samples.template.md`: blank sample sheet for your own profile.
 
 ## Building Your Own Profile
@@ -36,6 +36,6 @@ Copy `references/voice_and_tone.template.md` to `~/.gemini/personas/default/voic
 ## Hard Constraints
 
 - Never change facts, figures, flags, dates, or commitments to fit a voice.
-- Never apply a named profile from `references/profiles/` unless the user asked for it or tier 1 or 2 points at it.
+- Never apply a named profile or the example profile unless the user asked for it by name.
 - Preserve exact US spelling in quoted UI labels, CLI flags, API names, and code, whatever the profile's spelling rule.
 - Do not commit `.local.md` files. They are gitignored for a reason.
