@@ -204,6 +204,20 @@ Used for urgent hotfixes, regression debugging, or localized patches:
 5. **`/review`**: Audits the diff for potential side effects and regressions.
 6. **`git-workflow-and-versioning`** (JIT): Formulates an atomic conventional commit (`fix: <description>`).
 
+### C. Your Writing Voice on Every Machine
+`unslop` keeps all prose neutral. `voice-register` adds your personal voice, but only to text that goes out under your name (emails, posts, docs, PR descriptions). The agent's replies to you stay neutral.
+
+Your profile is private, so it doesn't live in this repo. Keep it in a private git repo of your own, cloned to `~/.gemini/personas`, and tell the skill where it is:
+
+```bash
+gh auth login                                   # once per machine
+export AGENT_PERSONA_REPO=<you>/agent-persona   # in your shell profile
+```
+
+On a new machine, `voice-register` clones the repo the first time it needs your voice, and refreshes it at most once a day. The installer also pulls it when the variable is set. Run `python3 <voice-register-dir>/scripts/persona.py status` to see which profile resolves.
+
+If you don't set the variable, nothing is fetched and you get neutral prose, with a note that no profile was found. That's what a public user sees until they create their own persona repo. See [`skills/voice-register/README.md`](../skills/voice-register/README.md) for creating the repo, every `persona.py` behavior, and the settings.
+
 ---
 
 ## 📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)

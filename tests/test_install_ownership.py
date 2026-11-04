@@ -496,7 +496,8 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
     directory: the shim never executes sync_skills.py.
     """
 
-    SHIM = "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$ARGV_LOG\"\nexit 0\n"
+    SHIM = ("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$ARGV_LOG\"\n"
+            "case \"$*\" in *persona.py*) exit \"${SHIM_PERSONA_EXIT:-0}\" ;; esac\nexit 0\n")
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="forge_installer_"))
@@ -508,9 +509,11 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def run_installer(self, *args, stdin=subprocess.DEVNULL):
+    def run_installer(self, *args, stdin=subprocess.DEVNULL, **extra_env):
         env = dict(os.environ, PATH=f"{self.tmp}{os.pathsep}{os.environ['PATH']}",
                    ARGV_LOG=str(self.log))
+        env.pop("AGENT_PERSONA_REPO", None)
+        env.update(extra_env)
         proc = subprocess.run(
             ["bash", str(REPO_ROOT / "scripts" / "install.sh"), "--no-fetch", *args],
             capture_output=True, text=True, env=env, stdin=stdin,
@@ -536,6 +539,42 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
         """Removing the default must not remove the capability."""
         _, recorded = self.run_installer("--prune")
         self.assertIn("--prune", recorded)
+
+    def test_persona_is_not_fetched_unless_configured(self):
+        """A public install must make no attempt to fetch anyone's voice."""
+        proc, recorded = self.run_installer()
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("persona.py", recorded)
+
+    def test_persona_is_pulled_when_configured(self):
+        proc, recorded = self.run_installer(AGENT_PERSONA_REPO="someone/agent-persona")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("persona.py pull --force", recorded)
+
+    def test_a_failed_persona_fetch_does_not_fail_the_install(self):
+        proc, _ = self.run_installer(AGENT_PERSONA_REPO="someone/agent-persona",
+                                     SHIM_PERSONA_EXIT="2")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("Could not fetch it", proc.stdout)
+
+    def test_no_profile_yet_is_not_reported_as_a_failure(self):
+        proc, _ = self.run_installer(AGENT_PERSONA_REPO="someone/agent-persona",
+                                     SHIM_PERSONA_EXIT="1")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("Could not fetch it", proc.stdout)
+
+    def test_an_offline_install_does_not_fetch_the_persona(self):
+        proc, recorded = self.run_installer("--offline",
+                                            AGENT_PERSONA_REPO="someone/agent-persona")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("persona.py", recorded)
+        self.assertIn("skipping the voice profile fetch", proc.stdout)
+
+    def test_the_powershell_installer_skips_the_persona_offline(self):
+        """Source check, for the reason given in the next test's docstring."""
+        source = (REPO_ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
+        offline = source.index("$env:AGENT_PERSONA_REPO -and $Offline")
+        self.assertLess(offline, source.index("& $PythonExe $PersonaScript pull"))
 
     def test_the_powershell_installer_matches(self):
         """install.ps1 has the same change and no equivalent test.
