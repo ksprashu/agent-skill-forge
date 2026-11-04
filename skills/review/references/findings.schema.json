@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ksprashu/agent-skill-forge/skills/review/references/findings.schema.json",
+  "title": "Review findings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "producer",
+    "mode",
+    "summary",
+    "inspected",
+    "not_inspected",
+    "findings"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1"
+      ]
+    },
+    "producer": {
+      "type": "string",
+      "enum": [
+        "review",
+        "security-review"
+      ]
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "pr",
+        "diff",
+        "repo"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inspected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "not_inspected": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "what",
+          "reason"
+        ],
+        "properties": {
+          "what": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "axis",
+          "rule",
+          "title",
+          "file",
+          "start_line",
+          "end_line",
+          "rationale",
+          "evidence",
+          "suggestion",
+          "references",
+          "confidence",
+          "status",
+          "prior_id",
+          "security_verdict"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9]*-[0-9]{3,}$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3",
+              "nit"
+            ]
+          },
+          "axis": {
+            "type": "string",
+            "enum": [
+              "scope-architecture",
+              "correctness",
+              "security",
+              "reliability",
+              "performance",
+              "data-integrity",
+              "tests",
+              "observability",
+              "style"
+            ]
+          },
+          "rule": {
+            "type": "string",
+            "description": "Rule or weakness id: CWE-89, PEP8-E501, google-pystyle-3.8, eslint:no-eval, ..."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Repo-relative path."
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why this is a defect and what breaks."
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Quoted code, tool output, or repro."
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "Replacement for lines start..end, or empty when no drop-in fix exists."
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "url"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "type": "string",
+                  "pattern": "^https://"
+                }
+              }
+            }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "still_open",
+              "reopened",
+              "fixed",
+              "accepted_pushback"
+            ]
+          },
+          "prior_id": {
+            "type": "string",
+            "description": "Id from the previous round, or empty."
+          },
+          "security_verdict": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "needs_validation",
+              "n/a"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

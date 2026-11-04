@@ -1,6 +1,6 @@
-# Sample Outputs for Voice Review
+# Sample Rewrites
 
-These are rewrites produced under the unslop principles so you can check whether the voice feels right. Feedback on any of them will tighten the skill.
+Rewrites produced under the unslop principles alone, with no voice profile applied. For register-specific rewrites see `skills/voice-register/examples/voice-samples.md`.
 
 ## Sample 1 — Technical Explanation
 

@@ -1,6 +1,8 @@
 # Profile-Overlay Local Overrides (Private Personal Data)
 *.local.md
 references/*.local.md
+# Personal profiles belong in ~/.gemini/personas/, never in this repo
+references/profiles/
 *.local.json
 
 # Tool Output and Scratch Dirs

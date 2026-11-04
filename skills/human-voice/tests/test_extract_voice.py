@@ -102,5 +102,35 @@ class TestSanitisation(unittest.TestCase):
             EV.sanitize_text("Alex wrote this", extra_names=[("Alex", "<USER_NAME>")]))
 
 
+class TestOutputsFeedVoiceRegister(unittest.TestCase):
+    """The extractor's outputs are a voice-register profile, not a new skill.
+
+    It used to emit a SKILL.md for a `copy-writer-bara` skill that no longer
+    exists, and a golden_examples.md that nothing reads.
+    """
+
+    def _write(self):
+        prompts = ["Please make sure the docs are grounded to the code and the tests pass before merging this change."]
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        EV.write_canonical_files(prompts, EV.analyze_linguistics(prompts), tmp.name)
+        return Path(tmp.name)
+
+    def test_writes_a_profile_and_samples(self):
+        out = self._write()
+        self.assertTrue((out / "voice_and_tone.md").is_file())
+        self.assertTrue((out / "voice-samples.md").is_file())
+        self.assertIn("US-English", (out / "voice_and_tone.md").read_text(encoding="utf-8"))
+        self.assertIn(
+            "Please make sure the docs are grounded to the code",
+            (out / "voice-samples.md").read_text(encoding="utf-8"),
+        )
+
+    def test_does_not_scaffold_a_skill(self):
+        out = self._write()
+        self.assertFalse((out / "SKILL.md").exists())
+        self.assertFalse((out / "golden_examples.md").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

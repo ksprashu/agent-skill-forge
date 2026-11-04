@@ -32,7 +32,7 @@
     "reader-simulation": "Simulate real readers to find where a draft loses them.",
     "discernment-prompts": "Hand the human questions that help them audit the output.",
     "voice-profiling": "Extract a human's authentic writing cadence and style markers.",
-    "technical-copy": "Draft technical prose in a chosen voice.",
+    "voice-application": "Apply a person's voice and channel register to text sent under their name.",
     "chart-authoring": "Design charts, dashboards, and data visualisations.",
     "image-generation": "Generate technical diagrams and visual assets.",
     "codelab-authoring": "Author step-by-step interactive developer tutorials.",
@@ -40,7 +40,6 @@
     "knowledge-catalog": "Maintain a durable progressive-disclosure codebase memory.",
     "oss-compliance": "Audit licensing headers and scrub internal references.",
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
-    "skill-sync": "Manage skill installation across agent runtimes.",
     "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests)."
   },
 
@@ -57,6 +56,7 @@
     "land": "reader-simulation",
     "nudge": "discernment-prompts",
     "profile": "cognitive-calibration",
+    "cognitive-profiler": "cognitive-calibration",
 
     "plan": "task-decomposition",
     "spec": "spec-authoring",
@@ -68,14 +68,13 @@
     "unslop": "simplification",
     "codelab": "codelab-authoring",
     "human-voice": "voice-profiling",
-    "copy-write": "technical-copy",
+    "voice-register": "voice-application",
     "image-gen": "image-generation",
     "atelier": "human-grade-output",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",
-    "continuous-alignment": "alignment-distillation",
-    "sync": "skill-sync"
+    "continuous-alignment": "alignment-distillation"
   },
 
   "harnesses": {

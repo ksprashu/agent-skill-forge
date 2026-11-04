@@ -1,6 +1,6 @@
 # 🔎 Review Skill
 
-Conducts a five-axis code review across correctness, readability, architecture, security, and performance.
+Reviews a diff, PR, or repository across eight axes (scope/architecture, correctness, security, reliability, performance, data integrity, tests, observability) plus style. It runs the repo's own linters first, writes a JSON findings document, and gates approval with `findings.py gate`.
 
 ---
 
