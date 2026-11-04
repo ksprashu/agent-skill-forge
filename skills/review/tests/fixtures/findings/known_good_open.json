@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "producer": "review",
+  "mode": "pr",
+  "summary": "Adds a user search endpoint. One SQL injection and one style issue remain open.",
+  "inspected": ["app/search.py", "app/utils.py", "collector: ruff check (ran)"],
+  "not_inspected": [
+    {"what": "mypy", "reason": "binary not on PATH"}
+  ],
+  "findings": [
+    {
+      "id": "REV-001",
+      "severity": "P0",
+      "axis": "security",
+      "rule": "CWE-89",
+      "title": "User input is interpolated into a SQL string",
+      "file": "app/search.py",
+      "start_line": 14,
+      "end_line": 15,
+      "rationale": "The q parameter reaches cursor.execute through an f-string, so any caller can run arbitrary SQL.",
+      "evidence": "cursor.execute(f\"SELECT * FROM users WHERE name = '{q}'\")  # q from request.args",
+      "suggestion": "cursor.execute(\"SELECT * FROM users WHERE name = ?\", (q,))",
+      "references": [
+        {"title": "CWE-89", "url": "https://cwe.mitre.org/data/definitions/89.html"}
+      ],
+      "confidence": "high",
+      "status": "new",
+      "prior_id": "",
+      "security_verdict": "confirmed"
+    },
+    {
+      "id": "REV-002",
+      "severity": "P3",
+      "axis": "style",
+      "rule": "google-pystyle-2.12",
+      "title": "Mutable default argument",
+      "file": "app/utils.py",
+      "start_line": 3,
+      "end_line": 3,
+      "rationale": "The list default is shared across calls, so items leak between invocations.",
+      "evidence": "def collect(item, bucket=[]):",
+      "suggestion": "def collect(item, bucket=None):\n    if bucket is None:\n        bucket = []",
+      "references": [
+        {"title": "Google Python Style Guide 2.12 Default Argument Values",
+         "url": "https://google.github.io/styleguide/pyguide.html#212-default-argument-values"}
+      ],
+      "confidence": "high",
+      "status": "new",
+      "prior_id": "",
+      "security_verdict": "n/a"
+    },
+    {
+      "id": "REV-003",
+      "severity": "nit",
+      "axis": "observability",
+      "rule": "",
+      "title": "Log message could name the query",
+      "file": "app/search.py",
+      "start_line": 20,
+      "end_line": 20,
+      "rationale": "Including the query id would make the log line traceable.",
+      "evidence": "",
+      "suggestion": "",
+      "references": [],
+      "confidence": "low",
+      "status": "new",
+      "prior_id": "",
+      "security_verdict": "n/a"
+    }
+  ]
+}

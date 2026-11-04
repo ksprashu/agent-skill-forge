@@ -1,0 +1,57 @@
+{
+  "skill": "review",
+  "test_cases": [
+    {
+      "input": "Review my working changes before I commit",
+      "should_trigger": true
+    },
+    {
+      "input": "/review --pr 512",
+      "should_trigger": true
+    },
+    {
+      "input": "Can you do a code review of this PR?",
+      "should_trigger": true
+    },
+    {
+      "input": "Re-review the PR now that the author pushed fixes",
+      "should_trigger": true
+    },
+    {
+      "input": "Audit this whole repository for architecture and correctness issues",
+      "should_trigger": true
+    },
+    {
+      "input": "Check this diff for bugs and style problems before merge",
+      "should_trigger": true
+    },
+    {
+      "input": "/review --ci",
+      "should_trigger": true
+    },
+    {
+      "input": "Write a new function that parses CSV files",
+      "should_trigger": false
+    },
+    {
+      "input": "Explain what this regex does",
+      "should_trigger": false
+    },
+    {
+      "input": "Run a dedicated threat model and security audit of our auth service",
+      "should_trigger": false
+    },
+    {
+      "input": "Fix the failing test in test_api.py",
+      "should_trigger": false
+    },
+    {
+      "input": "Summarise the review comments on PR 12 into a changelog",
+      "should_trigger": false
+    },
+    {
+      "input": "Format this file with black",
+      "should_trigger": false
+    }
+  ]
+}

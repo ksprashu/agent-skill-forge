@@ -1,29 +1,30 @@
-# Unified 8-Axis QE Inspection Checklist
+# Review checklist: eight axes plus style
 
-> **Purpose:** Exhaustive, deterministic inspection checklist covering all 8 Quality Engineering (QE) dimensions.
-> **Usage:** Used during Phase 2 (Micro Dataflow Deep Dive) in Mode A PR reviews and Pass 2 (Layered Architectural Audit) in Mode B repository audits.
-> **Standard:** Read on-demand per Progressive Disclosure rules. Every finding generated against these checkpoints must be logged using the atomic defect schema in [`schemas.md`](schemas.md).
+> **Purpose:** Inspection points for each axis. Used in the dataflow deep
+> dive (diff/PR review) and the layered audit (repository audit). See
+> `workflows.md`.
+> **Output:** Each defect becomes a finding in the JSON document described
+> in [`schemas.md`](schemas.md). Use the axis id shown in each heading as
+> the finding's `axis`, and name the checkpoint (for example
+> `checklist-2.1`) or a stronger rule (a CWE, or a guide section) in `rule`.
+
+| # | Axis | `axis` id |
+| --- | --- | --- |
+| 1 | Scope, architecture and modularity | `scope-architecture` |
+| 2 | Correctness, logic and state | `correctness` |
+| 3 | Security and boundary isolation | `security` |
+| 4 | Reliability, concurrency and resilience | `reliability` |
+| 5 | Performance and resource scale | `performance` |
+| 6 | Data integrity and storage evolution | `data-integrity` |
+| 7 | Test suite effectiveness | `tests` |
+| 8 | Observability and anti-slop | `observability` |
+| 9 | Style and conventions | `style` |
 
 ---
 
-## Overview: The 8-Axis Inspection Matrix
+## Axis 1: Scope, Architecture & Modularity (`scope-architecture`)
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                   THE UNIFIED 8-AXIS REVIEW MATRIX                     │
-├──────────────────────────────────┬─────────────────────────────────────┤
-│ 1. Scope & Architecture          │ 5. Performance & Resource Scale     │
-│ 2. Correctness, Logic & State    │ 6. Data Integrity & Storage Evol.   │
-│ 3. Security & Boundary Isolation │ 7. Test Suite Effectiveness & Rigor │
-│ 4. Reliability & Concurrency     │ 8. Observability & Anti-Slop        │
-└──────────────────────────────────┴─────────────────────────────────────┘
-```
-
----
-
-## Axis 1: Scope, Architecture & Modularity
-
-- [ ] **1.1 Diff Discipline & Single-Responsibility Gate (<500 Lines)**
+- [ ] **1.1 Diff Discipline & Single Responsibility (<500 Lines)**
   - **Rule:** A functional pull request must strictly address a single coherent intent and contain fewer than 500 lines of functional business logic (excluding auto-generated lockfiles, mocks, or snapshots).
   - **Inspection Criteria:**
     - Verify that unrelated refactorings, styling changes, dependency updates, and feature code are not bundled together.
@@ -53,7 +54,7 @@
 
 ---
 
-## Axis 2: Correctness, Logic & State
+## Axis 2: Correctness, Logic & State (`correctness`)
 
 - [ ] **2.1 Boundary & Off-by-One Arithmetic**
   - **Rule:** Index calculations, collection slices, loop bounds, and ranges must behave correctly under boundary conditions.
@@ -86,7 +87,11 @@
 
 ---
 
-## Axis 3: Security, Auth & Boundary Isolation
+## Axis 3: Security, Auth & Boundary Isolation (`security`)
+
+> Use the `security-review` skill when it is installed. These points are
+> the fallback for when it is not (see `workflows.md`, Phase 4). Security
+> findings need a CWE-class `rule` and a `security_verdict`.
 
 - [ ] **3.1 Injection Flaw Eradication**
   - **Rule:** All queries, commands, and dynamic evaluations must use parameterized inputs and strict contextual escaping.
@@ -118,7 +123,7 @@
 
 ---
 
-## Axis 4: Reliability, Concurrency & Resilience
+## Axis 4: Reliability, Concurrency & Resilience (`reliability`)
 
 - [ ] **4.1 TOCTOU Race Condition Prevention**
   - **Rule:** Multi-step check-then-act operations must execute inside atomic transactions or use appropriate concurrency control.
@@ -150,7 +155,7 @@
 
 ---
 
-## Axis 5: Performance & Resource Scale
+## Axis 5: Performance & Resource Scale (`performance`)
 
 - [ ] **5.1 N+1 Query & Loop I/O Eradication**
   - **Rule:** Never execute synchronous database queries or remote network calls inside iterative loops.
@@ -184,7 +189,7 @@
 
 ---
 
-## Axis 6: Data Integrity & Storage Evolution
+## Axis 6: Data Integrity & Storage Evolution (`data-integrity`)
 
 - [ ] **6.1 Zero-Downtime Expand-and-Contract Migrations**
   - **Rule:** Database schema changes must be backward-compatible with older application versions running concurrently during rolling deployments.
@@ -218,7 +223,7 @@
 
 ---
 
-## Axis 7: Test Suite Effectiveness & Rigor
+## Axis 7: Test Suite Effectiveness & Rigor (`tests`)
 
 - [ ] **7.1 Behavioral Outcomes vs. Mock Abuse**
   - **Rule:** Tests must verify observable outcomes, state transitions, and contracts—not internal implementation minutiae.
@@ -250,7 +255,7 @@
 
 ---
 
-## Axis 8: Observability, Operational Readiness & Anti-Slop
+## Axis 8: Observability, Operational Readiness & Anti-Slop (`observability`)
 
 - [ ] **8.1 Structured Contextual Logging**
   - **Rule:** All operational logs must be structured JSON containing correlation identifiers.
@@ -280,3 +285,29 @@
     - Remove redundant comments that merely restate code syntax (`// sets x to 5`).
     - Eliminate AI boilerplate phrases, verbose apologetic comments, or empty documentation stubs.
     - Ensure naming is precise and domain-focused rather than vague (`processData()`, `handleItem()`, `managerHelper`).
+
+---
+
+## Axis 9: Style & Conventions (`style`)
+
+Read [`style-guides.md`](style-guides.md) before raising anything here.
+
+- [ ] **9.1 Tool output first**
+  - **Rule:** If a linter or formatter ran on the file (`tool_runs[].status == "ran"`), its output is the style finding. Use the tool's rule id and doc URL.
+  - **Inspection Criteria:**
+    - Report issues on changed lines. Ignore pre-existing issues on untouched lines in diff mode, unless the change makes them worse.
+    - Don't add your own style opinions where a configured tool already covers the file.
+    - A configured tool that was skipped or timed out goes in `not_inspected`. Don't hand-lint to make up for it.
+
+- [ ] **9.2 Repo conventions**
+  - **Rule:** `.editorconfig`, `CONTRIBUTING.md`, and `AGENTS.md`/`CLAUDE.md` take precedence over published guides.
+  - **Inspection Criteria:**
+    - Check naming, file layout, import style and comment conventions against what the repo already does consistently.
+    - Cite the convention file and line in `references` (as an https link to the repo file) or in `evidence`.
+
+- [ ] **9.3 Language guide where nothing else covers it**
+  - **Rule:** With no linter and no repo convention, use the language's canonical guide (PEP 8, Google style guides, Effective Go, Rust API Guidelines, ...). Severity is P3, or nit for preference within the guide's leeway.
+  - **Inspection Criteria:**
+    - Every finding cites a rule id and a URL to the guide section. If you're unsure what the section says, fetch it.
+    - Taste with no citable rule is not a finding.
+    - Some style rules exist because of real bugs: a mutable default argument, a bare `except:`, an unquoted shell variable. Raise those on `correctness`/`reliability`/`security` at their real severity, citing the guide.
