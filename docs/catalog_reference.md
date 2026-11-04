@@ -6,11 +6,11 @@ description: "Comprehensive dictionary, clusters, triggers, and attribution line
 
 # 📚 Skills Catalog Reference & Attribution Matrix
 
-Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 29 skills in **Agent Skill Forge**.
+Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 31 skills (18 core, 13 preferred) in **Agent Skill Forge**.
 
 ---
 
-## 🌟 1. Core Universal Action Verbs (17 Skills across 4 Clusters)
+## 🌟 1. Core Universal Action Verbs (18 Skills across 4 Clusters)
 
 The Core Skills can be installed individually or in functional clusters using `bash scripts/install.sh --clusters <ids>` (e.g. `--clusters c3` or `--content`).
 
@@ -33,7 +33,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C2** | **`test`** | `/test`, auto during coding | Autonomous | Enforces writing failing tests first to prove bug reproduction and verify new feature behavior (TDD & Prove-It). |
 | **C2** | **`verify`** | `/verify`, `/ega`, `/expectation-harness` | Autonomous | Dual-layer verification running deterministic static check scripts and blinded multi-persona dynamic judge rubrics. |
 | **C2** | **`review`** | `/review`, pre-merge | Autonomous | Audits diffs across correctness, security, performance, architecture, and readability with exact line fixes. |
-| **C2** | **`unslop`** | `/unslop`, `/deslop`, `/simplify` | Auto / Slash | Strips AI boilerplate, defensive wrapper clutter, sterile prose, and unnecessary complexity from code, text, analyses, and UI. |
+| **C2** | **`unslop`** | `/unslop`, `/deslop` | Auto / Slash | Strips AI smells, promotional bloat, and needless words from prose, docs, code comments, commit messages, analyses, and UI copy. Leaves code logic alone. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
 *Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.*
@@ -42,6 +42,8 @@ The Core Skills can be installed individually or in functional clusters using `b
 | :--- | :--- | :--- | :--- | :--- |
 | **C3** | **`codelab`** | `/codelab`, `/codelab-creator` | User Slash | Scaffolds and validates interactive step-by-step developer tutorials, workshops, and guides formatted for `claat`. |
 | **C3** | **`human-voice`** | `/human-voice`, `/extract-human-voice` | User Slash | Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
+| **C3** | **`voice-register`** | "in my voice", outward text under your name | Autonomous | Resolves a voice profile (`.local.md` > `~/.gemini/personas/default/` > template) and applies the matching channel register (R1–R5) to text sent under your name. |
+| **C3** | **`cognitive-profiler`** | `/cognitive-profiler` | User Slash | Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions. |
 | **C3** | **`image-gen`** | `/image-gen`, `/image-gen-expert` | User Slash | Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
@@ -99,7 +101,7 @@ The 13 Preferred Domain Skills are located in `preferred/` and can be installed 
 
 | Skill / Domain | Original Creators & Inspirations | Upstream Repositories / Standards | Adaptation & Role in `agent-skill-forge` |
 | :--- | :--- | :--- | :--- |
-| **`unslop`** | **Matt Pocock** & **poteto / Cursor pstack** | [`mattpocock/skills/deslop`](https://github.com/mattpocock/skills) & [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) | Fused universal anti-bloat engine spanning code, prose, analysis, and visual UI. |
+| **`unslop`** | **Matt Pocock** & **poteto / Cursor pstack** | [`mattpocock/skills/deslop`](https://github.com/mattpocock/skills) & [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) | Fused anti-bloat pass for human-readable text: prose, docs, comments, analyses, and UI copy. |
 | **`grill`** | **Matt Pocock** & **Addy Osmani** | [`mattpocock/skills/grill-me-with-docs`](https://github.com/mattpocock/skills) & [`addyosmani/agent-skills/interview-me`](https://github.com/addyosmani/agent-skills) | Fused 1-question Socratic alignment protocol with confidence stop gating. |
 | **`spec`** | **Addy Osmani** | [`addyosmani/agent-skills/source-driven-development`](https://github.com/addyosmani/agent-skills) | Source-grounded specification engine with official API doc citations. |
 | **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
@@ -112,6 +114,8 @@ The 13 Preferred Domain Skills are located in `preferred/` and can be installed 
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
+| **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice profiles, kept out of the public repo. |
+| **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Reader-preference profiling compiled into harness configuration. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |

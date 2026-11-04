@@ -1,8 +1,8 @@
 # 🧹 Unslop Skill (Universal Anti-Bloat Engine)
 
-Strips AI-generated over-engineering, defensive wrapper clutter, sterile prose, and repetitive fluff across code, documentation, architectural analyses, and visual designs.
+Strips AI smells, promotional bloat, and needless words from human-readable text: prose, docs, code comments, commit messages, analyses, and UI copy. It leaves executable code logic alone.
 
-Unslop is persona-neutral. It ships no personal voice, spelling rule, or sign-off, so it works for anyone out of the box. To write in a specific person's voice, install [`voice-register`](../voice-register) alongside it; unslop applies that profile's register as an optional overlay step.
+Unslop is persona-neutral. It ships no personal voice, spelling rule, or sign-off, so it works for anyone out of the box. To write in a specific person's voice, install [`voice-register`](../voice-register) alongside it. Unslop applies that profile only to text sent under the person's name (emails, posts, docs, PR descriptions); the agent's replies to them stay neutral.
 
 ---
 
