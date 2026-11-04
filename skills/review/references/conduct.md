@@ -27,18 +27,18 @@ To prevent reviewer cognitive fatigue and maximize impact, mental effort must be
 │   │  • Test suite effectiveness, flakiness eradication                 │
 │   │  • Observability, structured logging, latency metrics              │
 │   │                                                                    │
-│   │  TIER 1: Formatting, Syntax & Types               [  0% OF TIME ]  │
-│   │  • Automated linting, code style, formatting, import ordering      │
-│   │  • Handled completely by linters, formatters, and compilers (CI)   │
-│   ▼  • NEVER waste reviewer cognitive bandwidth on automated checks    │
+│   │  TIER 1: Formatting, Syntax & Style               [ MINIMAL ]      │
+│   │  • Where a linter ran: relay its output, add nothing               │
+│   │  • Where none covers the file: P3/nit, cited rule + URL            │
+│   ▼  • Never taste without a citable rule                              │
 │                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.1 Tier 1: Formatting, Syntax & Types (0% Reviewer Energy)
-- **The Rule:** Zero human or reviewer agent bandwidth should ever be spent on formatting, indentation, import sorting, or syntax nitpicking.
-- **Enforcement:** Automated tools (`prettier`, `black`, `ruff`, `eslint`, `tsc`, `rustfmt`, `gofmt`) must enforce style in CI prior to review.
-- **Handling Gaps:** If a stylistic issue slips through because a linter rule does not exist, **do NOT nitpick it in the PR review**. The correct remediation is submitting a separate PR to update the project linter configuration. Human review comments must never substitute for missing compiler or linter rules.
+### 1.1 Tier 1: Formatting, Syntax & Style (minimal reviewer energy)
+- **Tools first:** The collector runs the repo's configured linters, formatters and type checkers (`ruff`, `black`, `eslint`, `prettier`, `tsc`, `mypy`, `golangci-lint`, `clippy`, ...). Where one ran, relay what it found on the changed lines. Don't add your own style opinions on top.
+- **Gaps:** Where no tool covers a file, raise style at P3 (or nit). Cite the rule and URL from `style-guides.md`, following its precedence: repo config, then the language guide, then taste, which is never a finding. If the same gap keeps coming up, also suggest enabling the matching linter rule. That fixes the cause.
+- **Budget:** Style findings should never crowd out Tier 3. Report them compactly, after the substantive findings.
 
 ### 1.2 Tier 2: Architecture & Ergonomics (20% Reviewer Energy)
 - Focus on architectural durability, interface clarity, and long-term maintainability.
@@ -91,7 +91,7 @@ Synthesized from Staff QE principles and high-performing engineering practices, 
 
 ### Rule 6: Demarcate Objective Defects from Subjective Tastes
 - **Principle:** Never hold a pull request hostage over personal aesthetic preferences.
-- **Execution:** Clearly badge suggestions that are not strictly required for correctness, security, or performance as `[P3: Low - Suggestion/Nit]` or `[Question]`. Explicitly inform the author that P3 items and questions do not block merging.
+- **Execution:** Mark optional preferences as `nit`, which never blocks. P3 findings block until they're fixed or the author pushes back and you accept (`accepted_pushback`). So keep P3 for things with a citable rule, and say plainly that a reasoned pushback on a P3 will be accepted. Questions aren't findings: ask them in the summary.
 
 ### Rule 7: Reinforce Exemplary Engineering
 - **Principle:** Code review is a teaching tool and culture builder, not merely a bug trap.

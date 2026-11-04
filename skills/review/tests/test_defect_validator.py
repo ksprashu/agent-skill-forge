@@ -449,15 +449,10 @@ data = json.loads(cookie)
 
 
 
-SCHEMAS_MD = SKILL_DIR / "references" / "schemas.md"
-
-
-def _schemas_block(after_heading: str) -> str:
-    """Return the ````markdown block that follows a heading in references/schemas.md."""
-    text = SCHEMAS_MD.read_text(encoding="utf-8")
-    rest = text[text.index(after_heading):]
-    start = rest.index("````markdown\n") + len("````markdown\n")
-    return rest[start:rest.index("\n````", start)]
+# The long-form report shapes that references/schemas.md documented before the
+# findings JSON became the primary output; the validator still checks them.
+LEGACY_EXEMPLAR = FIXTURES_DIR / "legacy_defect_exemplar.md"
+LEGACY_MODE_A_REPORT = FIXTURES_DIR / "legacy_mode_a_report.md"
 
 
 class TestDefectValidatorRegressions(unittest.TestCase):
@@ -467,15 +462,15 @@ class TestDefectValidatorRegressions(unittest.TestCase):
         self.validator = DV.DefectValidator()
         self.base = TestDefectValidatorSchemaRules.BASE_VALID_TEMPLATE
 
-    def test_schemas_md_concrete_exemplar_passes(self) -> None:
-        """R-001: the skill's own exemplar ("Vulnerability / Defect Description") validates."""
-        result = self.validator.validate(_schemas_block("### Concrete Exemplar: Atomic Defect"))
+    def test_long_form_exemplar_passes(self) -> None:
+        """R-001: the long-form exemplar ("Vulnerability / Defect Description") validates."""
+        result = self.validator.validate(LEGACY_EXEMPLAR.read_text(encoding="utf-8"))
         self.assertTrue(result["valid"], result["errors"])
         self.assertEqual(result["defects_count"], 1)
 
-    def test_schemas_md_mode_a_template_passes(self) -> None:
-        """R-003: the Mode A report template (a defect plus summary sections) validates."""
-        result = self.validator.validate(_schemas_block("## 3. Pull Request Review Output Template"))
+    def test_long_form_pr_report_passes(self) -> None:
+        """R-003: the long-form PR report (a defect plus summary sections) validates."""
+        result = self.validator.validate(LEGACY_MODE_A_REPORT.read_text(encoding="utf-8"))
         self.assertTrue(result["valid"], result["errors"])
         self.assertEqual(result["defects_count"], 1)
 

@@ -1,0 +1,17 @@
+# Seeded defect for the review evals: do not fix.
+name: pr-preview
+on:
+  # SEEDED: CWE-829 pwn request. pull_request_target runs with secrets and a
+  # write token, then checks out and executes the untrusted PR head.
+  pull_request_target:
+    types: [opened, synchronize]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: npm ci && npm run build
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
