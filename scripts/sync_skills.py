@@ -410,7 +410,9 @@ def validate_skill_names(skills_arg):
     """
     names = [s.strip() for s in skills_arg.split(',') if s.strip()]
     names = list(dict.fromkeys(ALIASES.get(n, n) for n in names))
-    known = discover_all_skills()
+    # A name pinned in the upstream lock is a real skill even before it is
+    # fetched; the installers report it as NOT FETCHED rather than a typo.
+    known = set(discover_all_skills()) | upstream_lock_names()
     unknown = [n for n in names if n not in known]
     return names, unknown
 

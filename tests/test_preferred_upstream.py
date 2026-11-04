@@ -139,7 +139,9 @@ class TestUpstreamDiscovery(unittest.TestCase):
         project.mkdir()
         out = io.StringIO()
         with self._patch(), contextlib.redirect_stdout(out):
-            sync_skills.bootstrap_project_skills(str(project), ["performance-optimization"])
+            names, unknown = sync_skills.validate_skill_names("performance-optimization")
+            self.assertEqual(unknown, [])
+            sync_skills.bootstrap_project_skills(str(project), names)
         text = out.getvalue()
         self.assertIn("NOT FETCHED", text)
         self.assertIn("fetch_upstream.py", text)
@@ -150,7 +152,9 @@ class TestUpstreamDiscovery(unittest.TestCase):
         project.mkdir()
         out = io.StringIO()
         with self._patch(), contextlib.redirect_stdout(out):
-            sync_skills.bootstrap_project_skills(str(project), ["performance-optimisation"])
+            names, unknown = sync_skills.validate_skill_names("performance-optimisation")
+            self.assertEqual(unknown, ["performance-optimisation"])
+            sync_skills.bootstrap_project_skills(str(project), names)
         self.assertIn("NOT FOUND LOCALLY", out.getvalue())
 
 
