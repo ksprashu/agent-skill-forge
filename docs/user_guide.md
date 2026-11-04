@@ -12,7 +12,7 @@ A comprehensive, zero-slop operational framework for orchestrating **Agent Skill
 
 ## 🏛️ 1. Architecture: Modular Clusters & Selective Installation
 
-To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Agent Skill Forge** organizes all 30 skills into **8 functional clusters** across two categories:
+To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Agent Skill Forge** organizes its skills into functional clusters across two categories:
 
 ### 📦 Core Clusters (18 Action Skills)
 Available globally or installable in focused sections:
