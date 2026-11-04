@@ -6,7 +6,8 @@
     Mirrors scripts/install.sh step for step:
       1. resolve the reference-only upstream skills at their pinned commits
       2. link skills into each harness, minus what that harness already ships
-      3. optionally make the design gate mechanical (Claude Code only)
+      3. fetch the user's voice profile when AGENT_PERSONA_REPO is set
+      4. optionally make the design gate mechanical (Claude Code only)
 
 .EXAMPLE
     powershell -File scripts\install.ps1 --spine --hard-gate
@@ -140,7 +141,27 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ------------------------------------------------------------------------------
-# Step 3: optionally make the design gate mechanical.
+# Step 3: fetch the user's private voice profile, if they configured one.
+# Unset means a neutral install: nothing is fetched. A failure here never fails
+# the install; voice-register falls back to neutral prose and says why.
+# ------------------------------------------------------------------------------
+$PersonaScript = Join-Path $RepoRoot 'skills\voice-register\scripts\persona.py'
+if ($env:AGENT_PERSONA_REPO -and $Offline) {
+    Write-Host ""
+    Write-Host "🎙️  Offline install: skipping the voice profile fetch. Run persona.py pull later." -ForegroundColor Yellow
+} elseif ($env:AGENT_PERSONA_REPO -and (Test-Path $PersonaScript)) {
+    Write-Host ""
+    Write-Host "🎙️  Fetching your voice profile from $($env:AGENT_PERSONA_REPO)..." -ForegroundColor Yellow
+    & $PythonExe $PersonaScript pull --force
+    # Exit 1 only means no profile resolved yet; 2 means the fetch failed.
+    if ($LASTEXITCODE -eq 2) {
+        Write-Host "⚠️  Could not fetch it. voice-register will stay neutral until it can." -ForegroundColor Yellow
+    }
+    $global:LASTEXITCODE = 0
+}
+
+# ------------------------------------------------------------------------------
+# Step 4: optionally make the design gate mechanical.
 # Only Claude Code has a hook API; elsewhere the gate stays advisory.
 # ------------------------------------------------------------------------------
 if ($HardGate) {
