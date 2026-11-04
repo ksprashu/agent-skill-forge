@@ -595,7 +595,10 @@ SENSITIVE_PATTERNS = [
      "Slack token", "<TOKEN>"),
     (re.compile(r"\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
      "JSON Web Token", "<JWT>"),
-    (re.compile(r"(?i)\b(?:bearer|authorization:)\s+\S+"),
+    # The scheme word is optional and the credential after it is what matters,
+    # so "Authorization: Bearer <token>" is consumed whole.
+    (re.compile(r"(?i)\bauthorization:\s*(?:(?:bearer|basic|token|digest)\s+)?\S+"
+                r"|\bbearer\s+\S+"),
      "authorization header", "<AUTH>"),
     (re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S+"),
      "assigned secret", "<SECRET>"),

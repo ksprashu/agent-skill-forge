@@ -70,6 +70,14 @@ class TestRedaction(unittest.TestCase):
         out = H.redact("see git.internal.acme.example and https://ci.corp.acme.example/job/7")
         self.assertEqual(out, "see <COMPANY_DOMAIN> and <INTERNAL_URL>")
 
+    def test_authorization_header_token_is_replaced(self):
+        for header in ("Authorization: Bearer abc.def-123", "authorization: Basic dXNlcjpwYXNz",
+                       "Authorization: abc123secret", "curl -H 'bearer abc123secret'"):
+            out = H.redact(header)
+            self.assertIn("<AUTH>", out, header)
+            for secret in ("abc.def-123", "dXNlcjpwYXNz", "abc123secret"):
+                self.assertNotIn(secret, out, header)
+
     def test_github_token_is_replaced(self):
         self.assertNotIn("ghp_", H.redact("use ghp_" + "b" * 36))
 
