@@ -1,45 +1,48 @@
 # Reference Guide: AI Developer Tool Storage Schemas
 
-This reference details the default storage locations, file formats, and data schemas for all supported AI developer assistant interfaces on macOS. It is utilized by the `extract_voice.py` script to parse prompts and construct writing style templates.
+This reference lists where each supported tool stores its logs and how its user turns are read. The locations and readers live in `scripts/log_sources.py`, which `cognitive-profiler` ships an identical copy of; `extract_voice.py` calls it and keeps only your own turns.
+
+`<app-data>` below is `~/Library/Application Support` on macOS, `%APPDATA%` on Windows, and `$XDG_CONFIG_HOME` (default `~/.config`) on Linux.
 
 ---
 
 ## 1. Directory Registry & File Formats
 
-| Assistant Tool | Storage Path on macOS | File Type | Parser Method |
+| Assistant Tool | Storage Path | File Type | What counts as your turn |
 | :--- | :--- | :--- | :--- |
-| **Antigravity CLI** | `~/.gemini/antigravity-cli/brain/*/` | JSONL | Parse line-by-line JSON objects, searching for `type: "USER_INPUT"` or `source: "USER_EXPLICIT"`. |
-| **Gemini CLI** | `~/.gemini/tmp/*/chats/` | JSONL | Parse lines to match role-based keys (`role: "user"`, `sender: "user"`, or `user_input`). |
-| **Claude Code** | `~/.claude/projects/*/` | JSONL | Parse file `chat_*.jsonl`, searching for `role: "user"` inside JSON lines. Handles list and string values. |
-| **Cline** | `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks/` | JSON | Parse `ui_messages.json` inside each task folder, matching objects with `sender: "user"` or `type: "say"`. |
-| **Roo Code** | `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks/` | JSON | Parse `ui_messages.json` identical to Cline, extracting text contents. |
-| **Aider** | `~/.aider.history` (Global)<br>`.aider.chat.history.md` (Local workspace) | Plain Text / Markdown | Parse line-by-line commands in `.history`, and match blockquotes (`>`) in local markdown. |
-| **Cursor** | `~/Library/Application Support/Cursor/User/globalStorage/state.vscdb` | SQLite (vscdb) | Query `globalState` table for keys containing `"chat"` or `"composer"`, parse nested JSON strings. |
+| **Antigravity CLI** | `~/.gemini/antigravity-cli/brain/` | JSONL (`transcript.jsonl`) | `source: "USER_EXPLICIT"`, or `type: "USER_INPUT"` with no `source`. The `<USER_REQUEST>` envelope is unwrapped. |
+| **Antigravity IDE** | `~/.gemini/antigravity/brain/`, `~/.gemini/antigravity-ide/` | JSONL (`transcript.jsonl`) | Same as the CLI. |
+| **Gemini CLI** | `~/.gemini/tmp/<project>/` | JSON with a `messages` list, or JSONL | `role`/`type`/`sender` of `user`, or a `user_input` key. |
+| **Claude Code** | `~/.claude/projects/<slug>/<session>.jsonl` | JSONL | `type: "user"` records, text from `message.content`. Skips tool results, meta, sidechain (subagent), and compaction records, and slash-command or shell-output records. |
+| **Cline** | `<app-data>/Code/User/globalStorage/saoudrizwan.claude-dev/tasks/` | JSON (`ui_messages.json`) | `say: "user_feedback"` or `say: "task"`, or `role: "user"`. |
+| **Roo Code** | `<app-data>/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks/` | JSON (`ui_messages.json`) | Same as Cline. |
+| **Aider** | `.aider.chat.history.md`, else `.aider.input.history` or `.aider.history`, in `~`, `~/*`, `~/code/*`, `~/git/*` | Markdown / plain text | `#### ` lines in the chat transcript; `+` lines (or plain lines) in the input history. |
+| **Cursor** | `<app-data>/Cursor/User/**/state.vscdb` | SQLite | `ItemTable` rows whose key contains `chat`; chat bubbles with `type: 1` or `role: "user"`. Opened read-only. |
 
 ---
 
 ## 2. Parsing Schemas
 
-### Antigravity CLI Transcript (`transcript.jsonl`)
+### Antigravity Transcript (`transcript.jsonl`)
 Lines are separate JSON documents detailing sequential conversation steps:
 ```json
-{"step_index": 3, "source": "USER_EXPLICIT", "type": "USER_INPUT", "content": "Review this repository and write unit tests."}
+{"step_index": 3, "source": "USER_EXPLICIT", "type": "USER_INPUT", "content": "<USER_REQUEST>Review this repository and write unit tests.</USER_REQUEST>"}
 ```
-* **Extraction Strategy**: Inspect `type == "USER_INPUT"` and `source == "USER_EXPLICIT"`. The `content` string contains the user's raw prompt.
+* **Extraction Strategy**: Take `content` when `source == "USER_EXPLICIT"`, or when `type == "USER_INPUT"` and no `source` is recorded. Other sources are the harness talking to itself. `--tool antigravity-cli` and `--tool antigravity-ide` read only that surface's directories.
 
-### Gemini CLI Session Chats (`chat_*.jsonl`)
-Each chat step contains structured role arrays:
+### Gemini CLI Session Chats
+Session files hold a message list:
 ```json
-{"role": "user", "content": "Please implement the new feature branch."}
+{"messages": [{"type": "user", "content": "Please implement the new feature branch."}, {"type": "gemini", "content": "..."}]}
 ```
-* **Extraction Strategy**: Matches when `role == "user"`. Extracted from `content` string.
+* **Extraction Strategy**: Matches when `role`, `type`, or `sender` is `user`, or a `user_input` key is present. `content` may be a string or a list of `{text}` parts.
 
-### Claude Code Chat History (`chat_*.jsonl`)
-Contains nested content blocks for text and tool usage:
+### Claude Code Sessions (`<slug>/<session>.jsonl`)
+Each line is a record; the turn sits under `message`:
 ```json
-{"role": "user", "content": [{"type": "text", "text": "Deploy to cloud run."}]}
+{"type": "user", "timestamp": "2026-09-20T10:00:00Z", "message": {"role": "user", "content": [{"type": "text", "text": "Deploy to cloud run."}]}}
 ```
-* **Extraction Strategy**: Check if `role == "user"`. If `content` is a list, concatenate all text elements where `type == "text"`. If `content` is a string, extract directly.
+* **Extraction Strategy**: Read `type == "user"` records. If `message.content` is a string, take it; if it is a list, join its `type == "text"` parts, and skip the record entirely if any part is a `tool_result` (that is the harness feeding output back). Skip records marked `isMeta`, `isSidechain`, or `isCompactSummary`, and text starting with `<command-`, `<local-command`, `<bash-`, or `Caveat:`.
 
 ### Cline & Roo Code task histories (`ui_messages.json`)
 Consists of a JSON array containing UI logs:
@@ -52,16 +55,23 @@ Consists of a JSON array containing UI logs:
   }
 ]
 ```
-* **Extraction Strategy**: Loop through array. Extract `text` when `say == "user_feedback"` and `type == "say"`.
+* **Extraction Strategy**: Loop through array. Extract `text` when `say` is `user_feedback` or `task`. `say == "text"` is the assistant, and `ask == "followup"` is the assistant asking you.
+
+### Aider (`.aider.chat.history.md`, `.aider.input.history`)
+The chat transcript marks your input with `#### ` and aider's own output with `> `:
+```markdown
+# aider chat started at 2026-09-20 10:00:00
+> Added app.py to the chat.
+#### add a retry to the upload call
+```
+* **Extraction Strategy**: Consecutive `#### ` lines form one turn. The input history is used only where no chat transcript sits beside it, since both record the same prompts.
 
 ### Cursor SQLite Databases (`state.vscdb`)
-Uses SQLite database for storing global state values:
+Chat state is a JSON blob in the `ItemTable` key-value table:
 ```sql
-SELECT value FROM globalState WHERE key = 'workbench.panel.chat.state';
+SELECT value FROM ItemTable WHERE key LIKE '%chat%';
 ```
-The nested `value` is a massive serialized JSON tree containing:
-`{"tabs": [{"chats": [{"blocks": [{"text": "Query BigQuery tables"}]}]}]}`
-* **Extraction Strategy**: Retrieve keys containing `"chat"` or `"composer"` from the `globalState` table, convert to string, and apply a robust regex pattern: `r'"text"\s*:\s*"([^"]+)"'`.
+* **Extraction Strategy**: Walk the JSON for objects carrying `text` (longer than 15 characters) and a role marker: `type: 1` or `role: "user"` is you, `type: 2` or `role: "assistant"` is the model. The database is opened read-only, and as immutable if Cursor holds a lock.
 
 ---
 

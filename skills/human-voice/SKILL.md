@@ -11,7 +11,7 @@ Scan developer conversation logs, scrub PII, and extract authentic writing style
 ---
 
 ## 🎯 Goal
-Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemini CLI, Cursor) and generate reusable voice profiles without leaking credentials.
+Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemini CLI, Cline, Roo Code, Aider, Cursor) and generate reusable voice profiles without leaking credentials.
 
 ---
 
@@ -21,7 +21,7 @@ Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemin
    ```bash
    python3 <skill-dir>/scripts/extract_voice.py [--internal-domain your-company.example]
    ```
-2. **Automatic PII Scrubbing**: The script redacts emails, IP addresses, API tokens, your OS user name and home path, and URLs on generic internal hosts (`.internal`, `.corp`, `.intranet`, `.lan`, `.local`). Pass `--internal-domain` (repeatable) for your employer's domains, and `--user-name`/`--user-nickname` for names. No employer domain is built in.
+2. **Automatic PII Scrubbing**: The script redacts emails, IPv4 and IPv6 addresses, API keys and tokens (Google, OpenAI, Anthropic, AWS, GitHub, GitLab, Slack, JWTs, bearer headers, `password=`-style assignments), home-directory paths (shown as `~`), your OS user name, and URLs and hostnames on generic internal suffixes (`.internal`, `.corp`, `.intranet`, plus `.lan` and `.local` for URLs). Pass `--internal-domain` (repeatable) for your employer's domains, and `--user-name`/`--user-nickname` for names. No employer domain is built in. Log reading and redaction live in `<skill-dir>/scripts/log_sources.py`, which `cognitive-profiler` ships an identical copy of. Use `--tool` to read one tool only, and `-v` to see which log locations exist.
 3. **Inspect the Drafts**: The script writes `voice_and_tone.draft.md` and `voice-samples.draft.md` to `~/.gemini/personas/default/` (or `$AGENT_PERSONA_DIR/default`, or `-o <dir>`). It never overwrites a live `voice_and_tone.md`. The draft uses `voice-register`'s template layout, with measured habits (spelling, dashes, arrows, contractions, prompt length) filled in and `<...>` placeholders for everything a script can't know. The samples file holds raw redacted excerpts; check it for anything private.
 4. **Finish and Deploy the Profile**: Fill in the placeholders, then rename the draft to `voice_and_tone.md`. `voice-register` applies it. If `~/.gemini/personas` is your private persona repo, commit and push from there.
 

@@ -34,12 +34,8 @@ CLI:
 """
 
 import argparse
-import glob
 import json
-import os
-import platform
 import re
-import sqlite3
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -47,7 +43,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import profile_tool  # noqa: E402  (local module, path set above)
+import log_sources  # noqa: E402  (local module, path set above)
 
 if sys.platform == "win32":  # pragma: no cover - platform guard
     for _stream in (sys.stdout, sys.stderr):
@@ -66,19 +62,15 @@ MAX_QUOTE_CHARS = 320
 
 HOME = Path.home()
 
-# Same table the profile validator rejects against, so a pattern added on one
-# side is never missing from the other. See profile_tool.SENSITIVE_PATTERNS.
+# The shared table in log_sources.py, which the profile validator also rejects
+# against, so a pattern added for one is never missing from the other.
 REDACTIONS = [(pattern, replacement)
-              for pattern, _label, replacement in profile_tool.SENSITIVE_PATTERNS]
+              for pattern, _label, replacement in log_sources.SENSITIVE_PATTERNS]
 
 
 def redact(text):
-    """Strip credentials and personal paths. Order matters: keys before paths."""
-    if not isinstance(text, str):
-        return ""
-    for pattern, replacement in REDACTIONS:
-        text = pattern.sub(replacement, text)
-    return text
+    """Strip credentials, internal hosts, and personal paths."""
+    return log_sources.redact(text)
 
 
 # ---------------------------------------------------------------------------
@@ -209,36 +201,15 @@ def find_signals(text):
 
 # ---------------------------------------------------------------------------
 # Source discovery
+#
+# Locations and log formats live in log_sources.py, shared with human-voice.
 # ---------------------------------------------------------------------------
 
 
-def _app_support():
-    system = platform.system()
-    if system == "Darwin":
-        return HOME / "Library" / "Application Support"
-    if system == "Windows":
-        return Path(os.environ.get("APPDATA", HOME / "AppData" / "Roaming"))
-    return Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config"))
-
-
 def source_roots():
-    """Candidate directories per harness. Layouts differ by version, so each
+    """Candidate log locations per harness. Layouts differ by version, so each
     harness lists every location we have seen in the wild."""
-    app = _app_support()
-    return {
-        "claude-code": [HOME / ".claude" / "projects"],
-        "antigravity": [
-            HOME / ".gemini" / "antigravity-cli" / "brain",
-            HOME / ".gemini" / "antigravity-ide",
-            HOME / ".gemini" / "antigravity" / "brain",
-        ],
-        "gemini-cli": [HOME / ".gemini" / "tmp"],
-        "cline": [app / "Code" / "User" / "globalStorage" /
-                  "saoudrizwan.claude-dev" / "tasks"],
-        "roo-code": [app / "Code" / "User" / "globalStorage" /
-                     "rooveterinaryinc.roo-cline" / "tasks"],
-        "cursor": [app / "Cursor" / "User"],
-    }
+    return log_sources.source_roots()
 
 
 def _words(text):
@@ -306,188 +277,49 @@ class Harvest:
         self.assistant_word_counts.append(_words(text))
 
     # -- parsers ------------------------------------------------------------
+    #
+    # Reading each format is log_sources' job. Here, each session's turns are
+    # replayed in order so a user turn can be paired with the length of the
+    # response it reacted to.
 
-    def _iter_jsonl(self, path):
-        try:
-            with open(path, "r", encoding="utf-8", errors="replace") as fh:
-                for line in fh:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        yield json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
-        except OSError:
-            return
-
-    def parse_claude_code(self, root):
-        """~/.claude/projects/<slug>/<session>.jsonl
-
-        A record with type "user" is not necessarily a human turn: tool
-        results and injected meta-prompts wear the same type. Counting those
-        as speech is how you end up profiling the harness instead of the
-        person."""
-        files = sorted(Path(root).glob("**/*.jsonl"))
-        sessions = 0
-        for path in files:
-            sessions += 1
+    def _consume(self, harness, sessions):
+        count = 0
+        for session in sessions:
+            count += 1
             last_assistant_words = None
-            for rec in self._iter_jsonl(path):
-                rtype = rec.get("type")
-                when = rec.get("timestamp")
-
-                if rtype == "assistant":
-                    message = rec.get("message") or {}
-                    content = message.get("content")
-                    visible = []
-                    if isinstance(content, list):
-                        for block in content:
-                            if isinstance(block, dict) and block.get("type") == "text":
-                                visible.append(block.get("text", ""))
-                    elif isinstance(content, str):
-                        visible.append(content)
-                    text = "\n".join(visible).strip()
+            for turn in session.turns:
+                if turn.role == "assistant":
+                    text = turn.text.strip()
                     if text:
                         last_assistant_words = _words(text)
-                        self.add_assistant_turn(text, when)
+                        self.add_assistant_turn(text, turn.when)
+                else:
+                    self.add_user_turn(harness, turn.text, turn.when,
+                                       last_assistant_words)
+        return count
 
-                elif rtype == "user":
-                    if rec.get("isMeta") or rec.get("isSidechain"):
-                        continue
-                    message = rec.get("message") or {}
-                    content = message.get("content")
-                    if isinstance(content, str):
-                        text = content
-                    elif isinstance(content, list):
-                        # Any tool_result block means this is the harness
-                        # feeding output back, not the user typing.
-                        if any(isinstance(b, dict) and b.get("type") == "tool_result"
-                               for b in content):
-                            continue
-                        text = "\n".join(
-                            b.get("text", "") for b in content
-                            if isinstance(b, dict) and b.get("type") == "text")
-                    else:
-                        continue
-                    # Slash commands and pasted stdout are not prose.
-                    if text.lstrip().startswith(("<command-", "<local-command",
-                                                 "<bash-", "Caveat:")):
-                        continue
-                    self.add_user_turn("claude-code", text, when, last_assistant_words)
-        return sessions
+    def parse_claude_code(self, root):
+        """~/.claude/projects/<slug>/<session>.jsonl; see log_sources."""
+        return self._consume("claude-code", log_sources.read_claude_code(root))
 
     def parse_antigravity(self, root):
         """transcript.jsonl anywhere beneath the brain/session directory."""
-        sessions = 0
-        for path in sorted(Path(root).glob("**/transcript.jsonl")):
-            sessions += 1
-            last_assistant_words = None
-            for rec in self._iter_jsonl(path):
-                when = rec.get("created_at")
-                rtype = rec.get("type")
-
-                if rtype == "PLANNER_RESPONSE":
-                    text = rec.get("content") or ""
-                    if isinstance(text, str) and text.strip():
-                        last_assistant_words = _words(text)
-                        self.add_assistant_turn(text, when)
-
-                elif rtype == "USER_INPUT" and rec.get("source") == "USER_EXPLICIT":
-                    text = rec.get("content")
-                    if not isinstance(text, str):
-                        continue
-                    # Antigravity wraps the typed text in a request envelope.
-                    match = re.search(r"<USER_REQUEST>(.*?)</USER_REQUEST>",
-                                      text, re.DOTALL)
-                    if match:
-                        text = match.group(1)
-                    self.add_user_turn("antigravity", text, when, last_assistant_words)
-        return sessions
+        return self._consume("antigravity", log_sources.read_antigravity(root))
 
     def parse_gemini_cli(self, root):
-        sessions = 0
-        for path in sorted(Path(root).glob("**/*.json")):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            messages = data if isinstance(data, list) else data.get("messages")
-            if not isinstance(messages, list):
-                continue
-            sessions += 1
-            last_assistant_words = None
-            for msg in messages:
-                if not isinstance(msg, dict):
-                    continue
-                role = msg.get("role") or msg.get("type")
-                text = msg.get("content") or msg.get("text") or ""
-                if not isinstance(text, str) or not text.strip():
-                    continue
-                if role in ("user", "human"):
-                    self.add_user_turn("gemini-cli", text, None, last_assistant_words)
-                elif role in ("model", "assistant"):
-                    last_assistant_words = _words(text)
-                    self.add_assistant_turn(text)
-        return sessions
+        return self._consume("gemini-cli", log_sources.read_gemini_cli(root))
 
     def parse_cline(self, root, harness):
         """Cline and Roo store one directory per task with ui_messages.json."""
-        sessions = 0
-        for path in sorted(Path(root).glob("**/ui_messages.json")):
-            try:
-                messages = json.loads(path.read_text(encoding="utf-8", errors="replace"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if not isinstance(messages, list):
-                continue
-            sessions += 1
-            last_assistant_words = None
-            for msg in messages:
-                if not isinstance(msg, dict):
-                    continue
-                text = msg.get("text")
-                if not isinstance(text, str) or not text.strip():
-                    continue
-                if msg.get("type") == "say" and msg.get("say") == "text":
-                    last_assistant_words = _words(text)
-                    self.add_assistant_turn(text)
-                elif msg.get("type") == "ask" and msg.get("ask") == "followup":
-                    continue
-                elif msg.get("say") in ("user_feedback", "task"):
-                    self.add_user_turn(harness, text, None, last_assistant_words)
-        return sessions
+        return self._consume(harness, log_sources.read_cline(root))
 
     def parse_cursor(self, root):
         """Cursor keeps chat state in a SQLite key-value blob store."""
-        sessions = 0
-        for db_path in sorted(Path(root).glob("**/state.vscdb")):
-            try:
-                conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
-            except sqlite3.Error:
-                continue
-            try:
-                rows = conn.execute(
-                    "SELECT value FROM ItemTable WHERE key LIKE '%chat%'"
-                ).fetchall()
-            except sqlite3.Error:
-                conn.close()
-                continue
-            conn.close()
-            sessions += 1
-            for (value,) in rows:
-                if isinstance(value, (bytes, bytearray)):
-                    value = value.decode("utf-8", errors="ignore")
-                try:
-                    blob = json.loads(value)
-                except (json.JSONDecodeError, TypeError):
-                    continue
-                for text, is_user in _walk_cursor_bubbles(blob):
-                    if is_user:
-                        self.add_user_turn("cursor", text)
-                    else:
-                        self.add_assistant_turn(text)
-        return sessions
+        return self._consume("cursor", log_sources.read_cursor(root))
+
+    def parse_aider(self, path):
+        """An aider chat transcript or input history file."""
+        return self._consume("aider", log_sources.read_aider(path))
 
     # -- driver -------------------------------------------------------------
 
@@ -513,6 +345,8 @@ class Harvest:
                         sessions += self.parse_cline(root, harness)
                     elif harness == "cursor":
                         sessions += self.parse_cursor(root)
+                    elif harness == "aider":
+                        sessions += self.parse_aider(root)
                 except (OSError, RecursionError) as exc:
                     self.sources[harness] = {"status": f"error: {exc}", "sessions": 0}
                     break
@@ -576,27 +410,6 @@ class Harvest:
         }
 
 
-def _walk_cursor_bubbles(node, depth=0):
-    """Cursor nests chat bubbles at varying depths across versions; walk for
-    any dict carrying text plus a role-ish discriminator."""
-    if depth > 8:
-        return
-    if isinstance(node, dict):
-        text = node.get("text")
-        if isinstance(text, str) and len(text.strip()) > 15:
-            rtype = node.get("type")
-            role = node.get("role")
-            is_user = (rtype == 1 or role == "user")
-            is_assistant = (rtype == 2 or role in ("assistant", "ai"))
-            if is_user or is_assistant:
-                yield text, is_user
-        for value in node.values():
-            yield from _walk_cursor_bubbles(value, depth + 1)
-    elif isinstance(node, list):
-        for value in node:
-            yield from _walk_cursor_bubbles(value, depth + 1)
-
-
 def _distribution(values):
     if not values:
         return {"n": 0}
@@ -635,9 +448,9 @@ def _cmd_check_redaction(path):
     be safe to share, so verify rather than trust."""
     text = Path(path).read_text(encoding="utf-8")
     leaks = []
-    for pattern, label in REDACTIONS:
+    for pattern, label, _replacement in log_sources.SENSITIVE_PATTERNS:
         for match in pattern.finditer(text):
-            if match.group(0) not in ("<email>", "<api-key>", "<token>", "~"):
+            if match.group(0) not in log_sources.PLACEHOLDERS:
                 leaks.append((label, match.group(0)[:60]))
     if leaks:
         print(f"{len(leaks)} possible leak(s) survived redaction:", file=sys.stderr)

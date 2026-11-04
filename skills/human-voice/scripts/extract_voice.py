@@ -15,119 +15,72 @@
 
 import os
 import re
-import json
-import glob
-import sqlite3
+import sys
 import platform
 import argparse
-import getpass
 from collections import Counter
+from pathlib import Path
 
-# Set up paths relative to user's home directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import log_sources  # noqa: E402  (bundled beside this script; shared with cognitive-profiler)
+
 HOME = os.path.expanduser('~')
 
-def get_tool_paths():
-    """Dynamically resolves AI tool storage directories across macOS, Linux, and Windows."""
-    system = platform.system()
-    if system == "Darwin":
-        app_support = os.path.join(HOME, "Library", "Application Support")
-    elif system == "Windows":
-        app_support = os.environ.get("APPDATA", os.path.join(HOME, "AppData", "Roaming"))
-    else:  # Linux / Unix
-        app_support = os.environ.get("XDG_CONFIG_HOME", os.path.join(HOME, ".config"))
+# Log locations per tool, from log_sources. Each value is a list of paths.
+PATHS = log_sources.tool_paths()
 
-    return {
-        "antigravity-cli": os.path.join(HOME, ".gemini", "antigravity-cli", "brain"),
-        "antigravity-ide": os.path.join(HOME, ".gemini", "antigravity", "brain"),
-        "gemini-cli": os.path.join(HOME, ".gemini", "tmp"),
-        "claude-code": os.path.join(HOME, ".claude", "projects"),
-        "cline": os.path.join(app_support, "Code", "User", "globalStorage", "saoudrizwan.claude-dev", "tasks"),
-        "roo-code": os.path.join(app_support, "Code", "User", "globalStorage", "rooveterinaryinc.roo-cline", "tasks"),
-        "aider": HOME,  # Checked for .aider.history and .aider.chat.history.md
-        "cursor": os.path.join(app_support, "Cursor", "User")
-    }
-
-# Standard storage paths for AI coding tools
-PATHS = get_tool_paths()
-
-# A hostname label that marks a host as internal wherever it sits in the name
-# (foo.corp, ci.corp.example.com). The whole hostname is consumed, so no
-# suffix such as an employer's domain survives.
-_INTERNAL_LABEL = r'(?:internal|corp|intranet)(?![a-z0-9-])'
-_INTERNAL_URL_LABEL = r'(?:internal|corp|intranet|lan|local)(?![a-z0-9-])'
-_MORE_LABELS = r'(?:\.[a-z0-9-]+)*'
-_URL_TAIL = r'(?::[0-9]+)?(?:[/?#][a-z0-9./?=&_%#:~+-]*)?(?<![.,;:])'
-
-# Regex and lists for PII / Sensitive data scrubbing
-PII_PATTERNS = [
-    (r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '<EMAIL>'),  # Email addresses
-    (r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', '<IP_ADDRESS>'),  # IPv4 addresses
-    (r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b|\b(?:[0-9a-fA-F]{1,4}:){1,7}:|\b::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4}\b', '<IP_ADDRESS>'),  # IPv6 addresses
-    (r'https?://(?:[a-z0-9-]+\.)*' + _INTERNAL_URL_LABEL + _MORE_LABELS + _URL_TAIL, '<INTERNAL_URL>'),
-    # bare internal hostnames: a label before it (foo.corp), or two after it (corp.example.com)
-    (r'\b(?:[a-z0-9-]+\.)+' + _INTERNAL_LABEL + _MORE_LABELS
-     + r'|\b' + _INTERNAL_LABEL + r'(?:\.[a-z0-9-]+){2,}', '<COMPANY_DOMAIN>'),
-    (r'AI_SHA_KEY_[a-zA-Z0-9]{16,}', '<REDACTED_API_KEY>'),  # Key structures
-    (r'AIzaSy[a-zA-Z0-9_-]{33}', '<REDACTED_API_KEY>'),  # Google Cloud API Keys
-    (r'ghp_[a-zA-Z0-9]{36}', '<REDACTED_GITHUB_TOKEN>'),  # GitHub token
-    (r'github_pat_[a-zA-Z0-9_]{80,}', '<REDACTED_GITHUB_PAT>'),  # GitHub Fine-Grained PAT
-    (r'sk-ant-api03-[a-zA-Z0-9_-]{40,}', '<REDACTED_ANTHROPIC_KEY>'),  # Anthropic API Keys
-    (r'sk-[a-zA-Z0-9]{32,}', '<REDACTED_OPENAI_KEY>'),  # OpenAI API Keys
-    (r'AKIA[0-9A-Z]{16}', '<REDACTED_AWS_ACCESS_KEY>'),  # AWS Access Key ID
-    (r'glpat-[a-zA-Z0-9_-]{20,}', '<REDACTED_GITLAB_PAT>'),  # GitLab Personal Access Token
-    (r'ey[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9._-]{10,}', '<REDACTED_JWT_TOKEN>'),  # JWTs
-]
+# Redaction rows added for this run (--internal-domain). The built-in table is
+# log_sources.SENSITIVE_PATTERNS, shared with cognitive-profiler.
+EXTRA_PATTERNS = []
 
 
 def add_internal_domains(domains):
     """Redact URLs and hostnames under the given domains (e.g. an employer's intranet).
 
-    Nothing employer-specific ships in this file; pass yours with --internal-domain.
+    Nothing employer-specific ships with this skill; pass yours with --internal-domain.
     """
-    # These go after the email pattern, so an address under the domain is
-    # redacted whole, and before the generic internal-host patterns, so those
-    # can't consume part of a hostname and leave the supplied domain behind.
-    rows = []
-    for domain in domains or ():
-        domain = domain.strip().lstrip(".")
-        if domain:
-            escaped = re.escape(domain) + r'(?![a-z0-9-])'
-            rows.append((r'https?://(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS + _URL_TAIL, '<INTERNAL_URL>'))
-            rows.append((r'(?<![a-z0-9-])(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS, '<COMPANY_DOMAIN>'))
-    at = next(i for i, (_, repl) in enumerate(PII_PATTERNS) if repl == '<INTERNAL_URL>')
-    PII_PATTERNS[at:at] = rows
+    EXTRA_PATTERNS.extend(log_sources.internal_domain_patterns(domains))
 
-_current_system_user = getpass.getuser()
-NAME_PATTERNS = [
-    (r'\b' + re.escape(_current_system_user) + r'\b', '<USER_ID>'),
-    (r'/Users/' + re.escape(_current_system_user), '/Users/<USER_ID>'),  # host-path-ok
-    (r'/home/' + re.escape(_current_system_user), '/home/<USER_ID>'),  # host-path-ok
-]
 
 COMMONWEALTH_WORDS = [
     "colour", "behaviour", "customisation", "optimise", "prioritise", "organisation",
     "modelling", "visualise", "customise"
 ]
 
-def sanitize_text(text, extra_names=None):
-    """Scrubs sensitive information, PII, and specific personal ids/domains from raw text."""
-    if not isinstance(text, str):
-        return ""
-    
-    # Run generic PII scrubbers
-    for pattern, replacement in PII_PATTERNS:
-        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-        
-    # Run user name and home path scrubbers
-    for pattern, replacement in NAME_PATTERNS:
-        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-    if extra_names:
-        for name, tag in extra_names:
-            if name:
-                text = re.sub(r'\b' + re.escape(name) + r'\b', tag, text, flags=re.IGNORECASE)
-        
-    return text
+def sanitize_text(text, extra_names=None):
+    """Scrubs secrets, PII, internal hosts, your login name, and any supplied names."""
+    names = [(log_sources.login_name(), log_sources.USER_ID)] + list(extra_names or [])
+    return log_sources.redact(text, log_sources.name_patterns(names), domains=EXTRA_PATTERNS)
+
+
+def _roots(tool):
+    value = PATHS.get(tool)
+    if not value:
+        return []
+    if isinstance(value, (str, os.PathLike)):
+        value = [value]
+    return [Path(v) for v in value]
+
+
+def _user_prompts(tools, extra_names=None):
+    """Redacted user turns from every existing location of the named tools."""
+    prompts = []
+    for tool in tools:
+        reader = log_sources.READERS[tool]
+        for root in _roots(tool):
+            if not root.exists():
+                continue
+            for session in reader(root):
+                for turn in session.turns:
+                    if turn.role != "user":
+                        continue
+                    text = sanitize_text(turn.text, extra_names=extra_names).strip()
+                    if text:
+                        prompts.append(text)
+    return prompts
+
 
 def extract_antigravity(extra_names=None, surfaces=("antigravity-ide", "antigravity-cli")):
     """Extracts from Antigravity transcript.jsonl files.
@@ -136,28 +89,8 @@ def extract_antigravity(extra_names=None, surfaces=("antigravity-ide", "antigrav
     which is what ``--tool antigravity`` means; ``--tool antigravity-cli`` asks
     for the CLI only, and a filter that silently widens is not a filter.
     """
-    prompts = []
-    dirs_to_check = [PATHS.get(name) for name in surfaces]
-    for base_dir in dirs_to_check:
-        if not base_dir or not os.path.exists(base_dir):
-            continue
+    return _user_prompts(surfaces, extra_names)
 
-        # Traverse all directories including hidden (.system_generated)
-        for root, _, files in os.walk(base_dir):
-            if "transcript.jsonl" in files:
-                log_file = os.path.join(root, "transcript.jsonl")
-                try:
-                    with open(log_file, 'r', encoding='utf-8') as f:
-                        for line in f:
-                            data = json.loads(line)
-                            # Extract from PLANNER_RESPONSE or user interactions
-                            if data.get("type") == "USER_INPUT" and data.get("content"):
-                                prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-                            elif data.get("source") == "USER_EXPLICIT" and data.get("content"):
-                                prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-                except Exception:
-                    continue
-    return prompts
 
 def extract_antigravity_cli(extra_names=None):
     return extract_antigravity(extra_names=extra_names, surfaces=("antigravity-cli",))
@@ -166,153 +99,31 @@ def extract_antigravity_cli(extra_names=None):
 def extract_antigravity_ide(extra_names=None):
     return extract_antigravity(extra_names=extra_names, surfaces=("antigravity-ide",))
 
-def extract_gemini_cli(extra_names=None):
-    """Extracts from gemini-cli session JSONL files."""
-    prompts = []
-    base_dir = PATHS["gemini-cli"]
-    if not os.path.exists(base_dir):
-        return prompts
 
-    log_files = glob.glob(os.path.join(base_dir, "**", "chats", "*.jsonl"), recursive=True)
-    for log_file in log_files:
-        try:
-            with open(log_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    data = json.loads(line)
-                    # Support multiple formats in gemini-cli
-                    if data.get("role") == "user" and data.get("content"):
-                        prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-                    elif "user_input" in data:
-                        prompts.append(sanitize_text(data["user_input"], extra_names=extra_names))
-                    elif "content" in data and isinstance(data["content"], str) and data.get("sender") == "user":
-                        prompts.append(sanitize_text(data["content"], extra_names=extra_names))
-        except Exception:
-            continue
-    return prompts
+def extract_gemini_cli(extra_names=None):
+    """Extracts from gemini-cli chat files under ~/.gemini/tmp."""
+    return _user_prompts(("gemini-cli",), extra_names)
+
 
 def extract_claude_code(extra_names=None):
-    """Extracts from Claude Code jsonl files."""
-    prompts = []
-    base_dir = PATHS["claude-code"]
-    if not os.path.exists(base_dir):
-        return prompts
+    """Extracts from Claude Code sessions: ~/.claude/projects/<slug>/<session>.jsonl."""
+    return _user_prompts(("claude-code",), extra_names)
 
-    log_files = glob.glob(os.path.join(base_dir, "**", "chat_*.jsonl"), recursive=True)
-    for log_file in log_files:
-        try:
-            with open(log_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    data = json.loads(line)
-                    # Claude Code schema checks
-                    if data.get("role") == "user" and data.get("content"):
-                        content = data["content"]
-                        if isinstance(content, list):
-                            text = " ".join([part.get("text", "") for part in content if part.get("type") == "text"])
-                            prompts.append(sanitize_text(text, extra_names=extra_names))
-                        elif isinstance(content, str):
-                            prompts.append(sanitize_text(content, extra_names=extra_names))
-        except Exception:
-            continue
-    return prompts
 
-def extract_cline_and_roo_code(extra_names=None):
+def extract_cline_and_roo_code(extra_names=None, tools=("cline", "roo-code")):
     """Extracts from Cline and Roo Code ui_messages.json files."""
-    prompts = []
-    for tool_name in ["cline", "roo-code"]:
-        base_dir = PATHS[tool_name]
-        if not os.path.exists(base_dir):
-            continue
+    return _user_prompts(tools, extra_names)
 
-        log_files = glob.glob(os.path.join(base_dir, "**", "ui_messages.json"), recursive=True)
-        for log_file in log_files:
-            try:
-                with open(log_file, 'r', encoding='utf-8') as f:
-                    messages = json.load(f)
-                    for msg in messages:
-                        # Extracted user prompts
-                        if msg.get("type") == "say" and msg.get("say") == "user_feedback":
-                            if msg.get("text"):
-                                prompts.append(sanitize_text(msg["text"], extra_names=extra_names))
-                        elif msg.get("role") == "user" and msg.get("content"):
-                            prompts.append(sanitize_text(msg["content"], extra_names=extra_names))
-            except Exception:
-                continue
-    return prompts
 
 def extract_aider(extra_names=None):
-    """Extracts from Aider session logs."""
-    prompts = []
-    # Check ~/.aider.history (plain command history file)
-    history_file = os.path.join(PATHS["aider"], ".aider.history")
-    if os.path.exists(history_file):
-        try:
-            with open(history_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    clean_line = line.strip()
-                    if clean_line and not clean_line.startswith("#"):
-                        prompts.append(sanitize_text(clean_line, extra_names=extra_names))
-        except Exception:
-            pass
-            
-    # Check for .aider.chat.history.md files in common directories instead of recursive scanning
-    search_paths = [
-        os.path.join(HOME, ".aider.chat.history.md"),
-        os.path.join(HOME, "*", ".aider.chat.history.md"),
-        os.path.join(HOME, "code", "*", ".aider.chat.history.md"),
-        os.path.join(HOME, "git", "*", ".aider.chat.history.md")
-    ]
-    chat_files = []
-    for sp in search_paths:
-        chat_files.extend(glob.glob(sp))
+    """Extracts from aider chat transcripts and input histories."""
+    return _user_prompts(("aider",), extra_names)
 
-    for chat_file in chat_files:
-        try:
-            with open(chat_file, 'r', encoding='utf-8') as f:
-                # Simple extraction of blockquotes or lines starting with >
-                for line in f:
-                    if line.startswith("> ") or line.startswith("  > "):
-                        text = line.replace("> ", "").strip()
-                        if text:
-                            prompts.append(sanitize_text(text, extra_names=extra_names))
-        except Exception:
-            continue
-    return prompts
 
 def extract_cursor(extra_names=None):
-    """Extracts from Cursor global state.vscdb SQLite DB if accessible."""
-    prompts = []
-    base_dir = PATHS["cursor"]
-    if not os.path.exists(base_dir):
-        return prompts
-        
-    db_file = os.path.join(base_dir, "globalStorage", "state.vscdb")
-    if os.path.exists(db_file):
-        try:
-            # Use read-only URI mode to prevent database locking errors when Cursor is open
-            db_uri = f"file:{db_file}?mode=ro&immutable=1"
-            conn = sqlite3.connect(db_uri, uri=True)
-            cursor = conn.cursor()
-            # Try finding chat/composer keys in state table
-            cursor.execute("SELECT key, value FROM globalState WHERE key LIKE '%chat%' OR key LIKE '%composer%'")
-            rows = cursor.fetchall()
-            for key, value in rows:
-                try:
-                    # Parse values which are JSON strings
-                    val_data = json.loads(value)
-                    # Extract any strings/contents inside state trees
-                    val_str = json.dumps(val_data)
-                    # Simple regex extraction of text inputs inside state tree
-                    found_prompts = re.findall(r'"text"\s*:\s*"([^"]+)"', val_str)
-                    for fp in found_prompts:
-                        # Unescape unicode and sanitize
-                        text = bytes(fp, "utf-8").decode("unicode_escape", errors="ignore")
-                        prompts.append(sanitize_text(text, extra_names=extra_names))
-                except Exception:
-                    continue
-            conn.close()
-        except Exception:
-            pass
-    return prompts
+    """Extracts from Cursor's state.vscdb SQLite store, opened read-only."""
+    return _user_prompts(("cursor",), extra_names)
+
 
 def _rate(hits, total):
     return f"{int(hits / total * 100)}%" if total else "0%"
@@ -477,17 +288,18 @@ def main():
         print(f"Platform: {platform.system()} ({platform.release()})")
         print(f"Home Directory: {HOME}")
         print("Resolved tool storage paths:")
-        for tool, path in PATHS.items():
-            status = "EXISTS" if os.path.exists(path) else "NOT FOUND"
-            print(f"  - {tool}: {path} [{status}]")
+        for tool in PATHS:
+            for path in _roots(tool):
+                status = "EXISTS" if path.exists() else "NOT FOUND"
+                print(f"  - {tool}: {path} [{status}]")
 
     add_internal_domains(args.internal_domain)
 
     extra_names = []
     if args.user_name:
-        extra_names.append((args.user_name, "<USER_NAME>"))
+        extra_names.append((args.user_name, log_sources.USER_NAME))
     if args.user_nickname:
-        extra_names.append((args.user_nickname, "<USER_NICKNAME>"))
+        extra_names.append((args.user_nickname, log_sources.USER_NICKNAME))
 
     all_prompts = []
     target_tool = args.tool.lower()
@@ -522,11 +334,18 @@ def main():
         print(f"-> Extracted {len(claude_prompts)} prompts from Claude Code.")
         all_prompts.extend(claude_prompts)
     
-    # 4. Cline and Roo Code
-    if target_tool in ["all", "cline", "roo-code"]:
-        print("Checking Cline & Roo Code files...")
-        cline_prompts = extract_cline_and_roo_code(extra_names=extra_names)
-        print(f"-> Extracted {len(cline_prompts)} prompts from Cline & Roo Code.")
+    # 4. Cline and Roo Code. Like Antigravity, naming one reads only that one.
+    CLINE_TOOLS = {
+        "all": ("cline", "roo-code"),
+        "cline": ("cline",),
+        "roo-code": ("roo-code",),
+    }
+    if target_tool in CLINE_TOOLS:
+        tools = CLINE_TOOLS[target_tool]
+        label = " & ".join("Cline" if t == "cline" else "Roo Code" for t in tools)
+        print(f"Checking {label} files...")
+        cline_prompts = extract_cline_and_roo_code(extra_names=extra_names, tools=tools)
+        print(f"-> Extracted {len(cline_prompts)} prompts from {label}.")
         all_prompts.extend(cline_prompts)
     
     # 5. Aider

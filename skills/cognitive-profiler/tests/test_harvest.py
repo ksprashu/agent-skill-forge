@@ -56,7 +56,7 @@ class TestRedaction(unittest.TestCase):
 
     def test_email_is_replaced(self):
         self.assertEqual(H.redact("ping alice@example.com now"),
-                         "ping <email> now")
+                         "ping <EMAIL> now")
 
     def test_google_api_key_is_replaced(self):
         key = "AIzaSy" + "A" * 33
@@ -66,15 +66,19 @@ class TestRedaction(unittest.TestCase):
         self.assertNotIn("sk-abcdefghijklmnopqrstuvwxyz",
                          H.redact("export OPENAI=sk-abcdefghijklmnopqrstuvwxyz"))
 
+    def test_an_internal_label_mid_hostname_redacts_the_whole_name(self):
+        out = H.redact("see git.internal.acme.example and https://ci.corp.acme.example/job/7")
+        self.assertEqual(out, "see <COMPANY_DOMAIN> and <INTERNAL_URL>")
+
     def test_github_token_is_replaced(self):
         self.assertNotIn("ghp_", H.redact("use ghp_" + "b" * 36))
 
     def test_jwt_is_replaced(self):
         jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dBjftJeZ4CVPmB92K"
-        self.assertIn("<jwt>", H.redact(f"Authorization {jwt}"))
+        self.assertIn("<JWT>", H.redact(f"Authorization {jwt}"))
 
     def test_assignment_style_secret_is_replaced(self):
-        self.assertIn("<secret>", H.redact("password = hunter2correcthorse"))
+        self.assertIn("<SECRET>", H.redact("password = hunter2correcthorse"))
 
     def test_posix_home_directory_becomes_tilde(self):
         self.assertEqual(H.redact("/Users/someone/code/x.py"), "~/code/x.py")  # host-path-ok
@@ -87,7 +91,7 @@ class TestRedaction(unittest.TestCase):
         between the two cannot leak anything."""
         h = H.Harvest()
         h.add_user_turn("claude-code", "this is too long, mail me at a@b.com")
-        self.assertIn("<email>", h.quotes[0]["text"])
+        self.assertIn("<EMAIL>", h.quotes[0]["text"])
         self.assertNotIn("a@b.com", json.dumps(h.report()))
 
     def test_redaction_is_idempotent(self):
@@ -404,6 +408,19 @@ class TestOtherParsers(unittest.TestCase):
         self.h.parse_cline(self.tmp, "cline")
         self.assertEqual(self.h.signal_counts["length_complaint"], 1)
         self.assertEqual(self.h.report()["coverage"]["user_turns"], 1)
+
+    def test_aider_chat_transcript_pairs_input_with_the_reply(self):
+        chat = self.tmp / ".aider.chat.history.md"
+        chat.write_text(
+            "# aider chat started at 2026-09-20 10:00:00\n"
+            "> Added app.py to the chat.\n"
+            "#### refactor the upload call\n"
+            "one two three four\n"
+            "#### that was too long\n", encoding="utf-8")
+        self.assertEqual(self.h.parse_aider(chat), 1)
+        self.assertEqual(self.h.signal_counts["length_complaint"], 1)
+        self.assertEqual(self.h.response_words_at_complaint, [4])
+        self.assertEqual(self.h.quotes[0]["harness"], "aider")
 
     def test_a_corrupt_file_is_skipped_rather_than_fatal(self):
         task = self.tmp / "t"
