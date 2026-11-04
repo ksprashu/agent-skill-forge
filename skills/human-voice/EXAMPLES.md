@@ -1,6 +1,6 @@
 # Examples: Processing, Scrubbing, and Translation
 
-This document demonstrates how the `extract-human-voice` skill processes raw conversational history, scrubs sensitive data/PII, and translates critique indicators into positive persona values.
+This document demonstrates how the `extract-human-voice` skill processes raw conversational history, scrubs sensitive data/PII, and drafts a profile in `voice-register`'s template layout.
 
 ---
 
@@ -28,13 +28,14 @@ The extractor implements regex-based security filters to make the generated refe
 
 ---
 
-## 2. Converting Technical Criticisms into Persona Attributes
+## 2. From Measured Habits to a Draft Profile
 
-When analyzing conversation history, the extractor searches for criticism triggers. This table illustrates how the raw frustrated dialogue is mapped to productive writing styles:
+The extractor counts habits and fills only those lines of the draft. Everything else stays a placeholder for you:
 
-| Raw Dialogue (Identified by Trigger Words) | Extracted Persona Value | Refined Writing Rule |
-| :--- | :--- | :--- |
-| *"You were hung. Hello... what's happening? Still didn't work."* | **Speed-Typing Authenticity & Snippet Dialogues** | Write short, snappy, direct questions. Incorporate minor typing shortcuts (like *teh*, *anyting*) to mimic real-world conversational pacing. |
-| *"The layout is pretty meh! It gives a standard table. What is this communicating? I want this presented in rich HTML."* | **Aesthetics Gating & Information Density** | Reject boring, low-information-density layouts. Strongly prefer clean, beautiful, dark-themed HTML documents with infographics and Mermaid charts where human consumption is key. |
-| *"None of these models are in GA, they are all in preview. Sit in a corner and think about what you have done."* | **Strict Domain Grounding & Environment Constraints** | Rigorously cross-check environment restrictions. Ensure API calls and configurations strictly respect whether features are GA or Preview. |
-| *"They are running the same task in parallel threads. Doing the same exact thing is a waste."* | **Workflow Concurrency and Thread Isolation** | Enforce clear, isolated modular boundaries. Avoid redundant parallel tasks by dividing work into independent vertical tracer bullets. |
+| Measured across your prompts | Draft line |
+| :--- | :--- |
+| 6 of 40 prompts use `colour`, `prioritise` | **Spelling**: British/Commonwealth (seen: colour, prioritise). <Confirm...> |
+| `->` appears in 5 of 40 prompts | **Arrows and slashes**: `->` or `=>` in 12% of prompts. <Which form...> |
+| No em-dashes | **Dashes**: em-dashes in 0% of prompts. <Keep, or ban?> |
+
+It does not infer a persona from complaints or frustration. How you react to AI output is `cognitive-profiler`'s job.

@@ -48,7 +48,7 @@ Consists of a JSON array containing UI logs:
   {
     "type": "say",
     "say": "user_feedback",
-    "text": "The view.html is pretty meh! Optimize the whitespace."
+    "text": "Tighten the spacing on the summary page."
   }
 ]
 ```
@@ -70,4 +70,4 @@ The extractor applies static heuristics to synthesize tone parameters:
 1. **Average Word Count**: Sum of words across extracted prompts divided by total counts. High-efficiency personas show average word counts between 20-60 words. Technical leader personas show 100+ words.
 2. **Commonwealth Spelling Check**: Searches for key words containing `behaviour`, `optimise`, `prioritise`, `customise`. If occurrences exceed a low threshold, the writing dialect is classified as British/Commonwealth.
 3. **Punctuation Triggers**: Counts double question marks (`??`) and ellipsis (`...`) to classify "conversational speed-typing" and "dialogue-driven debugging" frequency.
-4. **Critique Indicators**: Matches key terms like `useless`, `waste`, `meh`, `revert`, `think about`, `broken`, `hung`, `slow` to filter out negative wording while highlighting core technical quality gates.
+4. **Fingerprint Rates**: The share of prompts using em-dashes, `->`/`=>` arrows and contractions. These fill the matching lines of the draft profile; nothing else is inferred.

@@ -55,7 +55,8 @@ PII_PATTERNS = [
     (r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '<EMAIL>'),  # Email addresses
     (r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', '<IP_ADDRESS>'),  # IPv4 addresses
     (r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b|\b(?:[0-9a-fA-F]{1,4}:){1,7}:|\b::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4}\b', '<IP_ADDRESS>'),  # IPv6 addresses
-    (r'https?://[a-zA-Z0-9.-]*\.(?:internal|corp|corp\.google\.com|joonix\.net)[a-zA-Z0-9./?=&_-]*', '<INTERNAL_URL>'),
+    (r'https?://[a-zA-Z0-9.-]*\.(?:internal|corp|intranet|lan|local)\b[a-zA-Z0-9./?=&_-]*(?<!\.)', '<INTERNAL_URL>'),
+    (r'\b[a-zA-Z0-9.-]*\.(?:internal|corp|intranet)\b', '<COMPANY_DOMAIN>'),  # bare internal hostnames
     (r'AI_SHA_KEY_[a-zA-Z0-9]{16,}', '<REDACTED_API_KEY>'),  # Key structures
     (r'AIzaSy[a-zA-Z0-9_-]{33}', '<REDACTED_API_KEY>'),  # Google Cloud API Keys
     (r'ghp_[a-zA-Z0-9]{36}', '<REDACTED_GITHUB_TOKEN>'),  # GitHub token
@@ -67,16 +68,26 @@ PII_PATTERNS = [
     (r'ey[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9._-]{10,}', '<REDACTED_JWT_TOKEN>'),  # JWTs
 ]
 
+
+def add_internal_domains(domains):
+    """Redact URLs and hostnames under the given domains (e.g. an employer's intranet).
+
+    Nothing employer-specific ships in this file; pass yours with --internal-domain.
+    """
+    for domain in domains or ():
+        domain = domain.strip().lstrip(".")
+        if domain:
+            escaped = re.escape(domain)
+            PII_PATTERNS.append(
+                (r'https?://[a-zA-Z0-9.-]*\b' + escaped + r'\b[a-zA-Z0-9./?=&_-]*(?<!\.)', '<INTERNAL_URL>'))
+            PII_PATTERNS.append(
+                (r'\b[a-zA-Z0-9.-]*\b' + escaped + r'\b', '<COMPANY_DOMAIN>'))
+
 _current_system_user = getpass.getuser()
 NAME_PATTERNS = [
     (r'\b' + re.escape(_current_system_user) + r'\b', '<USER_ID>'),
     (r'/Users/' + re.escape(_current_system_user), '/Users/<USER_ID>'),  # host-path-ok
     (r'/home/' + re.escape(_current_system_user), '/home/<USER_ID>'),  # host-path-ok
-]
-
-CRITIQUE_KEYWORDS = [
-    "useless", "waste", "meh", "revert", "think about", "broken", "hung", "slow", 
-    "redundant", "same thing", "silly", "wrong", "doesn't work", "why", "hello"
 ]
 
 COMMONWEALTH_WORDS = [
@@ -289,137 +300,153 @@ def extract_cursor(extra_names=None):
             pass
     return prompts
 
+def _rate(hits, total):
+    return f"{int(hits / total * 100)}%" if total else "0%"
+
+
 def analyze_linguistics(prompts):
-    """Analyzes spelling habits, punctuation, prompt lengths, and gathers statistics."""
+    """Counts spelling, punctuation and length habits. Measures only; draws no persona.
+
+    How someone reacts to AI output is cognitive-profiler's job, not this script's.
+    """
     stats = {
         "total_prompts": len(prompts),
         "spelling": "US-English",
         "commonwealth_count": 0,
-        "critique_count": 0,
-        "criticisms": [],
+        "commonwealth_words": [],
         "punctuation_habits": {},
         "average_word_count": 0
     }
-    
+
     if not prompts:
         return stats
-        
+
     total_words = 0
     commonwealth_hits = Counter()
-    punc_ellipsis = 0
-    punc_double_q = 0
-    criticisms = []
-    
+    counts = Counter()
+
     for p in prompts:
         total_words += len(p.split())
-        
-        # Check Commonwealth spelling
+
         for word in COMMONWEALTH_WORDS:
             if re.search(r'\b' + word + r'\b', p, re.IGNORECASE):
                 stats["commonwealth_count"] += 1
                 commonwealth_hits[word] += 1
-                
-        # Check punctuation markers
+
         if "..." in p:
-            punc_ellipsis += 1
+            counts["ellipsis"] += 1
         if "??" in p or "? !" in p:
-            punc_double_q += 1
-            
-        # Check for critique/frustration triggers
-        for kw in CRITIQUE_KEYWORDS:
-            if re.search(r'\b' + kw + r'\b', p, re.IGNORECASE):
-                stats["critique_count"] += 1
-                criticisms.append(p)
-                break
-                
-    stats["average_word_count"] = int(total_words / len(prompts)) if len(prompts) > 0 else 0
+            counts["double_question"] += 1
+        if "—" in p or " -- " in p:
+            counts["em_dash"] += 1
+        if "->" in p or "=>" in p:
+            counts["arrow"] += 1
+        if re.search(r"\b\w+'(?:s|t|re|ll|ve|d|m)\b", p):
+            counts["contraction"] += 1
+
+    n = len(prompts)
+    stats["average_word_count"] = int(total_words / n)
     if stats["commonwealth_count"] > 3:
         stats["spelling"] = "British/Commonwealth"
-        
+    stats["commonwealth_words"] = [w for w, _ in commonwealth_hits.most_common(5)]
+
     stats["punctuation_habits"] = {
-        "ellipsis_frequency": f"{int(punc_ellipsis / len(prompts) * 100)}%" if len(prompts) > 0 else "0%",
-        "double_question_frequency": f"{int(punc_double_q / len(prompts) * 100)}%" if len(prompts) > 0 else "0%"
+        "ellipsis_frequency": _rate(counts["ellipsis"], n),
+        "double_question_frequency": _rate(counts["double_question"], n),
+        "em_dash_frequency": _rate(counts["em_dash"], n),
+        "arrow_frequency": _rate(counts["arrow"], n),
+        "contraction_frequency": _rate(counts["contraction"], n),
     }
-    
-    stats["criticisms"] = list(set(criticisms))[:15]  # Top 15 unique examples
     return stats
 
+
+def default_output_dir():
+    """The persona directory voice-register reads (AGENT_PERSONA_DIR overrides it)."""
+    base = os.environ.get("AGENT_PERSONA_DIR") or os.path.join(HOME, ".gemini", "personas")
+    return os.path.join(os.path.expanduser(base), "default")
+
+
+PROFILE_DRAFT = "voice_and_tone.draft.md"
+SAMPLES_DRAFT = "voice-samples.draft.md"
+
+
 def write_canonical_files(prompts, stats, output_dir):
-    """Writes voice_and_tone.md and voice-samples.md, a profile for the voice-register skill."""
+    """Writes a draft profile and raw excerpts in voice-register's template layout.
+
+    Only measured facts are filled in; everything a script can't know is left as
+    a <...> placeholder for the person to complete. The files are drafts, so the
+    live voice_and_tone.md is never overwritten.
+    """
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Create voice_and_tone.md
-    voice_file = os.path.join(output_dir, "voice_and_tone.md")
-    spelling_examples = "*customisation*, *optimise*, *prioritise*" if stats["spelling"] == "British/Commonwealth" else "*customization*, *optimize*, *prioritize*"
-    with open(voice_file, 'w', encoding='utf-8') as f:
-        f.write(f"""# Voice and Tone Guidelines: <USER_NICKNAME> Persona
+    habits = stats["punctuation_habits"] or {}
+    n = stats["total_prompts"]
+    spelling = stats["spelling"]
+    if stats.get("commonwealth_words"):
+        spelling += " (seen: " + ", ".join(stats["commonwealth_words"]) + ")"
 
-## Core Persona: The Pragmatic Dev Advocate Partner
-This persona is modeled directly from historical interactions across different AI assistant logs. It is a blend of personal candor, high technical standards, direct command-driven brevity, and functional developer-focused aesthetics.
+    with open(os.path.join(output_dir, PROFILE_DRAFT), 'w', encoding='utf-8') as f:
+        f.write(f"""# Voice and Tone — <Your Name> (draft)
 
----
+Drafted by human-voice from {n} redacted prompts. The measured lines below come from your prompts to AI tools, which are terser than the email or docs you send, so treat them as hints. Replace every `<...>`, delete what doesn't fit, then rename this file to `voice_and_tone.md`. See voice-register's `references/voice_and_tone.template.md` for the layout.
 
-## 1. Key Style & Linguistic DNA
+## Core Persona
+<One or two sentences: role, stance, what you value in writing.>
 
-### Direct & Action-Oriented (No Hype)
-* Speaks with authority, getting straight to the point.
-* Uses active, imperative verbs: *"Review this repo and fix git history"*, *"Deploy updates to cloud run"*.
-* Rejects boilerplate prose or excessive "let's do this!" marketing introductions.
+## Linguistic & Punctuation Fingerprints
+- **Openings**: <How you start: the answer first, the problem first, context first?>
+- **Spelling**: {spelling}. <Confirm, and list words you always spell a particular way.>
+- **Dashes**: em-dashes in {habits.get("em_dash_frequency", "0%")} of prompts. <Keep, or ban?>
+- **Arrows and slashes**: `->` or `=>` in {habits.get("arrow_frequency", "0%")} of prompts. <Which form, with spaces?>
+- **Contractions**: in {habits.get("contraction_frequency", "0%")} of prompts. <Natural, or avoided?>
+- **Questions**: double question marks in {habits.get("double_question_frequency", "0%")} of prompts. <Do you soften asks?>
+- **Transitions you actually use**: <...>
+- **Lexicon**: <Domain terms you favour, and ones you never use.>
+- **Live-only shorthand**: ellipses in {habits.get("ellipsis_frequency", "0%")} of prompts; average prompt is {stats["average_word_count"]} words. <Shorthand fine in chat but cleaned in polished docs.>
 
-### Typographical Authenticity
-* **Spelling**: Prefers **{stats["spelling"]}** conventions (e.g., {spelling_examples}).
-* **Speed-Typing Shorthand**: Frequently features natural speed-typing shortcuts like *teh* (the), *anyting* (anything), *deplouyed* (deployed) as authentic live-terminal markings.
-* **Dialogue Markers**: Uses conversational check-ins like *"Hello... what's happening here? You were hung."* or *"Is the backend also running?"*.
+## Channel Registers
+Fill in only the registers you write in.
 
-### Structural Preferences
-* **Gap-First Setup**: Begins guides or write-ups by stating the exact real-world gap, discrepancy, or error message (highly pragmatic).
-* **Optimized Density**: Prioritizes visual layout density, utilizing tooltips, (i) informational bubbles, collapsible FAQs, and clean whitespace optimizations over verbose copy.
+### R1: Quick Internal / Team Email
+- **Greeting**: <...>
+- **Body**: <...>
+- **Sign-off**: <...>
 
----
+### R2: Cross-Functional / Stakeholder / External Email
+- **Greeting**: <...>
+- **Body shape**: <...>
+- **Sign-off**: <...>
 
-## 2. Technical Rigor & "Grounding" Standard
+### R3: Technical Blog / Long-Form
+- **Voice**: <...>
+- **Structure**: <...>
 
-* **Strict Code Grounding**: Absolutely rejects high-level summaries or hand-waving explanations. Every definition or documented formula must match the actual implemented codebase logic.
-* **Preflight Verification**: Demands automated safeguards (CI/CD checkers, preflight style and lint steps) before pushing modifications.
-* **Atomic Hygiene**: Expects pristine repository practices (feature branch isolation, atomic signed commits, clear workspace structure).
+### R4: Strategy Docs & Proposals
+- **Voice**: <...>
+- **Structure**: <...>
 
----
-
-## 3. The Frustration Filter: Transforming Critiques
-When tools break, redundant parallel loops happen, or designs look generic ("meh"), this persona voices clear critique. **These frustrations are converted into engineering values, omitting any emotional hostility**:
-
-| Raw Critique Triggers | Transformed Writing Attribute |
-| :--- | :--- |
-| Redundant parallel processes / overlapping subagents | **High Concurrency Efficiency**: Ensure strict thread isolation, clean execution boundaries, and zero redundant steps. |
-| Boring tables or minimal, low-density summaries | **High Visual and Presentation Density**: Mandate beautiful, custom dark-mode HTML presentations, charts, and Mermaid visualizations instead of raw Markdown where human review is key. |
-| Ungrounded assertions or missing API constraints | **Rigor and Fact Verification**: Demands precise verification against source documentation and runtime endpoints (e.g., verifying Preview vs GA features). |
+### R5: Working Notes & Comments
+- **Structure**: <...>
 """)
 
-    # Create voice-samples.md
-    examples_file = os.path.join(output_dir, "voice-samples.md")
-    with open(examples_file, 'w', encoding='utf-8') as f:
-        f.write("# Golden Excerpts: <USER_NICKNAME> Persona Templates\n\n")
-        f.write("The following examples demonstrate direct voice templates modeled on high-performance conversations.\n\n")
-        
-        # If we have real extracted prompts, use up to 5 as templates
-        clean_exs = [p for p in prompts if len(p.split()) > 15 and len(p.split()) < 80]
-        if not clean_exs:
-            # Fallback default template examples
-            clean_exs = [
-                "Add thorough tests (where relevant), linting checks, style checks, preflight / presubmit rules and checks to this project. This should be run after every code change and before every submit to help repo maintainers. Create a new branch and work in that.",
-                "Is the documentation grounded to the code implementation? I recall discussing that this will be those that landed up at the 80% step of the total steps. Please ensure all calculated data - the definitions are grounded to the logic implemented.",
-                "The view.html is pretty meh! What is this communicating? I want this plan to be presented in a rich formatted HTML. Again this is for information that needs to be communicated or read by the human."
-            ]
-            
-        for idx, ex in enumerate(clean_exs[:5], 1):
-            f.write(f"## Example {idx}\n")
-            f.write(f"> \"{ex.strip()}\"\n\n")
-            f.write("*Analysis: Clear, command-driven framing, demanding robust verification or dense functional deliverables, stripped of corporate fluff.*\n\n---\n\n")
+    with open(os.path.join(output_dir, SAMPLES_DRAFT), 'w', encoding='utf-8') as f:
+        f.write("# Raw Excerpts (draft)\n\n")
+        f.write("Redacted excerpts of your own prompts, for spotting habits. They are not "
+                "before/after samples: write those in voice-register's "
+                "`examples/voice-samples.template.md` layout and save them as "
+                "`voice-samples.md`. Check this file for anything private before you "
+                "commit it anywhere.\n\n")
+        excerpts = [p for p in prompts if 15 < len(p.split()) < 80]
+        if not excerpts:
+            f.write("No prompts of a usable length were found.\n")
+        for idx, ex in enumerate(excerpts[:5], 1):
+            f.write(f"## Excerpt {idx}\n> {ex.strip()}\n\n")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Extract human writing voice and tone from local AI coding tool logs.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose diagnostic output")
-    parser.add_argument("-o", "--output-dir", type=str, default=None, help="Custom output directory path for generated files")
+    parser.add_argument("-o", "--output-dir", type=str, default=None, help="Where to write the drafts (default: ~/.gemini/personas/default, or $AGENT_PERSONA_DIR/default)")
+    parser.add_argument("--internal-domain", action="append", default=[], metavar="DOMAIN", help="Also redact URLs and hosts under this domain (repeatable), e.g. your employer's intranet")
     parser.add_argument("-t", "--tool", type=str, default="all", choices=["all", "antigravity", "antigravity-ide", "antigravity-cli", "gemini-cli", "claude-code", "cline", "roo-code", "aider", "cursor"], help="Target a specific AI coding tool for extraction")
     parser.add_argument("-u", "--user-name", type=str, default=None, help="Custom user name to scrub from prompts")
     parser.add_argument("-n", "--user-nickname", type=str, default=None, help="Custom user nickname to scrub from prompts")
@@ -433,6 +460,8 @@ def main():
         for tool, path in PATHS.items():
             status = "EXISTS" if os.path.exists(path) else "NOT FOUND"
             print(f"  - {tool}: {path} [{status}]")
+
+    add_internal_domains(args.internal_domain)
 
     extra_names = []
     if args.user_name:
@@ -499,17 +528,16 @@ def main():
     print(f"\nTotal unique prompts extracted: {len(unique_prompts)}")
     
     # Analyze linguistics
-    print("Analyzing linguistic patterns and engineering critiques...")
+    print("Analyzing linguistic patterns...")
     stats = analyze_linguistics(unique_prompts)
     print(f"-> Detected primary spelling habit: {stats['spelling']}")
     print(f"-> Average word count per prompt: {stats['average_word_count']}")
-    print(f"-> Detected {stats['critique_count']} critique-based trigger words.")
     
-    # Write canonical outputs
-    output_dir = args.output_dir if args.output_dir else os.path.join(os.path.dirname(__file__), "..", "output")
-    print(f"Writing canonical files to output directory: {output_dir}")
+    # Write drafts next to the live profile, never over it
+    output_dir = args.output_dir or default_output_dir()
+    print(f"Writing drafts to: {output_dir}")
     write_canonical_files(unique_prompts, stats, output_dir)
-    print("Extraction complete. Copy voice_and_tone.md to ~/.gemini/personas/default/ to use it with voice-register.")
+    print(f"Done. Edit {PROFILE_DRAFT}, then rename it to voice_and_tone.md for voice-register to use it.")
 
 if __name__ == "__main__":
     main()

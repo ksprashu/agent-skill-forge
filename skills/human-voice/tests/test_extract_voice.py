@@ -22,10 +22,12 @@ machine, where reading more than was asked for is exactly the wrong failure.
 """
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SKILL_DIR / "scripts"))
@@ -118,18 +120,75 @@ class TestOutputsFeedVoiceRegister(unittest.TestCase):
 
     def test_writes_a_profile_and_samples(self):
         out = self._write()
-        self.assertTrue((out / "voice_and_tone.md").is_file())
-        self.assertTrue((out / "voice-samples.md").is_file())
-        self.assertIn("US-English", (out / "voice_and_tone.md").read_text(encoding="utf-8"))
+        self.assertTrue((out / EV.PROFILE_DRAFT).is_file())
+        self.assertTrue((out / EV.SAMPLES_DRAFT).is_file())
+        self.assertIn("US-English", (out / EV.PROFILE_DRAFT).read_text(encoding="utf-8"))
         self.assertIn(
             "Please make sure the docs are grounded to the code",
-            (out / "voice-samples.md").read_text(encoding="utf-8"),
+            (out / EV.SAMPLES_DRAFT).read_text(encoding="utf-8"),
         )
+
+    def test_never_overwrites_the_live_profile(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        live = Path(tmp.name) / "voice_and_tone.md"
+        live.write_text("# mine\n", encoding="utf-8")
+        EV.write_canonical_files([], EV.analyze_linguistics([]), tmp.name)
+        self.assertEqual(live.read_text(encoding="utf-8"), "# mine\n")
+
+    def test_draft_uses_the_voice_register_layout(self):
+        text = (self._write() / EV.PROFILE_DRAFT).read_text(encoding="utf-8")
+        for heading in ("## Core Persona", "## Linguistic & Punctuation Fingerprints",
+                        "### R1:", "### R2:", "### R3:", "### R4:", "### R5:"):
+            self.assertIn(heading, text)
+        self.assertIn("<Your Name>", text)
+
+    def test_carries_no_built_in_persona_or_samples(self):
+        """It once wrote its author's persona whatever the logs said, and fell
+        back to real-looking prompts when none were found."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        EV.write_canonical_files([], EV.analyze_linguistics([]), tmp.name)
+        out = Path(tmp.name)
+        profile = (out / EV.PROFILE_DRAFT).read_text(encoding="utf-8")
+        samples = (out / EV.SAMPLES_DRAFT).read_text(encoding="utf-8")
+        self.assertIn("No prompts of a usable length", samples)
+        self.assertNotIn("## Excerpt", samples)
+        for phrase in ("Frustration", "Dev Advocate", "teh", "meh"):
+            self.assertNotIn(phrase, profile + samples)
+
+    def test_default_output_is_the_persona_directory(self):
+        with mock.patch.dict(os.environ, {"AGENT_PERSONA_DIR": "/tmp/p"}):
+            self.assertEqual(EV.default_output_dir(), os.path.join("/tmp/p", "default"))
+
 
     def test_does_not_scaffold_a_skill(self):
         out = self._write()
         self.assertFalse((out / "SKILL.md").exists())
         self.assertFalse((out / "golden_examples.md").exists())
+
+
+class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
+    def test_source_names_no_employer_domain(self):
+        source = Path(EV.__file__).read_text(encoding="utf-8")
+        for domain in ("google" + ".com", "joonix"):
+            self.assertNotIn(domain, source)
+
+    def test_generic_internal_hosts_are_redacted(self):
+        """The documented examples in EXAMPLES.md, verbatim."""
+        self.assertEqual(
+            "Deploy this microservice under the <COMPANY_DOMAIN> cloud project and "
+            "verify the webhook at <INTERNAL_URL>.",
+            EV.sanitize_text(
+                "Deploy this microservice under the microservice.corp.internal cloud project "
+                "and verify the webhook at https://subdomain.corp.internal/receiver/v1."))
+
+    def test_a_supplied_internal_domain_is_redacted(self):
+        saved = list(EV.PII_PATTERNS)
+        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        EV.add_internal_domains(["example-corp.net"])
+        out = EV.sanitize_text("deploy to https://build.example-corp.net/job/7 and ci.example-corp.net.")
+        self.assertEqual("deploy to <INTERNAL_URL> and <COMPANY_DOMAIN>.", out)
 
 
 if __name__ == "__main__":
