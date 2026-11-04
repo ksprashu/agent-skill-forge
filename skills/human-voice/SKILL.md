@@ -19,25 +19,24 @@ Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemin
 
 1. **Run Extraction Pipeline**:
    ```bash
-   python3 scripts/extract_voice.py
+   python3 <skill-dir>/scripts/extract_voice.py [--internal-domain your-company.example]
    ```
-2. **Automatic PII Scrubbing**: The script sanitizes private emails, corporate domains, and API tokens.
-3. **Inspect Output**: Review the generated `output/voice_and_tone.md` and `output/voice-samples.md`. Fill in channel registers by hand using `skills/voice-register/references/voice_and_tone.template.md` as the shape.
-4. **Deploy the Profile**: Copy `voice_and_tone.md` to `~/.gemini/personas/default/voice_and_tone.md`, or to `voice-register`'s gitignored `references/voice_and_tone.local.md`. The `voice-register` skill applies it.
+2. **Automatic PII Scrubbing**: The script redacts emails, IP addresses, API tokens, your OS user name and home path, and URLs on generic internal hosts (`.internal`, `.corp`, `.intranet`, `.lan`, `.local`). Pass `--internal-domain` (repeatable) for your employer's domains, and `--user-name`/`--user-nickname` for names. No employer domain is built in.
+3. **Inspect the Drafts**: The script writes `voice_and_tone.draft.md` and `voice-samples.draft.md` to `~/.gemini/personas/default/` (or `$AGENT_PERSONA_DIR/default`, or `-o <dir>`). It never overwrites a live `voice_and_tone.md`. The draft uses `voice-register`'s template layout, with measured habits (spelling, dashes, arrows, contractions, prompt length) filled in and `<...>` placeholders for everything a script can't know. The samples file holds raw redacted excerpts; check it for anything private.
+4. **Finish and Deploy the Profile**: Fill in the placeholders, then rename the draft to `voice_and_tone.md`. `voice-register` applies it. If `~/.gemini/personas` is your private persona repo, commit and push from there.
+
+This skill measures how you write. How you react to AI output (what frustrates you, what you want more or less of) is `cognitive-profiler`'s job.
 
 ---
 
 ## 💡 Concrete Example
 
-### Extracted Style Marker Fixture (`voice_and_tone.md`)
+### Draft excerpt (`voice_and_tone.draft.md`)
 ```markdown
-# Writing Style Profile
-
-## Core Cadence
-* Direct, command-driven sentences ("Subtract before you add").
-* Prefers bulleted checklists over narrative paragraphs.
-* Banned filler phrases: "delve into", "tapestry", "it's worth noting".
-* Product linking: Always uses dual links `[Product](landing) ([Docs](docs))`.
+## Linguistic & Punctuation Fingerprints
+- **Spelling**: US-English. <Confirm, and list words you always spell a particular way.>
+- **Dashes**: em-dashes in 4% of prompts. <Keep, or ban?>
+- **Arrows and slashes**: `->` or `=>` in 12% of prompts. <Which form, with spaces?>
 ```
 
 ---
@@ -46,3 +45,5 @@ Analyze prompt histories across developer tools (Antigravity, Claude Code, Gemin
 
 *   **NEVER** commit unscrubbed chat logs with real API keys or personal emails.
 *   **NEVER** output private corporate intranet URLs without placeholder redaction.
+*   **NEVER** ship a persona, sample, or employer domain in this skill. Output comes only from the user's own logs.
+*   **NEVER** overwrite a live `voice_and_tone.md`; write drafts.
