@@ -51,7 +51,8 @@ SAMPLES = "voice-samples.md"
 STAMP = "persona-last-pull"
 PULL_INTERVAL = 24 * 60 * 60
 TIMEOUT = 30
-OWNER_NAME = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+# Neither part may start with "-", so it can never be read as an option.
+OWNER_NAME = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_.-]*/[A-Za-z0-9_.][A-Za-z0-9_.-]*$")
 
 
 def persona_dir():
@@ -98,11 +99,16 @@ def _run(cmd):
 
 
 def _clone_cmd(source, dest):
+    """The clone command, or None if source could be read as an option."""
+    if source.startswith("-"):
+        return None
+    # An absolute destination can't start with "-" either.
+    dest = str(Path(dest).absolute())
     if OWNER_NAME.match(source) and not Path(source).exists():
         if shutil.which("gh"):
-            return ["gh", "repo", "clone", source, str(dest), "--", "--quiet"]
+            return ["gh", "repo", "clone", source, dest, "--", "--quiet"]
         source = "https://github.com/%s.git" % source
-    return ["git", "clone", "--quiet", source, str(dest)]
+    return ["git", "clone", "--quiet", "--", source, dest]
 
 
 def _is_git(pdir):
@@ -121,9 +127,10 @@ def pull(pdir, source, force=False, now=None):
         stamp = pdir / ".git" / STAMP
         if not force and stamp.is_file() and now - stamp.stat().st_mtime < PULL_INTERVAL:
             return True, "up to date (pulled within the last 24h; use --force)"
-        stamp.touch()
         ok, out = _run(["git", "-C", str(pdir), "pull", "--ff-only", "--quiet"])
         if ok:
+            # Stamp only on success, so a failed pull is retried next run.
+            stamp.touch()
             return True, "pulled"
         # The working copy is still usable; a stale voice beats no voice.
         return True, "pull failed, using the local copy: %s" % out
@@ -132,8 +139,11 @@ def pull(pdir, source, force=False, now=None):
     if pdir.exists() and any(pdir.iterdir()):
         return True, ("%s exists and is not a git clone; leaving it alone. "
                       "Move it aside to clone %s there." % (pdir, source))
+    cmd = _clone_cmd(source, pdir)
+    if cmd is None:
+        return False, "AGENT_PERSONA_REPO must not start with '-': %s" % source
     pdir.parent.mkdir(parents=True, exist_ok=True)
-    ok, out = _run(_clone_cmd(source, pdir))
+    ok, out = _run(cmd)
     if not ok:
         return False, "clone of %s failed: %s" % (source, out)
     (pdir / ".git" / STAMP).touch()

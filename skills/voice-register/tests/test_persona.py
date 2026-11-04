@@ -139,6 +139,29 @@ class PersonaCliTest(unittest.TestCase):
         self.assertIn("using the local copy", r.stdout)
         self.assertEqual(self.profile_text(), "# Voice v1\n")
 
+    def test_failed_pull_is_retried_on_the_next_run(self):
+        self.cli("pull", repo=str(self.bare))
+        stamp = self.pdir / ".git" / P.STAMP
+        old = time.time() - P.PULL_INTERVAL - 60
+        os.utime(stamp, (old, old))
+        moved = self.tmp / "moved.git"
+        self.bare.rename(moved)
+        r = self.cli("pull", repo=str(self.bare))
+        self.assertIn("using the local copy", r.stdout)
+        self.assertLess(stamp.stat().st_mtime, time.time() - P.PULL_INTERVAL)
+        moved.rename(self.bare)
+        self.commit("Voice v2")
+        git("push", "-q", str(self.bare), "HEAD:main", cwd=self.work)
+        r = self.cli("pull", repo=str(self.bare))
+        self.assertIn("pulled", r.stdout)
+        self.assertEqual(self.profile_text(), "# Voice v2\n")
+
+    def test_option_like_repo_is_refused(self):
+        r = self.cli("pull", repo="--upload-pack=touch /tmp/x")
+        self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
+        self.assertIn("must not start with '-'", r.stdout)
+        self.assertFalse(self.pdir.exists())
+
     def test_missing_named_profile_exits_2(self):
         self.cli("pull", repo=str(self.bare))
         r = self.cli("status", "--name", "work")
@@ -178,6 +201,16 @@ class ResolveTest(unittest.TestCase):
     def test_owner_name_uses_github(self):
         cmd = P._clone_cmd("someone/persona", self.tmp / "x")
         self.assertTrue(cmd[0] == "gh" or "https://github.com/someone/persona.git" in cmd)
+
+    def test_git_clone_ends_options_before_the_source(self):
+        cmd = P._clone_cmd(str(self.tmp / "remote.git"), "-dest")
+        self.assertEqual(cmd[:4], ["git", "clone", "--quiet", "--"])
+        self.assertTrue(Path(cmd[-1]).is_absolute())
+
+    def test_owner_name_cannot_start_with_a_hyphen(self):
+        self.assertIsNone(P.OWNER_NAME.match("-o/persona"))
+        self.assertIsNone(P.OWNER_NAME.match("someone/-persona"))
+        self.assertIsNone(P._clone_cmd("-o/persona", self.tmp / "x"))
 
 
 if __name__ == "__main__":

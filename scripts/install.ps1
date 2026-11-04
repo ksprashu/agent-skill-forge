@@ -146,7 +146,10 @@ if ($LASTEXITCODE -ne 0) {
 # the install; voice-register falls back to neutral prose and says why.
 # ------------------------------------------------------------------------------
 $PersonaScript = Join-Path $RepoRoot 'skills\voice-register\scripts\persona.py'
-if ($env:AGENT_PERSONA_REPO -and (Test-Path $PersonaScript)) {
+if ($env:AGENT_PERSONA_REPO -and $Offline) {
+    Write-Host ""
+    Write-Host "🎙️  Offline install: skipping the voice profile fetch. Run persona.py pull later." -ForegroundColor Yellow
+} elseif ($env:AGENT_PERSONA_REPO -and (Test-Path $PersonaScript)) {
     Write-Host ""
     Write-Host "🎙️  Fetching your voice profile from $($env:AGENT_PERSONA_REPO)..." -ForegroundColor Yellow
     & $PythonExe $PersonaScript pull --force

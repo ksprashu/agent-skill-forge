@@ -98,7 +98,10 @@ fi
 # Unset means a neutral install: nothing is fetched. A failure here never fails
 # the install; voice-register falls back to neutral prose and says why.
 # ------------------------------------------------------------------------------
-if [ -n "${AGENT_PERSONA_REPO:-}" ] && [ -f "$REPO_ROOT/skills/voice-register/scripts/persona.py" ]; then
+if [ -n "${AGENT_PERSONA_REPO:-}" ] && [ "$OFFLINE" -eq 1 ]; then
+    echo ""
+    echo "🎙️  Offline install: skipping the voice profile fetch. Run persona.py pull later."
+elif [ -n "${AGENT_PERSONA_REPO:-}" ] && [ -f "$REPO_ROOT/skills/voice-register/scripts/persona.py" ]; then
     echo ""
     echo "🎙️  Fetching your voice profile from $AGENT_PERSONA_REPO..."
     # Exit 1 only means no profile resolved yet; 2 means the fetch failed.

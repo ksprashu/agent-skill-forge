@@ -563,6 +563,19 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertNotIn("Could not fetch it", proc.stdout)
 
+    def test_an_offline_install_does_not_fetch_the_persona(self):
+        proc, recorded = self.run_installer("--offline",
+                                            AGENT_PERSONA_REPO="someone/agent-persona")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("persona.py", recorded)
+        self.assertIn("skipping the voice profile fetch", proc.stdout)
+
+    def test_the_powershell_installer_skips_the_persona_offline(self):
+        """Source check, for the reason given in the next test's docstring."""
+        source = (REPO_ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
+        offline = source.index("$env:AGENT_PERSONA_REPO -and $Offline")
+        self.assertLess(offline, source.index("& $PythonExe $PersonaScript pull"))
+
     def test_the_powershell_installer_matches(self):
         """install.ps1 has the same change and no equivalent test.
 

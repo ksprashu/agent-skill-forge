@@ -50,8 +50,9 @@ Keep the persona directory in a **private** git repo and point the skill at it w
 |---|---|
 | `AGENT_PERSONA_REPO` unset, no persona directory | Nothing. The skill stays neutral. |
 | Variable set, directory missing or empty | Clones the repo (with `gh` for `owner/name` if installed, else `https://github.com/owner/name.git`; any git URL or path works too). |
-| Directory is a git clone | `git pull --ff-only`, at most once every 24 hours. `--force` pulls now. |
-| Pull fails (offline, signed out) | Keeps using the local copy and says why. |
+| Directory is a git clone | `git pull --ff-only`, at most once every 24 hours after a successful pull. `--force` pulls now. |
+| Pull fails (offline, signed out) | Keeps using the local copy, says why, and tries again on the next run. |
+| Installer run with `--offline` | Skips the fetch. |
 | Directory exists but isn't a git clone | Leaves it alone and tells you to move it aside. It never overwrites a hand-made profile. |
 
 Exit codes: `0` a personal profile resolves, `1` neutral template only, `2` error (clone failed, named profile missing). It never prompts for credentials, and every git call times out after 30 seconds.
