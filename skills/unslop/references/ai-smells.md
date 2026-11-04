@@ -3,7 +3,7 @@
 These are common tells. Remove or rewrite them. One isolated instance is often fine; clusters are not.
 
 ## Vocabulary Clusters
-delve, tapestry, landscape (metaphorical), pivotal, crucial, underscore, vibrant, meticulous, intricate, testament, garner, bolster, foster, showcase, highlight, emphasize, enhance, enduring, nuanced, multifaceted, comprehensive, robust, leverage, realm, paradigm, cornerstone, beacon, spearhead, demystify, unpack, navigate (metaphorical), harness, catalyze, synergy, holistic, granular, deep dive, unravel, groundbreaking, revolutionary, transformative, game-changing, unprecedented, remarkable, extraordinary.
+delve, tapestry, landscape (metaphorical), pivotal, crucial, underscore, vibrant, meticulous, intricate, testament, garner, bolster, foster, showcase, highlight, emphasize, enhance, enduring, nuanced, multifaceted, comprehensive, robust, leverage, realm, paradigm, cornerstone, beacon, spearhead, demystify, unpack, navigate (metaphorical), harness (as a verb: "harness the power of"; the noun "AI harness" is a real term), catalyze, synergy, holistic, granular, deep dive, unravel, groundbreaking, revolutionary, transformative, game-changing, unprecedented, remarkable, extraordinary, pioneering, furthermore, moreover, it's worth noting.
 
 ## Structural Patterns
 - Throat-clearing openings ("In today's fast-paced...", "In an increasingly...").
