@@ -68,9 +68,13 @@ REDACTIONS = [(pattern, replacement)
               for pattern, _label, replacement in log_sources.SENSITIVE_PATTERNS]
 
 
+#: The OS login name, which also turns up in paths and project names.
+_LOGIN = log_sources.name_patterns([(log_sources.login_name(), log_sources.USER_ID)])
+
+
 def redact(text):
-    """Strip credentials, internal hosts, and personal paths."""
-    return log_sources.redact(text)
+    """Strip credentials, internal hosts, personal paths, and the login name."""
+    return log_sources.redact(text, _LOGIN)
 
 
 # ---------------------------------------------------------------------------

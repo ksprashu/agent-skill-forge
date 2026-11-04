@@ -94,6 +94,16 @@ class TestRedaction(unittest.TestCase):
     def test_windows_home_directory_becomes_tilde(self):
         self.assertEqual(H.redact(r"C:\Users\Someone\notes.md"), r"~\notes.md")  # host-path-ok
 
+    def test_home_directory_in_a_claude_project_slug_becomes_tilde(self):
+        self.assertEqual(H.redact("tasks/-Users-someone-code-repo/a.output"),  # host-path-ok
+                         "tasks/~-code-repo/a.output")
+
+    def test_login_name_is_replaced(self):
+        name = H.log_sources.login_name()
+        if not name:
+            self.skipTest("no login name on this host")
+        self.assertNotIn(name, H.redact(f"cd /srv/{name}-work"))
+
     def test_redaction_happens_on_the_way_in(self):
         """Quotes are redacted at capture, not at write, so an exception
         between the two cannot leak anything."""
@@ -312,7 +322,9 @@ class TestClaudeCodeParser(unittest.TestCase):
 
     def test_slash_commands_and_pasted_output_are_skipped(self):
         for prefix in ("<command-name>x", "<local-command-stdout>too long",
-                       "<bash-input>ls", "Caveat: the messages below"):
+                       "<bash-input>ls", "Caveat: the messages below",
+                       "<task-notification>\n<status>too long</status>",
+                       "<system-reminder>too long</system-reminder>"):
             h = H.Harvest()
             jsonl(self.tmp / "p" / "s.jsonl", [claude_user(prefix)])
             h.parse_claude_code(self.tmp)

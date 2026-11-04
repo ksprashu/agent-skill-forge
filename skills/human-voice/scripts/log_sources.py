@@ -208,8 +208,10 @@ def _text_of(content):
 
 
 #: Claude Code user records that start like this are slash commands, pasted
-#: shell output, or harness caveats, not prose the person wrote.
-CLAUDE_NON_PROSE_PREFIXES = ("<command-", "<local-command", "<bash-", "Caveat:")
+#: shell output, harness caveats, or background-task and system notices the
+#: harness injects, not prose the person wrote.
+CLAUDE_NON_PROSE_PREFIXES = ("<command-", "<local-command", "<bash-", "Caveat:",
+                             "<task-notification", "<system-reminder")
 
 
 def read_claude_code(root):
@@ -616,6 +618,9 @@ SENSITIVE_PATTERNS = [
     (re.compile(r"\b[A-Z]:[\\/]+Users[\\/]+[A-Za-z0-9._-]+", re.IGNORECASE),  # host-path-ok
      "home directory path", "~"),
     (re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+"),  # host-path-ok
+     "home directory path", "~"),
+    # The same path flattened into a Claude Code project slug.
+    (re.compile(r"(?<![A-Za-z0-9])-(?:Users|home)-[A-Za-z0-9_]+"),  # host-path-ok
      "home directory path", "~"),
 ]
 
