@@ -248,7 +248,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Defining new API interfaces, endpoints, or data models | Invoke `/spec` & `api-and-interface-design` |
 | Creating a multi-step refactoring or implementation roadmap | Invoke `/plan` |
 | Writing code or fixing a bug | Invoke `/test` (Prove-It TDD loop) |
-| Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
+| Cleaning AI filler from prose, comments, or commit messages | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` & `/review` |
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` & `compile_docs.py` |
 | Extracting developer voice or drafting technical prose | Invoke `/human-voice`, then `voice-register` |

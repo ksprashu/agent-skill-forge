@@ -6,7 +6,7 @@ description: "Comprehensive dictionary, clusters, triggers, and attribution line
 
 # 📚 Skills Catalog Reference & Attribution Matrix
 
-Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 29 skills in **Agent Skill Forge**.
+Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 31 skills (18 core, 13 preferred) in **Agent Skill Forge**.
 
 ---
 
