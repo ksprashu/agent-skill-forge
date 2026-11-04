@@ -1205,7 +1205,7 @@ def main():
     parser.add_argument('--all', action='store_true', help="Install all 31 core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all 18 core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install all 13 preferred domain skills (d1, d2, d3, d4)")
-    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, cognitive-profiler, copy-write, image-gen)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, voice-register, cognitive-profiler, copy-write, image-gen, atelier)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
     parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")

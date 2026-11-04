@@ -8,7 +8,7 @@ Rewrites produced under the unslop principles alone, with no voice profile appli
 In the contemporary cloud computing paradigm, it is crucial to delve into the multifaceted challenges associated with latency optimization. Furthermore, unindexed foreign keys can serve as a significant bottleneck, underscoring the importance of proactive database management strategies that leverage modern indexing techniques to enhance overall system performance.
 
 **Unslopped**
-Database optimisation is important even in today's cloud computing landscape. Foreign-key indexes measurably improve overall system performance and scalability.
+Database optimization is important even in today's cloud computing landscape. Foreign-key indexes measurably improve overall system performance and scalability.
 
 ## Sample 2 — Code Comment
 
