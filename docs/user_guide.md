@@ -267,6 +267,6 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 1. **Never Skip the `/test` Prove-It Step**: For bug fixes, reproduction *is* the proof. Write the failing test before changing a single line of application logic.
 2. **Run `/unslop` Before `/review`**: Always de-slop generated comments and documentation before running reviews. Verbose comments distract from architectural review.
 3. **Keep `AGENTS.md` Under 200 Lines**: Use `/align` regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.
-4. **Keep Your Voice Private**: Store your voice profile in `~/.gemini/personas/default/` (ideally a clone of a private repo; see the `voice-register` README) or in `skills/voice-register/references/voice_and_tone.local.md` (gitignored). `voice-register` applies it to text sent under your name without exposing private data.
+4. **Keep Your Voice Private**: Store your voice profile in `~/.gemini/personas/default/` or in `skills/voice-register/references/voice_and_tone.local.md` (gitignored). `voice-register` applies it to text sent under your name without exposing private data.
 5. **Always Bootstrap Project-Scoped**: Never symlink domain skills (like `frontend-ui-engineering` or `security-and-hardening`) into global directories. Use `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills <name>` to keep workspace dependencies isolated and reproducible.
 

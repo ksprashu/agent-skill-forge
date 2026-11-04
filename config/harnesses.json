@@ -56,6 +56,7 @@
     "land": "reader-simulation",
     "nudge": "discernment-prompts",
     "profile": "cognitive-calibration",
+    "cognitive-profiler": "cognitive-calibration",
 
     "plan": "task-decomposition",
     "spec": "spec-authoring",
