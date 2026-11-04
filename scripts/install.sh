@@ -94,7 +94,23 @@ else
 fi
 
 # ------------------------------------------------------------------------------
-# Step 3: optionally make the brainstorm hard gate mechanical.
+# Step 3: fetch the user's private voice profile, if they configured one.
+# Unset means a neutral install: nothing is fetched. A failure here never fails
+# the install; voice-register falls back to neutral prose and says why.
+# ------------------------------------------------------------------------------
+if [ -n "${AGENT_PERSONA_REPO:-}" ] && [ -f "$REPO_ROOT/skills/voice-register/scripts/persona.py" ]; then
+    echo ""
+    echo "🎙️  Fetching your voice profile from $AGENT_PERSONA_REPO..."
+    # Exit 1 only means no profile resolved yet; 2 means the fetch failed.
+    PERSONA_RC=0
+    python3 "$REPO_ROOT/skills/voice-register/scripts/persona.py" pull --force || PERSONA_RC=$?
+    if [ "$PERSONA_RC" -eq 2 ]; then
+        echo "⚠️  Could not fetch it. voice-register will stay neutral until it can."
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# Step 4: optionally make the brainstorm hard gate mechanical.
 # Only Claude Code has a hook API; elsewhere the gate stays advisory.
 # ------------------------------------------------------------------------------
 if [ "$HARD_GATE" -eq 1 ]; then

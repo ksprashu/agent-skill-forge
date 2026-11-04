@@ -4,6 +4,8 @@
     {"input": "rewrite the docs in my voice", "should_trigger": true},
     {"input": "draft this email the way I'd write it to a partner", "should_trigger": true},
     {"input": "turn these notes into a strategy doc in my register", "should_trigger": true},
+    {"input": "write the PR description I'll post for this change", "should_trigger": true},
+    {"input": "explain what this function does", "should_trigger": false},
     {"input": "unslop this paragraph", "should_trigger": false},
     {"input": "fix the bug in the auth handler", "should_trigger": false}
   ]
