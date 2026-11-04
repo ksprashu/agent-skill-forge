@@ -14,7 +14,7 @@ A comprehensive, zero-slop operational framework for orchestrating **Agent Skill
 
 To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Agent Skill Forge** organizes its skills into functional clusters across two categories:
 
-### 📦 Core Clusters (18 Action Skills)
+### 📦 Core Clusters (Action Skills)
 Available globally or installable in focused sections:
 *   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`

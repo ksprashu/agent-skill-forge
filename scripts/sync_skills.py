@@ -1269,7 +1269,7 @@ def main():
     if args.list_available:
         all_skills = discover_all_skills()
         print(f"Agent Skill Forge Catalog ({len(all_skills)} total skills):")
-        print("\n🌟 Core Global Skills (18 Action Verbs):")
+        print("\n🌟 Core Global Skills (Action Verbs):")
         for name in sorted(CORE_SKILLS.keys()):
             path = CORE_SKILLS[name]
             print(f"  - {name:22} -> {path}")
