@@ -50,13 +50,23 @@ def get_tool_paths():
 # Standard storage paths for AI coding tools
 PATHS = get_tool_paths()
 
+# A hostname label that marks a host as internal wherever it sits in the name
+# (foo.corp, ci.corp.example.com). The whole hostname is consumed, so no
+# suffix such as an employer's domain survives.
+_INTERNAL_LABEL = r'(?:internal|corp|intranet)(?![a-z0-9-])'
+_INTERNAL_URL_LABEL = r'(?:internal|corp|intranet|lan|local)(?![a-z0-9-])'
+_MORE_LABELS = r'(?:\.[a-z0-9-]+)*'
+_URL_TAIL = r'(?::[0-9]+)?(?:[/?#][a-z0-9./?=&_%#:~+-]*)?(?<![.,;:])'
+
 # Regex and lists for PII / Sensitive data scrubbing
 PII_PATTERNS = [
     (r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', '<EMAIL>'),  # Email addresses
     (r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', '<IP_ADDRESS>'),  # IPv4 addresses
     (r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b|\b(?:[0-9a-fA-F]{1,4}:){1,7}:|\b::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{1,4}\b', '<IP_ADDRESS>'),  # IPv6 addresses
-    (r'https?://[a-zA-Z0-9.-]*\.(?:internal|corp|intranet|lan|local)\b[a-zA-Z0-9./?=&_-]*(?<!\.)', '<INTERNAL_URL>'),
-    (r'\b[a-zA-Z0-9.-]*\.(?:internal|corp|intranet)\b', '<COMPANY_DOMAIN>'),  # bare internal hostnames
+    (r'https?://(?:[a-z0-9-]+\.)*' + _INTERNAL_URL_LABEL + _MORE_LABELS + _URL_TAIL, '<INTERNAL_URL>'),
+    # bare internal hostnames: a label before it (foo.corp), or two after it (corp.example.com)
+    (r'\b(?:[a-z0-9-]+\.)+' + _INTERNAL_LABEL + _MORE_LABELS
+     + r'|\b' + _INTERNAL_LABEL + r'(?:\.[a-z0-9-]+){2,}', '<COMPANY_DOMAIN>'),
     (r'AI_SHA_KEY_[a-zA-Z0-9]{16,}', '<REDACTED_API_KEY>'),  # Key structures
     (r'AIzaSy[a-zA-Z0-9_-]{33}', '<REDACTED_API_KEY>'),  # Google Cloud API Keys
     (r'ghp_[a-zA-Z0-9]{36}', '<REDACTED_GITHUB_TOKEN>'),  # GitHub token
@@ -74,14 +84,16 @@ def add_internal_domains(domains):
 
     Nothing employer-specific ships in this file; pass yours with --internal-domain.
     """
+    # These go first, so a generic pattern can't consume part of the hostname
+    # and leave the supplied domain behind.
+    rows = []
     for domain in domains or ():
         domain = domain.strip().lstrip(".")
         if domain:
-            escaped = re.escape(domain)
-            PII_PATTERNS.append(
-                (r'https?://[a-zA-Z0-9.-]*\b' + escaped + r'\b[a-zA-Z0-9./?=&_-]*(?<!\.)', '<INTERNAL_URL>'))
-            PII_PATTERNS.append(
-                (r'\b[a-zA-Z0-9.-]*\b' + escaped + r'\b', '<COMPANY_DOMAIN>'))
+            escaped = re.escape(domain) + r'(?![a-z0-9-])'
+            rows.append((r'https?://(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS + _URL_TAIL, '<INTERNAL_URL>'))
+            rows.append((r'(?<![a-z0-9-])(?:[a-z0-9-]+\.)*' + escaped + _MORE_LABELS, '<COMPANY_DOMAIN>'))
+    PII_PATTERNS[:0] = rows
 
 _current_system_user = getpass.getuser()
 NAME_PATTERNS = [
@@ -381,8 +393,14 @@ def write_canonical_files(prompts, stats, output_dir):
     habits = stats["punctuation_habits"] or {}
     n = stats["total_prompts"]
     spelling = stats["spelling"]
-    if stats.get("commonwealth_words"):
-        spelling += " (seen: " + ", ".join(stats["commonwealth_words"]) + ")"
+    words = ", ".join(stats.get("commonwealth_words") or [])
+    if words and stats["commonwealth_count"] > 3:
+        spelling += " (seen: " + words + ")"
+    elif words:
+        # Too few to call it British, but worth showing.
+        n = stats["commonwealth_count"]
+        spelling += " by default; %d Commonwealth spelling%s seen (%s)" % (
+            n, "" if n == 1 else "s", words)
 
     with open(os.path.join(output_dir, PROFILE_DRAFT), 'w', encoding='utf-8') as f:
         f.write(f"""# Voice and Tone — <Your Name> (draft)

@@ -190,6 +190,69 @@ class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
         out = EV.sanitize_text("deploy to https://build.example-corp.net/job/7 and ci.example-corp.net.")
         self.assertEqual("deploy to <INTERNAL_URL> and <COMPANY_DOMAIN>.", out)
 
+    def test_an_internal_label_mid_hostname_redacts_the_whole_name(self):
+        out = EV.sanitize_text(
+            "clone git.internal.acme.example, open https://ci.corp.acme.example:8443/job/7. "
+            "Also corp.acme.example and build.intranet.")
+        self.assertEqual(
+            "clone <COMPANY_DOMAIN>, open <INTERNAL_URL>. Also <COMPANY_DOMAIN> and <COMPANY_DOMAIN>.",
+            out)
+        self.assertNotIn("acme", out)
+
+    def test_a_supplied_domain_under_an_internal_label_leaves_no_suffix(self):
+        saved = list(EV.PII_PATTERNS)
+        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        EV.add_internal_domains(["acme.example"])
+        out = EV.sanitize_text("ssh git.internal.acme.example or https://x.corp.acme.example/a")
+        self.assertEqual("ssh <COMPANY_DOMAIN> or <INTERNAL_URL>", out)
+
+    def test_ordinary_words_are_not_hostnames(self):
+        text = "The internal API and corporate docs live in internal-tools.md and localhost."
+        self.assertEqual(text, EV.sanitize_text(text))
+
+
+class TestMeasuredHabits(unittest.TestCase):
+    """Different writing must produce different measurements and drafts."""
+
+    def _draft(self, prompts):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        EV.write_canonical_files(prompts, EV.analyze_linguistics(prompts), tmp.name)
+        return (Path(tmp.name) / EV.PROFILE_DRAFT).read_text(encoding="utf-8")
+
+    def test_rates_follow_the_input(self):
+        plain = EV.analyze_linguistics(["Ship it today.", "Run the tests first."])
+        marked = EV.analyze_linguistics(["It's done — ship it -> prod.", "Don't merge yet..."])
+        rates = lambda s: s["punctuation_habits"]
+        self.assertEqual(rates(plain)["em_dash_frequency"], "0%")
+        self.assertEqual(rates(marked)["em_dash_frequency"], "50%")
+        self.assertEqual(rates(plain)["arrow_frequency"], "0%")
+        self.assertEqual(rates(marked)["arrow_frequency"], "50%")
+        self.assertEqual(rates(plain)["contraction_frequency"], "0%")
+        self.assertEqual(rates(marked)["contraction_frequency"], "100%")
+        self.assertEqual(rates(marked)["ellipsis_frequency"], "50%")
+
+    def test_rates_reach_the_draft(self):
+        text = self._draft(["It's done — ship it -> prod.", "Run the tests first."])
+        self.assertIn("em-dashes in 50% of prompts", text)
+        self.assertIn("`=>` in 50% of prompts", text)
+        self.assertIn("**Contractions**: in 50% of prompts", text)
+
+    def test_a_few_commonwealth_words_do_not_contradict_the_spelling(self):
+        stats = EV.analyze_linguistics(["Change the colour of the button please."])
+        self.assertEqual(stats["spelling"], "US-English")
+        self.assertEqual(stats["commonwealth_words"], ["colour"])
+        text = self._draft(["Change the colour of the button please."])
+        self.assertIn("US-English by default; 1 Commonwealth spelling seen (colour)", text)
+        self.assertNotIn("(seen: colour)", text)
+
+    def test_more_than_three_commonwealth_words_switch_the_spelling(self):
+        prompts = ["colour it", "optimise it", "prioritise it", "visualise it"]
+        stats = EV.analyze_linguistics(prompts)
+        self.assertEqual(stats["spelling"], "British/Commonwealth")
+        self.assertIn("British/Commonwealth (seen: ", self._draft(prompts))
+        self.assertEqual(EV.analyze_linguistics(prompts[:3])["spelling"], "US-English")
+
 
 if __name__ == "__main__":
     unittest.main()
