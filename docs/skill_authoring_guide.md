@@ -30,12 +30,13 @@ graph TD
 3. **Level 3: Bundled Resources (`references/`, `scripts/`, `assets/`)**:
    * Heavy reference documentation, AST scripts, or asset templates.
    * **Rule**: Referenced clearly from `SKILL.md` with explicit instructions on when to view or execute them.
+   * **Rule**: Paths are relative to the skill folder (`<skill-dir>/scripts/x.py`), never to this repo. `npx skills add` installs only the skill's folder, so a `skills/<name>/...` path breaks on install.
 
 ---
 
 ## 📝 2. Why Markdown is Mandatory for Skill Instructions
 
-LLMs (including Gemini 3.x, Claude 3.x, and GPT-4o) rely on structural Markdown semantics during attention routing:
+Frontier LLMs rely on structural Markdown semantics during attention routing:
 
 * **Heading Hierarchies (`#`, `##`, `###`)**: Define unambiguous semantic boundaries between steps, goals, and constraints.
 * **Code Fences with Language Identifiers (` ```bash `, ` ```json `)**: Prevent the model from misinterpreting code examples as conversational instructions.

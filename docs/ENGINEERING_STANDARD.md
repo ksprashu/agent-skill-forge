@@ -254,7 +254,7 @@ nothing runs is L1 prose with a shebang.
 A change is done when all of these are true. Not "the agent reports them true" —
 true.
 
-- [ ] `python3.12 -m pytest -q` passes, and the count went **up**.
+- [ ] `python3 -m pytest -q` passes, and the count went **up**.
 - [ ] A differentiation test (T1) exists if the module transforms input to output.
 - [ ] A negative test (T4) exists if the module validates or gates.
 - [ ] Mutation smoke (T2) was run at least once by hand, and is noted in the PR.
@@ -276,7 +276,7 @@ true.
 3. Tests per §5 — differentiation first, it will tell you whether the skill does
    anything.
 4. Register in all five places (K8).
-5. `python3.12 scripts/validate_skills.py && python3.12 -m pytest -q`.
+5. `python3 scripts/validate_skills.py && python3 -m pytest -q`.
 6. `DESIGN.md` if the design is non-obvious.
 
 ### Adding a verifier

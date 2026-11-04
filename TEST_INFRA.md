@@ -1,10 +1,12 @@
 # Markdown DAG Workflow Engine: End-to-End Test Infrastructure Specification (`TEST_INFRA.md`)
 
+> Scope: this document covers the E2E suite for the `work` skill's DAG engine. The repo-wide suite is `python3 -m pytest -q` (test paths in `pytest.ini`); CI (`.github/workflows/ci.yml`) also runs skill validation, gate and DAG integrity, the forensic audit corpus and an installer smoke test.
+
 ## 1. Executive Summary & Purpose
 
 This document establishes the authoritative End-to-End (E2E) test infrastructure, validation methodology, and verification matrix for the **Markdown-driven Directed Acyclic Graph (DAG) Workflow Engine and Harness Protocol** in `agent-skill-forge`.
 
-The E2E test suite operates as an **opaque-box, requirement-driven verification harness**. It exercises the public CLI and interface contracts of the DAG workflow engine (`skills/work/scripts/dag_validator.py`) without coupling to internal private abstractions, ensuring that any compliant implementation of the specification behaves identically across Windows and POSIX environments under `python3.12`.
+The E2E test suite operates as an **opaque-box, requirement-driven verification harness**. It exercises the public CLI and interface contracts of the DAG workflow engine (`skills/work/scripts/dag_validator.py`) without coupling to internal private abstractions, ensuring that any compliant implementation of the specification behaves identically across Windows and POSIX environments under `python3`.
 
 ---
 
@@ -13,7 +15,7 @@ The E2E test suite operates as an **opaque-box, requirement-driven verification 
 ### 2.1 Component Under Test
 The primary system under test is the DAG engine CLI and harness utility:
 ```bash
-python3.12 skills/work/scripts/dag_validator.py <markdown_file> [options]
+python3 skills/work/scripts/dag_validator.py <markdown_file> [options]
 ```
 
 ### 2.2 CLI Interface Contract
@@ -282,25 +284,25 @@ All fixtures reside in `tests/e2e/fixtures/`:
 ## 6. Execution Command & Environment Requirements
 
 ### Command Line Invocation
-Execute the complete E2E test suite using Python 3.12:
+Execute the complete E2E test suite:
 ```bash
-python3.12 tests/e2e/run_e2e_tests.py
+python3 tests/e2e/run_e2e_tests.py
 ```
 
 ### Targeted Tier Execution
 ```bash
 # Run specific tier
-python3.12 tests/e2e/run_e2e_tests.py --tier 1
-python3.12 tests/e2e/run_e2e_tests.py --tier 2
-python3.12 tests/e2e/run_e2e_tests.py --tier 3
-python3.12 tests/e2e/run_e2e_tests.py --tier 4
+python3 tests/e2e/run_e2e_tests.py --tier 1
+python3 tests/e2e/run_e2e_tests.py --tier 2
+python3 tests/e2e/run_e2e_tests.py --tier 3
+python3 tests/e2e/run_e2e_tests.py --tier 4
 
 # Structural verification mode (validates fixtures and test suite compilation)
-python3.12 tests/e2e/run_e2e_tests.py --verify-fixtures
+python3 tests/e2e/run_e2e_tests.py --verify-fixtures
 ```
 
 ### Invariants & Requirements
-1. **Python Binary**: Host executable is `python3.12` (`~/.local/bin/python3.12.exe`).
+1. **Python Binary**: `python3`. On Windows hosts with only a versioned binary on PATH, substitute it (for example `python3.12`).
 2. **Console Encoding**: Windows console defaults to cp1252; test runner wraps stdout/stderr with UTF-8 `TextIOWrapper`.
 3. **Zero External Dependencies**: Test suite and runner rely strictly on Python standard libraries (`unittest`, `subprocess`, `tempfile`, `json`, `pathlib`, `os`, `sys`, `re`).
 4. **Opaque-Box Testing**: All tests invoke `skills/work/scripts/dag_validator.py` via subprocess CLI calls or standard JSON/exit code contracts. No internal modules are imported or mocked.
