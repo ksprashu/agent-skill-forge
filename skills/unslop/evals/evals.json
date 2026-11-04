@@ -4,17 +4,38 @@
     {
       "name": "remove_ai_prose",
       "input": "Rewrite this in clear voice: In today's fast-paced digital landscape, it's crucial to delve into the tapestry of microservices. Furthermore, this innovative approach stands as a testament to modern architectural excellence.",
-      "assertions": ["Removes AI vocabulary and throat-clearing", "Produces direct, concrete sentences", "Preserves the core idea about microservices"]
+      "assertions": [
+        "Removes AI vocabulary and throat-clearing",
+        "Produces direct, concrete sentences",
+        "Preserves the core idea about microservices"
+      ]
     },
     {
       "name": "code_comment_cleanup",
       "input": "Unslop this comment: // This function is designed to leverage the comprehensive capabilities of the system in order to enhance the overall user experience by meticulously processing the input data.",
-      "assertions": ["Shortens to a factual comment", "Removes fluff words", "Keeps the technical intent"]
+      "assertions": [
+        "Shortens to a factual comment",
+        "Removes fluff words",
+        "Keeps the technical intent"
+      ]
     },
     {
       "name": "already_clean_passthrough",
       "input": "Unslop: The query latency spikes to 420ms because the foreign key on orders.user_id is unindexed.",
-      "assertions": ["Leaves the sentence mostly unchanged", "Does not add filler", "Preserves exact technical claim"]
+      "assertions": [
+        "Leaves the sentence mostly unchanged",
+        "Does not add filler",
+        "Preserves exact technical claim"
+      ]
+    },
+    {
+      "name": "persona_neutral_without_profile",
+      "input": "Unslop this README line (no voice profile is set): In order to optimize the color rendering, it is important to note that the behavior of the renderer can be customized via the --theme flag.",
+      "assertions": [
+        "Keeps the author's US spelling (optimize, color, behavior, customized); does not convert to -ise or -our",
+        "Adds no greeting, sign-off, persona, or ASCII arrows",
+        "Preserves the --theme flag exactly"
+      ]
     }
   ]
 }
