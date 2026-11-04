@@ -11,7 +11,7 @@ Write in a specific person's voice, in the register that fits the channel. This 
 
 1. **Resolve the voice profile** (first match wins):
    1. `references/voice_and_tone.local.md`: private override on this machine (gitignored).
-   2. `~/.gemini/personas/default/voice_and_tone.md`: shared home persona. `copy-write` reads the same file, so one profile drives both skills.
+   2. `~/.gemini/personas/default/voice_and_tone.md`: shared home persona, one profile for every harness on this machine.
    3. `references/voice_and_tone.template.md`: neutral public baseline (carries no personal voice). When resolution falls back here, keep neutral `unslop` prose, tell the user no personal profile was found, and point them to this template or `human-voice` to create one.
 
    Named profiles live outside the repo at `~/.gemini/personas/<name>/voice_and_tone.md`. Use one only when the user names it. No personal profile ships with this skill.

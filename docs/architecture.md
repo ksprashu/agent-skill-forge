@@ -18,8 +18,8 @@ Agent Skill Forge splits skills into two distinct tiers to balance discovery spe
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        TIER 1: GLOBAL LIFECYCLE                        │
 │   prompt · grill · spec · plan · test · verify · review · unslop       │
-│   docs · catalog · sync · google-oss · codelab · human-voice · copy-write│
-│   image-gen                                                            │
+│   docs · catalog · google-oss · codelab · human-voice · voice-register │
+│   image-gen · atelier                                                  │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │
                                    ▼ On-Demand JIT Bootstrap
@@ -56,7 +56,7 @@ Skills in Agent Skill Forge conform to the universal `SKILL.md` frontmatter stan
 
 ```mermaid
 flowchart TD
-    Req["Writing Request (/copy-write)"] --> L1{"1. Check Local Override\n(references/*.local.md)"}
+    Req["Writing Request (voice-register)"] --> L1{"1. Check Local Override\n(references/*.local.md)"}
     L1 -- "Found (Gitignored)" --> ApplyLocal["Apply Private User Persona"]
     L1 -- "Not Found" --> L2{"2. Check Home Profile\n(~/.gemini/personas/default/)"}
     L2 -- "Found" --> ApplyHome["Apply User System Persona"]

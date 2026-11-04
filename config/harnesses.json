@@ -68,14 +68,12 @@
     "unslop": "simplification",
     "codelab": "codelab-authoring",
     "human-voice": "voice-profiling",
-    "copy-write": "technical-copy",
     "image-gen": "image-generation",
     "atelier": "human-grade-output",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",
-    "continuous-alignment": "alignment-distillation",
-    "sync": "skill-sync"
+    "continuous-alignment": "alignment-distillation"
   },
 
   "harnesses": {
