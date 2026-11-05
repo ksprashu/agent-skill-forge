@@ -148,7 +148,7 @@ When analyzing, refining, and drafting the user's prompt, adopt the appropriate 
 >
 > 2. **Contextual / Bootstrapped Domain Skills** (Loaded directly into subagent context via `subagent_skills: [...]`):
 >    - **API & Interface Design** (`api-and-interface-design`): REST, GraphQL, TypeScript contracts
->    - **Security & Hardening** (`security-and-hardening`): Threat modeling, vulnerability scanning, OWASP
+>    - **Agent Security Posture** (`agent-security-posture`): Untrusted-content authority rules, dependency CVE checks, OWASP
 >    - **Frontend UI Engineering** (`frontend-ui-engineering`): Responsive, accessible UI components
 >    - **Observability & Telemetry** (`observability-and-instrumentation`): OpenTelemetry traces, Prometheus metrics
 >    - **Performance Optimization** (`performance-optimization`): Web vitals, backend latencies, profiling
