@@ -237,6 +237,7 @@ class Harvest:
     # -- recording ----------------------------------------------------------
 
     def _in_window(self, when):
+        when = log_sources.normalize_when(when)
         if not self.since or not when:
             return True
         return when[:10] >= self.since
@@ -245,6 +246,7 @@ class Harvest:
         text = redact(text).strip()
         if not text:
             return
+        when = log_sources.normalize_when(when)
         if not self._in_window(when):
             return
 

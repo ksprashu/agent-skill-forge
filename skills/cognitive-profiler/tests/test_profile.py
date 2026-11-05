@@ -231,10 +231,19 @@ class TestLeakRejection(unittest.TestCase):
             ("eyJhbGciOiJIUzI1.eyJzdWIiOiIxMjM.SflKxwRJSMeKKF2Q", "JSON Web Token"),
             ("Bearer abcdef123456", "authorization header"),
             ("api_key=abcdef123456", "assigned secret"),
+            ('{"password": "' + 'hunter2"}', "assigned secret"),
+            ("postgres://svc:" + "s3cret@db.example.com/app", "credentialed URI"),
             ("C:\\Users\\someone\\notes.md", "home directory path"),  # host-path-ok
+            ("tasks/-Users-alice.smith-repo/out", "home directory path"),  # host-path-ok
         ]:
             with self.subTest(sample=sample):
                 self._assert_rejected(f"Do this: {sample}", label)
+
+    def test_cli_home_dir_flag_is_not_rejected_as_a_home_path(self):
+        prof = copy.deepcopy(self.prof)
+        prof["rules"][0]["directive"] = "Pass --home-dir /tmp/cache when running the CLI"
+        errors, _ = P.validate(prof)
+        self.assertEqual(errors, [])
 
     def test_the_redactor_and_the_validator_read_the_same_table(self):
         import harvest as H

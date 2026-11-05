@@ -57,8 +57,9 @@ python3 scripts/harvest.py --since 2026-06-01 # recent history only
 
 Reads Claude Code, Antigravity, Gemini CLI, Cline, Roo, Cursor, and Aider
 logs. Everything is redacted on the way in: emails, IP addresses, API keys
-and tokens, JWTs, bearer headers, assigned secrets, internal hostnames and
-URLs, and home-directory paths (shown as `~`). Verify before sharing:
+and tokens, JWTs, authorization headers, credentialed URIs, assigned secrets,
+internal hostnames and URLs, your OS login name, and home-directory paths
+(shown as `~`). Verify before sharing:
 
 ```bash
 python3 scripts/harvest.py --check-redaction evidence.json

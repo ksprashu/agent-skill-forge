@@ -46,6 +46,7 @@ import os
 import platform
 import re
 import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, NamedTuple, Optional
 
@@ -105,18 +106,28 @@ def aider_files(home=None):
     input history is used only where no chat transcript sits beside it.
     """
     home = Path(home) if home else _home()
+    escaped_home = glob.escape(str(home))
     found = []
+    seen = set()
+
+    def add(item):
+        resolved = item.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            found.append(item)
+
     for rel in AIDER_SEARCH_DIRS:
-        for directory in sorted(glob.glob(os.path.join(str(home), rel))):
+        pattern = os.path.join(escaped_home, rel) if rel else escaped_home
+        for directory in sorted(glob.glob(pattern)):
             directory = Path(directory)
             chat = directory / AIDER_CHAT_FILE
             if chat.is_file():
-                found.append(chat)
+                add(chat)
                 continue
             for name in AIDER_INPUT_FILES:
                 candidate = directory / name
                 if candidate.is_file():
-                    found.append(candidate)
+                    add(candidate)
                     break
     return found
 
@@ -163,6 +174,50 @@ def source_roots(home=None):
 # ---------------------------------------------------------------------------
 # Readers
 # ---------------------------------------------------------------------------
+
+
+_ISO_WHEN_RE = re.compile(
+    r"^(\d{4})-(\d{2})-(\d{2})"
+    r"(?:[T\s]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$"
+)
+_NUMERIC_WHEN_RE = re.compile(r"^\d{10,13}(?:\.\d+)?$")
+_MIN_EPOCH = 946684800.0    # 2000-01-01T00:00:00Z
+_MAX_EPOCH = 4102444800.0   # 2100-01-01T00:00:00Z
+
+
+def normalize_when(value):
+    """Normalise a log timestamp to an ISO-8601 date/datetime string, or None.
+
+    Accepts ISO date/datetime strings and Unix epoch seconds or milliseconds.
+    Arbitrary strings (such as free-form ``#`` comments in ``.aider.history``)
+    are rejected so non-timestamp text never leaks through ``Turn.when``.
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        ts = float(value)
+        if ts >= 1e11:
+            ts /= 1000.0
+        if _MIN_EPOCH <= ts <= _MAX_EPOCH:
+            return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        match = _ISO_WHEN_RE.match(text)
+        if match:
+            year, month, day = (int(part) for part in match.groups())
+            if 1970 <= year <= 2100:
+                try:
+                    datetime(year, month, day)
+                    return text
+                except ValueError:
+                    return None
+            return None
+        if _NUMERIC_WHEN_RE.match(text):
+            return normalize_when(float(text))
+    return None
 
 
 def _iter_jsonl(path):
@@ -224,8 +279,10 @@ def read_claude_code(root):
     for path in sorted(Path(root).glob("**/*.jsonl")):
         turns = []
         for rec in _iter_jsonl(path):
+            if rec.get("isMeta") or rec.get("isSidechain") or rec.get("isCompactSummary"):
+                continue
             rtype = rec.get("type")
-            when = rec.get("timestamp")
+            when = normalize_when(rec.get("timestamp"))
             message = rec.get("message")
             if not isinstance(message, dict):
                 continue
@@ -237,8 +294,6 @@ def read_claude_code(root):
                     turns.append(Turn("assistant", text, when))
 
             elif rtype == "user":
-                if rec.get("isMeta") or rec.get("isSidechain") or rec.get("isCompactSummary"):
-                    continue
                 if isinstance(content, list):
                     # Any tool_result block means this is the harness feeding
                     # output back, not the user typing.
@@ -252,7 +307,8 @@ def read_claude_code(root):
                     continue
                 if text.strip():
                     turns.append(Turn("user", text, when))
-        yield Session(path, turns)
+        if turns:
+            yield Session(path, turns)
 
 
 _USER_REQUEST_RE = re.compile(r"<USER_REQUEST>(.*?)</USER_REQUEST>", re.DOTALL)
@@ -268,7 +324,7 @@ def read_antigravity(root):
     for path in sorted(Path(root).glob("**/transcript.jsonl")):
         turns = []
         for rec in _iter_jsonl(path):
-            when = rec.get("created_at")
+            when = normalize_when(rec.get("created_at"))
             rtype = rec.get("type")
             text = rec.get("content")
             if not isinstance(text, str) or not text.strip():
@@ -282,19 +338,23 @@ def read_antigravity(root):
                 match = _USER_REQUEST_RE.search(text)
                 if match:
                     text = match.group(1)
-                turns.append(Turn("user", text, when))
-        yield Session(path, turns)
+                if text.strip():
+                    turns.append(Turn("user", text, when))
+        if turns:
+            yield Session(path, turns)
 
 
 _GEMINI_USER_ROLES = ("user", "human")
 _GEMINI_ASSISTANT_ROLES = ("model", "assistant", "gemini")
 
 
-def _gemini_turn(msg):
+def _gemini_turn(msg, default_when=None):
     role = msg.get("role") or msg.get("type") or msg.get("sender")
-    when = msg.get("timestamp")
+    when = normalize_when(msg.get("timestamp")) or default_when
     if "user_input" in msg and isinstance(msg["user_input"], str):
-        return Turn("user", msg["user_input"], when)
+        if msg["user_input"].strip():
+            return Turn("user", msg["user_input"], when)
+        return None
     content = msg.get("content")
     if content is None:
         content = msg.get("text")
@@ -321,8 +381,16 @@ def read_gemini_cli(root):
             data.get("messages") if isinstance(data, dict) else None)
         if not isinstance(messages, list):
             continue
-        turns = [t for t in (_gemini_turn(m) for m in messages if isinstance(m, dict)) if t]
-        yield Session(path, turns)
+        session_when = normalize_when(
+            data.get("startTime") or data.get("timestamp") or data.get("created_at")
+        ) if isinstance(data, dict) else None
+        turns = [
+            t for t in (
+                _gemini_turn(m, session_when) for m in messages if isinstance(m, dict)
+            ) if t
+        ]
+        if turns:
+            yield Session(path, turns)
     for path in sorted(root.glob("**/*.jsonl")):
         turns = [t for t in (_gemini_turn(r) for r in _iter_jsonl(path)) if t]
         if turns:
@@ -353,7 +421,8 @@ def read_cline(root):
                 content = _text_of(msg.get("content"))
                 if content.strip():
                     turns.append(Turn("user", content))
-        yield Session(path, turns)
+        if turns:
+            yield Session(path, turns)
 
 
 def _walk_cursor_bubbles(node, depth=0):
@@ -381,12 +450,17 @@ def _cursor_rows(db_path):
     """Chat rows from a Cursor state.vscdb, opened read-only.
 
     If Cursor holds a lock, retry as immutable, which reads the file as it
-    stands on disk without touching the lock.
+    stands on disk without touching the lock. ``as_uri()`` percent-encodes ``#``
+    and ``?`` so directory names like ``c#`` cannot strip ``?mode=ro``.
     """
     query = "SELECT value FROM ItemTable WHERE key LIKE '%chat%'"
+    try:
+        base_uri = Path(db_path).resolve().as_uri()
+    except (OSError, ValueError):
+        return None
     for suffix in ("?mode=ro", "?mode=ro&immutable=1"):
         try:
-            conn = sqlite3.connect(f"file:{db_path}{suffix}", uri=True)
+            conn = sqlite3.connect(f"{base_uri}{suffix}", uri=True)
         except sqlite3.Error:
             continue
         try:
@@ -417,7 +491,8 @@ def read_cursor(root):
                 continue
             for text, is_user in _walk_cursor_bubbles(blob):
                 turns.append(Turn("user" if is_user else "assistant", text))
-        yield Session(db_path, turns)
+        if turns:
+            yield Session(db_path, turns)
 
 
 _AIDER_SESSION_RE = re.compile(r"^# aider chat started at (.+?)\s*$")
@@ -454,7 +529,7 @@ def _read_aider_chat(path):
             flush_reply()
             if turns:
                 sessions.append(Session(path, turns))
-            turns, when = [], started.group(1)
+            turns, when = [], normalize_when(started.group(1))
             continue
         if line.startswith("#### "):
             flush_reply()
@@ -494,7 +569,7 @@ def _read_aider_input(path):
     for line in raw:
         if line.startswith("#"):
             flush()
-            when = line.lstrip("#").strip() or None
+            when = normalize_when(line.lstrip("#").strip())
             continue
         lines.append(line[1:] if line.startswith("+") else line)
     flush()
@@ -575,6 +650,8 @@ _MORE_LABELS = r"(?:\.[a-z0-9-]+)*"
 _URL_TAIL = r"(?::[0-9]+)?(?:[/?#][a-z0-9./?=&_%#:~+-]*)?(?<![.,;:])"
 
 SENSITIVE_PATTERNS = [
+    (re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s/:@\"'<>]*:[^\s/@\"'<>]+@[^\s\"'<>]+(?<![.,;:)])"),
+     "credentialed URI", "<SECRET>"),
     (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
      "email address", "<EMAIL>"),
     (re.compile(r"\bAIzaSy[A-Za-z0-9_-]{33}\b"),
@@ -598,12 +675,17 @@ SENSITIVE_PATTERNS = [
     (re.compile(r"\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
      "JSON Web Token", "<JWT>"),
     # The scheme word is optional and the credential after it is what matters,
-    # so "Authorization: Bearer <token>" is consumed whole.
-    (re.compile(r"(?i)\bauthorization:\s*(?:(?:bearer|basic|token|digest)\s+)?\S+"
-                r"|\bbearer\s+\S+"),
-     "authorization header", "<AUTH>"),
-    (re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S+"),
-     "assigned secret", "<SECRET>"),
+    # so "Authorization: Bearer <token>" and "Authorization: ApiKey <token>"
+    # are consumed whole.
+    (re.compile(
+        r"(?i)\bauthorization:\s*(?:aws4-hmac-sha256(?:\s+[^\s\"']+){1,4}"
+        r"|(?:(?:bearer|basic|token|digest|api[-_]?key|oauth|negotiate|bot|splunk|ssws|hawk)\s+)?[^\s\"']+)"
+        r"|\bbearer\s+[^\s\"']+"
+    ), "authorization header", "<AUTH>"),
+    (re.compile(
+        r"(?i)[\"']?\b(?:api[_-]?key|secret|password|passwd|token)\b[\"']?"
+        r"\s*[:=]\s*(?:\"[^\"\r\n]*\"|'[^'\r\n]*'|[^\s\"',;}{]+)"
+    ), "assigned secret", "<SECRET>"),
     (re.compile(r"(?i)https?://(?:[a-z0-9-]+\.)*" + _INTERNAL_URL_LABEL
                 + _MORE_LABELS + _URL_TAIL),
      "internal URL", "<INTERNAL_URL>"),
@@ -619,8 +701,8 @@ SENSITIVE_PATTERNS = [
      "home directory path", "~"),
     (re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+"),  # host-path-ok
      "home directory path", "~"),
-    # The same path flattened into a Claude Code project slug.
-    (re.compile(r"(?<![A-Za-z0-9])-(?:Users|home)-[A-Za-z0-9_]+"),  # host-path-ok
+    # The same path flattened into a Claude Code project slug (POSIX or Windows).
+    (re.compile(r"(?<![A-Za-z0-9_-])(?:[A-Za-z]--Users-|-(?:Users|home)-)[A-Za-z0-9._]+"),  # host-path-ok
      "home directory path", "~"),
 ]
 

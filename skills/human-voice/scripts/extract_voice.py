@@ -25,6 +25,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import log_sources  # noqa: E402  (bundled beside this script; shared with cognitive-profiler)
 
+if sys.platform == "win32":  # pragma: no cover - platform guard
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+
 HOME = os.path.expanduser('~')
 
 # Log locations per tool, from log_sources. Each value is a list of paths.
@@ -270,7 +275,9 @@ Fill in only the registers you write in.
         if not excerpts:
             f.write("No prompts of a usable length were found.\n")
         for idx, ex in enumerate(excerpts[:5], 1):
-            f.write(f"## Excerpt {idx}\n> {ex.strip()}\n\n")
+            quoted = "\n".join(f"> {line}" if line else ">"
+                               for line in ex.strip().splitlines())
+            f.write(f"## Excerpt {idx}\n{quoted}\n\n")
 
 
 def main():
@@ -362,8 +369,8 @@ def main():
         print(f"-> Extracted {len(cursor_prompts)} prompts from Cursor.")
         all_prompts.extend(cursor_prompts)
     
-    # Remove duplicates
-    unique_prompts = list(set(all_prompts))
+    # Remove duplicates while keeping discovery order deterministic across runs
+    unique_prompts = list(dict.fromkeys(all_prompts))
     print(f"\nTotal unique prompts extracted: {len(unique_prompts)}")
     
     # Analyze linguistics

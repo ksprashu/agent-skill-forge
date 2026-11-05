@@ -167,6 +167,30 @@ class TestOutputsFeedVoiceRegister(unittest.TestCase):
         self.assertFalse((out / "SKILL.md").exists())
         self.assertFalse((out / "golden_examples.md").exists())
 
+    def test_multiline_excerpts_stay_inside_markdown_blockquotes(self):
+        prompt = (
+            "First paragraph of a multi-line prompt that clears the fifteen word floor.\n\n"
+            "Second paragraph after a blank line that must still stay inside the blockquote."
+        )
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        EV.write_canonical_files([prompt], EV.analyze_linguistics([prompt]), tmp.name)
+        samples = (Path(tmp.name) / EV.SAMPLES_DRAFT).read_text(encoding="utf-8")
+        after_heading = samples.split("## Excerpt 1\n", 1)[1].rstrip("\n")
+        for line in after_heading.splitlines():
+            self.assertTrue(line.startswith(">"), f"unquoted line in excerpt: {line!r}")
+
+    def test_main_deduplicates_prompts_in_discovery_order(self):
+        p1 = " ".join(["alpha"] * 20)
+        p2 = " ".join(["bravo"] * 20)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        with mock.patch.object(EV, "extract_aider", return_value=[p1, p2, p1]), \
+             mock.patch.object(sys, "argv", ["extract_voice.py", "-t", "aider", "-o", tmp.name]):
+            EV.main()
+        samples = (Path(tmp.name) / EV.SAMPLES_DRAFT).read_text(encoding="utf-8")
+        self.assertLess(samples.index("alpha"), samples.index("bravo"))
+
 
 class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
     def test_source_names_no_employer_domain(self):

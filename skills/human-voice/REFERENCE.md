@@ -13,7 +13,7 @@ This reference lists where each supported tool stores its logs and how its user 
 | **Antigravity CLI** | `~/.gemini/antigravity-cli/brain/` | JSONL (`transcript.jsonl`) | `source: "USER_EXPLICIT"`, or `type: "USER_INPUT"` with no `source`. The `<USER_REQUEST>` envelope is unwrapped. |
 | **Antigravity IDE** | `~/.gemini/antigravity/brain/`, `~/.gemini/antigravity-ide/` | JSONL (`transcript.jsonl`) | Same as the CLI. |
 | **Gemini CLI** | `~/.gemini/tmp/<project>/` | JSON with a `messages` list, or JSONL | `role`/`type`/`sender` of `user`, or a `user_input` key. |
-| **Claude Code** | `~/.claude/projects/<slug>/<session>.jsonl` | JSONL | `type: "user"` records, text from `message.content`. Skips tool results, meta, sidechain (subagent), and compaction records, and slash-command or shell-output records. |
+| **Claude Code** | `~/.claude/projects/<slug>/<session>.jsonl` | JSONL | `type: "user"` records, text from `message.content`. Skips tool results, meta, sidechain (subagent), and compaction records, and slash-command, shell-output, or harness-notice records. |
 | **Cline** | `<app-data>/Code/User/globalStorage/saoudrizwan.claude-dev/tasks/` | JSON (`ui_messages.json`) | `say: "user_feedback"` or `say: "task"`, or `role: "user"`. |
 | **Roo Code** | `<app-data>/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks/` | JSON (`ui_messages.json`) | Same as Cline. |
 | **Aider** | `.aider.chat.history.md`, else `.aider.input.history` or `.aider.history`, in `~`, `~/*`, `~/code/*`, `~/git/*` | Markdown / plain text | `#### ` lines in the chat transcript; `+` lines (or plain lines) in the input history. |
@@ -42,7 +42,7 @@ Each line is a record; the turn sits under `message`:
 ```json
 {"type": "user", "timestamp": "2026-09-20T10:00:00Z", "message": {"role": "user", "content": [{"type": "text", "text": "Deploy to cloud run."}]}}
 ```
-* **Extraction Strategy**: Read `type == "user"` records. If `message.content` is a string, take it; if it is a list, join its `type == "text"` parts, and skip the record entirely if any part is a `tool_result` (that is the harness feeding output back). Skip records marked `isMeta`, `isSidechain`, or `isCompactSummary`, and text starting with `<command-`, `<local-command`, `<bash-`, or `Caveat:`.
+* **Extraction Strategy**: Read `type == "user"` records. If `message.content` is a string, take it; if it is a list, join its `type == "text"` parts, and skip the record entirely if any part is a `tool_result` (that is the harness feeding output back). Skip records marked `isMeta`, `isSidechain`, or `isCompactSummary`, and text starting with `<command-`, `<local-command`, `<bash-`, `Caveat:`, `<task-notification`, or `<system-reminder`.
 
 ### Cline & Roo Code task histories (`ui_messages.json`)
 Consists of a JSON array containing UI logs:

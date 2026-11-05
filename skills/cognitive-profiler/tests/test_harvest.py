@@ -26,6 +26,7 @@ Two properties matter more than the parsing details:
 
 import json
 import shutil
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -88,6 +89,36 @@ class TestRedaction(unittest.TestCase):
     def test_assignment_style_secret_is_replaced(self):
         self.assertIn("<SECRET>", H.redact("password = hunter2correcthorse"))
 
+    def test_json_quoted_secret_assignment_is_replaced(self):
+        secret = "hunter2" + "correcthorse"
+        raw = '{"password": "' + secret + '", "user": "alice"}'
+        out = H.redact(raw)
+        self.assertNotIn(secret, out)
+        self.assertIn("<SECRET>", out)
+        self.assertIn('"user": "alice"', out)
+        self.assertEqual(H.redact(out), out)
+
+    def test_credentialed_uri_is_replaced(self):
+        pw1 = "myS3cret" + "Pass"
+        pw2 = "myS3cret!" + "Pass"
+        pw3 = "redis" + "Secret99"
+        for uri, pw in (
+            (f"postgres://admin:{pw1}@10.0.1.5:5432/prod", pw1),
+            (f"https://admin:{pw2}@api.example.com/v1", pw2),
+            (f"redis://:{pw3}@cache.internal:6379/0", pw3),
+        ):
+            out = H.redact(f"connect to ({uri}).")
+            self.assertNotIn(pw, out, uri)
+            self.assertEqual(out, "connect to (<SECRET>).")
+            self.assertEqual(H.redact(out), out)
+
+    def test_authorization_apikey_and_oauth_schemes_redact_the_credential(self):
+        tok = "secret_tok_" + "999"
+        for scheme in ("ApiKey", "Api-Key", "OAuth", "Bot"):
+            out = H.redact(f"Authorization: {scheme} {tok}")
+            self.assertIn("<AUTH>", out, scheme)
+            self.assertNotIn(tok, out, scheme)
+
     def test_posix_home_directory_becomes_tilde(self):
         self.assertEqual(H.redact("/Users/someone/code/x.py"), "~/code/x.py")  # host-path-ok
 
@@ -97,6 +128,12 @@ class TestRedaction(unittest.TestCase):
     def test_home_directory_in_a_claude_project_slug_becomes_tilde(self):
         self.assertEqual(H.redact("tasks/-Users-someone-code-repo/a.output"),  # host-path-ok
                          "tasks/~-code-repo/a.output")
+        self.assertEqual(H.redact("tasks/-Users-alice.smith-code-repo/a.output"),  # host-path-ok
+                         "tasks/~-code-repo/a.output")
+        self.assertEqual(H.redact("projects/C--Users-alice.smith-code/s.jsonl"),  # host-path-ok
+                         "projects/~-code/s.jsonl")
+        self.assertEqual(H.redact("pass --home-dir /tmp/work"),
+                         "pass --home-dir /tmp/work")
 
     def test_login_name_is_replaced(self):
         name = H.log_sources.login_name()
@@ -313,6 +350,30 @@ class TestClaudeCodeParser(unittest.TestCase):
         self._parse([claude_user("too long", isSidechain=True)])
         self.assertEqual(self.h.report()["coverage"]["user_turns"], 0)
 
+    def test_sidechain_and_meta_assistant_turns_do_not_pollute_word_counts(self):
+        count = self._parse([
+            {"type": "assistant", "timestamp": "2026-09-20T10:00:00Z",
+             "message": {"content": [{"type": "text", "text": "w " * 400}]}},
+            {"type": "assistant", "isSidechain": True,
+             "timestamp": "2026-09-20T10:00:01Z",
+             "message": {"content": [{"type": "text", "text": "w " * 900}]}},
+            {"type": "assistant", "isMeta": True,
+             "timestamp": "2026-09-20T10:00:02Z",
+             "message": {"content": [{"type": "text", "text": "w " * 700}]}},
+            claude_user("too long"),
+        ])
+        self.assertEqual(count, 1)
+        self.assertEqual(self.h.assistant_word_counts, [400])
+        self.assertEqual(self.h.response_words_at_complaint, [400])
+
+    def test_sidechain_only_file_counts_zero_sessions(self):
+        count = self._parse([
+            {"type": "assistant", "isSidechain": True,
+             "message": {"content": [{"type": "text", "text": "subagent reply"}]}},
+            claude_user("subagent prompt", isSidechain=True),
+        ])
+        self.assertEqual(count, 0)
+
     def test_tool_results_are_skipped(self):
         self._parse([{
             "type": "user", "timestamp": "2026-09-20T10:00:00Z",
@@ -448,6 +509,93 @@ class TestOtherParsers(unittest.TestCase):
         task.joinpath("ui_messages.json").write_text("{not json",
                                                      encoding="utf-8")
         self.assertEqual(self.h.parse_cline(self.tmp, "cline"), 0)
+
+    def test_cursor_db_in_hash_directory_is_read_without_creating_stray_files(self):
+        db_dir = self.tmp / "c#" / "globalStorage"
+        db_dir.mkdir(parents=True)
+        db_path = db_dir / "state.vscdb"
+        conn = sqlite3.connect(str(db_path))
+        try:
+            conn.execute("CREATE TABLE ItemTable (key TEXT PRIMARY KEY, value BLOB)")
+            conn.execute(
+                "INSERT INTO ItemTable (key, value) VALUES (?, ?)",
+                ("workbench.panel.aichat.view", json.dumps({
+                    "tabs": [{"bubbles": [
+                        {"type": 1, "text": "that response was way too long, shorten it"}
+                    ]}]
+                })),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        self.assertEqual(self.h.parse_cursor(self.tmp), 1)
+        self.assertEqual(self.h.signal_counts["length_complaint"], 1)
+        self.assertFalse((self.tmp / "c").exists())
+
+    def test_cursor_db_with_only_layout_keys_counts_zero_sessions(self):
+        db_path = self.tmp / "globalStorage" / "state.vscdb"
+        db_path.parent.mkdir(parents=True)
+        conn = sqlite3.connect(str(db_path))
+        try:
+            conn.execute("CREATE TABLE ItemTable (key TEXT PRIMARY KEY, value BLOB)")
+            conn.execute("INSERT INTO ItemTable (key, value) VALUES (?, ?)",
+                         ("workbench.panel.chat.hidden", "{}"))
+            conn.commit()
+        finally:
+            conn.close()
+        self.assertEqual(self.h.parse_cursor(self.tmp), 0)
+
+    def test_aider_input_comments_do_not_leak_into_when(self):
+        hist = self.tmp / ".aider.history"
+        hist.write_text(
+            "# leak@example.com\n"
+            "that was too long\n"
+            "# 2026-09-20 10:00:01.123456\n"
+            "+cut it down\n",
+            encoding="utf-8",
+        )
+        self.assertEqual(self.h.parse_aider(hist), 1)
+        quotes = self.h.report()["quotes"]
+        self.assertEqual(len(quotes), 2)
+        self.assertNotIn("when", quotes[0])
+        self.assertEqual(quotes[1].get("when"), "2026-09-20")
+        self.assertNotIn("leak", json.dumps(self.h.report()))
+
+    def test_numeric_epoch_and_gemini_session_timestamps_work_with_since(self):
+        chats = self.tmp / "proj" / "chats"
+        chats.mkdir(parents=True)
+        (chats / "old-session.json").write_text(json.dumps({
+            "startTime": "2025-08-01T10:00:00Z",
+            "messages": [{"role": "user", "content": "too long"}],
+        }), encoding="utf-8")
+        (chats / "new-session.json").write_text(json.dumps({
+            "startTime": "2026-09-15T10:00:00Z",
+            "messages": [{"role": "user", "content": "too long"}],
+        }), encoding="utf-8")
+        jsonl(chats / "epochs.jsonl", [
+            {"role": "user", "timestamp": 1755734400, "content": "too long"},
+            {"role": "user", "timestamp": 1789900800000, "content": "cut it down"},
+        ])
+        h = H.Harvest(since="2026-09-01")
+        self.assertEqual(h.parse_gemini_cli(self.tmp), 3)
+        self.assertEqual(h.report()["coverage"]["user_turns"], 2)
+
+    def test_empty_transcripts_yield_zero_sessions(self):
+        jsonl(self.tmp / "ag" / "transcript.jsonl", [
+            {"type": "USER_INPUT", "source": "SYSTEM", "content": "ignored"},
+            {"type": "USER_INPUT", "source": "USER_EXPLICIT",
+             "content": "<USER_REQUEST>   </USER_REQUEST>"},
+        ])
+        self.assertEqual(self.h.parse_antigravity(self.tmp / "ag"), 0)
+
+        (self.tmp / "gem").mkdir()
+        (self.tmp / "gem" / "empty.json").write_text('{"messages": []}', encoding="utf-8")
+        self.assertEqual(self.h.parse_gemini_cli(self.tmp / "gem"), 0)
+
+        (self.tmp / "cline" / "t1").mkdir(parents=True)
+        (self.tmp / "cline" / "t1" / "ui_messages.json").write_text("[]", encoding="utf-8")
+        self.assertEqual(self.h.parse_cline(self.tmp / "cline", "cline"), 0)
 
 
 class TestSourceRoots(unittest.TestCase):
