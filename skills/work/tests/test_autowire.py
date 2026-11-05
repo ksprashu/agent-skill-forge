@@ -230,7 +230,7 @@ class TestDiscovery(unittest.TestCase):
         entries = autowire.discover_skills(REPO_ROOT)
         paths = {e.relpath for e in entries}
         self.assertIn("skills/work", paths)
-        self.assertIn("preferred/security-and-hardening", paths)
+        self.assertIn("preferred/agent-security-posture", paths)
 
 
 class TestFrontmatterParsing(unittest.TestCase):
@@ -317,9 +317,9 @@ class TestMatching(unittest.TestCase):
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):
-        matches = autowire.autowire("add structured logging", REPO_ROOT)
+        matches = autowire.autowire("harden the RBAC layer", REPO_ROOT)
         entry = matches[0].resolved[0]
-        self.assertEqual(entry.relpath, "preferred/observability-and-instrumentation")
+        self.assertEqual(entry.relpath, "preferred/agent-security-posture")
         self.assertTrue(entry.description)
 
     def test_a_missing_skill_is_reported_not_silently_dropped(self):
@@ -344,8 +344,8 @@ class TestResolution(unittest.TestCase):
 
 class TestRendering(unittest.TestCase):
     def test_brief_lists_a_full_skill_file_path(self):
-        brief = autowire.render_brief(autowire.autowire("add tracing", REPO_ROOT))
-        self.assertIn("preferred/observability-and-instrumentation/SKILL.md", brief)
+        brief = autowire.render_brief(autowire.autowire("harden the RBAC layer", REPO_ROOT))
+        self.assertIn("preferred/agent-security-posture/SKILL.md", brief)
 
     def test_brief_states_that_matches_are_not_a_judgement(self):
         brief = autowire.render_brief(autowire.autowire("add tracing", REPO_ROOT))
@@ -370,7 +370,8 @@ class TestRendering(unittest.TestCase):
 
     def test_listing_marks_resolution_status(self):
         listing = autowire.render_listing(
-            autowire.discover_skills(REPO_ROOT), autowire.DOMAIN_MATRIX
+            autowire.discover_skills(REPO_ROOT), autowire.DOMAIN_MATRIX,
+            declared=autowire.load_upstream_names(REPO_ROOT),
         )
         self.assertIn("[ok] skills/test", listing)
         self.assertNotIn("[MISSING]", listing)
@@ -441,7 +442,7 @@ class TestRepoRootDefaultsToTheCheckout(unittest.TestCase):
 class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
     """The brief says "read each with view_file". The paths must survive that.
 
-    `preferred/security-and-hardening/SKILL.md` exists relative to the forge
+    `preferred/agent-security-posture/SKILL.md` exists relative to the forge
     checkout, and the dispatched subagent is standing in the target project,
     where it does not. Every skill the autowiring named was unopenable by the
     agent instructed to read it — the feature failed silently rather than
@@ -452,7 +453,7 @@ class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
         brief = autowire.render_brief(
             autowire.autowire("harden the RBAC layer", REPO_ROOT))
         emitted = [line.split(" — ")[0][2:] for line in brief.splitlines()
-                   if line.startswith("- ") and not line.startswith("- MISSING:")]
+                   if line.startswith("- ") and not line.startswith(("- MISSING:", "- NOT FETCHED:"))]
         self.assertTrue(emitted, brief)
         for path in emitted:
             self.assertTrue(Path(path).is_absolute(), f"{path} is not absolute")
@@ -463,7 +464,7 @@ class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
             code, out, _ = run_cli(["--task", "harden the RBAC layer"], cwd=elsewhere)
             self.assertEqual(code, 0)
             emitted = [line.split(" — ")[0][2:] for line in out.splitlines()
-                       if line.startswith("- ") and not line.startswith("- MISSING:")]
+                       if line.startswith("- ") and not line.startswith(("- MISSING:", "- NOT FETCHED:"))]
             self.assertTrue(emitted, out)
             for path in emitted:
                 self.assertTrue(os.path.isfile(os.path.join(elsewhere, path)),
@@ -483,6 +484,85 @@ class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
             domain=autowire.DOMAIN_MATRIX[0], terms=("x",), resolved=(),
             missing=("preferred/not-on-disk",))])
         self.assertIn("MISSING: preferred/not-on-disk", brief)
+
+
+class TestUpstreamResolution(unittest.TestCase):
+    """Most domain skills are fetched into ``.upstream/``, not vendored.
+
+    The matrix names them as ``.upstream/<name>``. Before the fetch has run they
+    are not on disk, and that must read as "not fetched yet", not as a broken
+    matrix: CI never fetches, and a check that fails there tests nothing. A path
+    under ``.upstream/`` that the lock file does not declare is still a typo,
+    and the check must keep catching it.
+    """
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+        (self.root / "skills").mkdir()
+        (self.root / "preferred").mkdir()
+        (self.root / "config").mkdir()
+        (self.root / "config" / "upstream.lock.json").write_text(
+            json.dumps({"skills": {"obs": {"repo": "a/b", "ref": "0" * 40}}}),
+            encoding="utf-8",
+        )
+        self.domain = autowire.Domain(
+            label="Obs", skills=(".upstream/obs",), roles=("Worker",),
+            instructions="", triggers=("tracing",),
+        )
+
+    def _resolve(self):
+        return autowire.resolve(
+            autowire.match_domains("add tracing", matrix=(self.domain,)),
+            autowire.discover_skills(self.root),
+            declared=autowire.load_upstream_names(self.root),
+        )
+
+    def test_a_fetched_upstream_skill_is_discovered(self):
+        make_skill(self.root, ".upstream", "obs", "Observability.")
+        paths = {e.relpath for e in autowire.discover_skills(self.root)}
+        self.assertIn(".upstream/obs", paths)
+        self.assertEqual(self._resolve()[0].resolved[0].relpath, ".upstream/obs")
+
+    def test_check_accepts_a_declared_but_unfetched_skill(self):
+        self.assertEqual(autowire.check_matrix(self.root, matrix=(self.domain,)), [])
+
+    def test_check_rejects_an_undeclared_upstream_path(self):
+        ghost = autowire.Domain(
+            label="Ghost", skills=(".upstream/ghost",), roles=("Worker",),
+            instructions="", triggers=("ghost",),
+        )
+        problems = autowire.check_matrix(self.root, matrix=(ghost,))
+        self.assertEqual(len(problems), 1)
+        self.assertIn("upstream.lock.json", problems[0])
+
+    def test_an_unfetched_skill_is_reported_with_the_fetch_step(self):
+        match = self._resolve()[0]
+        self.assertEqual(match.resolved, [])
+        self.assertEqual(match.missing, [])
+        self.assertEqual(match.unfetched, [".upstream/obs"])
+        brief = autowire.render_brief([match])
+        self.assertIn("NOT FETCHED: .upstream/obs", brief)
+        self.assertIn("fetch_upstream.py", brief)
+        self.assertEqual(match.to_dict()["unfetched_skills"], [".upstream/obs"])
+
+    def test_listing_marks_an_unfetched_skill(self):
+        listing = autowire.render_listing(
+            autowire.discover_skills(self.root), (self.domain,),
+            declared=autowire.load_upstream_names(self.root),
+        )
+        self.assertIn("[not fetched] .upstream/obs", listing)
+
+    def test_no_lock_file_means_nothing_is_declared(self):
+        (self.root / "config" / "upstream.lock.json").unlink()
+        self.assertEqual(autowire.load_upstream_names(self.root), frozenset())
+        self.assertTrue(autowire.check_matrix(self.root, matrix=(self.domain,)))
+
+    def test_the_matrix_drops_the_deleted_preferred_skills(self):
+        named = {p for d in autowire.DOMAIN_MATRIX for p in d.skills}
+        for gone in ("preferred/security-and-hardening", "preferred/benchmark-harness"):
+            self.assertNotIn(gone, named)
 
 
 class TestSourceDiscipline(unittest.TestCase):

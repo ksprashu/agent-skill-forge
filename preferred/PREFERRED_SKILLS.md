@@ -2,6 +2,8 @@
 
 This catalog lists curated, specialized engineering skills for on-demand (JIT) project bootstrapping. These skills are **project-scoped**—they are installed directly into your repository when needed rather than cluttering global agent memory.
 
+**Where they come from.** Every skill below except `agent-security-posture` is [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT, by Addy Osmani). None of them is vendored here. Each is pinned to a commit SHA in [`config/upstream.lock.json`](../config/upstream.lock.json) and fetched into `.upstream/<name>/` by `scripts/fetch_upstream.py`, which `install.sh` runs first. If the fetch has not run, the installers report those names as `[NOT FETCHED]` and skip them. `agent-security-posture` is the one local skill in `preferred/`.
+
 ---
 
 ## ⚡ How to Install Project-Scoped or Global Domain Skills
@@ -16,7 +18,12 @@ python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --clu
 python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --clusters d1,d2
 
 # Bootstrap specific comma-separated skills
-python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,security-and-hardening
+python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills frontend-ui-engineering,agent-security-posture
+```
+
+If you run `sync_skills.py` directly rather than through `install.sh`, fetch the pinned upstream skills first:
+```bash
+python3 ~/code/github/agent-skill-forge/scripts/fetch_upstream.py
 ```
 
 ### Method 2: Global Tool Installation
@@ -64,14 +71,10 @@ npx skills add addyosmani/agent-skills --skill <skill-name>
 ### 🛡️ Cluster D2: Security, Diagnostics & Reliability (`security`)
 *Bootstrap cluster:* `python3 scripts/sync_skills.py --project . --clusters d2`
 
-*   **`security-and-hardening`**
-    *   **What it does:** Builds threat models, enforces OWASP Top 10 mitigations, remediates CWE vulnerabilities, and secures input boundaries.
-    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills security-and-hardening`
-    *   **Remote:** `npx skills add addyosmani/agent-skills --skill security-and-hardening`
 *   **`agent-security-posture`**
     *   **What it does:** Scoped security posture for coding agents: authority rules for untrusted content, OSV/NVD dependency checks with a tested helper, secret handling, finding verdicts and severity, and a read-only infrastructure audit mode. Runs when code, dependencies or agent tools change, or on request.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills agent-security-posture`
-    *   **Remote:** (local preferred skill)
+    *   **Remote:** `npx skills add ksprashu/agent-skill-forge --skill agent-security-posture` (local preferred skill, not upstream)
 *   **`debugging-and-error-recovery`**
     *   **What it does:** Deconstructs stack traces, isolates minimal reproducible examples, and applies defensive error recovery.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills debugging-and-error-recovery`
@@ -101,14 +104,10 @@ npx skills add addyosmani/agent-skills --skill <skill-name>
 
 ---
 
-### 🧠 Cluster D4: AI & Evaluation (`ai`)
+### 🧠 Cluster D4: AI & Context (`ai`)
 *Bootstrap cluster:* `python3 scripts/sync_skills.py --project . --clusters d4`
 
 *   **`context-engineering`**
     *   **What it does:** Optimizes token context windows, designs compact system instructions, and manages memory eviction for LLM workflows.
     *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills context-engineering`
     *   **Remote:** `npx skills add addyosmani/agent-skills --skill context-engineering`
-*   **`benchmark-harness`**
-    *   **What it does:** Runs automated physical verification and Dual Gemini LLM-as-a-Judge scoring across 12 standardized software engineering use cases.
-    *   **Install:** `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills benchmark-harness`
-    *   **Remote:** `npx skills add agent-skill-forge --skill benchmark-harness`

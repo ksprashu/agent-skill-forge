@@ -14,19 +14,19 @@ A comprehensive, zero-slop operational framework for orchestrating **Agent Skill
 
 To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Agent Skill Forge** organizes its skills into functional clusters across two categories:
 
-### 📦 Core Clusters (18 Action Skills)
+### 📦 Core Clusters (Action Skills)
 Available globally or installable in focused sections:
 *   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
 *   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `image-gen`
 *   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`
 
-### 🛠️ Domain Clusters (13 Preferred Skills)
-Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally:
+### 🛠️ Domain Clusters (Preferred Skills)
+Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally. All but `agent-security-posture` come from `addyosmani/agent-skills`, pinned in `config/upstream.lock.json` and fetched into `.upstream/` at install time:
 *   **Cluster D1: Full-Stack & Quality (`fullstack`)**: `frontend-ui-engineering`, `performance-optimization`, `browser-testing-with-devtools`, `api-and-interface-design`
-*   **Cluster D2: Security, Diagnostics & Reliability (`security`)**: `security-and-hardening`, `agent-security-posture`, `debugging-and-error-recovery`, `observability-and-instrumentation`
+*   **Cluster D2: Security, Diagnostics & Reliability (`security`)**: `agent-security-posture`, `debugging-and-error-recovery`, `observability-and-instrumentation`
 *   **Cluster D3: DevOps & Workflows (`devops`)**: `ci-cd-and-automation`, `git-workflow-and-versioning`, `deprecation-and-migration`
-*   **Cluster D4: AI & Evaluation (`ai`)**: `context-engineering`, `benchmark-harness`
+*   **Cluster D4: AI & Context (`ai`)**: `context-engineering`
 
 ```
                                   ┌──────────────────────────────────────────────────────────┐
@@ -50,9 +50,9 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
                │ voice-register, /image-gen   │                                  │     deprecation-migration    │
                │                              │                                  │                              │
-               │ C4: Knowledge & Governance   │                                  │ D4: AI & Evaluation          │
-               │     /docs, /catalog,         │                                  │     context-engineering,     │
-               │     /google-oss, /align      │                                  │     benchmark-harness        │
+               │ C4: Knowledge & Governance   │                                  │ D4: AI & Context             │
+               │     /docs, /catalog,         │                                  │     context-engineering      │
+               │     /google-oss, /align      │                                  │                              │
                └──────────────────────────────┘                                  └──────────────────────────────┘
 ```
 
@@ -241,7 +241,6 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | **`frontend-ui-engineering`** | Web frontend, UI component, or stylesheet development. | Modern CSS (`:has()`, container queries, subgrid, View Transitions API), semantic HTML, accessible ARIA patterns, zero generic AI aesthetics. |
 | **`performance-optimization`** | Slow response times, high LCP/INP, memory leaks, or heavy bundle sizes. | Core Web Vitals (CWV) budgets, layout thrashing elimination, query plan optimization, memory leak tracing. |
 | **`api-and-interface-design`** | Designing REST, GraphQL, gRPC, or TypeScript interfaces. | Discriminated unions, Hyrum's Law mitigation, idempotency keys, backward-compatible evolutions. |
-| **`security-and-hardening`** | Authentication, authorization, public endpoints, or input processing. | Threat modeling, OWASP Top 10 mitigations, input sanitization, secret scrubbing, boundary validation. |
 | **`deprecation-and-migration`** | Refactoring legacy APIs, database migrations, or breaking upgrades. | Expand/Contract migration patterns, zero-downtime schema changes, automated codemods, dual-write bridges. |
 | **`browser-testing-with-devtools`** | E2E web verification, DOM inspection, visual regressions. | Headless Chrome DevTools testing, console exception trapping, visual snapshot validation, network stubbing. |
 | **`observability-and-instrumentation`** | Production services, microservices, background queues. | Structured JSON logs, OpenTelemetry distributed traces, Prometheus metrics (RED/USE methods), alert rules. |
@@ -249,7 +248,6 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | **`debugging-and-error-recovery`** | Production crashes, unhandled stack traces, complex regressions. | Systematic root cause analysis, stack trace isolation, minimal reproducible test cases, defensive boundaries. |
 | **`git-workflow-and-versioning`** | Branch management, PR preparation, release tagging. | Conventional commits (`feat:`, `fix:`), atomic PR slicing, interactive rebase, SemVer release automation. |
 | **`context-engineering`** | Complex multi-agent prompts, large token budgets, LLM reasoning pipelines. | Context window optimization, prompt compression, memory eviction, token economy budgeting. |
-| **`benchmark-harness`** | Evaluating AI agent workflows, latency regressions, or benchmark runs. | Automated execution of 12 SWE benchmark use cases, artifact verification, Dual Gemini LLM-as-a-Judge scoring. |
 
 ---
 
@@ -271,7 +269,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
 | Adding UI components, styles, or responsive layouts | Bootstrap JIT: `frontend-ui-engineering` |
 | Optimizing database queries, bundle size, or CWV (LCP/INP) | Bootstrap JIT: `performance-optimization` |
-| Building secure auth flows or remediating OWASP/CWE issues | Bootstrap JIT: `security-and-hardening` |
+| Building secure auth flows or remediating OWASP/CWE issues | Invoke `/review`; bootstrap JIT: `agent-security-posture` |
 | Setting up GitHub Actions, test presubmits, or release CI | Bootstrap JIT: `ci-cd-and-automation` |
 
 ---
@@ -282,5 +280,5 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 2. **Run `/unslop` Before `/review`**: Always de-slop generated comments and documentation before running reviews. Verbose comments distract from architectural review.
 3. **Keep `AGENTS.md` Under 200 Lines**: Use `/align` regularly. It condenses project learnings and evicts stale instructions to prevent instruction drift and context degradation.
 4. **Keep Your Voice Private**: Store your voice profile in `~/.gemini/personas/default/` or in `skills/voice-register/references/voice_and_tone.local.md` (gitignored). `voice-register` applies it to text sent under your name without exposing private data.
-5. **Always Bootstrap Project-Scoped**: Never symlink domain skills (like `frontend-ui-engineering` or `security-and-hardening`) into global directories. Use `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills <name>` to keep workspace dependencies isolated and reproducible.
+5. **Always Bootstrap Project-Scoped**: Never symlink domain skills (like `frontend-ui-engineering` or `agent-security-posture`) into global directories. Use `python3 ~/code/github/agent-skill-forge/scripts/sync_skills.py --project . --skills <name>` to keep workspace dependencies isolated and reproducible.
 
