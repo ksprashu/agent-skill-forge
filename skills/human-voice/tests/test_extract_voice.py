@@ -167,12 +167,37 @@ class TestOutputsFeedVoiceRegister(unittest.TestCase):
         self.assertFalse((out / "SKILL.md").exists())
         self.assertFalse((out / "golden_examples.md").exists())
 
+    def test_multiline_excerpts_stay_inside_markdown_blockquotes(self):
+        prompt = (
+            "First paragraph of a multi-line prompt that clears the fifteen word floor.\n\n"
+            "Second paragraph after a blank line that must still stay inside the blockquote."
+        )
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        EV.write_canonical_files([prompt], EV.analyze_linguistics([prompt]), tmp.name)
+        samples = (Path(tmp.name) / EV.SAMPLES_DRAFT).read_text(encoding="utf-8")
+        after_heading = samples.split("## Excerpt 1\n", 1)[1].rstrip("\n")
+        for line in after_heading.splitlines():
+            self.assertTrue(line.startswith(">"), f"unquoted line in excerpt: {line!r}")
+
+    def test_main_deduplicates_prompts_in_discovery_order(self):
+        p1 = " ".join(["alpha"] * 20)
+        p2 = " ".join(["bravo"] * 20)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        with mock.patch.object(EV, "extract_aider", return_value=[p1, p2, p1]), \
+             mock.patch.object(sys, "argv", ["extract_voice.py", "-t", "aider", "-o", tmp.name]):
+            EV.main()
+        samples = (Path(tmp.name) / EV.SAMPLES_DRAFT).read_text(encoding="utf-8")
+        self.assertLess(samples.index("alpha"), samples.index("bravo"))
+
 
 class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
     def test_source_names_no_employer_domain(self):
-        source = Path(EV.__file__).read_text(encoding="utf-8")
-        for domain in ("google" + ".com", "joonix"):
-            self.assertNotIn(domain, source)
+        for module in (EV, EV.log_sources):
+            source = Path(module.__file__).read_text(encoding="utf-8")
+            for domain in ("google" + ".com", "joonix"):
+                self.assertNotIn(domain, source, module.__name__)
 
     def test_generic_internal_hosts_are_redacted(self):
         """The documented examples in EXAMPLES.md, verbatim."""
@@ -184,8 +209,8 @@ class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
                 "and verify the webhook at https://subdomain.corp.internal/receiver/v1."))
 
     def test_a_supplied_internal_domain_is_redacted(self):
-        saved = list(EV.PII_PATTERNS)
-        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        saved = list(EV.EXTRA_PATTERNS)
+        self.addCleanup(lambda: EV.EXTRA_PATTERNS.__setitem__(slice(None), saved))
         EV.add_internal_domains(["example-corp.net"])
         out = EV.sanitize_text("deploy to https://build.example-corp.net/job/7 and ci.example-corp.net.")
         self.assertEqual("deploy to <INTERNAL_URL> and <COMPANY_DOMAIN>.", out)
@@ -200,15 +225,15 @@ class TestRedactionHasNoBuiltInEmployer(unittest.TestCase):
         self.assertNotIn("acme", out)
 
     def test_a_supplied_domain_under_an_internal_label_leaves_no_suffix(self):
-        saved = list(EV.PII_PATTERNS)
-        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        saved = list(EV.EXTRA_PATTERNS)
+        self.addCleanup(lambda: EV.EXTRA_PATTERNS.__setitem__(slice(None), saved))
         EV.add_internal_domains(["acme.example"])
         out = EV.sanitize_text("ssh git.internal.acme.example or https://x.corp.acme.example/a")
         self.assertEqual("ssh <COMPANY_DOMAIN> or <INTERNAL_URL>", out)
 
     def test_an_email_under_a_supplied_domain_is_redacted_whole(self):
-        saved = list(EV.PII_PATTERNS)
-        self.addCleanup(lambda: EV.PII_PATTERNS.__setitem__(slice(None), saved))
+        saved = list(EV.EXTRA_PATTERNS)
+        self.addCleanup(lambda: EV.EXTRA_PATTERNS.__setitem__(slice(None), saved))
         EV.add_internal_domains(["acme.example"])
         out = EV.sanitize_text("ask alice.smith@acme.example or oncall@corp.acme.example")
         self.assertEqual("ask <EMAIL> or <EMAIL>", out)
@@ -264,6 +289,179 @@ class TestMeasuredHabits(unittest.TestCase):
         self.assertEqual(stats["spelling"], "British/Commonwealth")
         self.assertIn("British/Commonwealth (seen: ", self._draft(prompts))
         self.assertEqual(EV.analyze_linguistics(prompts[:3])["spelling"], "US-English")
+
+
+class TestExamplesAreVerbatim(unittest.TestCase):
+    """The scrubbing examples in EXAMPLES.md, input and output verbatim."""
+
+    def test_example_a_email_host_and_name(self):
+        self.assertEqual(
+            "Set up standard OAuth restrictions so that only <EMAIL> and anyone from "
+            "<COMPANY_DOMAIN> can authenticate. Ask <USER_NAME> if we need other domains.",
+            EV.sanitize_text(
+                "Set up standard OAuth restrictions so that only developer@example.com and "
+                "anyone from corp.internal can authenticate. Ask Alex if we need other domains.",
+                extra_names=[("Alex", "<USER_NAME>")]))
+
+    def test_example_c_home_path_and_token(self):
+        raw = ("I have cloned the repo in /Users/developer/code/github/project. "  # host-path-ok
+               "My GitHub Token is ghp_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8. "
+               "Can you push the feature branch?")
+        self.assertEqual(
+            "I have cloned the repo in ~/code/github/project. My GitHub Token is <TOKEN>. "
+            "Can you push the feature branch?",
+            EV.sanitize_text(raw))
+
+
+class TestSharedRedactionTable(unittest.TestCase):
+    """human-voice redacts with the same table cognitive-profiler does."""
+
+    def test_patterns_human_voice_never_had_are_now_caught(self):
+        for secret in ("xoxb-1234567890-abcdef", "Bearer abcdef123456",
+                       "password = hunter2correcthorse",
+                       "sk-proj-abcdefghijklmnopqrstuvwx"):
+            with self.subTest(secret=secret):
+                self.assertNotIn(secret, EV.sanitize_text(f"use {secret} here"))
+
+    def test_patterns_cognitive_profiler_never_had_are_still_caught(self):
+        for secret, placeholder in (("10.1.2.3", "<IP_ADDRESS>"),
+                                    ("fe80::1ff:fe23:4567:890a", "<IP_ADDRESS>"),
+                                    ("AKIAABCDEFGHIJKLMNOP", "<API_KEY>"),
+                                    ("glpat-abcdefghijklmnopqrst", "<TOKEN>"),
+                                    ("github_pat_" + "a" * 30, "<TOKEN>")):
+            with self.subTest(secret=secret):
+                out = EV.sanitize_text(f"use {secret} here")
+                self.assertNotIn(secret, out)
+                self.assertIn(placeholder, out)
+
+    def test_code_with_double_colons_is_not_an_ip_address(self):
+        self.assertEqual("call std::add and Vec::new",
+                         EV.sanitize_text("call std::add and Vec::new"))
+
+    def test_the_login_name_is_scrubbed(self):
+        with mock.patch.object(EV.log_sources, "login_name", return_value="jdoe"):
+            self.assertEqual("ask <USER_ID> about it", EV.sanitize_text("ask jdoe about it"))
+
+    def test_a_login_name_that_is_a_placeholder_word_does_not_mangle_it(self):
+        with mock.patch.object(EV.log_sources, "login_name", return_value="email"):
+            self.assertEqual("mail <EMAIL>", EV.sanitize_text("mail a@b.com"))
+
+
+def _jsonl(path, records):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+
+
+class ToolFixture:
+    """Point one tool at a temporary directory for the duration of a test."""
+
+    def __init__(self, tool):
+        self.tool = tool
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def __enter__(self):
+        self._saved = dict(EV.PATHS)
+        EV.PATHS[self.tool] = [self.root]
+        return self.root
+
+    def __exit__(self, *exc):
+        EV.PATHS.clear()
+        EV.PATHS.update(self._saved)
+        self.tmp.cleanup()
+        return False
+
+
+class TestClaudeCodeSessions(unittest.TestCase):
+    """Claude Code writes ~/.claude/projects/<slug>/<session>.jsonl with the
+    turn under `message`. The old extractor globbed chat_*.jsonl and read a
+    top-level `role`, so it found nothing on a real machine."""
+
+    def _extract(self, records):
+        with ToolFixture("claude-code") as root:
+            _jsonl(root / "-home-dev-project" / "0b5c3c1e-session.jsonl", records)
+            return EV.extract_claude_code()
+
+    def test_string_content_is_read(self):
+        self.assertEqual(["fix the failing test"], self._extract([
+            {"type": "user", "timestamp": "2026-09-20T10:00:00Z",
+             "message": {"role": "user", "content": "fix the failing test"}}]))
+
+    def test_text_parts_are_read(self):
+        self.assertEqual(["first part\nsecond part"], self._extract([
+            {"type": "user", "message": {"role": "user", "content": [
+                {"type": "text", "text": "first part"},
+                {"type": "text", "text": "second part"}]}}]))
+
+    def test_tool_result_records_are_not_prompts(self):
+        self.assertEqual([], self._extract([
+            {"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": "42 passed"}]}}]))
+
+    def test_assistant_meta_sidechain_and_commands_are_not_prompts(self):
+        self.assertEqual([], self._extract([
+            {"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "text", "text": "Here is the fix."}]}},
+            {"type": "user", "isMeta": True, "message": {"role": "user", "content": "meta"}},
+            {"type": "user", "isSidechain": True,
+             "message": {"role": "user", "content": "subagent prompt"}},
+            {"type": "user", "isCompactSummary": True,
+             "message": {"role": "user", "content": "This session is being continued"}},
+            {"type": "user", "message": {"role": "user",
+                                         "content": "<command-name>/clear</command-name>"}}]))
+
+    def test_prompts_are_redacted(self):
+        out = self._extract([{"type": "user", "message": {
+            "role": "user", "content": "mail ops@example.com from /Users/dev/x"}}])  # host-path-ok
+        self.assertEqual(["mail <EMAIL> from ~/x"], out)
+
+
+class TestOtherTools(unittest.TestCase):
+
+    def test_cline_and_roo_code_are_read_separately(self):
+        with ToolFixture("cline") as cline_root, ToolFixture("roo-code") as roo_root:
+            for root, word in ((cline_root, "cline"), (roo_root, "roo")):
+                (root / "1700000000000").mkdir()
+                (root / "1700000000000" / "ui_messages.json").write_text(json.dumps([
+                    {"type": "say", "say": "text", "text": "assistant reply"},
+                    {"type": "say", "say": "user_feedback", "text": f"typed into {word}"},
+                ]), encoding="utf-8")
+            self.assertEqual(["typed into cline"],
+                             EV.extract_cline_and_roo_code(tools=("cline",)))
+            self.assertEqual(2, len(EV.extract_cline_and_roo_code()))
+
+    def test_aider_chat_history_reads_user_lines_not_tool_output(self):
+        """aider writes your input as `#### ` lines and its own output as `> `
+        blockquotes; the old extractor read the blockquotes."""
+        with ToolFixture("aider") as root:
+            chat = root / ".aider.chat.history.md"
+            chat.write_text(
+                "# aider chat started at 2026-09-20 10:00:00\n\n"
+                "> Aider v0.60.0\n> Added app.py to the chat.\n\n"
+                "#### add a retry to the upload call\n\n"
+                "Here is the change.\n", encoding="utf-8")
+            EV.PATHS["aider"] = [chat]
+            self.assertEqual(["add a retry to the upload call"], EV.extract_aider())
+
+    def test_aider_input_history_strips_the_plus_prefix(self):
+        with ToolFixture("aider") as root:
+            history = root / ".aider.input.history"
+            history.write_text("\n# 2026-09-20 10:00:01.123\n+rename the helper\n",
+                               encoding="utf-8")
+            EV.PATHS["aider"] = [history]
+            self.assertEqual(["rename the helper"], EV.extract_aider())
+
+    def test_gemini_cli_session_json_is_read(self):
+        with ToolFixture("gemini-cli") as root:
+            chats = root / "abc123" / "chats"
+            chats.mkdir(parents=True)
+            (chats / "session-1.json").write_text(json.dumps({"messages": [
+                {"type": "user", "content": "explain the cache"},
+                {"type": "gemini", "content": "The cache..."},
+            ]}), encoding="utf-8")
+            _jsonl(chats / "older.jsonl", [{"role": "user", "content": "older format"}])
+            self.assertEqual(sorted(["explain the cache", "older format"]),
+                             sorted(EV.extract_gemini_cli()))
 
 
 if __name__ == "__main__":

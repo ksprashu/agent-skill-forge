@@ -131,6 +131,9 @@ is only one source of truth and the drift is a test failure.
 
 Chat logs contain credentials, client names, and home directory paths.
 
+- One redaction table, `SENSITIVE_PATTERNS` in `scripts/log_sources.py`,
+  serves the harvester, the profile validator, and `human-voice`. Separate
+  tables drifted before.
 - Redaction happens **at capture**, in `add_user_turn`, not at write time —
   so an exception between the two cannot leak anything.
 - `harvest.py --check-redaction` re-scans a written file. Belt and braces: the
@@ -173,7 +176,11 @@ an output filename with an existing target, share the template too;
 `test_harnesses_sharing_a_filename_agree` enforces that two targets cannot
 disagree about one file.
 
-**Adding a log source:** add candidate paths to `source_roots()` and a parser
-method. List *every* directory layout seen in the wild — Antigravity has moved
+**Adding a log source:** add candidate paths to `tool_paths()` and
+`source_roots()` in `scripts/log_sources.py`, a reader there, and a `parse_*`
+method in `harvest.py` that hands the reader's sessions to `_consume`.
+`human-voice` ships an identical copy of `log_sources.py`; copy your edit over
+it, or `tests/test_log_sources_parity.py` at the repo root fails. List *every*
+directory layout seen in the wild — Antigravity has moved
 its transcript directory twice, and missing one yields an empty harvest that
 looks indistinguishable from "this user has no opinions".

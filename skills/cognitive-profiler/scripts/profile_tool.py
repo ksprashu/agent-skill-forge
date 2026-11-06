@@ -48,6 +48,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import log_sources  # noqa: E402  (local module, path set above)
+
 if sys.platform == "win32":  # pragma: no cover - platform guard
     for _stream in (sys.stdout, sys.stderr):
         if hasattr(_stream, "reconfigure"):
@@ -136,18 +140,18 @@ REQUIRED_TOP_LEVEL = ("schema_version", "subject", "dimensions", "rules",
 QUOTE_ID_RE = re.compile(r"^q\d+$")
 
 # ---------------------------------------------------------------------------
-# Sensitive data — one table, two consumers
+# Sensitive data — one table, several consumers
 #
 # harvest.py redacts these out of evidence; this module rejects a profile that
 # still contains one. Those two lists used to be maintained separately and
 # drifted: harvest caught `ghp_`/`gho_`/`sk-proj-`/Slack/JWT/bearer tokens and
 # assignment-style secrets, while the profile validator knew about five
 # patterns and waved the rest through. A secret that survives harvesting has to
-# be caught here, so both sides now read the same table.
+# be caught here, so both sides read the same table.
 #
-# Columns: regex, human label (for the validator's error), replacement (for
-# the redactor). Order matters — credentials before home paths, because a key
-# embedded in a path must be masked as a key.
+# The table lives in log_sources.py, which human-voice ships an identical copy
+# of, so the two skills that read chat logs also scrub the same things. See the
+# comment above log_sources.SENSITIVE_PATTERNS for the columns and ordering.
 #
 # The assignment-style pattern is deliberately broad. It will fire on a
 # directive phrased "password: never log it", which is a false positive. Being
@@ -155,28 +159,8 @@ QUOTE_ID_RE = re.compile(r"^q\d+$")
 # trade we want; reword the directive.
 # ---------------------------------------------------------------------------
 
-SENSITIVE_PATTERNS = [
-    (re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
-     "email address", "<email>"),
-    (re.compile(r"\bAIzaSy[A-Za-z0-9_-]{33}\b"),
-     "Google API key", "<api-key>"),
-    (re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b"),
-     "OpenAI-style API key", "<api-key>"),
-    (re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}\b"),
-     "GitHub token", "<token>"),
-    (re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b"),
-     "Slack token", "<token>"),
-    (re.compile(r"\bey[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
-     "JSON Web Token", "<jwt>"),
-    (re.compile(r"(?i)\b(?:bearer|authorization:)\s+\S+"),
-     "authorization header", "<auth>"),
-    (re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|token)\s*[:=]\s*\S+"),
-     "assigned secret", "<secret>"),
-    (re.compile(r"C:\\Users\\[A-Za-z0-9._-]+", re.IGNORECASE),
-     "home directory path", "~"),
-    (re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+"),
-     "home directory path", "~"),
-]
+#: (regex, label, replacement) rows, shared with harvest.py and human-voice.
+SENSITIVE_PATTERNS = log_sources.SENSITIVE_PATTERNS
 
 # A profile is compiled into files that get committed to repositories and
 # pasted into system prompts. Anything personally identifying that leaks in
