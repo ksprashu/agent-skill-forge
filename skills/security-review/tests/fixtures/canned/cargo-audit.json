@@ -1,0 +1,56 @@
+{
+ "database": {
+  "advisory-count": 900,
+  "last-commit": "abc",
+  "last-updated": "2026-10-01T00:00:00Z"
+ },
+ "lockfile": {
+  "dependency-count": 42
+ },
+ "settings": {},
+ "vulnerabilities": {
+  "found": true,
+  "count": 1,
+  "list": [
+   {
+    "advisory": {
+     "id": "RUSTSEC-2023-0071",
+     "package": "rsa",
+     "title": "Marvin Attack: potential key recovery through timing sidechannels",
+     "description": "...",
+     "date": "2023-11-22",
+     "aliases": [
+      "CVE-2023-49092",
+      "GHSA-c38w-74pg-36hr"
+     ],
+     "related": [],
+     "collection": "crates",
+     "categories": [
+      "crypto-failure"
+     ],
+     "keywords": [],
+     "cvss": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N",
+     "informational": null,
+     "references": [],
+     "source": null,
+     "url": "https://people.redhat.com/~hkario/marvin/",
+     "withdrawn": null,
+     "license": "CC0-1.0"
+    },
+    "versions": {
+     "patched": [],
+     "unaffected": []
+    },
+    "affected": null,
+    "package": {
+     "name": "rsa",
+     "version": "0.9.6",
+     "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+   }
+  ]
+ },
+ "warnings": {
+  "unmaintained": []
+ }
+}

@@ -1,0 +1,323 @@
+{
+ "version": "1.182.0",
+ "results": [
+  {
+   "check_id": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+   "path": ".github/workflows/ci.yml",
+   "start": {
+    "line": 6,
+    "col": 9,
+    "offset": 85
+   },
+   "end": {
+    "line": 6,
+    "col": 34,
+    "offset": 110
+   },
+   "extra": {
+    "message": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks \u2014 as seen in the trivy-action and kics-github-action compromises. Pin the reference to a full 40-character commit SHA instead, e.g. `uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608`.",
+    "metadata": {
+     "cwe": [
+      "CWE-1357: Reliance on Insufficiently Trustworthy Component",
+      "CWE-353: Missing Support for Integrity Check"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures",
+      "A08:2025 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH"
+    },
+    "severity": "WARNING",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "yaml.github-actions.security.pull-request-target-code-checkout.pull-request-target-code-checkout",
+   "path": ".github/workflows/ci.yml",
+   "start": {
+    "line": 6,
+    "col": 9,
+    "offset": 85
+   },
+   "end": {
+    "line": 8,
+    "col": 57,
+    "offset": 181
+   },
+   "extra": {
+    "message": "This GitHub Actions workflow file uses `pull_request_target` and checks out code from the incoming pull request. When using `pull_request_target`, the Action runs in the context of the target repository, which includes access to all repository secrets. Normally, this is safe because the Action only runs code from the target repository, not the incoming PR. However, by checking out the incoming PR code, you're now using the incoming code for the rest of the action. You may be inadvertently executing arbitrary code from the incoming PR with access to repository secrets, which would let an attacker steal repository secrets. This normally happens by running build scripts (e.g., `npm build` and `make`) or dependency installation scripts (e.g., `python setup.py install`). Audit your workflow file to make sure no code from the incoming PR is executed. Please see https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ for additional mitigations.",
+    "metadata": {
+     "cwe": [
+      "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures",
+      "A08:2025 - Software and Data Integrity Failures"
+     ],
+     "confidence": "HIGH"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "yaml.github-actions.security.run-shell-injection.run-shell-injection",
+   "path": ".github/workflows/ci.yml",
+   "start": {
+    "line": 9,
+    "col": 9,
+    "offset": 190
+   },
+   "end": {
+    "line": 9,
+    "col": 59,
+    "offset": 240
+   },
+   "extra": {
+    "message": "Using variable interpolation `${{...}}` with `github` context data in a `run:` step could allow an attacker to inject their own code into the runner. This would allow them to steal secrets and code. `github` context data can have arbitrary user input and should be treated as untrusted. Instead, use an intermediate environment variable with `env:` to store the data and use the environment variable in the `run:` script. Be sure to use double-quotes the environment variable, like this: \"$ENVVAR\".",
+    "metadata": {
+     "cwe": [
+      "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "confidence": "HIGH"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "dockerfile.security.last-user-is-root.last-user-is-root",
+   "path": "Dockerfile",
+   "start": {
+    "line": 2,
+    "col": 1,
+    "offset": 16
+   },
+   "end": {
+    "line": 2,
+    "col": 10,
+    "offset": 25
+   },
+   "extra": {
+    "message": "The last user in the container is 'root'. This is a security hazard because if an attacker gains control of the container they will have root access. Switch back to another user after running commands as 'root'.",
+    "metadata": {
+     "cwe": [
+      "CWE-269: Improper Privilege Management"
+     ],
+     "owasp": [
+      "A04:2021 - Insecure Design",
+      "A06:2025 - Insecure Design"
+     ],
+     "confidence": "MEDIUM"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute",
+   "path": "app.py",
+   "start": {
+    "line": 9,
+    "col": 5,
+    "offset": 109
+   },
+   "end": {
+    "line": 12,
+    "col": 62,
+    "offset": 266
+   },
+   "extra": {
+    "message": "User-controlled data from a request is passed to 'execute()'. This could lead to a SQL injection and therefore protected information could be leaked. Instead, use django's QuerySets, which are built with query parameterization and therefore not vulnerable to sql injection. For example, you could use `Entry.objects.filter(date=2006)`.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "confidence": "MEDIUM"
+    },
+    "severity": "WARNING",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+   "path": "app.py",
+   "start": {
+    "line": 12,
+    "col": 5,
+    "offset": 209
+   },
+   "end": {
+    "line": 12,
+    "col": 62,
+    "offset": 266
+   },
+   "extra": {
+    "message": "Detected possible formatted SQL query. Use parameterized queries instead.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "confidence": "LOW"
+    },
+    "severity": "WARNING",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query",
+   "path": "app.py",
+   "start": {
+    "line": 12,
+    "col": 5,
+    "offset": 209
+   },
+   "end": {
+    "line": 12,
+    "col": 62,
+    "offset": 266
+   },
+   "extra": {
+    "message": "Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy provides TextualSQL to easily used prepared statement with named parameters. For complex SQL composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy ORM will be a better option.",
+    "metadata": {
+     "cwe": [
+      "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "confidence": "LOW"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "python.django.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "app.py",
+   "start": {
+    "line": 12,
+    "col": 17,
+    "offset": 221
+   },
+   "end": {
+    "line": 12,
+    "col": 61,
+    "offset": 265
+   },
+   "extra": {
+    "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using the Django object-relational mappers (ORM) instead of raw SQL queries.",
+    "metadata": {
+     "cwe": [
+      "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+     ],
+     "owasp": [
+      "A08:2021 - Software and Data Integrity Failures",
+      "A08:2025 - Software or Data Integrity Failures"
+     ],
+     "confidence": "LOW"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+   "path": "app.py",
+   "start": {
+    "line": 12,
+    "col": 17,
+    "offset": 221
+   },
+   "end": {
+    "line": 12,
+    "col": 61,
+    "offset": 265
+   },
+   "extra": {
+    "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.",
+    "metadata": {
+     "cwe": [
+      "CWE-704: Incorrect Type Conversion or Cast"
+     ],
+     "owasp": [
+      "A01:2017 - Injection",
+      "A03:2021 - Injection",
+      "A05:2025 - Injection"
+     ],
+     "confidence": "MEDIUM"
+    },
+    "severity": "ERROR",
+    "lines": "requires login",
+    "validation_state": "NO_VALIDATOR",
+    "engine_kind": "OSS"
+   }
+  },
+  {
+   "check_id": "generic.secrets.security.detected-github-token.detected-github-token",
+   "path": "config.py",
+   "start": {
+    "line": 1,
+    "col": 17,
+    "offset": 16
+   },
+   "end": {
+    "line": 1,
+    "col": 57,
+    "offset": 56
+   },
+   "extra": {
+    "message": "GitHub Token detected: __SECRET__",
+    "severity": "ERROR",
+    "lines": "GITHUB_TOKEN = \"__SECRET__\"",
+    "metadata": {
+     "cwe": [
+      "CWE-798: Use of Hard-coded Credentials"
+     ]
+    }
+   }
+  }
+ ],
+ "errors": [],
+ "paths": {
+  "scanned": [
+   "app.py",
+   "config.py",
+   "Dockerfile",
+   ".github/workflows/ci.yml"
+  ]
+ }
+}

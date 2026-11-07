@@ -1,0 +1,98 @@
+{
+  "config": {
+    "protocol_version": "v1.0.0",
+    "scanner_name": "govulncheck",
+    "scanner_version": "v1.1.4",
+    "db": "https://vuln.go.dev",
+    "go_version": "go1.23.2",
+    "scan_level": "symbol"
+  }
+}
+{
+  "progress": {
+    "message": "Scanning your code and 41 packages across 3 dependent modules for known vulnerabilities..."
+  }
+}
+{
+  "osv": {
+    "schema_version": "1.3.1",
+    "id": "GO-2024-2687",
+    "aliases": [
+      "CVE-2023-45288",
+      "GHSA-4v7x-pqxf-cx7m"
+    ],
+    "summary": "HTTP/2 CONTINUATION flood in net/http",
+    "affected": []
+  }
+}
+{
+  "osv": {
+    "schema_version": "1.3.1",
+    "id": "GO-2023-2153",
+    "aliases": [
+      "CVE-2023-39325",
+      "GHSA-4374-p667-p6c8"
+    ],
+    "summary": "Denial of service from HTTP/2 Rapid Reset in golang.org/x/net",
+    "affected": []
+  }
+}
+{
+  "finding": {
+    "osv": "GO-2024-2687",
+    "fixed_version": "v0.23.0",
+    "trace": [
+      {
+        "module": "golang.org/x/net",
+        "version": "v0.17.0",
+        "package": "golang.org/x/net/http2",
+        "function": "Server.ServeConn",
+        "receiver": "*Server",
+        "position": {
+          "filename": "server.go",
+          "line": 120
+        }
+      },
+      {
+        "module": "example.com/app",
+        "package": "example.com/app",
+        "function": "main",
+        "position": {
+          "filename": "/REPO/main.go",
+          "line": 14
+        }
+      }
+    ]
+  }
+}
+{
+  "finding": {
+    "osv": "GO-2024-2687",
+    "fixed_version": "v0.23.0",
+    "trace": [
+      {
+        "module": "golang.org/x/net",
+        "version": "v0.17.0",
+        "package": "golang.org/x/net/http2",
+        "function": "Server.ServeConn",
+        "receiver": "*Server",
+        "position": {
+          "filename": "server.go",
+          "line": 120
+        }
+      }
+    ]
+  }
+}
+{
+  "finding": {
+    "osv": "GO-2023-2153",
+    "fixed_version": "v0.17.0",
+    "trace": [
+      {
+        "module": "golang.org/x/net",
+        "version": "v0.16.0"
+      }
+    ]
+  }
+}
