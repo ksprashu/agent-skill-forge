@@ -416,7 +416,7 @@ which inverts the point of review.
       "Role": "5-Axis Code Reviewer",
       "TypeName": "self",
       "Model": "inherit",
-      "Prompt": "Grounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nAudit the diff across Correctness, Security, Performance, Architecture, and Readability/Unslop. The five axes and their rubrics live in skills/review/SKILL.md and skills/unslop/SKILL.md — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
+      "Prompt": "Grounding: read the relevant subtrees of .gemini/knowledge/ first (see skills/catalog/SKILL.md).\nAudit the diff across the eight axes plus style defined in skills/review/SKILL.md, and strip slop per skills/unslop/SKILL.md. The axes and their rubrics live in those files — read them; do not reinvent them here. Output .agents/m1_code_rev/review.md, then attest:\npython3.12 skills/work/scripts/gate_executor.py attest --task task_m1_code_rev --gate review_pass --verdict PASS --reviewer-role code-reviewer --worker-role implementer --evidence .agents/m1_code_rev/review.md --summary '<findings per axis>'"
     },
     {
       "Role": "Adversarial Challenger",

@@ -40,10 +40,10 @@ if the two disagree, so a row cannot rot here without breaking the build.
 |------------------|-----------------------------------|--------------|------------------------|
 | **Database, Schema & API Contracts** | `.upstream/api-and-interface-design` | Explorer, Worker | Relational normalization, migration immutability, zero dummy seeds. |
 | **Observability & Logging** | `.upstream/observability-and-instrumentation` | Explorer, Worker | Structured JSON logs, sensitive data scrubbing, /api/health. |
-| **Security & RBAC** | `preferred/agent-security-posture` & `skills/review` | Challenger, Auditor | OWASP Top 10, constant-time token comparison, brute-force mitigation. |
+| **Security & RBAC** | `skills/security-review` & `preferred/agent-security-posture` | Challenger, Auditor | Scanner leads triaged by the six-element test; OWASP Top 10 2025, ASVS 5.0, CWE Top 25, agent and harness risks, constant-time token comparison, brute-force mitigation. |
 | **CI/CD & Workflows** | `.upstream/ci-cd-and-automation` | Worker, Reviewer | Deterministic caching, GitHub Actions, zero-secret hygiene. |
 | **Testing & TDD** | `skills/test` & `skills/verify` | Challenger, Worker | Red-Green-Refactor, static verifier scripts, blinded rubrics. |
-| **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 5-axis review, boilerplate stripping, zero AI fluff. |
+| **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 8-axis review plus style, boilerplate stripping, zero AI fluff. |
 | **Performance & Benchmarking** | `.upstream/performance-optimization` | Challenger, Worker | Latency budgets, p99 regression gates, memory leak detection. |
 
 Run `autowire.py --list` to print the matrix together with each skill's

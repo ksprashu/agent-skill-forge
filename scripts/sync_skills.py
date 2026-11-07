@@ -67,6 +67,8 @@ CORE_SKILLS = {
     'test': os.path.join(CORE_SKILLS_DIR, 'test'),
     'verify': os.path.join(CORE_SKILLS_DIR, 'verify'),
     'review': os.path.join(CORE_SKILLS_DIR, 'review'),
+    'security-review': os.path.join(CORE_SKILLS_DIR, 'security-review'),
+    'pr-review-loop': os.path.join(CORE_SKILLS_DIR, 'pr-review-loop'),
     'unslop': os.path.join(CORE_SKILLS_DIR, 'unslop'),
     'docs': os.path.join(CORE_SKILLS_DIR, 'docs'),
     'catalog': os.path.join(CORE_SKILLS_DIR, 'catalog'),
@@ -129,6 +131,8 @@ ALIASES = {
     'teamwork': 'work',
     'team': 'work',
     'swarm': 'work',
+    'secreview': 'security-review',
+    'review-loop': 'pr-review-loop',
 }
 
 ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
@@ -285,8 +289,8 @@ CORE_CLUSTERS = {
     'c2': {
         'id': 'test-review',
         'name': 'Quality & Verification',
-        'description': 'TDD prove-it reproduction, static verification rubrics, code reviews, and slop stripping.',
-        'skills': ['test', 'verify', 'review', 'unslop'],
+        'description': 'TDD prove-it reproduction, static verification rubrics, grounded code and security reviews, the PR review loop, and slop stripping.',
+        'skills': ['test', 'verify', 'review', 'security-review', 'pr-review-loop', 'unslop'],
     },
     'c3': {
         'id': 'content-creative',
