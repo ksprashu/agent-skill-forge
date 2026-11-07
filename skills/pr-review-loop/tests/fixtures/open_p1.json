@@ -1,0 +1,148 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "number": 7,
+        "url": "https://github.com/acme/widgets/pull/7",
+        "state": "OPEN",
+        "headRefName": "feat/cache",
+        "baseRefName": "main",
+        "labels": {
+          "nodes": []
+        },
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "id": "PRRT_o1",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/cache.py",
+              "line": 40,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-001 severity=P1 -->\n**[P1] Cache key ignores tenant id**",
+                    "createdAt": "2026-10-01T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_o2",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/auth.py",
+              "line": 88,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=S-001 severity=P1 -->\n**[P1] Token compared with == (timing leak)**",
+                    "createdAt": "2026-10-01T10:00:01Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "dev-author"
+                    },
+                    "body": "/ai-review wontfix: this compares a public request id, not a secret; see auth.py:80",
+                    "createdAt": "2026-10-01T11:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_o3",
+              "isResolved": true,
+              "isOutdated": false,
+              "path": "src/api.py",
+              "line": 12,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-003 severity=P2 -->\n**[P2] Retry loop has no backoff**",
+                    "createdAt": "2026-10-01T10:00:02Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-01T10:00:03Z",
+              "body": "pr-guardian review"
+            }
+          ]
+        },
+        "comments": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "oid": "a1b2c3d4e5f6",
+                "statusCheckRollup": {
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "checkSuite": {
+                          "workflowRun": {
+                            "workflow": {
+                              "name": "ci"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "__typename": "StatusContext",
+                        "context": "pr-guardian/verdict",
+                        "state": "FAILURE"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
