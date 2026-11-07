@@ -1,0 +1,211 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "number": 7,
+        "url": "https://github.com/acme/widgets/pull/7",
+        "state": "OPEN",
+        "headRefName": "feat/cache",
+        "baseRefName": "main",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-human"
+            }
+          ]
+        },
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "id": "PRRT_e1",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/cache.py",
+              "line": 40,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-001 severity=P2 -->\n**[P2] Use an LRU instead of a dict**",
+                    "createdAt": "2026-10-01T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "dev-author"
+                    },
+                    "body": "/ai-review wontfix: entries are bounded at 16 by the enum in keys.py:3",
+                    "createdAt": "2026-10-01T11:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:status id=R-001 status=still_open -->\nStill unbounded.",
+                    "createdAt": "2026-10-02T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "dev-author"
+                    },
+                    "body": "/ai-review wontfix: keys.py:3 is an Enum with 16 members; the dict cannot grow past it",
+                    "createdAt": "2026-10-02T11:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:status id=R-001 status=reopened -->\nReopening; still unbounded.",
+                    "createdAt": "2026-10-03T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:status id=R-001 status=reopened -->\nReopening again.",
+                    "createdAt": "2026-10-04T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_e2",
+              "isResolved": true,
+              "isOutdated": false,
+              "path": "src/api.py",
+              "line": 12,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-002 severity=P3 -->\n**[P3] Log message lacks request id**",
+                    "createdAt": "2026-10-01T10:00:01Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "dev-author"
+                    },
+                    "body": "/ai-review wontfix: request id is injected by the logging filter in log.py:20",
+                    "createdAt": "2026-10-01T11:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  },
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:status id=R-002 status=accepted_pushback -->\nAccepted.",
+                    "createdAt": "2026-10-02T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-01T10:00:02Z",
+              "body": "pr-guardian review"
+            },
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-02T10:00:02Z",
+              "body": "pr-guardian review"
+            },
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-03T10:00:02Z",
+              "body": "pr-guardian review"
+            },
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-04T10:00:02Z",
+              "body": "pr-guardian review"
+            }
+          ]
+        },
+        "comments": {
+          "nodes": [
+            {
+              "author": {
+                "login": "dev-author"
+              },
+              "body": "/ai-review escalate: R-001 re-raised 3 rounds with no new argument",
+              "createdAt": "2026-10-04T11:00:00Z",
+              "url": "https://github.com/acme/widgets/pull/7#issuecomment-10"
+            }
+          ]
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "oid": "a1b2c3d4e5f6",
+                "statusCheckRollup": {
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "checkSuite": {
+                          "workflowRun": {
+                            "workflow": {
+                              "name": "ci"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "__typename": "StatusContext",
+                        "context": "pr-guardian/verdict",
+                        "state": "FAILURE"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

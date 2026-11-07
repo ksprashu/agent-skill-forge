@@ -1,0 +1,162 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "number": 7,
+        "url": "https://github.com/acme/widgets/pull/7",
+        "state": "OPEN",
+        "headRefName": "feat/cache",
+        "baseRefName": "main",
+        "labels": {
+          "nodes": []
+        },
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "id": "PRRT_m1",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/cache.py",
+              "line": 40,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=bad-id severity=P9 -->\nSomething",
+                    "createdAt": "2026-10-01T10:00:00Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_m2",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/api.py",
+              "line": 3,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-002 severity=P2\nunterminated marker",
+                    "createdAt": "2026-10-01T10:00:01Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_m3",
+              "isResolved": true,
+              "isOutdated": false,
+              "path": "src/db.py",
+              "line": 9,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "Intro line first\n<!-- pr-guardian:finding id=R-003 severity=P2 -->",
+                    "createdAt": "2026-10-01T10:00:02Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "PRRT_m4",
+              "isResolved": false,
+              "isOutdated": false,
+              "path": "src/ok.py",
+              "line": 1,
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false
+                },
+                "nodes": [
+                  {
+                    "author": {
+                      "login": "github-actions"
+                    },
+                    "body": "<!-- pr-guardian:finding id=R-004 severity=P0 -->\n**[P0] SQL built by string concatenation**",
+                    "createdAt": "2026-10-01T10:00:03Z",
+                    "url": "https://github.com/acme/widgets/pull/7#discussion_r1"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-01T10:00:04Z",
+              "body": "pr-guardian review"
+            }
+          ]
+        },
+        "comments": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "oid": "a1b2c3d4e5f6",
+                "statusCheckRollup": {
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "checkSuite": {
+                          "workflowRun": {
+                            "workflow": {
+                              "name": "ci"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "__typename": "StatusContext",
+                        "context": "pr-guardian/verdict",
+                        "state": "FAILURE"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
