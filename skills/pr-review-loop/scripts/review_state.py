@@ -33,9 +33,10 @@ Engineer commands it reads: `/ai-review wontfix: <reason>` (thread reply) and
 `/ai-review escalate: <why>` (PR comment).
 
 Exit codes:
-  0   no open threads (P0-P3, unparsed-marker, or human) and the verdict check
-      concluded SUCCESS
-  1   open work remains, or the verdict is missing, pending, or not SUCCESS
+  0   no open threads (any severity, unparsed-marker, or human), nothing in
+      not_checked, and the verdict check completed with SUCCESS
+  1   open work remains, something was not checked, or the verdict is
+      missing, pending, or not SUCCESS
   2   gh unavailable, the API call failed, or the response is not usable
   64  usage error
 
@@ -242,11 +243,9 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         raise GhError("response has no data.repository.pullRequest")
 
     threads_raw = _nodes(pr.get("reviewThreads"))
+    # Only configured logins count as pr-guardian. A marker in a comment body
+    # proves nothing about who wrote it, so it never grants bot trust.
     bots = set(bot_logins)
-    for t in threads_raw:
-        comments = _nodes(t.get("comments"))
-        if comments and parse_finding_marker(comments[0].get("body", ""))[0] == "finding":
-            bots.add(_login(comments[0]))
 
     reviews = [r for r in _nodes(pr.get("reviews")) if _login(r) in bots]
     review_times = sorted(r.get("submittedAt") or "" for r in reviews)
@@ -266,7 +265,8 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         if _truncated(t.get("comments")):
             not_checked.append(f"comments beyond the first 50 in thread {t.get('id')}")
         first = comments[0] if comments else {}
-        kind, fields, reason = parse_finding_marker(first.get("body", ""))
+        kind, fields, reason = (parse_finding_marker(first.get("body", ""))
+                                if _login(first) in bots else ("none", None, ""))
         base = {"thread_id": t.get("id"), "path": t.get("path"), "line": t.get("line"),
                 "is_outdated": bool(t.get("isOutdated")), "url": first.get("url")}
         resolved_flag = bool(t.get("isResolved"))
@@ -281,11 +281,10 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
             continue
 
         fid = fields["id"]
-        threads_by_id.setdefault(fid, []).append(t.get("id"))
         statuses: list[str] = []
         latest_bot_status: str | None = None
         wontfix: list[dict[str, Any]] = []
-        for c in comments[1:]:
+        for idx, c in enumerate(comments[1:], 1):
             is_bot = _login(c) in bots
             if is_bot:
                 own = [s["status"] for s in parse_status_markers(c.get("body", ""))
@@ -294,22 +293,23 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
                 latest_bot_status = own[-1] if own else None
             else:
                 for m in WONTFIX.finditer(c.get("body", "")):
-                    bot_after = [b for b in comments if _login(b) in bots
-                                 and (b.get("createdAt") or "") > (c.get("createdAt") or "")]
-                    accepted = any(s["status"] == "accepted_pushback"
+                    # Position, not timestamp: a reply in the same second still counts.
+                    bot_after = [b for b in comments[idx + 1:] if _login(b) in bots]
+                    accepted = any(s["status"] == "accepted_pushback" and s.get("id", fid) == fid
                                    for b in bot_after for s in parse_status_markers(b.get("body", "")))
                     wontfix.append({"reason": m.group(1).strip(), "at": c.get("createdAt"),
                                     "by": _login(c), "bot_replies_after": len(bot_after),
                                     "accepted_marker_after": accepted})
         reopen_events = statuses.count("reopened")
-        reopen_by_id[fid] = reopen_by_id.get(fid, 0) + reopen_events
         created = first.get("createdAt") or ""
         rounds_open = sum(1 for r in review_times if r >= created) if created else 0
         last = comments[-1] if comments else {}
+        # A truncated thread's latest_bot_status may not be its real latest reply.
+        ready = latest_bot_status in VERIFIED_STATUSES and not _truncated(t.get("comments"))
         entry = {**base, "finding_id": fid, "severity": fields["severity"],
                  "reopen_events": reopen_events, "last_status": statuses[-1] if statuses else None,
                  "latest_bot_status": latest_bot_status,
-                 "ready_to_resolve": latest_bot_status in VERIFIED_STATUSES,
+                 "ready_to_resolve": ready,
                  "rounds_since_raised": rounds_open, "wontfix_replies": len(wontfix),
                  "last_comment_by": "pr-guardian" if _login(last) in bots else "engineer",
                  "first_comment_excerpt": "\n".join((first.get("body") or "").splitlines()[1:])[:400]}
@@ -318,7 +318,13 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
             resolved.append(entry)
             continue
         open_.append(entry)
+        # Verified threads only wait on the author's resolve; their history is
+        # not a live disagreement, so it raises no signals.
+        if ready:
+            continue
 
+        threads_by_id.setdefault(fid, []).append(t.get("id"))
+        reopen_by_id[fid] = reopen_by_id.get(fid, 0) + reopen_events
         if wontfix and wontfix[-1]["bot_replies_after"] == 0:
             pending.append({"thread_id": t.get("id"), "finding_id": fid,
                             "reason": wontfix[-1]["reason"], "replied_at": wontfix[-1]["at"]})
@@ -373,7 +379,7 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
                         for s in BLOCKING_SEVERITIES},
         "threads": {
             "open": open_,
-            "reopened": [e for e in open_ if e["reopen_events"] > 0],
+            "reopened": [e for e in open_ if e["reopen_events"] > 0 and not e["ready_to_resolve"]],
             "ready_to_resolve": [e for e in open_ if e["ready_to_resolve"]],
             "resolved": resolved,
             "unparsed": unparsed,
@@ -391,11 +397,15 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
 
 def exit_code(state: dict[str, Any]) -> int:
     threads = state["threads"]
-    open_work = (state["open_blocking"]
+    # Any unresolved thread blocks the merge (conversation resolution), nits
+    # included, and anything not checked cannot be called clean.
+    open_work = (threads["open"]
                  or any(not u["is_resolved"] for u in threads["unparsed"])
-                 or threads["other_open"])
+                 or threads["other_open"]
+                 or state["not_checked"])
     verdict = state["verdict"]
-    passed = verdict["found"] and verdict["conclusion"] == "SUCCESS"
+    passed = (verdict["found"] and verdict["status"] == "COMPLETED"
+              and verdict["conclusion"] == "SUCCESS")
     return 0 if passed and not open_work else 1
 
 
