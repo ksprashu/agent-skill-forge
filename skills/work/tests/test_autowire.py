@@ -319,7 +319,7 @@ class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):
         matches = autowire.autowire("harden the RBAC layer", REPO_ROOT)
         entry = matches[0].resolved[0]
-        self.assertEqual(entry.relpath, "preferred/agent-security-posture")
+        self.assertEqual(entry.relpath, "skills/security-review")
         self.assertTrue(entry.description)
 
     def test_a_missing_skill_is_reported_not_silently_dropped(self):

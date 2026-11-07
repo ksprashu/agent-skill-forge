@@ -186,9 +186,9 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
     ),
     Domain(
         label="Security & RBAC",
-        skills=("preferred/agent-security-posture", "skills/review"),
+        skills=("skills/security-review", "preferred/agent-security-posture"),
         roles=("Challenger", "Auditor"),
-        instructions="OWASP Top 10, constant-time token comparison, brute-force mitigation.",
+        instructions="Scanner leads triaged by the six-element test; OWASP Top 10 2025, ASVS 5.0, CWE Top 25, agent and harness risks, constant-time token comparison, brute-force mitigation.",
         triggers=(
             "security", "auth", "authentication", "authorization", "rbac",
             "permission", "token", "secret", "credential", "password",
@@ -220,7 +220,7 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
         label="Code Review & Standards",
         skills=("skills/review", "skills/unslop"),
         roles=("Reviewer",),
-        instructions="5-axis review, boilerplate stripping, zero AI fluff.",
+        instructions="8-axis review plus style, boilerplate stripping, zero AI fluff.",
         triggers=(
             "review", "refactor", "readability", "lint", "code smell",
             "boilerplate", "style", "cleanup", "naming",
