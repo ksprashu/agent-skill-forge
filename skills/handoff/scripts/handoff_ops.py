@@ -666,10 +666,13 @@ def _arm_single_repo(
 
     # 2. CLAUDE.md @import beacon + .claude/settings.local.json SessionStart deterministic hook
     claude_md = target_repo / "CLAUDE.md"
-    claude_beacon = beacon_text + "\n>\n> Context import: @.handoff/HANDOFF.md"
-    if claude_md.exists() and not no_tracked_edits:
-        prepend_beacon_block(claude_md, claude_beacon)
-        modified_files.append("CLAUDE.md")
+    claude_imports = "@AGENTS.md\n@.handoff/HANDOFF.md" if agents_md.exists() else "@.handoff/HANDOFF.md"
+    claude_beacon = beacon_text + f"\n\n{claude_imports}"
+    if not (no_tracked_edits and claude_md.exists()):
+        if prepend_beacon_block(claude_md, claude_beacon):
+            created_files.append("CLAUDE.md")
+        else:
+            modified_files.append("CLAUDE.md")
 
     claude_local = target_repo / CLAUDE_LOCAL_REL
     claude_existed = claude_local.exists()

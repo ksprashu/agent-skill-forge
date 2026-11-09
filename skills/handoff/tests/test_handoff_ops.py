@@ -393,6 +393,8 @@ class TestEndToEndLifecycleAndDrift:
         assert handoff_ops.BEACON_START in (primary / "AGENTS.md").read_text(encoding="utf-8")
         assert handoff_ops.BEACON_START in (primary / "CLAUDE.md").read_text(encoding="utf-8")
         assert handoff_ops.BEACON_START in (sibling / "AGENTS.md").read_text(encoding="utf-8")
+        assert (sibling / "CLAUDE.md").exists()
+        assert "@.handoff/HANDOFF.md" in (sibling / "CLAUDE.md").read_text(encoding="utf-8")
         assert (primary / "GEMINI.md").exists()
         assert (primary / ".cursor" / "rules" / "00-active-handoff.mdc").exists()
 
