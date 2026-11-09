@@ -19,7 +19,7 @@ Available globally or installable in focused sections:
 *   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
 *   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `image-gen`
-*   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`
+*   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `handoff`
 
 ### 🛠️ Domain Clusters (Preferred Skills)
 Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally. All but `agent-security-posture` come from `addyosmani/agent-skills`, pinned in `config/upstream.lock.json` and fetched into `.upstream/` at install time:
@@ -52,7 +52,7 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                │                              │                                  │                              │
                │ C4: Knowledge & Governance   │                                  │ D4: AI & Context             │
                │     /docs, /catalog,         │                                  │     context-engineering      │
-               │     /google-oss, /align      │                                  │                              │
+               │ /google-oss, /align, /handoff│                                  │                              │
                └──────────────────────────────┘                                  └──────────────────────────────┘
 ```
 
@@ -126,6 +126,7 @@ bash scripts/install.sh --all
 *   **`/catalog`** (`skills/catalog`): Scaffolds and indexes Google Open Knowledge Format (OKF) progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory.
 *   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
 *   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
+*   **`/handoff`** (`skills/handoff`, alias `/handover`): Packages multi-repository session state, locked decisions, and SHA-256 file digests into `.handoff/HANDOFF.md`, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity (`agy`), Claude Code, OpenAI Codex, and Cursor. See [`skills/handoff/README.md`](../skills/handoff/README.md).
 
 ---
 
@@ -161,6 +162,8 @@ For any substantive engineering, refactoring, or feature development task, invok
 [10. /docs]   ────────► Scaffold SDLC docs & compile standalone HTML portal
       │
 [11. /align]  ────────► Distill session learnings into AGENTS.md & living ADRs
+      │
+[12. /handoff]────────► Package multi-repo baton & arm Turn-0 cross-tool beacons
 ```
 
 ---
@@ -268,6 +271,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
+| Switching AI coding tools or pausing a multi-session / multi-repo arc | Invoke `/handoff` (`skills/handoff`) |
 | Adding UI components, styles, or responsive layouts | Bootstrap JIT: `frontend-ui-engineering` |
 | Optimizing database queries, bundle size, or CWV (LCP/INP) | Bootstrap JIT: `performance-optimization` |
 | Building secure auth flows or remediating OWASP/CWE issues | Invoke `/review`; bootstrap JIT: `agent-security-posture` |

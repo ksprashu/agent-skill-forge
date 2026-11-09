@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-11-09T09:00:00Z",
+  "primary_workspace": "sample-repo",
+  "workspaces": [
+    {
+      "name": "sample-repo",
+      "path": "~/work/sample-repo",
+      "is_git": true,
+      "branch": "feat/audio-pipeline",
+      "head_sha": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "head_subject": "feat(sound): add Pre-FX vocal riding envelope",
+      "recent_commits": [
+        "a1b2c3d4e5 feat(sound): add Pre-FX vocal riding envelope",
+        "9f8e7d6c5b test(sound): verify linear EQ gain conversion"
+      ],
+      "dirty_files": [
+        {"status": "M", "path": "blogs/part-01.md"},
+        {"status": "??", "path": "blogs/part-02-outline.md"}
+      ],
+      "dirty_total": 2,
+      "watched_digests": {
+        "blogs/part-01.md": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size": 4096
+        }
+      }
+    }
+  ]
+}

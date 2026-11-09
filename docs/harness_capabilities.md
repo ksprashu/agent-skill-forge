@@ -429,3 +429,20 @@ Then check your work:
 python3 scripts/sync_skills.py --list-harnesses
 python3 scripts/validate_skills.py
 ```
+
+---
+
+## 7. Cross-harness session handoff (`session-handoff` capability)
+
+While `hooks/design_gate.py` enforces pre-build approval inside a single session, [`skills/handoff`](../skills/handoff/README.md) (`capability: session-handoff`) moves active work *between* harnesses without requiring every harness to expose a shell hook API.
+
+`handoff_ops.py arm` bridges the startup asymmetry across harnesses by installing reversible, `.git/info/exclude`-hidden Turn-0 beacons simultaneously:
+
+| Harness | Startup mechanism wired by `handoff_ops.py arm` | Enforcement / injection class |
+| :--- | :--- | :--- |
+| **Claude Code** | `.claude/settings.local.json` `SessionStart` hook (`status --root . --inject`) **+** `CLAUDE.md` `@.handoff/HANDOFF.md` native file import | **Deterministic Turn-0 stdout + `@import` expansion** |
+| **Google Antigravity (`agy` IDE & CLI)** | Bounded `<!-- HANDOFF:AUTO:START -->` block at top of `AGENTS.md` | **Automatic `<user_rules>` system-prompt injection** |
+| **OpenAI Codex** | Bounded `<!-- HANDOFF:AUTO:START -->` block at top of `AGENTS.md` | **Automatic root instruction loading** |
+| **Cursor** | `.cursor/rules/00-active-handoff.mdc` (`alwaysApply: true`) + `AGENTS.md` | **Automatic Composer / Agent rule injection** |
+
+Running `handoff_ops.py disarm --root . --archive` removes all managed beacons and restores pre-existing `AGENTS.md`, `CLAUDE.md`, and `.claude/settings.local.json` files byte-for-byte.

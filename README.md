@@ -183,6 +183,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`catalog`](./skills/catalog)** | `/catalog` | Autonomous | **Open Knowledge Format (OKF)**: Scaffolds and indexes progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory. |
 | **[`google-oss`](./skills/google-oss)** | `/google-oss` | User Slash | **Open Source Compliance**: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **[`continuous-alignment`](./skills/continuous-alignment)** | `/align`, `/evolve` | Auto / Slash | **Continuous Alignment Engine**: Distills transcript learnings into a strict 200-line `AGENTS.md` budget, records living ADRs, and compiles roadmap visualizers. |
+| **[`handoff`](./skills/handoff)** | `/handoff`, `/handover` | User Slash | **Automagic Cross-Harness Session Handoff**: Captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity (`agy`), Claude Code (`SessionStart` + `CLAUDE.md`), OpenAI Codex, and Cursor. See [`skills/handoff/README.md`](./skills/handoff/README.md). |
 
 ---
 
