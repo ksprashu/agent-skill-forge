@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "title": "Series Handoff: Part 01 Blog Complete -> Video Script & Part 02 Next",
+  "mission": "Deliver an 8-part technical content series (Codelab -> Blog -> Video per module) with Part 01 Codelab and Companion Blog completed.",
+  "active_focus": {
+    "summary": "Part 01 companion blog is drafted and verified; ready for final user polish or Part 01 video script / Part 02 kickoff.",
+    "primary_workspace": "sample-repo",
+    "active_files": [
+      "blogs/part-01.md"
+    ]
+  },
+  "completed": [
+    {
+      "item": "Completed and validated Lab 01 Codelab and Companion Technical Blog",
+      "artifacts": ["blogs/part-01.md"],
+      "verification": "validate_codelab.cjs (0 errors) and fog.cjs (10.46)"
+    }
+  ],
+  "locked_decisions": [
+    {
+      "decision": "Canonical URL for Google Antigravity is https://antigravity.google",
+      "rationale": "Legacy idx.dev URLs are retired and forbidden across all docs."
+    },
+    {
+      "decision": "Commonwealth English spelling and zero typographic em-dashes",
+      "rationale": "Author voice profile (R3 technical blog) uses spaced hyphens ( - ) and -> arrows."
+    }
+  ],
+  "next_actions": [
+    {
+      "step": "Verify zero drift on blogs/part-01.md and review open questions with user",
+      "command_or_prompt": "python3 <skill-dir>/scripts/handoff_ops.py status --root .",
+      "expected_outcome": "Drift report confirms clean working tree before continuing."
+    },
+    {
+      "step": "Draft Deliverable 3 (Companion Video Script) or scaffold Lab 02",
+      "command_or_prompt": "Ask user whether to proceed with Part 01 Video Script or Lab 02 Codelab.",
+      "expected_outcome": "Next deliverable selected and started."
+    }
+  ],
+  "open_questions": [
+    "Waiting on updated Google Cloud credit activation doc to mirror into Step 2."
+  ],
+  "suggested_skills": [
+    {"skill": "codelab", "why": "Enforces 7-phase Google Codelab structure and fog < 12.0"},
+    {"skill": "voice-register", "why": "Applies R3 technical blog register on outward prose"},
+    {"skill": "atelier", "why": "Generates bespoke HTML reports for major deliverables"}
+  ],
+  "resume_verification": [
+    "git status -sb"
+  ]
+}

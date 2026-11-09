@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "title": "Bad Fixture: Hallucinated Artifact Path",
+  "mission": "Continue drafting Part 2 of the tutorial series.",
+  "active_focus": {
+    "summary": "Editing nonexistent file.",
+    "primary_workspace": "sample-repo",
+    "active_files": ["docs/does_not_exist_anywhere.md"]
+  },
+  "completed": [
+    {
+      "item": "Finished Part 1",
+      "artifacts": ["docs/ghost_artifact.md"],
+      "verification": "Claimed without file existing"
+    }
+  ],
+  "locked_decisions": [],
+  "next_actions": [
+    {
+      "step": "Outline Part 2",
+      "command_or_prompt": "Draft docs/part2.md",
+      "expected_outcome": "Outline saved"
+    }
+  ],
+  "open_questions": [],
+  "suggested_skills": [],
+  "resume_verification": ["ls docs"]
+}
