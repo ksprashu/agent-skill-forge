@@ -79,6 +79,7 @@ CORE_SKILLS = {
     'voice-register': os.path.join(CORE_SKILLS_DIR, 'voice-register'),
     'image-gen': os.path.join(CORE_SKILLS_DIR, 'image-gen'),
     'atelier': os.path.join(CORE_SKILLS_DIR, 'atelier'),
+    'chronicle': os.path.join(CORE_SKILLS_DIR, 'chronicle'),
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'handoff': os.path.join(CORE_SKILLS_DIR, 'handoff'),
@@ -297,8 +298,8 @@ CORE_CLUSTERS = {
     'c3': {
         'id': 'content-creative',
         'name': 'Content, Creative & Authoring',
-        'description': 'Step-by-step Google codelabs, human voice profiling and channel registers, agent communication profiling, image generation, and human-grade reports.',
-        'skills': ['codelab', 'human-voice', 'voice-register', 'cognitive-profiler', 'image-gen', 'atelier'],
+        'description': 'Step-by-step Google codelabs, human voice profiling and channel registers, agent communication profiling, image generation, human-grade reports, and technical nonfiction field books.',
+        'skills': ['codelab', 'human-voice', 'voice-register', 'cognitive-profiler', 'image-gen', 'atelier', 'chronicle'],
     },
     'c4': {
         'id': 'docs-governance',
@@ -496,7 +497,7 @@ def interactive_wizard():
         print(f"       Skills      : {skills_str}")
 
     print("\n⚡ QUICK PRESETS:")
-    print("  [content] Content & Creative only (codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier)")
+    print("  [content] Content & Creative only (codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier, chronicle)")
     print("  [core]    All Core Action Skills (c1, c2, c3, c4)")
     print("  [domain]  All Preferred Domain Skills (d1, d2, d3, d4)")
     print("  [all]     Complete Forge (All Core & Domain Skills)")
@@ -1233,7 +1234,7 @@ def main():
     parser.add_argument('--all', action='store_true', help="Install all core and domain skills")
     parser.add_argument('--core', action='store_true', help="Install all core action skills (c1, c2, c3, c4)")
     parser.add_argument('--domain', action='store_true', help="Install the preferred domain skills (d1, d2, d3, d4; most are fetched from upstream)")
-    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier)")
+    parser.add_argument('--content', action='store_true', help="Install content & creative skills only (c3: codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier, chronicle)")
     parser.add_argument('--interactive', '-i', action='store_true', help="Launch interactive skill cluster installer")
     parser.add_argument('--list-available', action='store_true', help="List all core and preferred skills in the forge")
     parser.add_argument('--list-clusters', action='store_true', help="List all core and domain clusters with member skills")

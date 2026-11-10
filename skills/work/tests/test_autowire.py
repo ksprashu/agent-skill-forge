@@ -125,6 +125,16 @@ class TestMatrixResolvesOnDisk(unittest.TestCase):
         problems = autowire.check_matrix(REPO_ROOT)
         self.assertEqual(problems, [], f"unresolved matrix entries: {problems}")
 
+    def test_storytelling_task_resolves_chronicle(self):
+        matches = autowire.autowire(
+            "Turn this technical report into a Gladwell storybook with a field notebook",
+            REPO_ROOT,
+        )
+        paths = [entry.relpath for match in matches for entry in match.resolved]
+        self.assertIn("skills/chronicle", paths)
+        self.assertIn("skills/atelier", paths)
+        self.assertIn("skills/unslop", paths)
+
     def test_check_cli_exits_zero(self):
         code, out, err = run_cli(["--check"])
         self.assertEqual(code, 0, err)

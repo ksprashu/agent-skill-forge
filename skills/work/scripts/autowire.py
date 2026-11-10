@@ -237,6 +237,37 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "hot path", "allocation",
         ),
     ),
+    Domain(
+        label="Storytelling",
+        skills=("skills/chronicle", "skills/atelier", "skills/unslop"),
+        roles=("Worker",),
+        instructions="Gladwell/Grant narrative, evidence badges, atelier literary edition, unslop prose.",
+        triggers=(
+            "storytelling", "gladwell", "adam grant", "like a story",
+            "like a book", "storytelling format",
+        ),
+    ),
+    Domain(
+        label="Narrative Nonfiction",
+        skills=("skills/chronicle", "skills/human-voice"),
+        roles=("Worker",),
+        instructions="Long-form technical nonfiction in the author's voice register.",
+        triggers=("narrative nonfiction", "nonfiction", "michael lewis"),
+    ),
+    Domain(
+        label="Field Book",
+        skills=("skills/chronicle", "skills/atelier"),
+        roles=("Worker",),
+        instructions="Chapter field notebooks, action checklists, and a consolidated tracker.",
+        triggers=("field book", "field notebook", "field guide"),
+    ),
+    Domain(
+        label="Storybook",
+        skills=("skills/chronicle",),
+        roles=("Worker",),
+        instructions="Interactive HTML storybook with chapter navigation and evidence lenses.",
+        triggers=("storybook", "interactive storybook"),
+    ),
 )
 
 

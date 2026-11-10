@@ -101,7 +101,7 @@ Developer Mode or an elevated shell; the script warns if you have neither, and
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
 
 ```bash
-# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier)
+# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, cognitive-profiler, image-gen, atelier, chronicle)
 # Prunes unselected skills like plan, spec, test, etc.
 bash scripts/install.sh --content --prune
 
@@ -163,7 +163,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. Persona-neutral; pairs with `voice-register` for personal voice. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, and produces distinctive human-grade reports and briefs.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, produces distinctive human-grade reports and briefs, and turns technical dossiers into grounded nonfiction field books.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
@@ -173,6 +173,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`cognitive-profiler`](./skills/cognitive-profiler)** | `/cognitive-profiler`, `/profile-me` | User Slash | **Agent Communication Profiler**: Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`. |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | User Slash | **Multimodal Diagram & Asset Generator**: Generates high-fidelity technical diagrams, infographics, and UI graphics using Gemini Flash Image with style consistency. |
 | **[`atelier`](./skills/atelier)** | (auto on reports/briefs) | Auto / Slash | **Distinctive Human-Grade Output**: Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and liberal use of diagrams and images. Avoids generic AI aesthetics. |
+| **[`chronicle`](./skills/chronicle)** | `/chronicle`, `@chronicle` | Auto / Slash | **Technical Nonfiction & Field Books**: Turns reports, dossiers, and architecture briefs into Gladwell/Grant narrative chapters with evidence badges, exhibits, and a Field Notebook checklist. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
 *Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
@@ -319,6 +320,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
+| **`chronicle`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/chronicle`](https://github.com/ksprashu/agent-skill-forge) | Technical nonfiction storytelling and interactive field books. |
 | **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. |
 
 ---

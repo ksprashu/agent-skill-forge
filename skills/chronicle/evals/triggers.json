@@ -1,0 +1,15 @@
+{
+  "skill": "chronicle",
+  "positive_triggers": [
+    "Tell me this technical report like a nonfiction story in the style of Malcolm Gladwell and Adam Grant",
+    "/chronicle Turn our Scaling LinkedIn, X and YouTube swarm report into an interactive storybook",
+    "Convert this architecture dossier into a narrative book with chapter field guides and evidence badges",
+    "Apply @chronicle to make this data engineering playbook read like a Michael Lewis investigation"
+  ],
+  "negative_triggers": [
+    "Fix the syntax error in scripts/sync_skills.py line 42",
+    "Run pytest on evals/evals.json and report failing tests",
+    "Create a basic CSV table of open pull requests in GitHub",
+    "What is the date of the next engineering sprint review?"
+  ]
+}

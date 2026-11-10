@@ -36,7 +36,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C2** | **`unslop`** | `/unslop`, `/deslop` | Auto / Slash | Strips AI smells, promotional bloat, and needless words from prose, docs, code comments, commit messages, analyses, and UI copy. Leaves code logic alone. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, synthesizes diagrams, and turns technical dossiers into grounded nonfiction.*
 
 | Cluster | Slug | Invocations & Triggers | Execution Mode | Scope & Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
@@ -45,6 +45,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C3** | **`voice-register`** | "in my voice", outward text under your name | Autonomous | Resolves a voice profile (`.local.md` > `~/.gemini/personas/default/` > template) and applies the matching channel register (R1–R5) to text sent under your name. |
 | **C3** | **`cognitive-profiler`** | `/cognitive-profiler` | User Slash | Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions. |
 | **C3** | **`image-gen`** | `/image-gen`, `/image-gen-expert` | User Slash | Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
+| **C3** | **`chronicle`** | `/chronicle`, `@chronicle` | Auto / Slash | Turns technical reports and dossiers into Gladwell/Grant nonfiction with evidence badges and a Field Notebook. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
 *Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
@@ -116,6 +117,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice profiles, kept out of the public repo. |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Reader-preference profiling compiled into harness configuration. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
+| **`chronicle`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/chronicle`](https://github.com/ksprashu/agent-skill-forge) | Technical nonfiction storytelling and interactive field books. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |

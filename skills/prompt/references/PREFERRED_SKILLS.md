@@ -23,6 +23,7 @@ This document serves as the **Single Source of Truth** for preferred agent skill
 > - **Linguistic Voice & Persona Profiling** ➔ Delegated to `human-voice` — `agent-skill-forge/skills/human-voice`
 > - **Writing Companion & Profile-Overlay** ➔ Delegated to `voice-register` (on top of `unslop`)
 > - **Multimodal Infographic & Diagram Gen** ➔ Delegated to `image-gen` — `skills-image-gen-expert/skills/image-gen-expert`
+- **Technical Nonfiction & Field Books** ➔ Delegated to `chronicle` — `agent-skill-forge/skills/chronicle`
 
 ---
 
@@ -46,6 +47,7 @@ These 15 primary verbs are active globally across Antigravity IDE, Antigravity C
 | **`codelab`** | `/codelab` | User-only (`disable-model-invocation: true`) | Google Codelab scaffolding, polyglot blocks, readability validation |
 | **`human-voice`**| `/human-voice`| User-only (`disable-model-invocation: true`)| Linguistic style markers, conversational pacing, and anti-slop guidelines |
 | **`image-gen`** | `/image-gen` | User-only (`disable-model-invocation: true`) | Multimodal diagram and blog asset generator via Gemini Flash Image |
+| **`chronicle`** | `/chronicle` | Auto / Slash | Gladwell/Grant technical nonfiction, evidence badges, and interactive field books |
 
 ---
 
