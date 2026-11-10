@@ -55,7 +55,7 @@
       "assertions": [
         {
           "type": "regex_not_match",
-          "pattern": "—|—",
+          "pattern": "—",
           "message": "Chronicle output must not contain em-dashes."
         },
         {

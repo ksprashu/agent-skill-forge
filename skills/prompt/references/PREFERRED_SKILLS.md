@@ -23,7 +23,7 @@ This document serves as the **Single Source of Truth** for preferred agent skill
 > - **Linguistic Voice & Persona Profiling** ➔ Delegated to `human-voice` — `agent-skill-forge/skills/human-voice`
 > - **Writing Companion & Profile-Overlay** ➔ Delegated to `voice-register` (on top of `unslop`)
 > - **Multimodal Infographic & Diagram Gen** ➔ Delegated to `image-gen` — `skills-image-gen-expert/skills/image-gen-expert`
-- **Technical Nonfiction & Field Books** ➔ Delegated to `chronicle` — `agent-skill-forge/skills/chronicle`
+> - **Technical Nonfiction & Field Books** ➔ Delegated to `chronicle` — `agent-skill-forge/skills/chronicle`
 
 ---
 

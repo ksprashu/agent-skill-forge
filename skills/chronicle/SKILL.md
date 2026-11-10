@@ -1,8 +1,6 @@
 ---
 name: chronicle
 description: 'Transform dense technical reports, research dossiers, architecture briefs, and data-heavy playbooks into gripping nonfiction narrative stories in the tradition of Malcolm Gladwell and Adam Grant, paired with Atelier editorial book typography and interactive Field Guide checklists. Use whenever the user asks to tell a report or technical topic "like a story", "like a book", "in a storytelling format", "Malcolm Gladwell / Adam Grant style", or invokes /chronicle or @chronicle.'
-type: quality-gate
-lifecycle: post-synthesis
 ---
 
 # Chronicle: Technical Nonfiction Storytelling & Interactive Field Book
@@ -48,11 +46,11 @@ Structure every Chronicle deliverable as a multi-chapter nonfiction book (typica
 3. **The Forensic Unpacking (The Mechanism)**: Walking through the exact code, study methodology, or system architecture as a detective story. Show *how* the system works under the hood (with exact figures, denominators, and SVG visual diagrams).
 4. **The Practitioner Case Study**: How this mechanism plays out in the real world for a builder or technical leader, contrasting the high-noise path with the high-signal path.
 5. **The Boundary Condition (Where the Rule Flips)**: Every honest framework names its own limits. State the exact conditions, caveats, or unverified zones (`[U]`) where the conclusion changes.
-6. **The Chapter Field Notebook (Actionables & To-Dos)**: 2 to 4 concrete, checkable action items with time budgets and verification checks.
+6. **The Chapter Field Notebook (Actionables & To-Dos)**: 2 to 4 concrete, checkable action items with time budgets and a done condition.
 
 ## Visual & Interactive Book Design (Atelier Literary Edition)
 
-When rendering a Chronicle deliverable as an interactive HTML book in Canvas (`web-app-generation`) or saving to Google Drive (`05 - Outputs`), apply the **Atelier Literary Edition** aesthetic:
+When rendering a Chronicle deliverable as an interactive HTML book, apply the **Atelier Literary Edition** aesthetic:
 
 - **Palette**: Warm Archival Paper (`#FAF7F2`), Deep Espresso Ink (`#18181B`), Elevated Parchment Cards (`#FFFFFF`), Terracotta Editorial Accent (`#B84A27`), Deep Forest Teal for Primary Evidence (`#0F5C59`), and Warm Stone Rules (`#E4DFD7`). Include a toggleable **Evening Reading Mode** (`#141413` warm charcoal surface, `#EAE6DF` soft parchment text).
 - **Typography**: Editorial serif for chapter titles, drop caps, pull quotes, and long-form narrative prose (`Newsreader` or `Source Serif 4`, `18px/1.72`, `65ch` measure for effortless reading); crisp sans-serif (`IBM Plex Sans` or `Inter`) for navigation, tables, evidence badges, and interactive Field Notebook checklists; monospace (`IBM Plex Mono`) for code paths, commit hashes, and weights.
@@ -68,13 +66,13 @@ When rendering a Chronicle deliverable as an interactive HTML book in Canvas (`w
    Read the source report or primary documents in full. Extract every hard number, commit SHA, study sample size, URL, caveated `[U]` item, and recommended action. Never summarize from snippets alone.
 
 2. **Design the Narrative Spine**
-   Map the technical sections into 4 to 7 narrative chapters. Give each chapter an evocative book-style title and subtitle (e.g., *Chapter 1: The Ghost in the Feed - Why Applause Is Worth 0.66 and Conversation Is Worth 20*).
+   Read `references/narrative-patterns.md`. Map the technical sections into 4 to 7 narrative chapters using its five moves and chapter blueprint. Give each chapter an evocative book-style title and subtitle (e.g., *Chapter 1: The Ghost in the Feed - Why Applause Is Worth 0.66 and Conversation Is Worth 20*).
 
 3. **Draft the Dual Deliverables**
    - **Interactive HTML Storybook / Field Book**: Build a self-contained, single-file HTML application with full chapter prose, drop caps, pull quotes, SVG exhibits, evidence lenses, and interactive to-do trackers.
-   - **Canonical Google Doc (Swarm `REPORTS-001a` Compliance)**: When operating in Prashanth's workspace, also save the complete narrative edition as a Google Doc in `05 - Outputs` (`1_1WSdHHYaE5wmWl5FIYLXmhvaapeFs0x`) so it is permanently accessible across devices and indexed for the reports archive.
+   - **Canonical copy**: Also save the complete narrative edition to the user's configured outputs location, if any.
 
-4. **Self-Audit Against the Grounding Checklist**
+4. **Read-through before delivery**
    Before delivering, check that:
    - Every factual claim and metric from the source report is preserved with its exact denominator and inline clickable URL.
    - Zero em-dashes or banned AI slop words appear anywhere in the text.

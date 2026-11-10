@@ -2,7 +2,6 @@
 
 **Cluster:** `c3` (Content, Editorial & Storytelling)  
 **Tier:** Core (`core`)  
-**Type:** Quality Gate (`quality-gate`)  
 **Lifecycle Stage:** `post-synthesis`  
 **License:** Apache-2.0
 
