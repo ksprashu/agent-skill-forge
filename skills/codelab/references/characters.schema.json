@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ksprashu/agent-skill-forge/skills/codelab/references/characters.schema.json",
+  "title": "Codelab Companion Character Pack",
+  "description": "Schema for an optional codelab companion character pack resolved by scripts/characters.cjs.",
+  "type": "object",
+  "required": ["companion_theme", "characters"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the character pack specification."
+    },
+    "companion_theme": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name of the companion cast or narrative theme."
+    },
+    "character_bible": {
+      "type": "string",
+      "description": "Optional path (relative to characters.json) to a Markdown character bible."
+    },
+    "skill_assets_path": {
+      "type": "string",
+      "description": "Optional relative directory holding character sheets and reference images."
+    },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$",
+            "description": "Stable slug identifier for the character."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name used in tutorial callouts."
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Pedagogical role in the tutorial (for example builder, architect, or debugger)."
+          },
+          "pronouns": {
+            "type": "string",
+            "description": "Pronouns used when referring to the character."
+          },
+          "callout_label": {
+            "type": "string",
+            "description": "Default bold label used inside > aside callout blocks."
+          },
+          "icons": {
+            "description": "Avatar badge paths (either an array of relative paths or a named mood map).",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              },
+              {
+                "type": "object",
+                "additionalProperties": { "type": "string", "minLength": 1 }
+              }
+            ]
+          },
+          "palette": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "wardrobe": {
+            "type": "string"
+          },
+          "visual_prompt_descriptor": {
+            "type": "string",
+            "description": "Detailed visual prompt snippet passed exclusively to image generators."
+          },
+          "reference_photo": {
+            "type": "string"
+          },
+          "character_sheet": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "comics": {
+      "type": "object",
+      "description": "Optional map of reusable setup comic slots to relative image paths.",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": true
+}

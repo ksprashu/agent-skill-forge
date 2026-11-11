@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "companion_theme": "Pip & Byte Studio Guides",
+  "character_bible": "CHARACTER_BIBLE.md",
+  "characters": [
+    {
+      "id": "pip",
+      "name": "Pip",
+      "pronouns": "they/them",
+      "role": "Curious Prototyper & Feature Builder",
+      "callout_label": "Pip's Tip:",
+      "icons": {
+        "idea": "icons/pip-idea.png",
+        "celebrate": "icons/pip-celebrate.png"
+      },
+      "palette": {
+        "primary": "#2563EB",
+        "accent": "#F59E0B"
+      },
+      "visual_prompt_descriptor": "Pip, a friendly small copper-and-cobalt clockwork wren mascot wearing miniature Brass workshop goggles, clean flat editorial vector illustration"
+    },
+    {
+      "id": "byte",
+      "name": "Byte",
+      "pronouns": "she/her",
+      "role": "Systems Architect & Edge-Case Debugger",
+      "callout_label": "Byte's Check:",
+      "icons": {
+        "pro_tip": "icons/byte-pro-tip.png",
+        "warning": "icons/byte-warning.png"
+      },
+      "palette": {
+        "primary": "#0F766E",
+        "accent": "#EF4444"
+      },
+      "visual_prompt_descriptor": "Byte, a composed slate-grey geometric fox mascot holding a small circuit caliper, clean flat editorial vector illustration"
+    }
+  ],
+  "comics": {
+    "activate_billing": "comics/activate_billing_comic.png",
+    "create_project": "comics/create_project_comic.png",
+    "verify_billing": "comics/verify_billing_comic.png",
+    "environment_setup": "comics/environment_setup_comic.png"
+  }
+}

@@ -48,7 +48,7 @@ description: [The codelab description. E.g., "In this codelab you learn how to w
 id: ${codelabSlug}
 keywords: docType:Codelab, category:Cloud, skill:Intermediate
 feedback link: https://github.com/googlecodelabs/feedback/issues/new?title=${codelabSlug}%20Feedback&labels=gemini,codelab&assignees=<github-handle>
-authors: Prashanth Subrahmanyam
+authors: ${process.env.CODELAB_AUTHOR || '<AUTHOR_NAME>'}
 layout: paginated
 ---
 

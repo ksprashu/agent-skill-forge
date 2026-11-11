@@ -5,33 +5,27 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Preparing your Workspace (Environment Setup)
 
-Duration: 5:00
+Duration: 05:00
 
-You need a place to run your code! You have two great choices, and our pets will help you decide:
+Choose either **Google Cloud Shell** in your browser or your **Local Terminal** on your workstation.
 
-<img src="img/environment_setup_comic.png" alt="Malti and Raggy's guide to choosing an environment" width="624.00" />
+### **Option 1: Google Cloud Shell (Browser-Based)**
 
-### **Option 1: Google Cloud Shell (Malti's Favorite! ☁️)**
-
-Cloud Shell is a browser-based terminal that comes pre-installed with everything you need: [Node.js](https://nodejs.org/), [gcloud CLI](https://cloud.google.com/sdk/gcloud), and [git](https://git-scm.com/). It’s fast, free, and works anywhere!
+Cloud Shell is a browser-based terminal pre-installed with [Node.js](https://nodejs.org/), [gcloud CLI](https://cloud.google.com/sdk/gcloud), and [git](https://git-scm.com/).
 
 #### **1. Activate Cloud Shell**
 
-Click the **'Activate Cloud Shell' icon** in the top-right of your Google Cloud Console.
-
-Cloud Shell will take a moment to provision. If prompted, click **Authorize** so it can talk to Google Cloud for you. 
-
-Wait until you see the prompt: `user @cloudshell:~ $`.
+Click the **Activate Cloud Shell** icon in the top-right of your Google Cloud Console. If prompted, click **Authorize** and wait until you see `user@cloudshell:~$`.
 
 #### **2. Verify Your Project**
 
-Malti wants to make sure we're in the right place. Run this:
+Confirm your active project ID:
 
 ```bash
 gcloud config get-value project
 ```
 
-If it doesn't show your project ID, set it manually:
+If it does not show your project ID, set it explicitly:
 
 ```bash
 gcloud config set project <YOUR-PROJECT-ID>
@@ -39,19 +33,18 @@ gcloud config set project <YOUR-PROJECT-ID>
 
 ---
 
-### **Option 2: Local Terminal (Raggy's Choice! 💻)**
+### **Option 2: Local Terminal**
 
-If you prefer your own setup (iTerm, VS Code Terminal, etc.), you'll need a few things installed first.
+If you prefer developing locally, install the required CLI tools first.
 
 #### **1. Install Prerequisites**
 
-Make sure you have:
 *   [Node.js v20+](https://nodejs.org/)
 *   [Google Cloud SDK (gcloud CLI)](https://cloud.google.com/sdk/docs/install)
 
-#### **2. Login and Configure**
+#### **2. Sign In and Configure**
 
-Sign in to your account:
+Authenticate with Google Cloud:
 ```bash
 # Copyright 2026 Google LLC.
 # SPDX-License-Identifier: Apache-2.0
@@ -59,7 +52,7 @@ Sign in to your account:
 gcloud auth login
 ```
 
-Set your project:
+Set your active project:
 
 ```bash
 # Copyright 2026 Google LLC.
@@ -68,7 +61,7 @@ Set your project:
 gcloud config set project <YOUR-PROJECT-ID>
 ```
 
-Set up application credentials (this helps your code talk to Google APIs):
+Configure Application Default Credentials so local SDKs can call Google Cloud APIs:
 
 ```bash
 # Copyright 2026 Google LLC.
@@ -77,8 +70,9 @@ Set up application credentials (this helps your code talk to Google APIs):
 gcloud auth application-default login
 ```
 
+> aside positive
+> **Tip:** Keep one terminal tab dedicated to your running dev server and a second tab open for CLI commands and test runs.
+
 ### Summary
 
-Workspace ready? Awesome! 
-
-Next, let's meet our new best friend in **Meeting Gemini CLI**.
+Your terminal environment is authenticated and linked to your Google Cloud project.

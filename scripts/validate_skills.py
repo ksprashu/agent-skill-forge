@@ -118,6 +118,69 @@ def scan_host_paths(repo_root):
     return errors
 
 
+_README_ATTRIBUTION_RE = re.compile(
+    r'\*\*(?:Original\s+)?Author\b|\*\*(?:Adapted|Curated)\b',
+    re.IGNORECASE,
+)
+
+
+def _is_readme_attribution_line(filename, line):
+    """True for standard OSS author credit bullets inside a skill README.md."""
+    return filename == 'README.md' and bool(_README_ATTRIBUTION_RE.search(line))
+
+
+def load_denylist(denylist_path):
+    """Load non-empty, non-comment forbidden terms from denylist_path."""
+    terms = []
+    with open(denylist_path, 'r', encoding='utf-8') as fh:
+        for raw in fh:
+            stripped = raw.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+            terms.append(stripped)
+    return terms
+
+
+def scan_skills_pii_and_denylist(repo_root, denylist_terms=()):
+    """Scan all text files under skills/ for PII_PATTERNS and optional denylist terms."""
+    errors = []
+    skills_root = os.path.join(repo_root, 'skills')
+    if not os.path.isdir(skills_root):
+        return errors
+
+    lowered_terms = [(term, term.lower()) for term in denylist_terms]
+    for dirpath, dirnames, filenames in os.walk(skills_root):
+        dirnames[:] = [d for d in dirnames if d not in HOST_PATH_SKIP_DIRS]
+        for name in sorted(filenames):
+            if name.endswith('.local.md'):
+                continue
+            full = os.path.join(dirpath, name)
+            if os.path.islink(full) and not os.path.exists(full):
+                continue
+            try:
+                with open(full, 'r', encoding='utf-8') as fh:
+                    content = fh.read()
+            except (OSError, UnicodeDecodeError):
+                continue
+            rel = os.path.relpath(full, repo_root).replace(os.sep, '/')
+            for idx, line in enumerate(content.splitlines(), 1):
+                if _is_readme_attribution_line(name, line):
+                    continue
+                for pat in PII_PATTERNS:
+                    if pat.search(line):
+                        errors.append(
+                            f"[pii] {rel}:{idx} matches PII pattern '{pat.pattern}'"
+                        )
+                if lowered_terms:
+                    lline = line.lower()
+                    for orig_term, lterm in lowered_terms:
+                        if lterm in lline:
+                            errors.append(
+                                f"[denylist] {rel}:{idx} contains forbidden term '{orig_term}'"
+                            )
+    return errors
+
+
 def parse_frontmatter(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -378,7 +441,19 @@ def main(argv=None):
     parser.add_argument('--repo-root', default=REPO_ROOT,
                         help="Tree to validate (default: this checkout). The verifier "
                              "fixtures under tests/fixtures/ are run through this.")
-    repo_root = os.path.abspath(parser.parse_args(argv).repo_root)
+    parser.add_argument('--denylist', default=None,
+                        help="Optional newline-delimited file of forbidden personal/internal "
+                             "terms ('#' comments and blank lines ignored) scanned across skills/.")
+    args = parser.parse_args(argv)
+    repo_root = os.path.abspath(args.repo_root)
+
+    denylist_terms = []
+    denylist_errs = []
+    if args.denylist:
+        try:
+            denylist_terms = load_denylist(args.denylist)
+        except OSError as exc:
+            denylist_errs.append(f"[denylist] Could not read {args.denylist}: {exc}")
 
     print("=" * 65)
     print("🔍 Agent Skill Forge — Skill Validation & PII Audit")
@@ -392,6 +467,7 @@ def main(argv=None):
     dag_count, dag_errs, dag_warns = validate_dag_harness(repo_root)
     alias_errs = validate_aliases()
     path_errs = scan_host_paths(repo_root)
+    pii_deny_errs = denylist_errs + scan_skills_pii_and_denylist(repo_root, denylist_terms)
     brief_errs = validate_dispatch_briefs(repo_root)
 
     print(f"Validated {core_count} Core Skills and {pref_count} Preferred Skills.")
@@ -399,11 +475,16 @@ def main(argv=None):
     print(f"Validated {len(ALIASES)} Skill Aliases against reserved namespaces.")
     print(f"Scanned the tree for machine-specific absolute paths "
           f"({len(HOST_PATH_EXEMPT)} documented exemptions).")
+    if args.denylist:
+        print(f"Scanned skills/ text files against PII patterns and {len(denylist_terms)} denylist terms.")
+    else:
+        print("Scanned skills/ text files against PII patterns.")
     print(f"Checked /work dispatch briefs against {len(BRIEF_CONTRACTS)} role grounding contracts.")
     print(f"Total Skills: {core_count + pref_count}\n")
 
     all_warnings = core_warns + pref_warns + dag_warns
-    all_errors = core_errs + pref_errs + dag_errs + alias_errs + path_errs + brief_errs
+    all_errors = (core_errs + pref_errs + dag_errs + alias_errs +
+                  path_errs + pii_deny_errs + brief_errs)
 
     if all_warnings:
         print("⚠️  Warnings:")

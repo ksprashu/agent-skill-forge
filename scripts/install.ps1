@@ -56,14 +56,32 @@ $PassArgs = @()
 # over an absent $ForwardArgs would push $null into $PassArgs, make its Count 1,
 # and silently skip the interactive wizard.
 if ($ForwardArgs) {
-    foreach ($arg in $ForwardArgs) {
+    for ($i = 0; $i -lt $ForwardArgs.Count; $i++) {
+        $arg = $ForwardArgs[$i]
         if ([string]::IsNullOrWhiteSpace($arg)) { continue }
+        if ($arg.StartsWith('--persona=')) {
+            $val = $arg.Substring('--persona='.Length)
+            if ([string]::IsNullOrWhiteSpace($val)) {
+                Write-Error "❌ Error: --persona requires a non-empty <owner/repo>, URL, or path."
+                exit 2
+            }
+            $env:AGENT_PERSONA_REPO = $val
+            continue
+        }
         switch ($arg) {
             '--hard-gate'    { $HardGate = $true }
             '--no-hard-gate' { $HardGate = $false }
             '--no-fetch'     { $NoFetch = $true }
             '--offline'      { $Offline = $true }
             '--uninstall'    { $Uninstall = $true }
+            '--persona'      {
+                if (($i + 1) -ge $ForwardArgs.Count -or [string]::IsNullOrWhiteSpace($ForwardArgs[$i + 1])) {
+                    Write-Error "❌ Error: --persona requires a <owner/repo>, URL, or path argument."
+                    exit 2
+                }
+                $i++
+                $env:AGENT_PERSONA_REPO = $ForwardArgs[$i]
+            }
             default          { $PassArgs += $arg }
         }
     }

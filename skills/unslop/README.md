@@ -1,8 +1,13 @@
-# 🧹 Unslop Skill (Universal Anti-Bloat Engine)
+# 🧹 Unslop Skill (Anti-Bloat & Connected Prose Engine)
 
-Strips AI smells, promotional bloat, and needless words from human-readable text: prose, docs, code comments, commit messages, analyses, and UI copy. It leaves executable code logic alone.
+Strips AI smells, promotional bloat, and needless words from human-readable text - technical dossiers, post-planning readouts, architecture reports, prose, docs, code comments, commit messages, analyses, emails, and UI copy - while keeping natural, connected cause-and-effect sentence flow. It leaves executable code logic alone.
 
-Unslop is persona-neutral. It ships no personal voice, spelling rule, or sign-off, so it works for anyone out of the box. To write in a specific person's voice, install [`voice-register`](../voice-register) alongside it. Unslop applies that profile only to text sent under the person's name (emails, posts, docs, PR descriptions); the agent's replies to them stay neutral.
+---
+
+## ✨ Default Behaviour vs. Personal Voice Integration
+
+- **Public Neutral Default (`tier 3`)**: Out of the box, `unslop` is completely persona-neutral. It strips AI throat-clearing and promotional filler, enforces connected cause-and-effect sentences (`18-30 words` linked by `"because"`, `"whereas"`, `"so that"`, `"which means"`, or `" - "` rather than robotic 10-word staccato fragments), and preserves your existing regional spelling and punctuation.
+- **Automatic [`voice-register`](../voice-register) Integration (`tier 1` / `tier 2`)**: When you configure a personal voice profile (either locally or via `AGENT_PERSONA_REPO=<owner>/agent-persona`), `unslop` automatically applies that profile's spelling, punctuation, and channel register rules across outward communications (`R1`-`R5`) and technical dossiers/readouts (`R6`).
 
 ---
 
@@ -10,5 +15,5 @@ Unslop is persona-neutral. It ships no personal voice, spelling rule, or sign-of
 *   **Original Inspirations & Lineage**:
     *   **Matt Pocock**: Author of [`deslop`](https://github.com/mattpocock/skills/tree/main/skills/deslop) (*"Cut AI tells from any writing"*)
     *   **poteto / Cursor pstack**: Creator of [`poteto/unslop`](https://github.com/poteto) and [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) (*Code & content anti-bloat engine*)
-*   **Adapted & Curated by**: Prashanth Subrahmanyam ([@ksprashu](https://github.com/ksprashu)) for `agent-skill-forge`
+*   **Adapted, Unified & Curated by**: Prashanth Subrahmanyam ([@ksprashu](https://github.com/ksprashu)) for `agent-skill-forge`
 *   **License**: Apache-2.0 / MIT

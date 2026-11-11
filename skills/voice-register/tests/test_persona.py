@@ -172,6 +172,50 @@ class PersonaCliTest(unittest.TestCase):
         r = self.cli("status", "--name", "..")
         self.assertEqual(r.returncode, 2)
 
+    def test_status_reports_reader_and_characters_packs_when_present(self):
+        self.cli("pull", repo=str(self.bare))
+        r0 = self.cli("status")
+        self.assertIn("reader_pack: (none)", r0.stdout)
+        self.assertIn("characters_pack: (none)", r0.stdout)
+
+        reader_file = self.pdir / "default" / "reader" / "profile.json"
+        chars_file = self.pdir / "default" / "characters" / "characters.json"
+        reader_file.parent.mkdir(parents=True, exist_ok=True)
+        chars_file.parent.mkdir(parents=True, exist_ok=True)
+        reader_file.write_text('{"schema_version": 1}\n')
+        chars_file.write_text('{"companion_theme": "Pip", "characters": []}\n')
+
+        r1 = self.cli("status")
+        self.assertEqual(r1.returncode, 0)
+        self.assertIn(f"reader_pack: {reader_file}", r1.stdout)
+        self.assertIn(f"characters_pack: {chars_file}", r1.stdout)
+
+    def test_activate_links_rules_and_skills_overlays(self):
+        (self.work / "rules").mkdir(exist_ok=True)
+        (self.work / "rules" / "persona-response.md").write_text("# reader rule\n")
+        (self.work / "skills" / "custom-helper").mkdir(parents=True, exist_ok=True)
+        (self.work / "skills" / "custom-helper" / "SKILL.md").write_text("---\nname: custom-helper\ndescription: x\n---\n")
+        git("add", "-A", cwd=self.work)
+        git("commit", "-q", "-m", "Add overlays", cwd=self.work)
+        git("push", "-q", str(self.bare), "HEAD:main", cwd=self.work)
+
+        (self.tmp / ".gemini" / "antigravity-cli").mkdir(parents=True, exist_ok=True)
+        r = self.cli("pull", repo=str(self.bare))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertTrue((self.tmp / ".gemini" / "config" / "rules" / "persona-response.md").is_file())
+        self.assertTrue((self.tmp / ".gemini" / "antigravity-cli" / "rules" / "persona-response.md").is_file())
+        for sroot in (
+            self.tmp / ".gemini" / "config" / "skills",
+            self.tmp / ".gemini" / "skills",
+            self.tmp / ".claude" / "skills",
+            self.tmp / ".agents" / "skills",
+        ):
+            self.assertTrue((sroot / "custom-helper" / "SKILL.md").is_file(), str(sroot))
+
+        r_act = self.cli("activate")
+        self.assertEqual(r_act.returncode, 0, r_act.stdout + r_act.stderr)
+        self.assertIn("activated:", r_act.stdout)
+
 
 class ResolveTest(unittest.TestCase):
     def setUp(self):
