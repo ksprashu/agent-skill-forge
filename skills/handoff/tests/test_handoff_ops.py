@@ -168,6 +168,25 @@ class TestKnownFixtures:
             assert res.returncode != 0, f"Should have rejected escaping path: {bad_ref}"
             assert "escapes captured workspaces" in (res.stdout + res.stderr)
 
+    def test_validate_rejects_malformed_list_item_types(self, tmp_path: Path) -> None:
+        base = json.loads((FIXTURES / "known_good" / "state.json").read_text(encoding="utf-8"))
+        mutations = [
+            ("completed", [{"item": "Done", "artifacts": "../outside.txt"}]),
+            ("completed", ["not-a-dict"]),
+            ("locked_decisions", ["not-a-dict"]),
+            ("suggested_skills", ["codelab"]),
+            ("open_questions", [123]),
+            ("resume_verification", [""]),
+        ]
+        for idx, (field, bad_val) in enumerate(mutations):
+            st = dict(base)
+            st[field] = bad_val
+            sp = tmp_path / f"bad_{idx}.json"
+            sp.write_text(json.dumps(st), encoding="utf-8")
+            res = _run_cli("validate", "--state", str(sp))
+            assert res.returncode != 0, f"Expected failure for {field}={bad_val!r}"
+            assert field in (res.stdout + res.stderr)
+
 
 class TestDifferentiation:
     """T1: Two opposite handoff states must produce completely distinct outputs."""
@@ -287,12 +306,13 @@ class TestSecretRedactionAtCapture:
     def test_capture_redacts_tokens_and_emits_no_scores(self, tmp_path: Path) -> None:
         repo = tmp_path / "sec-repo"
         fake_openai = "sk-" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4"
+        fake_anthropic = "sk-ant-" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4"
         fake_google = "AIza" + "SyD1234567890abcdefghijklmnopqrstuv"
         fake_github = "ghp_" + "1234567890abcdefghijklmnopqrstuvwxyz"
         _init_git_repo(
             repo,
             {"notes.txt": "clean\n"},
-            commit_msg=f"debug key {fake_openai} and {fake_google} and {fake_github}",
+            commit_msg=f"debug key {fake_openai} and {fake_anthropic} and {fake_google} and {fake_github}",
         )
 
         res = _run_cli("capture", "--root", str(repo))
@@ -300,9 +320,11 @@ class TestSecretRedactionAtCapture:
         raw_manifest = (repo / ".handoff" / "manifest.json").read_text(encoding="utf-8")
 
         assert fake_openai not in raw_manifest
+        assert fake_anthropic not in raw_manifest
         assert fake_google not in raw_manifest
         assert fake_github not in raw_manifest
-        assert "[REDACTED" in raw_manifest
+        assert "[REDACTED:Anthropic key]" in raw_manifest
+        assert "[REDACTED:OpenAI/Stripe-style secret key]" in raw_manifest
 
         parsed = json.loads(raw_manifest)
         forbidden_judgement_keys = {"score", "grade", "rating", "quality", "band"}
@@ -489,6 +511,26 @@ class TestEndToEndLifecycleAndDrift:
         archives = list((primary / ".handoff" / "archive").iterdir())
         assert len(archives) == 1
         assert (archives[0] / "HANDOFF.md").exists()
+
+        # Verify .handoff/ remains in .git/info/exclude when retained on disk
+        exclude_text = (primary / ".git" / "info" / "exclude").read_text(encoding="utf-8")
+        assert ".handoff/" in exclude_text
+
+    def test_cmd_arm_rejects_nonexistent_link_repo(self, tmp_path: Path) -> None:
+        repo = tmp_path / "arm-missing-link"
+        _init_git_repo(repo, {"app.py": "x = 1\n"}, "init")
+        assert _run_cli("capture", "--root", str(repo)).returncode == 0
+        st = json.loads((FIXTURES / "known_good" / "state.json").read_text(encoding="utf-8"))
+        st["active_focus"]["primary_workspace"] = "arm-missing-link"
+        st["active_focus"]["active_files"] = ["app.py"]
+        st["completed"][0]["artifacts"] = ["app.py"]
+        (repo / ".handoff" / "state.json").write_text(json.dumps(st), encoding="utf-8")
+        (repo / ".handoff" / "HANDOFF.md").write_text("# stub\n", encoding="utf-8")
+
+        res = _run_cli("arm", "--root", str(repo), "--link-repo", str(tmp_path / "does-not-exist"))
+        assert res.returncode != 0
+        assert "does not exist" in res.stderr
+        assert not (repo / "AGENTS.md").exists()
 
     def test_cmd_arm_rejects_secret_leaking_state(self, tmp_path: Path) -> None:
         repo = tmp_path / "bad-arm"

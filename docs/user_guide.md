@@ -183,6 +183,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 | **Step 9** | **`/review`** | **Adversarial gate before commit.** Evaluates diffs across 5 axes (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation. |
 | **Step 10**| **`/docs` & `/catalog`** | **Preserves codebase memory.** Documents architecture in the Google Open Knowledge Format (`.gemini/knowledge/`) and compiles 4-theme standalone HTML portals. |
 | **Step 11**| **`/align`** | **Keeps agent memory hot & lean.** Summarizes transcript learnings into the 200-line `AGENTS.md` budget, records living ADRs, and updates project roadmaps. |
+| **Step 12**| **`/handoff`** | **Enables zero-loss cross-harness continuity.** Captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across harnesses. |
 
 ---
 

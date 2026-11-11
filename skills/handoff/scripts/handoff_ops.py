@@ -67,13 +67,13 @@ MAX_DIRTY_LIST = 60
 MAX_WATCHED_FILES = 60
 
 SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("OpenAI/Stripe-style secret key", re.compile(r"\bsk-(?:live-|test-|proj-)?[A-Za-z0-9_-]{20,}\b")),
+    ("Anthropic key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b")),
+    ("OpenAI/Stripe-style secret key", re.compile(r"\bsk-(?!ant-)(?:live-|test-|proj-)?[A-Za-z0-9_-]{20,}\b")),
     ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
     ("Google OAuth access token", re.compile(r"\bya29\.[0-9A-Za-z_-]{20,}\b")),
     ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
     ("AWS access key ID", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("Slack token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{15,}\b")),
-    ("Anthropic key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b")),
     ("PEM private key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")),
 )
 
@@ -465,9 +465,43 @@ def validate_state_dict(
         if not isinstance(state.get(list_key), list):
             errors.append(f"'{list_key}' must be a list")
 
+    if isinstance(state.get("completed"), list):
+        for idx, comp in enumerate(state["completed"]):
+            if not isinstance(comp, dict):
+                errors.append(f"'completed[{idx}]' must be an object")
+                continue
+            if not isinstance(comp.get("item"), str) or not comp["item"].strip():
+                errors.append(f"'completed[{idx}].item' must be a non-empty string")
+            arts = comp.get("artifacts")
+            if not isinstance(arts, list) or not all(isinstance(a, str) and a.strip() for a in arts):
+                errors.append(f"'completed[{idx}].artifacts' must be a list of file path strings")
+
+    if isinstance(state.get("locked_decisions"), list):
+        for idx, dec in enumerate(state["locked_decisions"]):
+            if not isinstance(dec, dict):
+                errors.append(f"'locked_decisions[{idx}]' must be an object")
+                continue
+            for req in ("decision", "rationale"):
+                if not isinstance(dec.get(req), str) or not dec[req].strip():
+                    errors.append(f"'locked_decisions[{idx}].{req}' must be a non-empty string")
+
+    if isinstance(state.get("suggested_skills"), list):
+        for idx, sk in enumerate(state["suggested_skills"]):
+            if not isinstance(sk, dict):
+                errors.append(f"'suggested_skills[{idx}]' must be an object")
+                continue
+            for req in ("skill", "why"):
+                if not isinstance(sk.get(req), str) or not sk[req].strip():
+                    errors.append(f"'suggested_skills[{idx}].{req}' must be a non-empty string")
+
+    if isinstance(state.get("open_questions"), list):
+        if not all(isinstance(q, str) and q.strip() for q in state["open_questions"]):
+            errors.append("'open_questions' items must be non-empty strings")
+
     rv = state.get("resume_verification")
-    if isinstance(rv, list) and not rv:
-        errors.append("'resume_verification' must contain at least one verification command")
+    if isinstance(rv, list):
+        if not rv or not all(isinstance(cmd, str) and cmd.strip() for cmd in rv):
+            errors.append("'resume_verification' must contain at least one verification command")
 
     secret_hits = find_secret_leaks(state)
     for hit in secret_hits:
@@ -878,6 +912,15 @@ def cmd_arm(args: argparse.Namespace) -> int:
     first_step = state["next_actions"][0]["step"]
     captured_at = manifest.get("captured_at", utc_now_iso())
 
+    resolved_links: list[Path] = []
+    for raw_link in args.link_repo or []:
+        lp = expand_path(raw_link)
+        if not lp.is_dir():
+            print(f"error: linked repo directory does not exist: {raw_link}", file=sys.stderr)
+            return 1
+        if lp != root:
+            resolved_links.append(lp)
+
     primary_record = _arm_single_repo(
         root,
         title=state["title"],
@@ -889,10 +932,7 @@ def cmd_arm(args: argparse.Namespace) -> int:
 
     prior_linked = _read_armed_record(root).get("linked_repos", [])
     linked_repos: list[str] = list(prior_linked) if isinstance(prior_linked, list) else []
-    for raw_link in args.link_repo or []:
-        lp = expand_path(raw_link)
-        if not lp.is_dir() or lp == root:
-            continue
+    for lp in resolved_links:
         lh = lp / ".handoff"
         lh.mkdir(parents=True, exist_ok=True)
         for fname in ("manifest.json", "state.json", "HANDOFF.md"):
@@ -1101,8 +1141,6 @@ def _disarm_single_repo(target_repo: Path, archive: bool = False, is_linked: boo
         else:
             claude_local.write_text(json.dumps(sdata, indent=2) + "\n", encoding="utf-8")
 
-    remove_git_exclude(target_repo)
-
     if armed_path.exists():
         armed_path.unlink()
 
@@ -1116,6 +1154,11 @@ def _disarm_single_repo(target_repo: Path, archive: bool = False, is_linked: boo
             src = handoff_dir / fname
             if src.is_file():
                 shutil.move(str(src), str(dest / fname))
+
+    if handoff_dir.is_dir():
+        ensure_git_exclude(target_repo, extra_entries=[])
+    else:
+        remove_git_exclude(target_repo)
 
 
 def cmd_disarm(args: argparse.Namespace) -> int:
