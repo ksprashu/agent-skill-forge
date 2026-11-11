@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "title": "",
+  "mission": "",
+  "active_focus": {
+    "summary": "Vague focus with no files",
+    "primary_workspace": "repo-alpha",
+    "active_files": []
+  },
+  "completed": [],
+  "locked_decisions": [],
+  "next_actions": [],
+  "open_questions": [],
+  "suggested_skills": [],
+  "resume_verification": []
+}

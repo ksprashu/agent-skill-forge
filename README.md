@@ -183,6 +183,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`catalog`](./skills/catalog)** | `/catalog` | Autonomous | **Open Knowledge Format (OKF)**: Scaffolds and indexes progressive disclosure knowledge bundles (`.gemini/knowledge/`) for durable codebase memory. |
 | **[`google-oss`](./skills/google-oss)** | `/google-oss` | User Slash | **Open Source Compliance**: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **[`continuous-alignment`](./skills/continuous-alignment)** | `/align`, `/evolve` | Auto / Slash | **Continuous Alignment Engine**: Distills transcript learnings into a strict 200-line `AGENTS.md` budget, records living ADRs, and compiles roadmap visualizers. |
+| **[`handoff`](./skills/handoff)** | `/handoff`, `/handover` | User Slash | **Automagic Cross-Harness Session Handoff**: Captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity (`agy`), Claude Code (`SessionStart` + `CLAUDE.md`), OpenAI Codex, and Cursor. See [`skills/handoff/README.md`](./skills/handoff/README.md). |
 
 ---
 
@@ -316,6 +317,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
 | **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice overlay split out of `unslop` (#17). |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
+| **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
 | **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. |
 
