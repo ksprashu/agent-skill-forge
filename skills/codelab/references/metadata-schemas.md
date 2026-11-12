@@ -10,14 +10,15 @@ description: [The codelab description. E.g., "In this codelab you learn how to w
 id: [The codelab identifier. Separate each word with a hyphen character.]
 keywords: docType:Codelab, category:Cloud, skill:Intermediate
 feedback link: https://github.com/googlecodelabs/feedback/issues/new?title=[CODELAB-ID]%20Feedback&labels=gemini,codelab&assignees=<github-handle>
-authors: Prashanth Subrahmanyam
+authors: <AUTHOR_NAME>
 layout: paginated
 ---
 ```
 
 ### Critical Rules
 - **Anti-Hallucination (Strict Schema):** You MUST NOT use `<generated content>` wrappers. You MUST NOT include keys like `summary`, `categories`, `environments`, or `status`. You MUST include the exact `---` delimiters at the beginning and end of the YAML block.
-- **Authors:** Must always be "Prashanth Subrahmanyam" unless explicitly overridden.
+- **Enable GDP Credits Banner (`Enable_GDP_Credits_Banner: True`):** Add this key only when the codelab offers Google Cloud / Google Developer Program credits, so the top credit redemption banner renders. Omit it otherwise. The scaffold from `scripts/init_codelab.cjs` leaves it out.
+- **Authors:** Set to the author's display name (`<AUTHOR_NAME>`).
 - **Layout:** Specify `layout: paginated` for modern codelabs.
 - **Description:** Use `description` instead of `summary`.
 - **Keywords:** Must include `docType:Codelab` and a `category` (e.g., `category:Cloud`).

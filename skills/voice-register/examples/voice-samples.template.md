@@ -22,6 +22,16 @@ One before/after pair per register you write in. "Before" is generic AI output. 
 
 **After:** <...>
 
+## Sample — R5: Working Notes
+**Before:** <...>
+
+**After:** <...>
+
+## Sample — R6: Technical Dossier / Readout / Report
+**Before:** <...>
+
+**After:** <...>
+
 ## Sample — Code Comment (no register)
 **Before:** <...>
 

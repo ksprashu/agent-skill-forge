@@ -497,7 +497,10 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
     """
 
     SHIM = ("#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$ARGV_LOG\"\n"
-            "case \"$*\" in *persona.py*) exit \"${SHIM_PERSONA_EXIT:-0}\" ;; esac\nexit 0\n")
+            "case \"$*\" in *persona.py*)\n"
+            "  printf 'AGENT_PERSONA_REPO=%s\\n' \"${AGENT_PERSONA_REPO:-}\" >> \"$ARGV_LOG\"\n"
+            "  exit \"${SHIM_PERSONA_EXIT:-0}\" ;;\n"
+            "esac\nexit 0\n")
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix="forge_installer_"))
@@ -550,6 +553,25 @@ class NonInteractiveInstallDoesNotPrune(unittest.TestCase):
         proc, recorded = self.run_installer(AGENT_PERSONA_REPO="someone/agent-persona")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("persona.py pull --force", recorded)
+        self.assertIn("AGENT_PERSONA_REPO=someone/agent-persona", recorded)
+
+    def test_persona_flag_sets_repo_for_step_3(self):
+        proc, recorded = self.run_installer("--persona", "someone/agent-persona")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("persona.py pull --force", recorded)
+        self.assertIn("AGENT_PERSONA_REPO=someone/agent-persona", recorded)
+
+    def test_persona_equals_flag_sets_repo_for_step_3(self):
+        proc, recorded = self.run_installer("--persona=someone/agent-persona")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("persona.py pull --force", recorded)
+        self.assertIn("AGENT_PERSONA_REPO=someone/agent-persona", recorded)
+
+    def test_the_powershell_installer_accepts_persona_flag(self):
+        source = (REPO_ROOT / "scripts" / "install.ps1").read_text(encoding="utf-8")
+        self.assertIn("StartsWith('--persona=')", source)
+        self.assertIn("'--persona'", source)
+        self.assertIn("$env:AGENT_PERSONA_REPO = $ForwardArgs[$i]", source)
 
     def test_a_failed_persona_fetch_does_not_fail_the_install(self):
         proc, _ = self.run_installer(AGENT_PERSONA_REPO="someone/agent-persona",

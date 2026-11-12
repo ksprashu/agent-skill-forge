@@ -9,7 +9,7 @@ A codelab should have a narrator or a central character facing a problem that th
 - **Raju the Shopkeeper (The 'Digital Dukaan' style):** A relatable, non-technical business owner trying to modernize. The tone is encouraging, practical, and grounded in real-world business value.
 - **Unit 9 & Pixie (The 'Comic Book' style):** A "Digital Noir" aesthetic. Unit 9 is a cyberpunk cat hacker, Pixie is an AI companion. The tone is punchy, slightly cynical, but helpful.
 - **The Grumpy Sysadmin:** Reluctant to adopt new tools but won over by automation. Humor comes from cynical observations about traditional IT.
-- **The Pup & Kitten (Malti & Raggy):** A friendly and fun duo. Malti is an enthusiastic beige Maltipoo who leads the narration with excitement. Raggy is a bicolor Ragdoll kitten with blue eyes who provides "Pro Tips" and sharp-eyed advice in asides. This is the default persona for a generic, welcoming vibe.
+- **Companion Duo (Optional Character Pack):** When `node <skill-dir>/scripts/characters.cjs status` exits `0`, load the user's configured character pack (see `characters.schema.json` and `examples/characters.example/characters.json`, such as a curious builder `"Pip"` paired with a sharp-eyed debugger `"Byte"`). Keep physical appearance descriptors strictly in image-generation prompts rather than tutorial prose. When `characters.cjs status` exits `1` (`tier: neutral`), default to a direct, mascot-free developer voice using `> aside positive` **"Tip:"** and `> aside negative` **"Watch out:"**.
 
 *Action:* Always ask the user what Persona they want to adopt during the Brainstorming phase.
 

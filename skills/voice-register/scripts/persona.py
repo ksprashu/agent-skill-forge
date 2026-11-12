@@ -14,12 +14,13 @@
 # limitations under the License.
 
 """
-persona.py - Find, fetch and refresh the voice profile voice-register uses.
+persona.py - Find, fetch, refresh and activate a personal voice & overlay pack.
 
 The skill is public; a person's profile is not. Profiles live in a persona
 directory (default ~/.gemini/personas), which is usually a clone of the
-owner's private repo. This script resolves which profile applies and keeps
-that clone current, so a fresh machine picks up the voice with one setting:
+owner's private repo. This script resolves which profile applies, keeps that
+clone current, and links optional rules/ or skills/ overlays so a fresh
+machine picks up the full persona with one setting:
 
     AGENT_PERSONA_REPO   owner/name (cloned with gh if present, else https)
                          or any git URL or local path. Unset => nothing is
@@ -29,6 +30,7 @@ that clone current, so a fresh machine picks up the voice with one setting:
 CLI:
     persona.py status [--name NAME]
     persona.py pull [--force] [--name NAME]
+    persona.py activate [--name NAME]
 
 Exit codes: 0 a personal profile resolves, 1 neutral (template only),
 2 error (fetch failed, named profile missing, bad arguments).
@@ -53,13 +55,37 @@ PULL_INTERVAL = 24 * 60 * 60
 TIMEOUT = 30
 # Neither part may start with "-", so it can never be read as an option.
 OWNER_NAME = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_.-]*/[A-Za-z0-9_.][A-Za-z0-9_.-]*$")
+# Global skills_dirs from config/harnesses.json. A test asserts this tuple
+# matches that file. Project-local skills dirs are intentionally absent:
+# overlays install into the user's harness, not whichever repo they have open.
+HARNESS_SKILL_DIRS = (
+    ".claude/skills",
+    ".gemini/config/skills",
+    ".gemini/antigravity-cli/skills",
+    ".gemini/skills",
+    ".codex/skills",
+    ".agents/skills",
+)
+# Written into a directory copy so a later run can refresh it. A directory
+# without this file is someone else's and is left alone. sync_skills.py uses
+# the same idea (.forge-owned) for forge installs; the two markers stay
+# distinct so one tool does not refresh the other's copies.
+OWNED_DIR_MARKER = ".persona-owned"
+OWNED_FILE_SUFFIX = ".persona-owned"
+
+
+def _home_dir():
+    env_home = os.environ.get("HOME")
+    if env_home:
+        return Path(env_home)
+    return Path.home()
 
 
 def persona_dir():
     override = os.environ.get("AGENT_PERSONA_DIR")
     if override:
         return Path(override).expanduser()
-    return Path.home() / ".gemini" / "personas"
+    return _home_dir() / ".gemini" / "personas"
 
 
 def resolve(skill_dir, pdir, name="default"):
@@ -79,6 +105,250 @@ def resolve(skill_dir, pdir, name="default"):
     if name != "default":
         return None, None, None
     return 3, skill_dir / "references" / "voice_and_tone.template.md", None
+
+
+def _resolve_characters_pack(chars_root):
+    """Locate characters.json directly under chars_root or in a pack subfolder."""
+    if not chars_root.is_dir():
+        return None
+    direct = chars_root / "characters.json"
+    if direct.is_file():
+        return direct
+    for sub in sorted(chars_root.iterdir()):
+        if sub.is_dir() and not sub.name.startswith("."):
+            candidate = sub / "characters.json"
+            if candidate.is_file():
+                return candidate
+    return None
+
+
+def _is_within(path, root_dir):
+    try:
+        path.resolve().relative_to(Path(root_dir).resolve())
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def _points_within(link_path, root_dir):
+    """True when a symlink or junction points at something inside root_dir."""
+    try:
+        raw = os.readlink(link_path)
+        resolved = (link_path.parent / raw).resolve()
+    except OSError:
+        try:
+            resolved = link_path.resolve()
+        except OSError:
+            return False
+    return _is_within(resolved, root_dir)
+
+
+def _is_dir_link(path):
+    """True for a symlink or a Windows junction (which is not a symlink)."""
+    try:
+        if path.is_symlink():
+            return True
+    except OSError:
+        return False
+    if os.name != "nt":
+        return False
+    checker = getattr(os.path, "isjunction", None)
+    if checker is None:
+        return False
+    try:
+        return bool(checker(path))
+    except OSError:
+        return False
+
+
+def _same_link_target(dst, src_resolved):
+    try:
+        if dst.exists() and dst.resolve() == src_resolved:
+            return True
+    except OSError:
+        pass
+    return False
+
+
+def _file_stamp(dst):
+    return dst.with_name(dst.name + OWNED_FILE_SUFFIX)
+
+
+def _owned_file_copy(dst, owner_root):
+    stamp = _file_stamp(dst)
+    if not stamp.is_file():
+        return False
+    try:
+        recorded = Path(stamp.read_text(encoding="utf-8").strip())
+    except OSError:
+        return False
+    return _is_within(recorded, owner_root)
+
+
+def _write_file_stamp(dst, src_resolved):
+    _file_stamp(dst).write_text(str(src_resolved) + "\n", encoding="utf-8")
+
+
+def _clear_file_stamp(dst):
+    stamp = _file_stamp(dst)
+    if stamp.is_file():
+        stamp.unlink()
+
+
+def _owned_dir_copy(dst, owner_root):
+    marker = dst / OWNED_DIR_MARKER
+    if not marker.is_file():
+        return False
+    try:
+        recorded = Path(marker.read_text(encoding="utf-8").strip())
+    except OSError:
+        return False
+    return _is_within(recorded, owner_root)
+
+
+def _mark_owned_dir(dst, src_resolved):
+    (dst / OWNED_DIR_MARKER).write_text(str(src_resolved) + "\n", encoding="utf-8")
+
+
+def _symlink_or_junction(src_resolved, dst):
+    """Link dst at src. On Windows, fall back to _winapi.CreateJunction."""
+    try:
+        os.symlink(str(src_resolved), str(dst), target_is_directory=True)
+        return True
+    except OSError:
+        if os.name != "nt":
+            return False
+        try:
+            import _winapi
+            _winapi.CreateJunction(str(src_resolved), str(dst))
+            return True
+        except (OSError, AttributeError):
+            return False
+
+
+def _link_or_copy_file(src, dst, owner_root):
+    src_resolved = src.resolve()
+    if dst.is_symlink():
+        if _same_link_target(dst, src_resolved):
+            return dst
+        if _points_within(dst, owner_root):
+            dst.unlink()
+        else:
+            return None
+    elif dst.exists():
+        # A previous run that could not symlink left a stamped copy. Refresh
+        # it. Anything else already in the harness belongs to the user.
+        if _owned_file_copy(dst, owner_root):
+            dst.unlink()
+            _clear_file_stamp(dst)
+        else:
+            return None
+    try:
+        dst.symlink_to(src_resolved)
+        _clear_file_stamp(dst)
+    except OSError:
+        shutil.copy2(src_resolved, dst)
+        _write_file_stamp(dst, src_resolved)
+    return dst
+
+
+def _remove_owned_dir(dst):
+    if _is_dir_link(dst):
+        dst.unlink()
+    else:
+        shutil.rmtree(dst)
+
+
+def _link_or_junction_dir(src, dst, owner_root):
+    src_resolved = src.resolve()
+    if _is_dir_link(dst):
+        if _same_link_target(dst, src_resolved):
+            return dst
+        if _points_within(dst, owner_root):
+            dst.unlink()
+        else:
+            return None
+    elif dst.exists():
+        if _owned_dir_copy(dst, owner_root):
+            _remove_owned_dir(dst)
+        else:
+            return None
+    if _symlink_or_junction(src_resolved, dst):
+        return dst
+    shutil.copytree(src_resolved, dst)
+    _mark_owned_dir(dst, src_resolved)
+    return dst
+
+
+def _installed_rule_targets(home_root):
+    """Rule dirs for Gemini harnesses that are already present.
+
+    ``~/.gemini/config/rules`` is created only when ``~/.gemini`` already
+    exists, so a persona with rules does not invent a Gemini install.
+    Antigravity CLI rules stay behind the same parent check as before.
+    """
+    targets = []
+    if (home_root / ".gemini").is_dir():
+        targets.append(home_root / ".gemini" / "config" / "rules")
+    agy = home_root / ".gemini" / "antigravity-cli"
+    if agy.is_dir():
+        targets.append(agy / "rules")
+    return targets
+
+
+def _installed_skill_targets(home_root):
+    """Skill dirs for harnesses already present on this machine.
+
+    Creating ~/.codex or ~/.claude for a tool the user does not have leaves
+    an empty tree that looks like an install. The parent directory is the
+    signal that the harness is there; this function then creates only the
+    skills directory under it.
+    """
+    targets = []
+    for rel in HARNESS_SKILL_DIRS:
+        dest = home_root.joinpath(*rel.split("/"))
+        if dest.parent.is_dir():
+            targets.append(dest)
+    return targets
+
+
+def activate_overlays(pdir, home=None):
+    """Link/copy rules/*.md and skills/*/SKILL.md from pdir into user harnesses."""
+    pdir = Path(pdir)
+    if not pdir.is_dir():
+        return []
+    home_root = Path(home) if home is not None else _home_dir()
+    activated = []
+    # Snapshot before rules/ creates ~/.gemini, so a rules file does not make
+    # every Gemini skills directory look installed.
+    skill_targets = _installed_skill_targets(home_root)
+
+    rules_dir = pdir / "rules"
+    if rules_dir.is_dir():
+        rule_files = sorted(p for p in rules_dir.glob("*.md") if p.is_file())
+        if rule_files:
+            for target_dir in _installed_rule_targets(home_root):
+                target_dir.mkdir(parents=True, exist_ok=True)
+                for rf in rule_files:
+                    linked = _link_or_copy_file(rf, target_dir / rf.name, pdir)
+                    if linked is not None:
+                        activated.append(linked)
+
+    skills_dir = pdir / "skills"
+    if skills_dir.is_dir():
+        skill_subdirs = sorted(
+            d for d in skills_dir.iterdir()
+            if d.is_dir() and not d.name.startswith(".") and (d / "SKILL.md").is_file()
+        )
+        if skill_subdirs:
+            for target_dir in skill_targets:
+                target_dir.mkdir(parents=True, exist_ok=True)
+                for sd in skill_subdirs:
+                    linked = _link_or_junction_dir(sd, target_dir / sd.name, pdir)
+                    if linked is not None:
+                        activated.append(linked)
+
+    return activated
 
 
 def _git_env():
@@ -162,11 +432,15 @@ def report(pdir, name):
                      % (name, pdir / name / PROFILE))
         print("\n".join(lines))
         return 2
+    reader_file = pdir / name / "reader" / "profile.json"
+    chars_file = _resolve_characters_pack(pdir / name / "characters")
     labels = {1: "tier 1 (local override)", 2: "tier 2 (persona directory)",
               3: "tier 3 (neutral template; no personal profile found)"}
     lines += ["tier: %s" % labels[tier],
               "profile: %s" % profile,
-              "samples: %s" % (samples or "(none)")]
+              "samples: %s" % (samples or "(none)"),
+              "reader_pack: %s" % (reader_file if reader_file.is_file() else "(none)"),
+              "characters_pack: %s" % (chars_file or "(none)")]
     print("\n".join(lines))
     return 0 if tier in (1, 2) else 1
 
@@ -174,7 +448,7 @@ def report(pdir, name):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
-    for cmd in ("status", "pull"):
+    for cmd in ("status", "pull", "activate"):
         p = sub.add_parser(cmd)
         p.add_argument("--name", default="default",
                        help="named profile under the persona directory")
@@ -193,6 +467,15 @@ def main(argv=None):
         if not ok:
             report(pdir, args.name)
             return 2
+        if pdir.is_dir():
+            activated = activate_overlays(pdir)
+            if activated:
+                print("activated: %d overlay item(s)" % len(activated))
+    elif args.cmd == "activate":
+        activated = activate_overlays(pdir)
+        print("activated: %d overlay item(s)" % len(activated))
+        rc = report(pdir, args.name)
+        return 0 if (rc == 0 or len(activated) > 0) else rc
     return report(pdir, args.name)
 
 

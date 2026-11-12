@@ -38,3 +38,8 @@ Platform engineering lead. Plain-spoken and practical, allergic to hype, writes 
 
 ### R5: Working Notes & Comments
 - **Structure**: terse `-` bullets, `=>` for outcomes, `TODO(sam):` tags.
+
+### R6: Technical Dossier / Readout / Report
+- **Voice**: Verdict first, then the mechanism, in connected cause-and-effect sentences. No blog hook, no theatrical metaphor, no live shorthand.
+- **Structure**: orientation and verdict, a comparison table, then the limit the numbers imply (`**Risk:**` when there is one).
+- **Punctuation**: same spelling and dash rules as the rest of the profile. No em-dashes. Keep every figure, flag, and name from the source.

@@ -39,8 +39,8 @@ NO_FETCH=0
 OFFLINE=0
 PASS_ARGS=()
 
-for arg in "$@"; do
-    case "$arg" in
+while [ $# -gt 0 ]; do
+    case "$1" in
         --uninstall)
             # Only --uninstall goes through. Forwarding "$@" would hand
             # sync_skills.py flags it does not define (--hard-gate, --offline)
@@ -49,12 +49,30 @@ for arg in "$@"; do
             python3 "$REPO_ROOT/hooks/design_gate.py" --uninstall || true
             exit 0
             ;;
-        --hard-gate)   HARD_GATE=1 ;;
+        --hard-gate)    HARD_GATE=1 ;;
         --no-hard-gate) HARD_GATE=0 ;;
-        --no-fetch)    NO_FETCH=1 ;;
-        --offline)     OFFLINE=1 ;;
-        *)             PASS_ARGS+=("$arg") ;;
+        --no-fetch)     NO_FETCH=1 ;;
+        --offline)      OFFLINE=1 ;;
+        --persona=*)
+            AGENT_PERSONA_REPO="${1#--persona=}"
+            if [ -z "$AGENT_PERSONA_REPO" ]; then
+                echo "❌ Error: --persona requires a non-empty <owner/repo>, URL, or path." >&2
+                exit 2
+            fi
+            export AGENT_PERSONA_REPO
+            ;;
+        --persona)
+            if [ $# -lt 2 ] || [ -z "${2:-}" ]; then
+                echo "❌ Error: --persona requires a <owner/repo>, URL, or path argument." >&2
+                exit 2
+            fi
+            AGENT_PERSONA_REPO="$2"
+            export AGENT_PERSONA_REPO
+            shift
+            ;;
+        *)              PASS_ARGS+=("$1") ;;
     esac
+    shift
 done
 
 # ------------------------------------------------------------------------------

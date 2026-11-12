@@ -1,23 +1,25 @@
-# Google Cloud Trial Credit Redemption Guidelines
+# Google Cloud Trial Credit Redemption & Antigravity Sign-In Guidelines
 
-When a codelab requires users to redeem Google Cloud credits via a **Trial Billing Account** (which does *not* require a credit card), you must use the reusable building blocks.
+When a codelab requires users to redeem Google Cloud credits via a **Trial Billing Account** or the **Google Developer Program (GDP)** banner, follow these rules:
+
+1. **Always Add `Enable_GDP_Credits_Banner: True` in Frontmatter:**
+   Include `Enable_GDP_Credits_Banner: True` in the YAML frontmatter of `index.lab.md` so the codelab renderer displays the top credit claim banner automatically.
+2. **Use "Gemini Platform" (Never "Vertex AI"):**
+   Refer to Google Cloud's enterprise AI offering as **[Gemini Platform](https://cloud.google.com/products/gemini-enterprise-agent-platform)** (`https://cloud.google.com/products/gemini-enterprise-agent-platform`).
+3. **Cover All Three Antigravity (`agy`) Sign-In Flows:**
+   When authenticating Google Antigravity (`agy`), document:
+   - **Option A: Personal Gmail Login (`@gmail.com`)** for personal Pro/Ultra subscriptions.
+   - **Option B: Google Workspace / Business Plan + Google Cloud Project** (`gcloud config set project <PROJECT_ID>`) for Gemini Platform credits and quota.
+   - **Option C: Custom Enterprise SSO / Application Default Credentials (ADC)** (`gcloud auth application-default login`) for federated corporate identities.
 
 ## Reusable Snippets
 
-These snippets feature **Malti (the Maltipoo)** and **Raggy (the Ragdoll kitten)** as friendly guides.
+These mascot-free setup snippets handle standard Google Cloud onboarding cleanly out of the box:
 
-1.  **Project Setup & Credits:** Use `references/snippets/setup-project.md`. This handles the full flow from redemption to project creation.
-2.  **Environment Setup:** Use `references/snippets/setup-environment.md`. This covers Cloud Shell and Local Terminal options.
-3.  **Gemini CLI Intro:** Use `references/snippets/intro-gemini-cli.md`. This introduces the tool and its benefits.
+1.  **Project Setup & Credits:** Use `references/snippets/setup-project.md`. Handles trial credit redemption, project creation, and billing verification.
+2.  **Environment Setup:** Use `references/snippets/setup-environment.md`. Covers Google Cloud Shell and local terminal options.
+3.  **CLI / Harness Intro:** Use `references/snippets/intro-gemini-cli.md`. Introduces terminal setup and verification.
 
-## Mascot Comic Assets
+## Optional Setup Comic Slots
 
-The following 4-panel instructional comics are available in `assets/common-images/`:
-
-- `activate_billing_comic.png`: 4 panels (Incognito, Sign-in, Access Credits, Success).
-- `create_project_comic.png`: 4 panels (Console, Project Name, Billing Selection, Create Button).
-- `verify_billing_comic.png`: 4 panels (Overview, Link check, Trial selection, Ready to build).
-- `environment_setup_comic.png`: 4 panels (Choice, Activate, Authorize, Project ID check).
-- `gemini_cli_comic.png`: 4 panels (Intro, Install, First 'Hi', Dual tabs tip).
-
-*Note:* When the `codelab-creator` skill is active, it will automatically incorporate these comics into the standard setup steps.
+When an optional character pack resolves (`node <skill-dir>/scripts/characters.cjs status` exits `0`) and declares a `comics` map (or `common-comics/*.png`), copy those comics into the codelab's `img/` folder for the corresponding setup steps (`activate_billing`, `create_project`, `verify_billing`, `environment_setup`). When no character pack is installed (`exit 1`), use clean annotated console screenshots or architecture diagrams instead.
