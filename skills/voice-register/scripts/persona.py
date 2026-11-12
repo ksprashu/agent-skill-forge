@@ -55,6 +55,23 @@ PULL_INTERVAL = 24 * 60 * 60
 TIMEOUT = 30
 # Neither part may start with "-", so it can never be read as an option.
 OWNER_NAME = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_.-]*/[A-Za-z0-9_.][A-Za-z0-9_.-]*$")
+# Global skills_dirs from config/harnesses.json. A test asserts this tuple
+# matches that file. Project-local skills dirs are intentionally absent:
+# overlays install into the user's harness, not whichever repo they have open.
+HARNESS_SKILL_DIRS = (
+    ".claude/skills",
+    ".gemini/config/skills",
+    ".gemini/antigravity-cli/skills",
+    ".gemini/skills",
+    ".codex/skills",
+    ".agents/skills",
+)
+# Written into a directory copy so a later run can refresh it. A directory
+# without this file is someone else's and is left alone. sync_skills.py uses
+# the same idea (.forge-owned) for forge installs; the two markers stay
+# distinct so one tool does not refresh the other's copies.
+OWNED_DIR_MARKER = ".persona-owned"
+OWNED_FILE_SUFFIX = ".persona-owned"
 
 
 def _home_dir():
@@ -105,61 +122,194 @@ def _resolve_characters_pack(chars_root):
     return None
 
 
-def _points_within(link_path, root_dir):
+def _is_within(path, root_dir):
     try:
-        raw = os.readlink(link_path)
-        resolved = (link_path.parent / raw).resolve()
-        resolved.relative_to(root_dir.resolve())
+        path.resolve().relative_to(Path(root_dir).resolve())
         return True
     except (OSError, ValueError):
         return False
 
 
+def _points_within(link_path, root_dir):
+    """True when a symlink or junction points at something inside root_dir."""
+    try:
+        raw = os.readlink(link_path)
+        resolved = (link_path.parent / raw).resolve()
+    except OSError:
+        try:
+            resolved = link_path.resolve()
+        except OSError:
+            return False
+    return _is_within(resolved, root_dir)
+
+
+def _is_dir_link(path):
+    """True for a symlink or a Windows junction (which is not a symlink)."""
+    try:
+        if path.is_symlink():
+            return True
+    except OSError:
+        return False
+    if os.name != "nt":
+        return False
+    checker = getattr(os.path, "isjunction", None)
+    if checker is None:
+        return False
+    try:
+        return bool(checker(path))
+    except OSError:
+        return False
+
+
+def _same_link_target(dst, src_resolved):
+    try:
+        if dst.exists() and dst.resolve() == src_resolved:
+            return True
+    except OSError:
+        pass
+    return False
+
+
+def _file_stamp(dst):
+    return dst.with_name(dst.name + OWNED_FILE_SUFFIX)
+
+
+def _owned_file_copy(dst, owner_root):
+    stamp = _file_stamp(dst)
+    if not stamp.is_file():
+        return False
+    try:
+        recorded = Path(stamp.read_text(encoding="utf-8").strip())
+    except OSError:
+        return False
+    return _is_within(recorded, owner_root)
+
+
+def _write_file_stamp(dst, src_resolved):
+    _file_stamp(dst).write_text(str(src_resolved) + "\n", encoding="utf-8")
+
+
+def _clear_file_stamp(dst):
+    stamp = _file_stamp(dst)
+    if stamp.is_file():
+        stamp.unlink()
+
+
+def _owned_dir_copy(dst, owner_root):
+    marker = dst / OWNED_DIR_MARKER
+    if not marker.is_file():
+        return False
+    try:
+        recorded = Path(marker.read_text(encoding="utf-8").strip())
+    except OSError:
+        return False
+    return _is_within(recorded, owner_root)
+
+
+def _mark_owned_dir(dst, src_resolved):
+    (dst / OWNED_DIR_MARKER).write_text(str(src_resolved) + "\n", encoding="utf-8")
+
+
+def _symlink_or_junction(src_resolved, dst):
+    """Link dst at src. On Windows, fall back to _winapi.CreateJunction."""
+    try:
+        os.symlink(str(src_resolved), str(dst), target_is_directory=True)
+        return True
+    except OSError:
+        if os.name != "nt":
+            return False
+        try:
+            import _winapi
+            _winapi.CreateJunction(str(src_resolved), str(dst))
+            return True
+        except (OSError, AttributeError):
+            return False
+
+
 def _link_or_copy_file(src, dst, owner_root):
     src_resolved = src.resolve()
     if dst.is_symlink():
-        if dst.exists() and dst.resolve() == src_resolved:
+        if _same_link_target(dst, src_resolved):
             return dst
         if _points_within(dst, owner_root):
             dst.unlink()
         else:
             return None
     elif dst.exists():
-        return None
+        # A previous run that could not symlink left a stamped copy. Refresh
+        # it. Anything else already in the harness belongs to the user.
+        if _owned_file_copy(dst, owner_root):
+            dst.unlink()
+            _clear_file_stamp(dst)
+        else:
+            return None
     try:
         dst.symlink_to(src_resolved)
+        _clear_file_stamp(dst)
     except OSError:
         shutil.copy2(src_resolved, dst)
+        _write_file_stamp(dst, src_resolved)
     return dst
+
+
+def _remove_owned_dir(dst):
+    if _is_dir_link(dst):
+        dst.unlink()
+    else:
+        shutil.rmtree(dst)
 
 
 def _link_or_junction_dir(src, dst, owner_root):
     src_resolved = src.resolve()
-    if dst.is_symlink():
-        if dst.exists() and dst.resolve() == src_resolved:
+    if _is_dir_link(dst):
+        if _same_link_target(dst, src_resolved):
             return dst
         if _points_within(dst, owner_root):
             dst.unlink()
         else:
             return None
     elif dst.exists():
-        return None
-    try:
-        os.symlink(str(src_resolved), str(dst), target_is_directory=True)
+        if _owned_dir_copy(dst, owner_root):
+            _remove_owned_dir(dst)
+        else:
+            return None
+    if _symlink_or_junction(src_resolved, dst):
         return dst
-    except OSError:
-        if os.name == "nt":
-            try:
-                proc = subprocess.run(
-                    ["cmd", "/c", "mklink", "/J", str(dst), str(src_resolved)],
-                    capture_output=True, text=True, timeout=TIMEOUT
-                )
-                if proc.returncode == 0 and dst.exists():
-                    return dst
-            except (OSError, subprocess.TimeoutExpired):
-                pass
-        shutil.copytree(src_resolved, dst)
-        return dst
+    shutil.copytree(src_resolved, dst)
+    _mark_owned_dir(dst, src_resolved)
+    return dst
+
+
+def _installed_rule_targets(home_root):
+    """Rule dirs for Gemini harnesses that are already present.
+
+    ``~/.gemini/config/rules`` is created only when ``~/.gemini`` already
+    exists, so a persona with rules does not invent a Gemini install.
+    Antigravity CLI rules stay behind the same parent check as before.
+    """
+    targets = []
+    if (home_root / ".gemini").is_dir():
+        targets.append(home_root / ".gemini" / "config" / "rules")
+    agy = home_root / ".gemini" / "antigravity-cli"
+    if agy.is_dir():
+        targets.append(agy / "rules")
+    return targets
+
+
+def _installed_skill_targets(home_root):
+    """Skill dirs for harnesses already present on this machine.
+
+    Creating ~/.codex or ~/.claude for a tool the user does not have leaves
+    an empty tree that looks like an install. The parent directory is the
+    signal that the harness is there; this function then creates only the
+    skills directory under it.
+    """
+    targets = []
+    for rel in HARNESS_SKILL_DIRS:
+        dest = home_root.joinpath(*rel.split("/"))
+        if dest.parent.is_dir():
+            targets.append(dest)
+    return targets
 
 
 def activate_overlays(pdir, home=None):
@@ -169,16 +319,15 @@ def activate_overlays(pdir, home=None):
         return []
     home_root = Path(home) if home is not None else _home_dir()
     activated = []
+    # Snapshot before rules/ creates ~/.gemini, so a rules file does not make
+    # every Gemini skills directory look installed.
+    skill_targets = _installed_skill_targets(home_root)
 
     rules_dir = pdir / "rules"
     if rules_dir.is_dir():
         rule_files = sorted(p for p in rules_dir.glob("*.md") if p.is_file())
         if rule_files:
-            rule_targets = [home_root / ".gemini" / "config" / "rules"]
-            agy_cli_parent = home_root / ".gemini" / "antigravity-cli"
-            if agy_cli_parent.exists():
-                rule_targets.append(agy_cli_parent / "rules")
-            for target_dir in rule_targets:
+            for target_dir in _installed_rule_targets(home_root):
                 target_dir.mkdir(parents=True, exist_ok=True)
                 for rf in rule_files:
                     linked = _link_or_copy_file(rf, target_dir / rf.name, pdir)
@@ -192,12 +341,6 @@ def activate_overlays(pdir, home=None):
             if d.is_dir() and not d.name.startswith(".") and (d / "SKILL.md").is_file()
         )
         if skill_subdirs:
-            skill_targets = [
-                home_root / ".gemini" / "config" / "skills",
-                home_root / ".gemini" / "skills",
-                home_root / ".claude" / "skills",
-                home_root / ".agents" / "skills",
-            ]
             for target_dir in skill_targets:
                 target_dir.mkdir(parents=True, exist_ok=True)
                 for sd in skill_subdirs:

@@ -41,10 +41,14 @@ try:
 except ImportError:
     ALIASES = {}
 
+# The display-name pattern is the only PII hit an attribution line may carry.
+# Emails and caller-supplied denylist terms are never exempted; see
+# _pii_scan_line.
+AUTHOR_DISPLAY_NAME_RE = re.compile(r'Prashanth Subrahmanyam', re.IGNORECASE)
 PII_PATTERNS = [
     re.compile(r'ksprashanth@', re.IGNORECASE),
     re.compile(r'ksprashu@', re.IGNORECASE),
-    re.compile(r'Prashanth Subrahmanyam', re.IGNORECASE),
+    AUTHOR_DISPLAY_NAME_RE,
 ]
 
 # A home directory in a tracked file is two defects at once: it leaks the
@@ -129,6 +133,18 @@ def _is_readme_attribution_line(filename, line):
     return filename == 'README.md' and bool(_README_ATTRIBUTION_RE.search(line))
 
 
+def _pii_scan_line(filename, line):
+    """Line to match against PII_PATTERNS.
+
+    A skill README attribution line may name this repository's author. That
+    display name is removed before the PII scan. The email patterns and the
+    original line (used for --denylist) are not exempted.
+    """
+    if _is_readme_attribution_line(filename, line):
+        return AUTHOR_DISPLAY_NAME_RE.sub('', line)
+    return line
+
+
 def load_denylist(denylist_path):
     """Load non-empty, non-comment forbidden terms from denylist_path."""
     terms = []
@@ -164,10 +180,9 @@ def scan_skills_pii_and_denylist(repo_root, denylist_terms=()):
                 continue
             rel = os.path.relpath(full, repo_root).replace(os.sep, '/')
             for idx, line in enumerate(content.splitlines(), 1):
-                if _is_readme_attribution_line(name, line):
-                    continue
+                pii_line = _pii_scan_line(name, line)
                 for pat in PII_PATTERNS:
-                    if pat.search(line):
+                    if pat.search(pii_line):
                         errors.append(
                             f"[pii] {rel}:{idx} matches PII pattern '{pat.pattern}'"
                         )

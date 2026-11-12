@@ -75,7 +75,7 @@ Write the actual `index.lab.md` using strict formatting.
 node <skill-dir>/scripts/manage_codelab.cjs
 ```
 
-1. **YAML Frontmatter (Strict):** You MUST use this exact template for the metadata block. Do NOT include `summary`, `categories`, `environments`, or `status`. Always include `Enable_GDP_Credits_Banner: True` when Google Cloud / GDP credits are used.
+1. **YAML Frontmatter (Strict):** You MUST use this exact template for the metadata block. Do NOT include `summary`, `categories`, `environments`, or `status`. Add `Enable_GDP_Credits_Banner: True` as an extra line only when the lab offers Google Cloud / GDP credits (see `references/cloud-credits.md`). Leave it out otherwise, which is what `scripts/init_codelab.cjs` scaffolds.
     ```yaml
     ---
     description: [Short description]
@@ -84,7 +84,6 @@ node <skill-dir>/scripts/manage_codelab.cjs
     feedback link: https://github.com/googlecodelabs/feedback/issues/new?title=[codelab-slug]%20Feedback&labels=gemini,codelab&assignees=<github-handle>
     authors: <AUTHOR_NAME>
     layout: paginated
-    Enable_GDP_Credits_Banner: True
     ---
     ```
 2. *Steps & Visuals:* Use `##` for major steps, `###` for sub-steps. Include `Duration: MM:SS` under each `##` step. Every `##` step page MUST include at least one visual (architecture diagram, setup comic, or annotated screenshot).

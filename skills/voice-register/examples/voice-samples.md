@@ -56,3 +56,11 @@ Before/after rewrites across registers. "Before" is generic AI output. "After" i
 **After**
 > - auth module: wip, tbh needs a refactor => after the migration
 > - TODO(sam): file a ticket w/ the token-refresh repro
+
+## Sample E — R6: Technical Dossier / Readout
+
+**Before**
+> The 4-hour window caps the gateway at 5,000,000 tokens. The reasoning tier costs 2x the coding tier on every uncached token. Using the reasoning tier for planning and coding spends that window in 2-3 rounds. The coding tier does not.
+
+**After**
+> The gateway's 4-hour window caps usage at 5,000,000 tokens, and because the reasoning tier costs 2x the coding tier on every uncached token, using the reasoning tier for both planning and coding spends that window in 2-3 rounds. The coding tier does not.

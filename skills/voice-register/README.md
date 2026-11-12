@@ -10,7 +10,7 @@ The first match wins:
 2. `~/.gemini/personas/default/voice_and_tone.md`: your persona directory, shared by every harness on the machine.
 3. `references/voice_and_tone.template.md`: the neutral fallback template.
 
-If `voice-samples.md` sits next to the resolved profile, the skill uses it as few-shot examples across `R1`-`R6`. `scripts/persona.py status` also reports optional `reader_pack` (`default/reader/profile.json`) and `characters_pack` (`default/characters/characters.json`) bundles when present, and `persona.py pull` / `persona.py activate` links any optional `rules/*.md` or `skills/*/` overlays from your persona repo across installed harnesses. A named profile at `~/.gemini/personas/<name>/voice_and_tone.md` is used only when you ask for it by name.
+If `voice-samples.md` sits next to the resolved profile, the skill uses it as few-shot examples across `R1`-`R6` (the bundled `examples/voice-samples.md` includes an `R6` dossier pair). `scripts/persona.py status` also reports optional `reader_pack` (`default/reader/profile.json`) and `characters_pack` (`default/characters/characters.json`) bundles when present, and `persona.py pull` / `persona.py activate` links any optional `rules/*.md` or `skills/*/` overlays from your persona repo into harnesses that are already installed. A named profile at `~/.gemini/personas/<name>/voice_and_tone.md` is used only when you ask for it by name (`persona.py status --name <name>`). When resolution falls through to the template (`tier 3`), its `<...>` placeholders are blanks, not a voice.
 
 ## Your Voice on Every Machine
 

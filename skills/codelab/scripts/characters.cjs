@@ -88,7 +88,36 @@ function isNonEmptyString(val) {
     return typeof val === 'string' && val.trim().length > 0;
 }
 
-function validateSpec(spec) {
+// characters.schema.json characters[].id. Used as a path segment under assets/characters/<id>.
+const CHARACTER_ID_RE = /^[a-z0-9][a-z0-9_-]*$/;
+
+function isInsideDir(rootDir, candidate) {
+    const root = path.resolve(rootDir);
+    const resolved = path.resolve(candidate);
+    const rel = path.relative(root, resolved);
+    if (rel === '') return true;
+    if (path.isAbsolute(rel)) return false;
+    return !rel.startsWith('..') && !rel.split(path.sep).includes('..');
+}
+
+function characterBibleError(packDir, spec) {
+    if (!spec || !isNonEmptyString(spec.character_bible)) return null;
+    const raw = spec.character_bible;
+    if (path.isAbsolute(raw) || raw.split(/[\\/]/).includes('..')) {
+        return 'character_bible must be a relative path inside the character pack.';
+    }
+    if (!packDir) return null;
+    const candidate = path.resolve(packDir, raw);
+    if (!isInsideDir(packDir, candidate)) {
+        return 'character_bible must stay inside the character pack directory.';
+    }
+    if (!fs.existsSync(candidate) || !fs.statSync(candidate).isFile()) {
+        return `character_bible '${raw}' does not exist in the character pack.`;
+    }
+    return null;
+}
+
+function validateSpec(spec, packDir) {
     const errors = [];
     if (!spec || typeof spec !== 'object' || Array.isArray(spec)) {
         return ['Root value of characters.json must be a JSON object.'];
@@ -111,10 +140,16 @@ function validateSpec(spec) {
                 }
             }
             if (isNonEmptyString(ch.id)) {
-                if (seenIds.has(ch.id)) {
-                    errors.push(`Duplicate character id '${ch.id}'.`);
+                if (!CHARACTER_ID_RE.test(ch.id)) {
+                    errors.push(
+                        `characters[${idx}].id '${ch.id}' must match ${CHARACTER_ID_RE}.`
+                    );
                 }
-                seenIds.add(ch.id);
+                const key = ch.id.toLowerCase();
+                if (seenIds.has(key)) {
+                    errors.push(`Duplicate character id '${ch.id}' (ids are case-insensitive).`);
+                }
+                seenIds.add(key);
             }
             if (ch.icons !== undefined) {
                 const validArray = Array.isArray(ch.icons) && ch.icons.every(isNonEmptyString);
@@ -126,6 +161,8 @@ function validateSpec(spec) {
             }
         });
     }
+    const bibleError = characterBibleError(packDir, spec);
+    if (bibleError) errors.push(bibleError);
     if (spec.comics !== undefined) {
         const validComics = typeof spec.comics === 'object' && spec.comics !== null && !Array.isArray(spec.comics) &&
             Object.values(spec.comics).every(isNonEmptyString);
@@ -148,11 +185,14 @@ function discoverFilesInSubdir(packDir, subdirName) {
 }
 
 function resolveBiblePath(packDir, spec) {
-    if (isNonEmptyString(spec.character_bible)) {
+    if (spec && isNonEmptyString(spec.character_bible)) {
+        // An explicit path is never silently replaced by CHARACTER_BIBLE.md.
+        if (characterBibleError(packDir, spec)) return null;
         const candidate = path.resolve(packDir, spec.character_bible);
-        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        if (isInsideDir(packDir, candidate) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
             return candidate;
         }
+        return null;
     }
     for (const name of ['CHARACTER_BIBLE.md', 'character-bible.md']) {
         const candidate = path.join(packDir, name);
@@ -222,7 +262,7 @@ function runStatus(asJson) {
         return 2;
     }
 
-    const errors = validateSpec(spec);
+    const errors = validateSpec(spec, located.dir);
     if (errors.length > 0) {
         console.error(`characters.cjs schema error in ${located.file}:`);
         for (const e of errors) {
@@ -303,4 +343,11 @@ if (require.main === module) {
     main(process.argv);
 }
 
-module.exports = { locateCharactersFile, resolveCandidate, validateSpec, runStatus };
+module.exports = {
+    locateCharactersFile,
+    resolveCandidate,
+    validateSpec,
+    resolveBiblePath,
+    runStatus,
+    isInsideDir,
+};
