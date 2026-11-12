@@ -237,6 +237,21 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "hot path", "allocation",
         ),
     ),
+    Domain(
+        label="Narrative Nonfiction & Field Books",
+        skills=(
+            "skills/chronicle", "skills/atelier", "skills/unslop",
+            "skills/voice-register",
+        ),
+        roles=("Worker",),
+        instructions="Gladwell/Grant narrative, evidence badges, field notebooks, atelier literary edition, unslop prose, and the author's voice register.",
+        triggers=(
+            "storytelling", "gladwell", "adam grant", "like a story",
+            "like a book", "storytelling format", "narrative nonfiction",
+            "nonfiction", "michael lewis", "field book", "field notebook",
+            "field guide", "storybook", "interactive storybook",
+        ),
+    ),
 )
 
 
@@ -471,16 +486,28 @@ def render_brief(matches: Sequence[Match], *, role: Optional[str] = None) -> str
     header = "Domain Skills (read each with view_file before you start"
     header += f"; matched for role {role}):" if role else "):"
     lines = [header]
+    # One path, one line. A skill named by two matched domains is listed
+    # under the first domain only (matches arrive strongest-first).
+    seen: set[str] = set()
     for match in matches:
         terms = ", ".join(sorted(match.terms)[:6])
         for entry in match.resolved:
+            if entry.relpath in seen:
+                continue
+            seen.add(entry.relpath)
             lines.append(
                 f"- {entry.skill_file} — {match.domain.label} "
                 f"(matched: {terms})"
             )
         for missing in match.missing:
+            if missing in seen:
+                continue
+            seen.add(missing)
             lines.append(f"- MISSING: {missing} — declared in the matrix, absent on disk")
         for unfetched in match.unfetched:
+            if unfetched in seen:
+                continue
+            seen.add(unfetched)
             lines.append(
                 f"- NOT FETCHED: {unfetched} — pinned upstream, not on disk yet; "
                 f"{FETCH_HINT}"

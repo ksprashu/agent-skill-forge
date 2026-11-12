@@ -41,7 +41,8 @@
     "oss-compliance": "Audit licensing headers and scrub internal references.",
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
     "session-handoff": "Package multi-repo session state and arm auto-pickup beacons across harnesses.",
-    "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests)."
+    "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests).",
+    "narrative-nonfiction": "Turn technical reports and dossiers into grounded nonfiction narrative with evidence badges and field-notebook actions."
   },
 
   "skill_capabilities": {
@@ -72,6 +73,7 @@
     "voice-register": "voice-application",
     "image-gen": "image-generation",
     "atelier": "human-grade-output",
+    "chronicle": "narrative-nonfiction",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",

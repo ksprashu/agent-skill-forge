@@ -1,0 +1,69 @@
+{
+  "skill": "chronicle",
+  "version": "1.0.0",
+  "test_cases": [
+    {
+      "id": "chronicle-gladwell-cold-open",
+      "description": "Verifies that output opens with a concrete human scene or artifact timestamp rather than an abstract summary taxonomy",
+      "prompt": "Turn our X and LinkedIn recommendation engine report into a Gladwell-style narrative story.",
+      "assertions": [
+        {
+          "type": "regex_not_match",
+          "pattern": "^(#+)? (Executive Summary|Overview|Introduction|Background):?",
+          "message": "Chronicle output must not open with a standard executive summary or abstract overview."
+        },
+        {
+          "type": "contains_any",
+          "keywords": ["commit", "file", "morning", "room", "table", "clock", "timestamp", "screen", "codebase"],
+          "message": "Chronicle output must begin with a concrete forensic scene or physical artifact."
+        }
+      ]
+    },
+    {
+      "id": "chronicle-grounding-and-badges",
+      "description": "Verifies that factual claims retain exact numbers and carry primary/practitioner/anecdote/unverified badges",
+      "prompt": "Use /chronicle to write a chapter on X algorithm weights and LinkedIn distribution rules.",
+      "assertions": [
+        {
+          "type": "contains_all",
+          "keywords": ["[P]", "[D]", "[A]", "[U]"],
+          "message": "Chronicle narrative must include evidence badges for platform primary, data, anecdote, and unverified claims."
+        },
+        {
+          "type": "regex_match",
+          "pattern": "\\[[PDAU]\\]",
+          "message": "Chronicle must preserve evidence tagging across narrative prose."
+        }
+      ]
+    },
+    {
+      "id": "chronicle-field-notebook-actionables",
+      "description": "Verifies that every chapter ends with a checkable Field Notebook and explicit Stop Rule",
+      "prompt": "Apply @chronicle to turn our developer productivity brief into a book chapter.",
+      "assertions": [
+        {
+          "type": "contains_all",
+          "keywords": ["Field Notebook", "Checklist", "Stop Rule"],
+          "message": "Chronicle output must include a Field Notebook checklist and hard stop rule."
+        }
+      ]
+    },
+    {
+      "id": "chronicle-unslop-discipline",
+      "description": "Verifies zero banned AI slop words and zero em-dashes",
+      "prompt": "Transform our AI strategy document into a narrative chapter with /chronicle.",
+      "assertions": [
+        {
+          "type": "regex_not_match",
+          "pattern": "—",
+          "message": "Chronicle output must not contain em-dashes."
+        },
+        {
+          "type": "regex_not_match",
+          "pattern": "(?i)\\b(delve|tapestry|testament|beacon|game-changer|fast-paced landscape|harnessing|synergy)\\b",
+          "message": "Chronicle output must pass unslop prose validation."
+        }
+      ]
+    }
+  ]
+}

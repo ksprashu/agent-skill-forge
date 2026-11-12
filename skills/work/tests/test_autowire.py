@@ -125,6 +125,26 @@ class TestMatrixResolvesOnDisk(unittest.TestCase):
         problems = autowire.check_matrix(REPO_ROOT)
         self.assertEqual(problems, [], f"unresolved matrix entries: {problems}")
 
+    def test_storytelling_task_resolves_chronicle(self):
+        task = "Turn this technical report into a Gladwell storybook with a field notebook"
+        matches = autowire.autowire(task, REPO_ROOT)
+        chronicle = [
+            match for match in matches
+            if any(entry.relpath == "skills/chronicle" for entry in match.resolved)
+        ]
+        self.assertEqual(len(chronicle), 1, "chronicle triggers share one domain")
+        paths = [entry.relpath for match in matches for entry in match.resolved]
+        self.assertIn("skills/chronicle", paths)
+        self.assertIn("skills/atelier", paths)
+        self.assertIn("skills/unslop", paths)
+        self.assertIn("skills/voice-register", paths)
+        self.assertNotIn("skills/human-voice", paths)
+        brief = autowire.render_brief(matches)
+        self.assertEqual(brief.count("chronicle/SKILL.md"), 1)
+        limited = autowire.autowire(task, REPO_ROOT, limit=1)
+        limited_paths = [entry.relpath for match in limited for entry in match.resolved]
+        self.assertIn("skills/chronicle", limited_paths)
+
     def test_check_cli_exits_zero(self):
         code, out, err = run_cli(["--check"])
         self.assertEqual(code, 0, err)
@@ -478,6 +498,27 @@ class TestBriefPathsAreOpenableByTheSubagent(unittest.TestCase):
         self.assertFalse(os.path.isabs(skill["path"]))
         self.assertTrue(os.path.isabs(skill["skill_file"]))
         self.assertTrue(Path(skill["skill_file"]).is_file())
+
+    def test_brief_lists_a_shared_skill_once(self):
+        entry = autowire.SkillEntry(
+            name="chronicle", relpath="skills/chronicle", description="",
+            abspath="/tmp/chronicle",
+        )
+        first = autowire.Domain(
+            label="Storybook", skills=("skills/chronicle",), roles=("Worker",),
+            instructions="", triggers=("storybook",),
+        )
+        second = autowire.Domain(
+            label="Field Book", skills=("skills/chronicle", "skills/atelier"),
+            roles=("Worker",), instructions="", triggers=("field book",),
+        )
+        brief = autowire.render_brief([
+            autowire.Match(domain=first, terms=["storybook"], resolved=[entry]),
+            autowire.Match(domain=second, terms=["field book"], resolved=[entry]),
+        ])
+        self.assertEqual(brief.count("chronicle/SKILL.md"), 1)
+        self.assertIn("Storybook", brief)
+        self.assertNotIn("Field Book", brief)
 
     def test_a_missing_skill_is_still_reported_as_missing(self):
         brief = autowire.render_brief([autowire.Match(
