@@ -321,6 +321,19 @@ class TestMatching(unittest.TestCase):
         media_labels = [m.domain.label for m in autowire.match_domains("Generate image diagram for architecture")]
         self.assertIn("Visual Media, Diagrams & Comics", media_labels)
 
+    def test_generic_video_or_frame_tasks_do_not_trigger_video_skill(self):
+        for non_video_task in (
+            "Update video conferencing URL",
+            "Fix frame buffer alignment bug",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(non_video_task)]
+            self.assertNotIn("Video Production & Post-Processing", labels)
+        video_labels = [
+            m.domain.label
+            for m in autowire.match_domains("Use video-gen for video generation with video captions")
+        ]
+        self.assertIn("Video Production & Post-Processing", video_labels)
+
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):

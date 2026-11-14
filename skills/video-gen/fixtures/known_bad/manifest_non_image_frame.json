@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "mode": "timeline",
+  "aspect_ratio": "16:9",
+  "frames": [
+    {
+      "index": 1,
+      "path": "non_image_frame.txt",
+      "prompt": "Non-image asset in manifest",
+      "caption": "Step 1",
+      "duration_s": 5
+    }
+  ]
+}

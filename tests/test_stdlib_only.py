@@ -230,6 +230,7 @@ class TestRepositoryIsClean(unittest.TestCase):
     def test_the_work_engine_and_media_controllers_are_inside_the_enforced_roots(self):
         self.assertIn("skills/work/scripts", checker.ENFORCED_ROOTS)
         self.assertIn("skills/image-gen/scripts", checker.ENFORCED_ROOTS)
+        self.assertIn("skills/video-gen/scripts", checker.ENFORCED_ROOTS)
 
     def test_a_bad_repo_root_is_an_invocation_error(self):
         proc = subprocess.run(

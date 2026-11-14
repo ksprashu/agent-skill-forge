@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "mode": "single-shot",
+  "raw_prompt": "Brass clockwork owl in observatory.",
+  "compiled_prompt": "In a single continuous unbroken shot, no scene cuts. Brass clockwork owl in observatory.",
+  "explicit_constraints": {
+    "aspect_ratio": "16:9",
+    "resolution": "1080p",
+    "duration_s": 6,
+    "quoted_literals": [],
+    "timecode_beats": [],
+    "negative_constraints": [],
+    "audio_mode": "auto",
+    "style": null,
+    "asset_bindings": []
+  },
+  "implicit_constraints": [],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "category": "craft",
+      "requirement": "Optional lighting mood only",
+      "mandatory": false
+    }
+  ]
+}

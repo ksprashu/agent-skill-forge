@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "target_duration_s": 45,
+  "continuity": "keyframe-chain",
+  "crossfade_sec": 0.5,
+  "segment_count": 4,
+  "raw_segment_sum_s": 47,
+  "total_overlap_s": 1.5,
+  "expected_stitched_duration_s": 45.5,
+  "tolerance_s": 2.25,
+  "segments": [
+    {
+      "segment_index": 1,
+      "duration_s": 12,
+      "prompt": "Beat 1 of 4: Wide alpine observatory dome opening under twilight stars.",
+      "chain_mode": "seed",
+      "xfade_offset_s": null
+    },
+    {
+      "segment_index": 2,
+      "duration_s": 12,
+      "prompt": "Beat 2 of 4: Primary mirror aligns smoothly toward Orion nebula.",
+      "chain_mode": "extracted_boundary_frame",
+      "xfade_offset_s": 11.5
+    },
+    {
+      "segment_index": 3,
+      "duration_s": 12,
+      "prompt": "Beat 3 of 4: Control console telemetry displays crisp spectral lines.",
+      "chain_mode": "extracted_boundary_frame",
+      "xfade_offset_s": 23.0
+    },
+    {
+      "segment_index": 4,
+      "duration_s": 11,
+      "prompt": "Beat 4 of 4: Slow pull back above snow-dusted ridge at sunrise.",
+      "chain_mode": "extracted_boundary_frame",
+      "xfade_offset_s": 34.5
+    }
+  ]
+}

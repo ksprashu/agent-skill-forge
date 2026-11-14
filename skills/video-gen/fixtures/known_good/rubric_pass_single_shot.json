@@ -1,0 +1,31 @@
+{
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Brass clockwork owl sits on the wooden observatory desk and turns its head while the camera pulls back to show the open dome.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Continuous unbroken backward dolly movement from 0.0s through 10.0s with zero scene cuts.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Frame at 0.0s matches the composition, lighting, and owl pose of the starting keyframe.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Engraved desk plaque clearly reads 'CHRONOS LAB' throughout the opening close-up.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": ""
+}
