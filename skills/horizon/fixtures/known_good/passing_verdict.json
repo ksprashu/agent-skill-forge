@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "evaluated_at": "2026-11-14T12:05:00Z",
+  "summary": "Confirmed 1 upstream CLI stabilization drop; 1 PR-tracked rule update remains unchanged.",
+  "triggered_count": 1,
+  "not_inspected": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "probe_kind": "agent_query",
+      "what": "agent_query:mcp:docs",
+      "reason": "requires_agent_eval (agent sweep pending for mcp:docs)"
+    }
+  ],
+  "decisions": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "decision": "drop_confirmed",
+      "summary": "HTTP digest changed from baseline and '--json' token is present in release docs.",
+      "evidence_citations": [
+        "cli-flag-stabilization.probes[0].content_sha256=aaaa... (changed_vs_baseline=true, matched --json)"
+      ]
+    },
+    {
+      "item_id": "rule-model-pin-update",
+      "decision": "no_change",
+      "summary": "Anchor literal still present in global rule and PR #42 remains OPEN.",
+      "evidence_citations": [
+        "rule-model-pin-update.probes[0].anchor_found=true",
+        "rule-model-pin-update.pr_status.state=OPEN"
+      ]
+    }
+  ]
+}

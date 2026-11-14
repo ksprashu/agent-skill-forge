@@ -42,6 +42,7 @@
     "oss-compliance": "Audit licensing headers and scrub internal references.",
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
     "session-handoff": "Package multi-repo session state and arm auto-pickup beacons across harnesses.",
+    "horizon-watch": "Track 6-12 month technical/AI forecasts in a central ledger, run mechanical upstream/anchor probes, validate sweep verdicts, and enforce backup/PR provenance.",
     "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests)."
   },
 
@@ -79,7 +80,8 @@
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",
     "continuous-alignment": "alignment-distillation",
-    "handoff": "session-handoff"
+    "handoff": "session-handoff",
+    "horizon": "horizon-watch"
   },
 
   "harnesses": {

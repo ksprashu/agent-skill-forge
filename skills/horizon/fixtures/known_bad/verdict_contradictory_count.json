@@ -1,0 +1,15 @@
+{
+  "schema_version": "1",
+  "evaluated_at": "2026-11-14T12:05:00Z",
+  "summary": "Contradictory triggered_count=0 while drop_confirmed decision exists.",
+  "triggered_count": 0,
+  "not_inspected": [],
+  "decisions": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "decision": "drop_confirmed",
+      "summary": "Digest changed.",
+      "evidence_citations": ["probes[0].changed_vs_baseline=true"]
+    }
+  ]
+}
