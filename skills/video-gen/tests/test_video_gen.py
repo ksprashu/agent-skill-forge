@@ -21,9 +21,12 @@ Covers Engineering Standard S1-S9, V1-V6, and T1-T6 without unittest.mock.
 from __future__ import annotations
 
 import json
+import math
+import os
 import re
 import struct
 import sys
+import wave
 import zlib
 from pathlib import Path
 from typing import Any, Sequence
@@ -1567,8 +1570,8 @@ def test_prep_clip_no_verify_spec_roundtrip_and_storyboard_negatives(
         runner=runner,
         which_fn=_all_tools_present,
     )
-    _ = capsys.readouterr()
-    assert rc == 0
+    cap_ok = capsys.readouterr()
+    assert rc == 0, f"stdout={cap_ok.out}\nstderr={cap_ok.err}"
     ffmpeg_calls = [c for c in runner.calls if Path(c[0]).name == "ffmpeg"]
     assert len(ffmpeg_calls) == 1
     assert "-t" in ffmpeg_calls[0]
@@ -2422,8 +2425,8 @@ def test_45s_keyframe_chain_boundary_extraction_xfade_and_known_bad_stitched_dur
         runner=runner,
         which_fn=_all_tools_present,
     )
-    _ = capsys.readouterr()
-    assert rc == 0
+    cap_ok = capsys.readouterr()
+    assert rc == 0, f"stdout={cap_ok.out}\nstderr={cap_ok.err}"
     assert out_45s.read_bytes() == VALID_MP4_BYTES
 
     plan_file = tmp_path / "chained_45s_segments" / "timeline_plan.json"
@@ -3330,8 +3333,8 @@ def test_storyboard_stitch_uses_probed_provenance_duration_for_xfade_offsets(
         runner=runner,
         which_fn=_all_tools_present,
     )
-    _ = capsys.readouterr()
-    assert rc == 0
+    cap_ok = capsys.readouterr()
+    assert rc == 0, f"stdout={cap_ok.out}\nstderr={cap_ok.err}"
     xfade_calls = [
         c for c in runner.calls if Path(c[0]).name == "ffmpeg" and "-filter_complex" in c
     ]
@@ -3340,3 +3343,388 @@ def test_storyboard_stitch_uses_probed_provenance_duration_for_xfade_offsets(
     # Probed 5.400s - 0.500s crossfade = offset=4.900 (NOT planned 6.000 - 0.500 = 5.500!)
     assert "offset=4.900" in fc_str
     assert "offset=5.500" not in fc_str
+
+
+# ---------------------------------------------------------------------------
+# pr-guardian Round 1 Regression Coverage (R-001..R-004)
+# ---------------------------------------------------------------------------
+
+
+def test_r001_single_segment_storyboard_runs_post_processing_and_forwards_audio_gen(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    frame_png = tmp_path / "hero.png"
+    frame_png.write_bytes(TINY_PNG_BYTES)
+    manifest = {
+        "aspect_ratio": "9:16",
+        "frames": [{"path": str(frame_png), "caption": "Vertical reveal", "duration_s": 6}],
+    }
+    sb_path = tmp_path / "single_sb.json"
+    sb_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    srt_file = tmp_path / "captions.srt"
+    srt_file.write_text(
+        "1\n00:00:00,000 --> 00:00:02,500\nVertical reveal\n",
+        encoding="utf-8",
+    )
+
+    fake_audio_gen = tmp_path / "audio_gen.py"
+    fake_audio_gen.write_text("# stub audio-gen\n", encoding="utf-8")
+
+    # 1. Forwarded audio_gen_script rejects missing companion pre-generation in storyboard mode
+    out_missing = tmp_path / "missing_ag.mp4"
+    rc_missing = video_gen.main(
+        [
+            "--storyboard",
+            str(sb_path),
+            "--storyboard-mode",
+            "clips",
+            "--narration-text",
+            "Opening voiceover line",
+            "--audio-mode",
+            "narration",
+            "--output",
+            str(out_missing),
+        ],
+        runner=FakeCLIRunner(),
+        which_fn=_all_tools_present,
+        audio_gen_script=tmp_path / "does_not_exist_audio_gen.py",
+    )
+    err_missing = capsys.readouterr().err
+    assert rc_missing == 2
+    assert "companion audio-gen script not found" in err_missing.lower()
+
+    # 2. Single-segment storyboard executes post-processing (audio synthesis + captions + title card)
+    probe_9x16 = _load_json(FIXTURES_GOOD / "ffprobe_1080p_16x9_10s_audio.json")
+    probe_9x16["streams"][0]["width"] = 1080
+    probe_9x16["streams"][0]["height"] = 1920
+    probe_9x16["streams"][0]["duration"] = "6.000000"
+    probe_9x16["format"]["duration"] = "6.000000"
+    runner = FakeCLIRunner(ffprobe_payload=probe_9x16)
+
+    out_mp4 = tmp_path / "sb_single.mp4"
+    rc = video_gen.main(
+        [
+            "--storyboard",
+            str(sb_path),
+            "--storyboard-mode",
+            "clips",
+            "--srt",
+            str(srt_file),
+            "--title-card",
+            "Launch Day|Series A",
+            "--narration-text",
+            "Opening voiceover line",
+            "--audio-mode",
+            "narration",
+            "--creative-stack",
+            "off",
+            "--no-verify",
+            "--output",
+            str(out_mp4),
+        ],
+        runner=runner,
+        which_fn=_all_tools_present,
+        audio_gen_script=fake_audio_gen,
+    )
+    cap_ok = capsys.readouterr()
+    assert rc == 0, f"stdout={cap_ok.out}\nstderr={cap_ok.err}"
+    assert out_mp4.is_file()
+    assert (tmp_path / "sb_single_segments" / "segment_01.mp4").is_file()
+    assert any(Path(c[1]) == fake_audio_gen for c in runner.calls if len(c) > 1)
+    assert any("loudnorm" in " ".join(c) for c in runner.calls)
+    assert any("-vf" in c for c in runner.calls)
+
+    report = _load_json(Path(f"{out_mp4}.report.json"))
+    prov = _load_json(Path(f"{out_mp4}.provenance.json"))
+    assert report["post_processing"]["applied"] is True
+    assert report["post_processing"]["card_renderer"] != "none"
+    assert "concat_mechanical" in prov
+
+
+def test_r001_multi_segment_storyboard_post_failure_emits_report_and_cleans_output(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    for name in ("anchor.png", "frame_01.png", "frame_02.png", "frame_03.png"):
+        (frames_dir / name).write_bytes(TINY_PNG_BYTES)
+    sb_manifest = tmp_path / "sb_multi.json"
+    sb_manifest.write_text(
+        json.dumps(_load_json(FIXTURES_GOOD / "keyframes_manifest_sample.json")),
+        encoding="utf-8",
+    )
+
+    out_mp4 = tmp_path / "multi_post_fail.mp4"
+    cfg = video_gen.parse_job_config(
+        ["--storyboard", str(sb_manifest), "--no-verify", "--output", str(out_mp4)]
+    )
+
+    def _boom_post(*_args: Any, **_kwargs: Any) -> tuple[dict[str, Any], list[str]]:
+        raise FileNotFoundError("ffmpeg audio mux dependency vanished")
+
+    rc = video_timeline.run_storyboard_pipeline(
+        cfg,
+        validate_constraints_fn=lambda c: video_gen.validate_omni_constraints(c, env={}),
+        run_single_segment_fn=video_gen.run_single_video_job,
+        run_mechanical_check_fn=video_gen.run_mechanical_video_check,
+        run_post_pipeline_fn=_boom_post,
+        asset_cache_cls=video_gen.AssetUploadCache,
+        valid_aspect_ratios=video_gen.VALID_ASPECT_RATIOS,
+        runner=FakeCLIRunner(match_requested_duration=True),
+        which_fn=_all_tools_present,
+        sleep_fn=lambda _s: None,
+        env={},
+    )
+    err = capsys.readouterr().err
+    assert rc == 1
+    assert "vanished" in err
+    assert not out_mp4.exists()
+    assert (tmp_path / "multi_post_fail_segments" / "stitched_raw.mp4").is_file()
+    report = _load_json(Path(f"{out_mp4}.report.json"))
+    prov = _load_json(Path(f"{out_mp4}.provenance.json"))
+    assert report["status"] == "PARTIAL"
+    assert prov["status"] == "PARTIAL"
+    assert "vanished" in report["failure_reason"]
+
+
+def _write_mono_sine_wav(path: Path, *, duration_s: float, sample_rate: int = 16000) -> None:
+    total_frames = max(1, int(round(duration_s * sample_rate)))
+    frames = bytearray()
+    for i in range(total_frames):
+        val = int(12000 * math.sin(2.0 * math.pi * 440.0 * i / sample_rate))
+        frames.extend(struct.pack("<h", val))
+    with wave.open(str(path), "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sample_rate)
+        wf.writeframes(bytes(frames))
+
+
+def test_r002_audio_mux_pads_shorter_audio_with_apad_and_preserves_video_duration(
+    tmp_path: Path,
+) -> None:
+    # 1. Command invariant check (FakeCLIRunner): mux must apply '-af apad' before '-shortest'
+    in_mp4 = tmp_path / "in.mp4"
+    out_mp4 = tmp_path / "out.mp4"
+    in_mp4.write_bytes(VALID_MP4_BYTES)
+    short_wav = tmp_path / "short_voice.wav"
+    _write_mono_sine_wav(short_wav, duration_s=1.5)
+
+    runner = FakeCLIRunner()
+    video_post.apply_audio_mix_and_master(
+        in_mp4,
+        out_mp4,
+        audio_mode="narration",
+        target_duration_s=8.0,
+        voice_track=str(short_wav),
+        creative_stack=video_post.CreativeStackInfo(mode="off", enabled=False, source="off"),
+        ffmpeg_bin="/usr/local/bin/ffmpeg",
+        ffprobe_bin="/usr/local/bin/ffprobe",
+        runner=runner,
+    )
+    mux_cmds = [c for c in runner.calls if Path(c[0]).name == "ffmpeg" and "-shortest" in c]
+    assert len(mux_cmds) == 1
+    mux_cmd = mux_cmds[0]
+    assert "-af" in mux_cmd
+    af_idx = mux_cmd.index("-af")
+    assert mux_cmd[af_idx + 1] == "apad"
+    assert af_idx < mux_cmd.index("-shortest")
+
+    # 2. Real FFmpeg execution when ffmpeg-full + ffprobe are installed on host
+    real_ff = video_post.resolve_ffmpeg_binary("ffmpeg", env={})
+    real_fp = video_post.resolve_ffmpeg_binary("ffprobe", env={})
+    if real_ff and real_fp:
+        real_src = tmp_path / "real_4s.mp4"
+        real_dst = tmp_path / "real_muxed.mp4"
+        r_make = video_post.default_runner(
+            [
+                real_ff,
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=navy:s=320x180:r=24:d=4.0",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                str(real_src),
+            ]
+        )
+        assert r_make.returncode == 0
+        rep = video_post.apply_audio_mix_and_master(
+            real_src,
+            real_dst,
+            audio_mode="narration",
+            target_duration_s=4.0,
+            voice_track=str(short_wav),
+            creative_stack=video_post.CreativeStackInfo(mode="off", enabled=False, source="off"),
+            ffmpeg_bin=real_ff,
+            ffprobe_bin=real_fp,
+            runner=video_post.default_runner,
+        )
+        assert rep["applied"] is True
+        assert real_dst.is_file()
+        r_probe = video_post.default_runner(
+            [
+                real_fp,
+                "-v",
+                "quiet",
+                "-print_format",
+                "json",
+                "-show_format",
+                "-show_streams",
+                str(real_dst),
+            ]
+        )
+        assert r_probe.returncode == 0
+        probed = json.loads(r_probe.stdout)
+        probed_dur = float(probed["format"]["duration"])
+        assert probed_dur >= 3.7, f"Expected ~4.0s duration preserved via apad, got {probed_dur}s"
+        codec_types = {s.get("codec_type") for s in probed.get("streams", [])}
+        assert {"video", "audio"} <= codec_types
+
+
+def test_r003_regenerated_prompt_rejection_when_scene_text_dropped() -> None:
+    cfg = video_gen.VideoJobConfig(
+        prompt="Wide drone pan over a rain-slicked neon storefront at midnight",
+        scene_texts=["OPEN 24 HOURS"],
+    )
+    spec = video_gen.compile_visual_spec(cfg)
+    assert spec["explicit_constraints"]["scene_texts"] == ["OPEN 24 HOURS"]
+
+    dropped_regen = "Wide drone pan over a rain-slicked neon storefront glowing in twilight mist."
+    preserved_regen = (
+        'Wide drone pan over a rain-slicked neon storefront displaying "OPEN 24 HOURS" in crisp sans-serif light.'
+    )
+    assert video_gen._regenerated_prompt_preserves_directives(dropped_regen, spec) is False
+    assert video_gen._regenerated_prompt_preserves_directives(preserved_regen, spec) is True
+
+    rem_mode, next_prompt = video_gen.select_remediation_mode(
+        mechanical_passed=True,
+        rubric_validation={
+            "all_passed": False,
+            "failed_criteria": [
+                {"id": "AC-2", "category": "TEXT_AC", "fix_instruction": "Render neon sign clearly."}
+            ],
+            "remediation_mode": "regenerate",
+            "edit_delta_prompt": "",
+            "regenerated_prompt": dropped_regen,
+        },
+        previous_response_id="resp_1",
+        has_video_refs=False,
+        spec=spec,
+    )
+    assert rem_mode == "regenerate"
+    assert "OPEN 24 HOURS" in next_prompt
+    assert next_prompt != dropped_regen
+
+
+def test_r004_script_metadata_validation_and_continuity_crossfade_propagation(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # 1. Invalid metadata fields must fail pre-dry-run with exit 2
+    bad_cases: list[tuple[str, dict[str, Any]]] = [
+        ("bad_ar", {"aspect_ratio": "4:3", "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+        ("xml_style", {"style": "<IMAGE_REF id='1'>noir</IMAGE_REF>", "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+        ("xml_narr", {"narration_text": "Say <FIRST_FRAME> hi", "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+        ("bad_cont", {"continuity": "warp-jump", "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+        ("bool_xfade", {"crossfade_sec": True, "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+        ("high_xfade", {"crossfade_sec": 5.0, "beats": [{"prompt": "Opening scene.", "duration_s": 8}]}),
+    ]
+    for idx, (tag, payload) in enumerate(bad_cases):
+        s_path = tmp_path / f"{tag}.json"
+        s_path.write_text(json.dumps(payload), encoding="utf-8")
+        rc_bad = video_gen.main(
+            ["--script", str(s_path), "--dry-run", "--output", str(tmp_path / f"out_{idx}.mp4")],
+            runner=FakeCLIRunner(),
+            which_fn=_all_tools_present,
+        )
+        _ = capsys.readouterr()
+        assert rc_bad == 2, f"Expected exit 2 for invalid script metadata case '{tag}', got {rc_bad}"
+
+    # 2. Valid script continuity + crossfade_sec + aspect_ratio propagate unless overridden on CLI
+    good_script = tmp_path / "good_script.json"
+    good_script.write_text(
+        json.dumps(
+            {
+                "aspect_ratio": "9:16",
+                "style": "crisp anamorphic lighting",
+                "continuity": "scene-cuts",
+                "crossfade_sec": 0.5,
+                "beats": [
+                    {"prompt": "Act 1 skyline reveal.", "duration_s": 10},
+                    {"prompt": "Act 2 rooftop hero.", "duration_s": 10},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    rc_prop = video_gen.main(
+        ["--script", str(good_script), "--dry-run", "--output", str(tmp_path / "prop.mp4")],
+        runner=FakeCLIRunner(),
+        which_fn=_all_tools_present,
+    )
+    out_prop = json.loads(capsys.readouterr().out)
+    assert rc_prop == 0
+    assert out_prop["timeline_plan"]["continuity"] == "scene-cuts"
+    assert out_prop["timeline_plan"]["crossfade_sec"] == 0.5
+    assert out_prop["timeline_plan"]["segments"][1]["chain_mode"] == "scene_cut_with_refs"
+
+    # Explicit CLI flags override script continuity + crossfade_sec cleanly
+    rc_ovr = video_gen.main(
+        [
+            "--script",
+            str(good_script),
+            "--continuity",
+            "extend-blocks",
+            "--crossfade-sec",
+            "0.25",
+            "--dry-run",
+            "--output",
+            str(tmp_path / "ovr.mp4"),
+        ],
+        runner=FakeCLIRunner(),
+        which_fn=_all_tools_present,
+    )
+    out_ovr = json.loads(capsys.readouterr().out)
+    assert rc_ovr == 0
+    assert out_ovr["timeline_plan"]["continuity"] == "extend-blocks"
+    assert out_ovr["timeline_plan"]["crossfade_sec"] == 0.25
+
+    # 3. Post-merge validation enforces narration conflicts and missing audio-gen pre-dry-run (exit 2)
+    fake_audio_gen = tmp_path / "audio_gen.py"
+    fake_audio_gen.write_text("# stub audio-gen\n", encoding="utf-8")
+    narr_script = tmp_path / "narrated_script.json"
+    narr_script.write_text(
+        json.dumps(
+            {
+                "narration_text": "Introducing the all-new workflow engine.",
+                "beats": [
+                    {"prompt": "Beat 1 dashboard reveal.", "duration_s": 8},
+                    {"prompt": "Beat 2 deploy button.", "duration_s": 8},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    rc_silent_conflict = video_gen.main(
+        ["--script", str(narr_script), "--silent", "--dry-run", "--output", str(tmp_path / "silent_c.mp4")],
+        runner=FakeCLIRunner(),
+        which_fn=_all_tools_present,
+        audio_gen_script=fake_audio_gen,
+    )
+    err_silent = capsys.readouterr().err
+    assert rc_silent_conflict == 2
+    assert "--audio-mode silent" in err_silent
+
+    rc_missing_ag = video_gen.main(
+        ["--script", str(narr_script), "--dry-run", "--output", str(tmp_path / "missing_ag_s.mp4")],
+        runner=FakeCLIRunner(),
+        which_fn=_all_tools_present,
+        audio_gen_script=tmp_path / "missing_audio_gen.py",
+    )
+    err_ag = capsys.readouterr().err
+    assert rc_missing_ag == 2
+    assert "audio-gen" in err_ag.lower()

@@ -15,6 +15,8 @@ Spec: docs/design/video-gen-cli-spec.md
    - `video_post.py`: `SECRET_PATTERNS` (including bare `key=<16+ chars>`), `creative-stack` (`vidkit` & `sound`) discovery, keg-only `ffmpeg-full` resolver + `-filters` capability probe, SRT/JSON + audio magic-byte validators, caption/card compositing (`mov_text` & stdlib RGBA PNG card fallbacks), and 2-pass `-14 LUFS` `48 kHz` (`dual_mono=true`, `volume` ducking, `amix=normalize=0`) audio mastering.
 2. **Cross-Skill Parity (`skills/image-gen` + `skills/video-gen`)**:
    - Identical `VERIFIER_MODEL_CHAIN`, `DEPRECATED_MODEL_PREFIXES`, `SECRET_PATTERNS` labels, and mandatory `--override-reason` on `--allow-unverified` (`exit 2` when omitted).
+3. **Single-PR Stacked Delivery Scope (`R-005`)**:
+   - Delivered intentionally as one stacked PR (`feat/video-gen-cli` on top of `feat/image-gen-cli`, before `feat/audio-gen-cli`) partitioned into three stdlib runtime modules (`scripts/video_gen.py`, `scripts/video_timeline.py`, `scripts/video_post.py`) rather than sub-PRs, because the `build_parser()` flags, `SKILL.md` (`S6` sync), `timeline_plan.json` schema, and post-processing DSP/text report contracts validate together as one coherent user-facing workflow.
 
 ---
 

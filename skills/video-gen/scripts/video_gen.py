@@ -316,6 +316,8 @@ class VideoJobConfig:
     _explicit_resolution: bool = False
     _explicit_duration: bool = False
     _explicit_audio: bool = False
+    _explicit_continuity: bool = False
+    _explicit_crossfade: bool = False
 
 
 def parse_duration_seconds(raw_val: str) -> int:
@@ -595,6 +597,23 @@ def validate_omni_constraints(
             f"At most {MAX_IMAGE_REFS} --image-ref assets are supported (got {len(config.image_refs)})."
         )
 
+    if config.aspect_ratio not in VALID_ASPECT_RATIOS:
+        errors.append(
+            f"Unsupported --aspect-ratio '{config.aspect_ratio}'. Supported: {', '.join(VALID_ASPECT_RATIOS)}."
+        )
+
+    if config.style:
+        for bad_tag in FORBIDDEN_LEGACY_XML_TAGS:
+            if bad_tag.lower() in config.style.lower():
+                errors.append(f"Deprecated XML media tag '{bad_tag}' detected in --style.")
+                break
+
+    if config.narration_text:
+        for bad_tag in FORBIDDEN_LEGACY_XML_TAGS:
+            if bad_tag.lower() in config.narration_text.lower():
+                errors.append(f"Deprecated XML media tag '{bad_tag}' detected in --narration-text.")
+                break
+
     if config.storyboard:
         if (
             config.script
@@ -609,11 +628,6 @@ def validate_omni_constraints(
                 "--storyboard cannot be combined with --script, --video, --extend, --first-frame, "
                 "--last-frame, --synthesize-keyframes, or --video-ref."
             )
-        if config.style:
-            for bad_tag in FORBIDDEN_LEGACY_XML_TAGS:
-                if bad_tag.lower() in config.style.lower():
-                    errors.append(f"Deprecated XML media tag '{bad_tag}' detected in --style.")
-                    break
         return errors
 
     if config.script:
@@ -2034,10 +2048,11 @@ def validate_rubric_verdict(verdict_data: Any, spec: dict[str, Any]) -> dict[str
 
 def _regenerated_prompt_preserves_directives(regen: str, spec: dict[str, Any]) -> bool:
     """Ensure model-proposed regenerated_prompt retains NL asset bindings & core directives (P2 #22)."""
-    if validate_expanded_prompt(spec.get("raw_prompt", ""), regen):
+    ec = spec.get("explicit_constraints") or {}
+    scene_texts = ec.get("scene_texts") or ()
+    if validate_expanded_prompt(spec.get("raw_prompt", ""), regen, extra_literals=scene_texts):
         return False
     regen_lower = regen.lower()
-    ec = spec.get("explicit_constraints", {})
     for binding in ec.get("asset_bindings", []):
         directive = str(binding.get("natural_language_directive") or "").strip()
         if directive and directive.lower() not in regen_lower:
@@ -2277,14 +2292,25 @@ def run_storyboard_pipeline(
     which_fn: WhichCallable,
     sleep_fn: Callable[[float], None],
     env: Mapping[str, str] | None = None,
+    image_gen_script: Path = DEFAULT_IMAGE_GEN_SCRIPT,
+    audio_gen_script: Path = DEFAULT_AUDIO_GEN_SCRIPT,
 ) -> int:
     """Delegate storyboard manifest orchestration to `video_timeline.run_storyboard_pipeline`."""
     return video_timeline.run_storyboard_pipeline(
         config,
-        validate_constraints_fn=lambda cfg: validate_omni_constraints(cfg, env=env),
-        run_single_segment_fn=run_single_video_job,
+        validate_constraints_fn=lambda cfg: validate_omni_constraints(
+            cfg, env=env, audio_gen_script=audio_gen_script
+        ),
+        run_single_segment_fn=lambda seg_cfg, **kw: run_single_video_job(
+            seg_cfg,
+            image_gen_script=image_gen_script,
+            audio_gen_script=audio_gen_script,
+            **kw,
+        ),
         run_mechanical_check_fn=run_mechanical_video_check,
-        run_post_pipeline_fn=_run_post_processing_pipeline,
+        run_post_pipeline_fn=lambda p_cfg, in_v, out_v, **kw: _run_post_processing_pipeline(
+            p_cfg, in_v, out_v, audio_gen_script=audio_gen_script, **kw
+        ),
         asset_cache_cls=AssetUploadCache,
         valid_aspect_ratios=VALID_ASPECT_RATIOS,
         runner=runner,
@@ -2802,7 +2828,7 @@ def run_single_video_job(
                     except ValueError as exc:
                         print(f"error: {exc}", file=sys.stderr)
                         return 2
-                    except RuntimeError as exc:
+                    except (RuntimeError, FileNotFoundError) as exc:
                         print(f"error: {exc}", file=sys.stderr)
                         return 1
                     for s in post_un:
@@ -2896,7 +2922,7 @@ def run_single_video_job(
                         except ValueError as exc:
                             print(f"error: {exc}", file=sys.stderr)
                             return 2
-                        except RuntimeError as exc:
+                        except (RuntimeError, FileNotFoundError) as exc:
                             print(f"error: {exc}", file=sys.stderr)
                             return 1
                         for s in post_un:
@@ -3370,6 +3396,12 @@ def parse_job_config(argv: Sequence[str] | None = None) -> VideoJobConfig:
         tok in ("--audio-mode", "--silent") or tok.startswith("--audio-mode=")
         for tok in raw_argv
     )
+    explicit_continuity = any(
+        tok == "--continuity" or tok.startswith("--continuity=") for tok in raw_argv
+    )
+    explicit_crossfade = any(
+        tok == "--crossfade-sec" or tok.startswith("--crossfade-sec=") for tok in raw_argv
+    )
     return VideoJobConfig(
         prompt=ns.prompt,
         spec_file=ns.spec_file,
@@ -3431,6 +3463,8 @@ def parse_job_config(argv: Sequence[str] | None = None) -> VideoJobConfig:
         _explicit_resolution=explicit_resolution,
         _explicit_duration=explicit_duration,
         _explicit_audio=explicit_audio,
+        _explicit_continuity=explicit_continuity,
+        _explicit_crossfade=explicit_crossfade,
     )
 
 
@@ -3481,11 +3515,16 @@ def main(
             which_fn=which_fn,
             sleep_fn=sleep_fn,
             env=effective_env,
+            image_gen_script=resolved_img_script,
+            audio_gen_script=resolved_aud_script,
         )
 
     if is_multi_segment_job(config):
         return video_timeline.run_timeline_pipeline(
             config,
+            validate_constraints_fn=lambda cfg: validate_omni_constraints(
+                cfg, env=effective_env, audio_gen_script=resolved_aud_script
+            ),
             run_single_segment_fn=lambda seg_cfg, **kw: run_single_video_job(
                 seg_cfg, audio_gen_script=resolved_aud_script, **kw
             ),
