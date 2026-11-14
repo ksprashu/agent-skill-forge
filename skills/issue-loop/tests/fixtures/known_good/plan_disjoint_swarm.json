@@ -1,0 +1,50 @@
+{
+  "schema_version": "1",
+  "mode": "swarm",
+  "issues": [
+    {
+      "issue": 101,
+      "classification": "valid_bug",
+      "evidence": ["src/auth/tokens.py:42 raises IndexError on empty token string"],
+      "track_id": "track-auth"
+    },
+    {
+      "issue": 102,
+      "classification": "partially_addressed",
+      "evidence": ["src/cli/flags.py:88 lacks mkdir(parents=True, exist_ok=True); legacy alias deferred"],
+      "track_id": "track-cli"
+    },
+    {
+      "issue": 103,
+      "classification": "open_pr_exists",
+      "evidence": ["Open PR #205 already targets config/retry.py"],
+      "track_id": null
+    },
+    {
+      "issue": 104,
+      "classification": "already_fixed",
+      "evidence": ["src/core/parser.py:19 already checks empty stream before read"],
+      "track_id": null
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-auth",
+      "issues": [101],
+      "partial_issues": [],
+      "summary": "Return False when bearer token header is empty in verify_token.",
+      "owned_files": ["src/auth/tokens.py"],
+      "test_files": ["tests/test_tokens.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_tokens.py"]
+    },
+    {
+      "track_id": "track-cli",
+      "issues": [102],
+      "partial_issues": [102],
+      "summary": "Create parent directories for --output path before writing JSON.",
+      "owned_files": ["src/cli/flags.py"],
+      "test_files": ["tests/test_flags.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_flags.py"]
+    }
+  ]
+}

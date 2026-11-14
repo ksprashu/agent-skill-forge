@@ -69,6 +69,7 @@ CORE_SKILLS = {
     'review': os.path.join(CORE_SKILLS_DIR, 'review'),
     'security-review': os.path.join(CORE_SKILLS_DIR, 'security-review'),
     'pr-review-loop': os.path.join(CORE_SKILLS_DIR, 'pr-review-loop'),
+    'issue-loop': os.path.join(CORE_SKILLS_DIR, 'issue-loop'),
     'unslop': os.path.join(CORE_SKILLS_DIR, 'unslop'),
     'docs': os.path.join(CORE_SKILLS_DIR, 'docs'),
     'catalog': os.path.join(CORE_SKILLS_DIR, 'catalog'),
@@ -134,6 +135,8 @@ ALIASES = {
     'swarm': 'work',
     'secreview': 'security-review',
     'review-loop': 'pr-review-loop',
+    'fix-issue': 'issue-loop',
+    'fix-issues': 'issue-loop',
     'handover': 'handoff',
 }
 
@@ -291,8 +294,8 @@ CORE_CLUSTERS = {
     'c2': {
         'id': 'test-review',
         'name': 'Quality & Verification',
-        'description': 'TDD prove-it reproduction, static verification rubrics, grounded code and security reviews, the PR review loop, and slop stripping.',
-        'skills': ['test', 'verify', 'review', 'security-review', 'pr-review-loop', 'unslop'],
+        'description': 'TDD prove-it reproduction, static verification rubrics, grounded code and security reviews, the PR and GitHub issue loops, and slop stripping.',
+        'skills': ['test', 'verify', 'review', 'security-review', 'pr-review-loop', 'issue-loop', 'unslop'],
     },
     'c3': {
         'id': 'content-creative',

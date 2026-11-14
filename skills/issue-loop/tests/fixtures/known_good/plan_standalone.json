@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "issues": [
+    {
+      "issue": 101,
+      "classification": "valid_bug",
+      "evidence": ["src/auth/tokens.py:42 indexes parts[1] without checking length"],
+      "track_id": "track-main"
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-main",
+      "issues": [101],
+      "partial_issues": [],
+      "summary": "Guard empty authorization token header and add regression test.",
+      "owned_files": ["src/auth/tokens.py"],
+      "test_files": ["tests/test_tokens.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_tokens.py"]
+    }
+  ]
+}

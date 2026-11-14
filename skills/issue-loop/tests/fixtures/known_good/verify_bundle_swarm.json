@@ -1,0 +1,89 @@
+{
+  "schema_version": "1",
+  "mode": "swarm",
+  "track_id": "track-auth",
+  "branch": "fix/issue-101-auth-token",
+  "head_sha": "abc1234def5678",
+  "author_model": "gemini-4-carbon-high",
+  "review_model": "opus-5.5-high",
+  "security_model": "opus-5.5-high",
+  "tests": {
+    "head_sha": "abc1234def5678",
+    "command": "python3 -m unittest tests/test_tokens.py",
+    "exit_code": 0,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "red_green_verified": true
+  },
+  "scope": {
+    "allowed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ],
+    "changed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ]
+  },
+  "review": {
+    "head_sha": "abc1234def5678",
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "review",
+      "mode": "diff",
+      "summary": "Reviewed auth token guard and regression tests; no blocking defects found.",
+      "inspected": [
+        "src/auth/tokens.py",
+        "tests/test_tokens.py"
+      ],
+      "not_inspected": [],
+      "findings": [
+        {
+          "id": "R-001",
+          "severity": "P2",
+          "axis": "correctness",
+          "rule": "empty-header-guard",
+          "title": "Previous guard raised IndexError on empty token",
+          "file": "src/auth/tokens.py",
+          "start_line": 42,
+          "end_line": 45,
+          "rationale": "Empty authorization strings previously raised IndexError before comparison.",
+          "evidence": "verify_token('') now returns False cleanly and passes test_empty_header.",
+          "suggestion": "",
+          "references": [],
+          "confidence": "high",
+          "status": "fixed",
+          "prior_id": "R-000",
+          "security_verdict": "n/a"
+        }
+      ]
+    }
+  },
+  "security": {
+    "head_sha": "abc1234def5678",
+    "secrets_found": 0,
+    "scanners": {
+      "semgrep": "clean",
+      "gitleaks": "clean",
+      "actionlint": "not_applicable",
+      "zizmor": "not_applicable",
+      "osv-scanner": "not_applicable",
+      "trivy": "not_applicable"
+    },
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "security-review",
+      "mode": "diff",
+      "summary": "Scanned auth token changes with semgrep and gitleaks; zero confirmed findings.",
+      "inspected": [
+        "src/auth/tokens.py",
+        "tests/test_tokens.py",
+        "semgrep",
+        "gitleaks"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  }
+}

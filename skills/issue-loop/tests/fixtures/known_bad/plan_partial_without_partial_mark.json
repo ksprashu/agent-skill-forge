@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "issues": [
+    {
+      "issue": 102,
+      "classification": "partially_addressed",
+      "evidence": ["src/cli/flags.py:88 fixes export path; import path remains open"],
+      "track_id": "track-cli"
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-cli",
+      "issues": [102],
+      "partial_issues": [],
+      "summary": "Fix export --output parent directory creation only.",
+      "owned_files": ["src/cli/flags.py"],
+      "test_files": ["tests/test_flags.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_flags.py"]
+    }
+  ]
+}
