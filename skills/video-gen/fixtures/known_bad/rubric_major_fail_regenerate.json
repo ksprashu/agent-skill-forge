@@ -1,0 +1,31 @@
+{
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": false,
+      "observed_evidence": "Clip shows an outdoor forest landscape with no observatory or clockwork owl.",
+      "fix_instruction": "Depict the brass clockwork owl inside the Victorian observatory."
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Three abrupt jump cuts occur at 2.1s, 5.4s, and 7.8s instead of a single continuous shot.",
+      "fix_instruction": "Render in a single continuous unbroken camera tracking shot with zero cuts."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "First 0.2s briefly shows the supplied starting frame before cutting away.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": false,
+      "observed_evidence": "No brass plaque or 'CHRONOS LAB' lettering appears anywhere in the clip.",
+      "fix_instruction": "Include the brass desk plaque engraved with 'CHRONOS LAB'."
+    }
+  ],
+  "remediation_mode": "regenerate",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": "In a single continuous unbroken shot, no scene cuts. Use this image as the starting frame. Inside a Victorian observatory, a brass clockwork owl turns toward the telescope beside a plaque reading \"CHRONOS LAB\"."
+}

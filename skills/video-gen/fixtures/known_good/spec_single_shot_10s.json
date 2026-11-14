@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "mode": "single-shot",
+  "raw_prompt": "[0-5s] Close-up of a brass clockwork owl on a Victorian observatory desk beside a plaque reading \"CHRONOS LAB\". [5-10s] Camera dollies back to reveal the starlit dome.",
+  "compiled_prompt": "In a single continuous unbroken shot, no scene cuts. Use this image as the starting frame. [0-5s] Close-up of a brass clockwork owl on a Victorian observatory desk beside a plaque reading \"CHRONOS LAB\". [5-10s] Camera dollies back to reveal the starlit dome.",
+  "explicit_constraints": {
+    "aspect_ratio": "16:9",
+    "resolution": "1080p",
+    "duration_s": 10,
+    "quoted_literals": [
+      "CHRONOS LAB"
+    ],
+    "timecode_beats": [
+      {
+        "range": "[0-5s]",
+        "instruction": "Close-up of a brass clockwork owl on a Victorian observatory desk beside a plaque reading \"CHRONOS LAB\"."
+      },
+      {
+        "range": "[5-10s]",
+        "instruction": "Camera dollies back to reveal the starlit dome."
+      }
+    ],
+    "negative_constraints": [],
+    "audio_mode": "auto",
+    "style": null,
+    "asset_bindings": [
+      {
+        "input_index": 1,
+        "role": "first_frame",
+        "role_hint": null,
+        "natural_language_directive": "Use this image as the starting frame."
+      }
+    ]
+  },
+  "implicit_constraints": [
+    "In a single continuous unbroken shot, no scene cuts",
+    "Coherent foley and ambience aligned with on-screen motion; avoid hallucinated off-screen speech unless prompted"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "category": "subject_and_action",
+      "requirement": "Depicts brass clockwork owl on Victorian observatory desk and dolly-back starlit dome reveal.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-2",
+      "category": "shot_continuity",
+      "requirement": "Video plays as a single continuous unbroken shot with zero hard scene cuts across [0-5s] and [5-10s].",
+      "mandatory": true
+    },
+    {
+      "id": "AC-3",
+      "category": "start_frame_lock",
+      "requirement": "Opening frame matches the supplied starting keyframe image.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-4",
+      "category": "text_literal",
+      "requirement": "Visible or spoken literal matches exact text: \"CHRONOS LAB\".",
+      "mandatory": true
+    }
+  ]
+}

@@ -46,6 +46,7 @@ if the two disagree, so a row cannot rot here without breaking the build.
 | **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 8-axis review plus style, boilerplate stripping, zero AI fluff. |
 | **Performance & Benchmarking** | `.upstream/performance-optimization` | Challenger, Worker | Latency budgets, p99 regression gates, memory leak detection. |
 | **Visual Media, Diagrams & Comics** | `skills/image-gen` | Explorer, Worker | Frozen specs, binary header checks, blinded rubric verification, sequential anchor lock. |
+| **Video Production & Post-Processing** | `skills/video-gen` | Explorer, Worker | Timeline plans, anchored keyframe chaining, 2-pass loudnorm audio mixing, captions/motion cards, ffprobe and Argon verification. |
 
 Run `autowire.py --list` to print the matrix together with each skill's
 frontmatter description, its catalog tags, and its resolution status.

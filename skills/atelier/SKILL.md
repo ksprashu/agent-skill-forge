@@ -49,6 +49,7 @@ Do not activate for pure code, data queries, or short factual answers.
 
    **Use visuals liberally when they improve clarity or impact.** Not every section needs an image, but include graphics, diagrams, icons, or infographics wherever they help the reader understand faster than text alone:
    - Compose generated diagrams, icons, infographics, or conceptual illustrations by reference via `skills/image-gen/SKILL.md` (`image-gen`) rather than duplicating generation rules here.
+   - Compose generated motion or video assets (such as short explainer clips for interactive HTML deliverables or slide decks) by reference via `skills/video-gen/SKILL.md` (`video-gen`).
    - Source relevant existing images or charts via search when appropriate and available.
    - Embed visuals with clear captions and ensure they reinforce the content rather than decorate it.
 

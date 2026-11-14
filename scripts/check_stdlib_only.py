@@ -24,7 +24,8 @@ The rule is not repository-wide, and pretending otherwise would be a lie this
 script then had to carry exceptions for: the OKF verifiers under
 ``skills/catalog/scripts`` need PyYAML. Those skills declare their dependencies
 and bootstrap them. ``ENFORCED_ROOTS`` lists the trees where no such declaration
-exists and none is wanted, including the ``image-gen`` CLI controller.
+exists and none is wanted, including the ``image-gen`` and ``video-gen`` CLI
+controllers.
 
 Exit codes: 0 clean, 1 violations found, 2 invocation error.
 """
@@ -41,7 +42,7 @@ from typing import Iterable, List, Sequence, Set, Tuple
 #: executes, plus the installer-side scripts, hooks, and media CLI controllers.
 ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts", "skills/review/scripts",
                   "skills/security-review", "skills/pr-review-loop", "skills/handoff/scripts",
-                  "skills/image-gen/scripts")
+                  "skills/image-gen/scripts", "skills/video-gen/scripts")
 
 # sys.stdlib_module_names arrived in 3.10 and there is no honest way to fake the
 # list on an older runtime. Everything this repo actually installs runs on 3.9;
