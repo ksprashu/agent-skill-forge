@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "mode": "bgm",
+  "engine": "lyria",
+  "raw_prompt": "Warm lofi instrumental with Rhodes electric piano and upright bass",
+  "compiled_prompt": "Warm lofi instrumental with Rhodes electric piano and upright bass. Genre: lofi. Tempo: 84 BPM. Strictly instrumental only: no vocals, no singing, no spoken words, no humming.",
+  "explicit_constraints": {
+    "duration_s": 15.0,
+    "genre": "lofi",
+    "bpm": 84,
+    "key": "F",
+    "instrumental_only": true,
+    "lufs_target": -14.0,
+    "true_peak_dbtp": -1.0
+  },
+  "implicit_constraints": [
+    "Strictly instrumental arrangement with zero vocal bleed",
+    "Cohesive rhythmic pocket and clean dynamic headroom"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "category": "subject",
+      "requirement": "Warm lofi instrumental background music with Rhodes electric piano and upright bass at 84 BPM.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-2",
+      "category": "instrumental_only",
+      "requirement": "Strictly instrumental with zero spoken words, singing, humming, or vocal syllables.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-3",
+      "category": "craft",
+      "requirement": "Clean studio mix without digital clipping, abrupt cutoffs, or unwanted static artifacts.",
+      "mandatory": true
+    }
+  ],
+  "spec_sha256": "d6f446c965a72ee736995e6c22cb008b9c0d5ecceee24c5890da065cf24362c0"
+}

@@ -258,6 +258,17 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "video timeline", "video captions", "lower third",
         ),
     ),
+    Domain(
+        label="Audio, Music, Voice & SFX Synthesis",
+        skills=("skills/audio-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Frozen audio specs, WAV/PCM and -14 LUFS 2-pass mastering, speech_metadata separation, consent-gated voice replication, Argon rubric verification.",
+        triggers=(
+            "generate audio", "audio generation", "audio-gen", "music-gen", "sfx-gen", "tts-gen",
+            "background music", "voiceover", "voice design", "voice replication",
+            "sound effect", "lyria", "chirp3", "loudnorm",
+        ),
+    ),
 )
 
 

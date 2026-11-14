@@ -334,6 +334,19 @@ class TestMatching(unittest.TestCase):
         ]
         self.assertIn("Video Production & Post-Processing", video_labels)
 
+    def test_generic_sound_or_voice_tasks_do_not_trigger_audio_skill(self):
+        for non_audio_task in (
+            "Check kernel sound driver regression",
+            "Update user voice settings URL",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(non_audio_task)]
+            self.assertNotIn("Audio, Music, Voice & SFX Synthesis", labels)
+        audio_labels = [
+            m.domain.label
+            for m in autowire.match_domains("Use audio-gen for background music and voiceover synthesis")
+        ]
+        self.assertIn("Audio, Music, Voice & SFX Synthesis", audio_labels)
+
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):

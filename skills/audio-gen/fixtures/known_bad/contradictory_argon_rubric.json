@@ -1,0 +1,24 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Rhodes chords and upright bass present.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Spoken vocal ad-lib heard at 0:04.",
+      "fix_instruction": "Eliminate all vocal ad-libs and keep strictly instrumental."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "No digital clipping heard.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_prompt": "Regenerate strictly instrumental without vocal ad-libs."
+}
