@@ -217,18 +217,19 @@ class TestRepositoryIsClean(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_the_cli_exits_one_where_dependencies_are_declared(self):
-        # skills/image-gen genuinely needs Pillow; it is outside the enforced
-        # roots. Pointing the checker at it proves the checker still fires.
+        # skills/catalog/scripts genuinely needs PyYAML; it is outside the
+        # enforced roots. Pointing the checker at it proves the checker still fires.
         proc = subprocess.run(
             [sys.executable, CHECKER, "--repo-root", str(REPO_ROOT),
-             "--root", "skills/image-gen/scripts"],
+             "--root", "skills/catalog/scripts"],
             capture_output=True, text=True,
         )
         self.assertEqual(proc.returncode, 1)
-        self.assertIn("PIL", proc.stderr)
+        self.assertIn("yaml", proc.stderr)
 
-    def test_the_work_engine_is_inside_the_enforced_roots(self):
+    def test_the_work_engine_and_media_controllers_are_inside_the_enforced_roots(self):
         self.assertIn("skills/work/scripts", checker.ENFORCED_ROOTS)
+        self.assertIn("skills/image-gen/scripts", checker.ENFORCED_ROOTS)
 
     def test_a_bad_repo_root_is_an_invocation_error(self):
         proc = subprocess.run(

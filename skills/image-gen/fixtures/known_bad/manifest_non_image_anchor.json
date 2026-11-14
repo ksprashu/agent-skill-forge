@@ -1,0 +1,12 @@
+{
+  "mode": "timeline",
+  "aspect_ratio": "16:9",
+  "anchor_image": "non_image_anchor.txt",
+  "frames": [
+    {
+      "prompt": "Step 1 with a non-image anchor reference",
+      "caption": "Step 1",
+      "duration_s": 5
+    }
+  ]
+}
