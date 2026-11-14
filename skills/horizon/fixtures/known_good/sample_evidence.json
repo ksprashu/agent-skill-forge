@@ -1,0 +1,73 @@
+{
+  "schema_version": "1",
+  "collected_at": "2026-11-14T12:00:00Z",
+  "ledger_dir": "~/.gemini/horizons",
+  "items_evaluated": 2,
+  "items": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "revision": 1,
+      "status": "watching",
+      "probes": [
+        {
+          "kind": "http_digest",
+          "url": "https://example.org/releases",
+          "available": true,
+          "http_status": 200,
+          "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes_read": 1024,
+          "truncated": false,
+          "baseline_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "changed_vs_baseline": true,
+          "matched_tokens": ["--json"],
+          "missing_tokens": [],
+          "error": null
+        },
+        {
+          "kind": "agent_query",
+          "source": "mcp:docs",
+          "query": "Verify release notes mention stable --json.",
+          "status": "requires_agent_eval",
+          "available": false
+        }
+      ]
+    },
+    {
+      "item_id": "rule-model-pin-update",
+      "revision": 2,
+      "status": "pr_opened",
+      "probes": [
+        {
+          "kind": "file_anchor",
+          "scope": "global_config",
+          "path": "~/.gemini/config/rules/swarm-models.md",
+          "exists": true,
+          "file_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "anchor_literal": "gemini-launch-candidate-high",
+          "anchor_found": true,
+          "changed_vs_baseline": false,
+          "error": null
+        }
+      ],
+      "pr_status": {
+        "kind": "gh_pr_status",
+        "pr_url": "https://github.com/ksprashu/agent-skill-forge/pull/42",
+        "available": true,
+        "state": "OPEN",
+        "merged_at": null,
+        "url": "https://github.com/ksprashu/agent-skill-forge/pull/42",
+        "error": null
+      }
+    }
+  ],
+  "skipped_items": [],
+  "not_inspected": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "probe_kind": "agent_query",
+      "what": "agent_query:mcp:docs",
+      "reason": "requires_agent_eval (cannot execute MCP or model-catalogue query mechanically)"
+    }
+  ],
+  "reconciled_prs": []
+}

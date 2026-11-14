@@ -84,6 +84,7 @@ CORE_SKILLS = {
     'continuous-alignment': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'align': os.path.join(CORE_SKILLS_DIR, 'continuous-alignment'),
     'handoff': os.path.join(CORE_SKILLS_DIR, 'handoff'),
+    'horizon': os.path.join(CORE_SKILLS_DIR, 'horizon'),
     'work': os.path.join(CORE_SKILLS_DIR, 'work'),
     'profile': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
 }
@@ -141,6 +142,8 @@ ALIASES = {
     'secreview': 'security-review',
     'review-loop': 'pr-review-loop',
     'handover': 'handoff',
+    'radar': 'horizon',
+    'tech-horizon': 'horizon',
 }
 
 ANTIGRAVITY_RESERVED_COMMANDS = {'goal', 'schedule', 'browser', 'grill-me', 'teamwork-preview', 'learn', 'boost', 'agents', 'config', 'settings', 'clear', 'resume', 'rewind', 'undo', 'fork', 'add-dir', 'keybindings', 'codesearch', 'credits', 'diff', 'permissions', 'statusline', 'title', 'voice', 'help'}
@@ -309,8 +312,8 @@ CORE_CLUSTERS = {
     'c4': {
         'id': 'docs-governance',
         'name': 'Knowledge & Governance',
-        'description': 'Documentation compilation, OKF knowledge catalog, Google OSS hygiene, continuous alignment, and cross-harness session handoff.',
-        'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment', 'handoff'],
+        'description': 'Documentation compilation, OKF knowledge catalog, Google OSS hygiene, continuous alignment, cross-harness session handoff, and predictive 6-12 month tech horizon watchlists.',
+        'skills': ['docs', 'catalog', 'google-oss', 'continuous-alignment', 'handoff', 'horizon'],
     },
     'c5': {
         'id': 'spine',

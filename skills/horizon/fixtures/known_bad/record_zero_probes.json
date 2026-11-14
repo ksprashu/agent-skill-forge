@@ -1,0 +1,17 @@
+{
+  "id": "bad-zero-probes",
+  "title": "Zero probes should be rejected",
+  "category": "cli-tool",
+  "window": "2026-Q4..2027-Q1",
+  "baseline_measurement": "Baseline v1",
+  "forecast": "Upgrade expected in 6 months.",
+  "playbook": "Update version.",
+  "probes": [],
+  "targets": [
+    {
+      "kind": "repo_branch_pr",
+      "repo": "ksprashu/agent-skill-forge",
+      "path": "README.md"
+    }
+  ]
+}

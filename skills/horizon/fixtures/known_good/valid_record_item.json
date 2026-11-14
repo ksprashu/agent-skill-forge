@@ -1,0 +1,50 @@
+{
+  "id": "gemini-4-pricing-watch",
+  "title": "Monitor gemini-4-argon pricing and routing table drop",
+  "category": "model-pricing",
+  "window": "2026-Q4..2027-Q2",
+  "baseline_measurement": "gemini-launch-candidate-high serves as argon preview tier",
+  "forecast": "Model catalogue promotes gemini-4-argon to stable GA ID within 6-12 months, enabling swarm-models.md simplification.",
+  "playbook": "Update ~/.gemini/config/rules/swarm-models.md after creating a SHA-256 backup via horizon.py backup-target.",
+  "source": "architecture-review",
+  "probes": [
+    {
+      "kind": "cli_help",
+      "binary": "gemini-api",
+      "subcommand": "generate",
+      "expect_tokens": ["--store", "--thinking-level"]
+    },
+    {
+      "kind": "github_release",
+      "repo": "google-gemini/deprecated-watch",
+      "baseline_tag": "v1.0.0"
+    },
+    {
+      "kind": "http_digest",
+      "url": "https://ai.google.dev/gemini-api/docs/models",
+      "expect_tokens": ["gemini-4-argon"]
+    },
+    {
+      "kind": "file_anchor",
+      "scope": "global_config",
+      "path": "~/.gemini/config/rules/swarm-models.md",
+      "anchor_literal": "gemini-launch-candidate-high"
+    },
+    {
+      "kind": "agent_query",
+      "source": "swarm-models",
+      "query": "Check live swarm{action:'models'} IDs for gemini-4-argon GA promotion."
+    }
+  ],
+  "targets": [
+    {
+      "kind": "global_config",
+      "path": "~/.gemini/config/rules/swarm-models.md"
+    },
+    {
+      "kind": "repo_branch_pr",
+      "repo": "ksprashu/agent-skill-forge",
+      "path": "skills/image-gen/scripts/image_gen.py"
+    }
+  ]
+}

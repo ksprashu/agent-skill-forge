@@ -347,6 +347,21 @@ class TestMatching(unittest.TestCase):
         ]
         self.assertIn("Audio, Music, Voice & SFX Synthesis", audio_labels)
 
+    def test_generic_horizontal_or_forecast_tasks_do_not_trigger_horizon_skill(self):
+        for non_horizon_task in (
+            "Fix horizontal scrollbar alignment",
+            "Extend forecast window in revenue chart",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(non_horizon_task)]
+            self.assertNotIn("Tech Horizon & Upstream Watchlist", labels)
+        for positive_task in (
+            "Update the tech horizon watchlist",
+            "Record a predictive horizon item in the forecast ledger",
+            "Run horizon watch sweep via horizon-sentinel",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(positive_task)]
+            self.assertIn("Tech Horizon & Upstream Watchlist", labels)
+
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):

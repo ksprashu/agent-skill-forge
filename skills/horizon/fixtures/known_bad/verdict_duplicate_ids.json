@@ -1,0 +1,21 @@
+{
+  "schema_version": "1",
+  "evaluated_at": "2026-11-14T12:05:00Z",
+  "summary": "Duplicate item IDs in verdict decisions.",
+  "triggered_count": 1,
+  "not_inspected": [],
+  "decisions": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "decision": "drop_confirmed",
+      "summary": "Digest changed.",
+      "evidence_citations": ["probes[0].changed_vs_baseline=true"]
+    },
+    {
+      "item_id": "cli-flag-stabilization",
+      "decision": "no_change",
+      "summary": "Duplicate conflicting row.",
+      "evidence_citations": ["probes[0].http_status=200"]
+    }
+  ]
+}
