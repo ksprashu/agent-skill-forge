@@ -1,0 +1,18 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Rhodes electric piano and bass audible.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Instrumental throughout.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_prompt": ""
+}

@@ -67,7 +67,7 @@ _check_skills_for_media() {
     IFS=','
     for tok in $raw_list; do
         case "$tok" in
-            image-gen|video-gen|image-gen-expert|omni-video) HAS_MEDIA_SELECTION=1 ;;
+            image-gen|video-gen|audio-gen|image-gen-expert|omni-video|music-gen|sfx-gen|tts-gen) HAS_MEDIA_SELECTION=1 ;;
         esac
     done
     IFS="$old_ifs"
@@ -349,10 +349,13 @@ else
         for check_path in \
             "$HOME/.agents/skills/image-gen" \
             "$HOME/.agents/skills/video-gen" \
+            "$HOME/.agents/skills/audio-gen" \
             "$HOME/.gemini/skills/image-gen" \
             "$HOME/.gemini/skills/video-gen" \
+            "$HOME/.gemini/skills/audio-gen" \
             "${PROJECT_DIR:-.}/.gemini/skills/image-gen" \
-            "${PROJECT_DIR:-.}/.gemini/skills/video-gen"; do
+            "${PROJECT_DIR:-.}/.gemini/skills/video-gen" \
+            "${PROJECT_DIR:-.}/.gemini/skills/audio-gen"; do
             if [ -e "$check_path" ] || [ -L "$check_path" ]; then
                 MEDIA_SYNCED=1
                 break

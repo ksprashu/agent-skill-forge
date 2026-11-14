@@ -1,0 +1,18 @@
+{
+  "streams": [
+    {
+      "index": 0,
+      "codec_name": "pcm_s24le",
+      "codec_type": "audio",
+      "sample_rate": "48000",
+      "channels": 2,
+      "bits_per_sample": 24,
+      "duration": "15.000000"
+    }
+  ],
+  "format": {
+    "format_name": "wav",
+    "duration": "15.000000",
+    "bit_rate": "2304000"
+  }
+}
