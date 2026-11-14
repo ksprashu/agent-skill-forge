@@ -1,0 +1,40 @@
+{
+  "data": {
+    "repository": {
+      "issues": {
+        "pageInfo": {
+          "hasNextPage": true
+        },
+        "nodes": [
+          {
+            "number": 301,
+            "url": "https://github.com/acme/widgets/issues/301",
+            "state": "OPEN",
+            "title": "Truncated list test issue",
+            "body": "Page has more issues after this one.",
+            "createdAt": "2026-11-01T10:00:00Z",
+            "updatedAt": "2026-11-01T10:00:00Z",
+            "author": {
+              "login": "alice"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "comments": {
+              "pageInfo": {
+                "hasNextPage": true
+              },
+              "nodes": []
+            }
+          }
+        ]
+      },
+      "pullRequests": {
+        "pageInfo": {
+          "hasNextPage": false
+        },
+        "nodes": []
+      }
+    }
+  }
+}

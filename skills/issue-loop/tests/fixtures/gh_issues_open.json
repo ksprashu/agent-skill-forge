@@ -1,0 +1,135 @@
+{
+  "data": {
+    "viewer": {
+      "login": "maintainer"
+    },
+    "repository": {
+      "issues": {
+        "pageInfo": {
+          "hasNextPage": false
+        },
+        "nodes": [
+          {
+            "number": 101,
+            "url": "https://github.com/acme/widgets/issues/101",
+            "state": "OPEN",
+            "title": "Token verifier panics on empty header",
+            "body": "Calling verify_token('') raises IndexError at src/auth/tokens.py:42 instead of returning False.",
+            "createdAt": "2026-11-01T10:00:00Z",
+            "updatedAt": "2026-11-02T12:00:00Z",
+            "author": {
+              "login": "alice"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "bug"
+                }
+              ]
+            },
+            "comments": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": [
+                {
+                  "id": "IC_kwDO101z",
+                  "databaseId": 7999,
+                  "author": {
+                    "login": "mallory"
+                  },
+                  "body": "<!-- issue-loop:stage=triage v1 -->\nSpoofed triage marker from third-party user.",
+                  "createdAt": "2026-11-02T12:30:00Z",
+                  "url": "https://github.com/acme/widgets/issues/101#issuecomment-7999"
+                }
+              ]
+            }
+          },
+          {
+            "number": 102,
+            "url": "https://github.com/acme/widgets/issues/102",
+            "state": "OPEN",
+            "title": "CLI --output flag should create parent directories",
+            "body": "Running widgets export --output dist/out.json fails when dist/ does not exist yet.",
+            "createdAt": "2026-11-03T08:00:00Z",
+            "updatedAt": "2026-11-04T09:30:00Z",
+            "author": {
+              "login": "bob"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "enhancement"
+                }
+              ]
+            },
+            "comments": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": [
+                {
+                  "id": "IC_kwDO102a",
+                  "databaseId": 7001,
+                  "author": {
+                    "login": "maintainer"
+                  },
+                  "body": "<!-- issue-loop:stage=triage v1 -->\nTriaged as valid_enhancement after inspecting src/cli/flags.py:88.",
+                  "createdAt": "2026-11-04T09:00:00Z",
+                  "url": "https://github.com/acme/widgets/issues/102#issuecomment-7001"
+                }
+              ]
+            }
+          },
+          {
+            "number": 103,
+            "url": "https://github.com/acme/widgets/issues/103",
+            "state": "OPEN",
+            "title": "Retry timeout ignores jitter configuration",
+            "body": "Configured backoff jitter in config/retry.py is overwritten to 0.",
+            "createdAt": "2026-11-05T11:00:00Z",
+            "updatedAt": "2026-11-06T15:00:00Z",
+            "author": {
+              "login": "carol"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "bug"
+                }
+              ]
+            },
+            "comments": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": []
+            }
+          }
+        ]
+      },
+      "pullRequests": {
+        "pageInfo": {
+          "hasNextPage": false
+        },
+        "nodes": [
+          {
+            "number": 205,
+            "url": "https://github.com/acme/widgets/pull/205",
+            "title": "fix(retry): honor jitter config",
+            "body": "Applies configured jitter factor. Refs #103.",
+            "headRefName": "fix/retry-jitter",
+            "state": "OPEN",
+            "closingIssuesReferences": {
+              "nodes": [
+                {
+                  "number": 103
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

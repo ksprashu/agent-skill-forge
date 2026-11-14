@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "issues": [
+    {
+      "issue": 101,
+      "classification": "valid_bug",
+      "evidence": ["src/auth/tokens.py:42 crashes on empty header"],
+      "track_id": null
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-main",
+      "issues": [102],
+      "partial_issues": [],
+      "summary": "Unrelated track.",
+      "owned_files": ["src/cli/flags.py"],
+      "test_files": ["tests/test_flags.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_flags.py"]
+    }
+  ]
+}

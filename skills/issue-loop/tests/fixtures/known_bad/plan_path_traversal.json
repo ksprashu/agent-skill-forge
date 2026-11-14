@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "issues": [
+    {
+      "issue": 101,
+      "classification": "valid_bug",
+      "evidence": ["src/auth/tokens.py:42"],
+      "track_id": "track-main"
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-main",
+      "issues": [101],
+      "partial_issues": [],
+      "summary": "Write outside repo root.",
+      "owned_files": ["../outside/secret.py"],
+      "test_files": ["tests/test_tokens.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_tokens.py"]
+    }
+  ]
+}
