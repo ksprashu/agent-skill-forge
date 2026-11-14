@@ -8,7 +8,7 @@
       "name": "Design Tokens & System Spec",
       "prompt_template": "Define modern CSS design tokens, HSL color palette, typography hierarchy, and glassmorphism utilities.",
       "subagent_role": "Architect - UI Designer",
-      "model_tier": "flash_medium",
+      "model_tier": "pro",
       "workspace_mode": "share",
       "dependencies": [],
       "verification_gate": {
@@ -22,7 +22,7 @@
       "name": "Responsive Component Construction",
       "prompt_template": "Build semantic HTML components with responsive CSS layouts, hover states, and smooth transitions.",
       "subagent_role": "Builder - UI Engineer",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_01_design_tokens"],
       "verification_gate": {
@@ -36,7 +36,7 @@
       "name": "Chrome DevTools Visual Inspection",
       "prompt_template": "Use Chrome DevTools MCP (new_page, take_screenshot) to physically render UI and capture WebP visual evidence.",
       "subagent_role": "Auditor - Visual Verifier",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_02_component_build"],
       "verification_gate": {
@@ -50,7 +50,7 @@
       "name": "A11y Accessibility & Contrast Sweep",
       "prompt_template": "Run accessibility auditing (WCAG AA contrast, ARIA labels, focus states, tap targets).",
       "subagent_role": "Sentry - A11y Auditor",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_03_devtools_visual_audit"],
       "verification_gate": {

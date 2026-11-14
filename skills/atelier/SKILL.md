@@ -48,9 +48,8 @@ Do not activate for pure code, data queries, or short factual answers.
    Apply one memorable element (a strong header treatment, a single accent color used sparingly, distinctive type pairing) and keep everything else quiet.
 
    **Use visuals liberally when they improve clarity or impact.** Not every section needs an image, but include graphics, diagrams, icons, or infographics wherever they help the reader understand faster than text alone:
-   - Generate custom diagrams, icons, or conceptual illustrations when the subject benefits from them.
+   - Compose generated diagrams, icons, infographics, or conceptual illustrations by reference via `skills/image-gen/SKILL.md` (`image-gen`) rather than duplicating generation rules here.
    - Source relevant existing images or charts via search when appropriate and available.
-   - Prefer generated visuals (including high-quality image generation) for original diagrams, process flows, or subject-specific illustrations.
    - Embed visuals with clear captions and ensure they reinforce the content rather than decorate it.
 
 6. **Critique and deliver.** Ensure scannability (tables for comparisons, bullets for lists, short paragraphs), sufficient contrast, consistent spacing, and that the result feels specific to this subject. Deliver the file or formatted content.

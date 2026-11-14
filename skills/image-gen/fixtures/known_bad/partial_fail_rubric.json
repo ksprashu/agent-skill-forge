@@ -1,0 +1,32 @@
+{
+  "overall_pass": false,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Gateway and Auth blocks are present with connecting arrow.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Dark-mode vector styling and clean stroke contrast are present.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": false,
+      "observed_evidence": "Second box reads 'Auth Srevcie' instead of 'Auth Service'.",
+      "fix_instruction": "Correct the spelling on the right-hand service box to exact text 'Auth Service'."
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Layout hierarchy is clean with no stray pseudo-labels.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "Keep everything else the same. Correct the spelling on the right-hand service box to exact text 'Auth Service'.",
+  "regenerated_prompt": "Clean dark-mode vector diagram with exact labels \"API Gateway\" and \"Auth Service\"."
+}

@@ -237,6 +237,17 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "hot path", "allocation",
         ),
     ),
+    Domain(
+        label="Visual Media, Diagrams & Comics",
+        skills=("skills/image-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Frozen specs, binary header checks, blinded rubric verification, sequential anchor lock.",
+        triggers=(
+            "generate image", "image generation", "image-gen", "hero image",
+            "diagram", "infographic", "comic", "storyboard",
+            "keyframe", "illustration", "banner",
+        ),
+    ),
 )
 
 

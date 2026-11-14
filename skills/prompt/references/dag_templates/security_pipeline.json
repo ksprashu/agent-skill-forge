@@ -8,7 +8,7 @@
       "name": "Vulnerability Scanning",
       "prompt_template": "Run security scans on the repository using run_security_scanner. Catalog all issues with CWE IDs.",
       "subagent_role": "Auditor - Security Scanner",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": [],
       "verification_gate": {
@@ -36,7 +36,7 @@
       "name": "Proof-of-Concept Verification",
       "prompt_template": "Execute run_poc against patched code to verify vulnerabilities are no longer exploitable.",
       "subagent_role": "Auditor - PoC Verifier",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "branch",
       "dependencies": ["node_02_patch_drafting"],
       "verification_gate": {
@@ -50,7 +50,7 @@
       "name": "Consolidated Audit Report",
       "prompt_template": "Merge verified branch patches and generate consolidated security report via generate-security-audit-report.",
       "subagent_role": "Mentor - Security Lead",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_03_poc_verification"],
       "verification_gate": {

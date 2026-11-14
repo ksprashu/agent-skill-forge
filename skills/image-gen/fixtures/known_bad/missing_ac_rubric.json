@@ -1,0 +1,26 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Architecture boxes are shown.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Dark-mode vector style matches.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Both labels are legible.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": ""
+}

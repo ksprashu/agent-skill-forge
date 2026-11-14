@@ -1,0 +1,12 @@
+{
+  "mode": "timeline",
+  "aspect_ratio": "16:9",
+  "anchor_image": "../known_good/valid_16x9_1344x768.png",
+  "frames": [
+    {
+      "prompt": "Step 1 with an existing image escaping manifest directory",
+      "caption": "Step 1",
+      "duration_s": 5
+    }
+  ]
+}
