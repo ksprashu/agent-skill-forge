@@ -36,7 +36,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C2** | **`unslop`** | `/unslop`, `/deslop` | Auto / Slash | Strips AI smells, promotional bloat, and needless words from prose, docs, code comments, commit messages, analyses, and UI copy. Leaves code logic alone. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, synthesizes diagrams, and turns technical dossiers into grounded nonfiction.*
 
 | Cluster | Slug | Invocations & Triggers | Execution Mode | Scope & Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
@@ -45,6 +45,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C3** | **`voice-register`** | "in my voice", outward text under your name | Autonomous | Resolves a voice profile (`.local.md` > `~/.gemini/personas/default/` > template) and applies the matching channel register (R1–R5) to text sent under your name. |
 | **C3** | **`cognitive-profiler`** | `/cognitive-profiler` | User Slash | Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions. |
 | **C3** | **`image-gen`** | `/image-gen` *(legacy alias: `/image-gen-expert`)* | Auto / Slash | Generates verified images, diagrams, multi-panel comics, and sequential timelines via `gemini-api` CLI (`gemini-nano-banana-2.1`, `gemini-3-pro-image`). |
+| **C3** | **`chronicle`** | `/chronicle`, `@chronicle` | Auto / Slash | Turns technical reports and dossiers into Gladwell/Grant nonfiction with evidence badges and a Field Notebook. |
 | **C3** | **`video-gen`** | `/video-gen`, `/omni-video` | Auto / Slash | Generates arbitrary-length videos (`3s..3600s+`), chains anchored keyframes (`image-gen`), mixes ducked `-14 LUFS` audio, overlays captions/cards (`vidkit`/`sound` or standalone `ffmpeg`), and verifies with `ffprobe` + Argon. |
 | **C3** | **`audio-gen`** | `/audio-gen`, `/music-gen`, `/sfx-gen`, `/tts-gen` | Auto / Slash | Generates verified BGMs/songs (`lyria-3.5`), Gemini 3.8 TTS narration/dialogue (`speech_metadata` + Chunk-1 pinning), `/v1beta/voices` design/replication, `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass mixes. |
 
@@ -119,6 +120,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice profiles, kept out of the public repo. |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Reader-preference profiling compiled into harness configuration. |
 | **`image-gen`** | **Google DeepMind** | [Gemini API CLI & Image Docs](https://aistudio.google.com/docs/image-generation) | Stdlib `gemini-api` CLI image, comic, and sequential timeline generation (`gemini-nano-banana-2.1`, `gemini-3-pro-image`) with mechanical header and Argon rubric verification. |
+| **`chronicle`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/chronicle`](https://github.com/ksprashu/agent-skill-forge) | Technical nonfiction storytelling and interactive field books. |
 | **`video-gen`** | **Google DeepMind** | [Gemini Omni Flash Docs](https://aistudio.google.com/docs/omni) | Stdlib arbitrary-length `gemini-api` CLI video director (`gemini-omni-1.2-flash`), keyframe chaining, broadcast 2-pass audio mixing, caption/card compositing, and `ffprobe` + Argon verification. |
 | **`audio-gen`** | **Google DeepMind & Cloud TTS** | [Gemini API CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib Lyria 3.5 music/song generator, Gemini 3.8 TTS & `/v1beta/voices` engine, Cloud TTS `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass ducked broadcast mixer. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
