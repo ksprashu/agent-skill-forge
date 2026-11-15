@@ -1,0 +1,14 @@
+{
+  "pr": {
+    "number": 23,
+    "url": "https://github.com/acme/widgets/pull/23",
+    "state": "OPEN",
+    "headRefName": "--upload-pack=evil",
+    "baseRefName": "main",
+    "mergeable": "CONFLICTING",
+    "mergeStateStatus": "DIRTY",
+    "headRefOid": "7777777",
+    "isCrossRepository": false
+  },
+  "merged_prs": []
+}

@@ -34,16 +34,21 @@ Engineer commands it reads: `/ai-review wontfix: <reason>` (thread reply) and
 
 Exit codes:
   0   no open threads (any severity, unparsed-marker, or human), nothing in
-      not_checked, and the verdict check completed with SUCCESS
-  1   open work remains, something was not checked, or the verdict is
-      missing, pending, or not SUCCESS
+      not_checked, PR is mergeable (not CONFLICTING/DIRTY), and the verdict
+      check completed with SUCCESS
+  1   open work remains, PR has merge conflicts (CONFLICTING/DIRTY), something
+      was not checked (including UNKNOWN mergeability unless
+      --allow-unknown-mergeable), or the verdict is missing, pending, or not
+      SUCCESS
   2   gh unavailable, the API call failed, or the response is not usable
   64  usage error
 
 Surface (V3): review threads, their comments, PR comments, pr-guardian review
-submissions, labels, and the head commit's check rollup. Not checked (V5):
-whether a fix is correct, and anything beyond the first page of each
-connection; truncation is reported in `not_checked`.
+submissions, labels, mergeability (`mergeable`, `mergeStateStatus`, `headRefOid`,
+`baseRefOid`), and the head commit's check rollup. Not checked (V5): whether a
+fix is correct, non-verdict CI checks (checked by `merge_pr.py`), and anything
+beyond the first page of each connection; truncation is reported in
+`not_checked`.
 """
 
 from __future__ import annotations
@@ -87,6 +92,7 @@ query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
       number url state headRefName baseRefName
+      mergeable mergeStateStatus headRefOid baseRefOid
       labels(first: 50) { nodes { name } }
       reviewThreads(first: 100) {
         pageInfo { hasNextPage }
@@ -106,12 +112,15 @@ query($owner: String!, $name: String!, $number: Int!) {
         nodes { author { login } body createdAt url }
       }
       commits(last: 1) {
-        nodes { commit { oid statusCheckRollup { contexts(first: 100) { nodes {
-          __typename
-          ... on CheckRun { name status conclusion
-                            checkSuite { workflowRun { workflow { name } } } }
-          ... on StatusContext { context state }
-        } } } } }
+        nodes { commit { oid statusCheckRollup { contexts(first: 100) {
+          pageInfo { hasNextPage }
+          nodes {
+            __typename
+            ... on CheckRun { name status conclusion
+                              checkSuite { workflowRun { workflow { name } } } }
+            ... on StatusContext { context state }
+          }
+        } } } }
       }
     }
   }
@@ -231,7 +240,8 @@ def _verdict(pr: dict[str, Any], check_name: str) -> dict[str, Any]:
 
 
 def build_state(response: Any, check_name: str = DEFAULT_CHECK,
-                bot_logins: tuple[str, ...] = DEFAULT_BOT_LOGINS) -> dict[str, Any]:
+                bot_logins: tuple[str, ...] = DEFAULT_BOT_LOGINS,
+                allow_unknown_mergeable: bool = False) -> dict[str, Any]:
     """Turn a GraphQL response into the evidence document. Raises GhError."""
     if not isinstance(response, dict):
         raise GhError("response is not a JSON object")
@@ -254,6 +264,11 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
         not_checked.append("review threads beyond the first 100")
     if _truncated(pr.get("reviews")):
         not_checked.append("reviews beyond the first 100 (round count is a floor)")
+    commits = _nodes(pr.get("commits"))
+    commit = commits[-1].get("commit", {}) if commits else {}
+    rollup = commit.get("statusCheckRollup") or {}
+    if _truncated(rollup.get("contexts")):
+        not_checked.append("status check contexts beyond the first 100")
 
     open_, resolved, unparsed, other_open, pending = [], [], [], [], []
     signals: list[dict[str, Any]] = []
@@ -368,9 +383,22 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
     labels = sorted(n.get("name") for n in _nodes(pr.get("labels")) if n.get("name"))
     blocking = [e for e in open_ if e["severity"] in BLOCKING_SEVERITIES]
     verdict = _verdict(pr, check_name)
+    raw_mergeable = pr.get("mergeable")
+    raw_merge_state = pr.get("mergeStateStatus")
+    mergeable = raw_mergeable if isinstance(raw_mergeable, str) and raw_mergeable else "UNKNOWN"
+    merge_state = raw_merge_state if isinstance(raw_merge_state, str) and raw_merge_state else "UNKNOWN"
+    if mergeable == "UNKNOWN" and not allow_unknown_mergeable:
+        not_checked.append("PR mergeability is UNKNOWN (not yet computed or omitted)")
+    merge = {
+        "mergeable": mergeable,
+        "merge_state": merge_state,
+        "head_oid": pr.get("headRefOid") or verdict.get("head_sha"),
+        "base_oid": pr.get("baseRefOid"),
+    }
     return {
         "pr": {"number": pr.get("number"), "url": pr.get("url"), "state": pr.get("state"),
                "head": pr.get("headRefName"), "base": pr.get("baseRefName")},
+        "merge": merge,
         "verdict": verdict,
         "labels": labels,
         "rounds": len(reviews),
@@ -397,16 +425,20 @@ def build_state(response: Any, check_name: str = DEFAULT_CHECK,
 
 def exit_code(state: dict[str, Any]) -> int:
     threads = state["threads"]
+    merge = state.get("merge") or {}
     # Any unresolved thread blocks the merge (conversation resolution), nits
-    # included, and anything not checked cannot be called clean.
+    # included, merge conflicts fail closed, and anything not checked cannot
+    # be called clean.
     open_work = (threads["open"]
                  or any(not u["is_resolved"] for u in threads["unparsed"])
                  or threads["other_open"]
                  or state["not_checked"])
+    conflict = (merge.get("mergeable") == "CONFLICTING"
+                or merge.get("merge_state") == "DIRTY")
     verdict = state["verdict"]
     passed = (verdict["found"] and verdict["status"] == "COMPLETED"
               and verdict["conclusion"] == "SUCCESS")
-    return 0 if passed and not open_work else 1
+    return 0 if passed and not open_work and not conflict else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -418,6 +450,8 @@ def main(argv: list[str] | None = None) -> int:
                         help=f"verdict check name (default: {DEFAULT_CHECK!r})")
     parser.add_argument("--bot-login", action="append", default=[],
                         help="extra login to treat as pr-guardian (repeatable)")
+    parser.add_argument("--allow-unknown-mergeable", action="store_true",
+                        help="do not fail when mergeable is UNKNOWN/omitted (still fails on CONFLICTING/DIRTY)")
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -442,7 +476,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             response = fetch(args.repo or resolve_repo(), args.pr)
         state = build_state(response, args.check_name,
-                            tuple(DEFAULT_BOT_LOGINS) + tuple(args.bot_login))
+                            tuple(DEFAULT_BOT_LOGINS) + tuple(args.bot_login),
+                            allow_unknown_mergeable=args.allow_unknown_mergeable)
     except GhError as exc:
         print(f"review_state: {exc}", file=sys.stderr)
         return 2

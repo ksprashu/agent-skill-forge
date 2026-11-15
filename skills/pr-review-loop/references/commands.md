@@ -1,6 +1,7 @@
 # pr-guardian command and marker grammar
 
-Read this before posting your first reply on a PR that pr-guardian reviews.
+Read this before posting your first reply on a PR that pr-guardian reviews, or
+before running `restack.py` / `merge_pr.py`.
 
 ## Commands you post
 
@@ -79,9 +80,12 @@ blocks the merge. Read it by hand.
 
 ## Helper invocations
 
+### Review state, replies, and thread resolution
+
 ```bash
-python3 <skill-dir>/scripts/review_state.py --pr 42 --repo owner/name
+python3 <skill-dir>/scripts/review_state.py --pr 42 [--repo owner/name]
 python3 <skill-dir>/scripts/review_state.py --pr 42 --check-name "pr-guardian/verdict" --bot-login my-app
+python3 <skill-dir>/scripts/review_state.py --from-file response.json --allow-unknown-mergeable
 python3 <skill-dir>/scripts/reply.py --thread-id PRRT_kwDO... --fixed a1b2c3d --note "..."
 python3 <skill-dir>/scripts/reply.py --thread-id PRRT_kwDO... --wontfix "..." --dry-run
 python3 <skill-dir>/scripts/resolve.py --pr 42 --thread-id PRRT_kwDO...   # only after status=fixed|accepted_pushback
@@ -92,3 +96,41 @@ gh pr checks 42 --watch
 Thread ids (`PRRT_...`) come from `threads.open[].thread_id` in the
 `review_state.py` output; the ones you may resolve are in
 `threads.ready_to_resolve[].thread_id`.
+
+### Stack restacking (`restack.py`)
+
+```bash
+# Single PR: dry-run (default) vs apply
+python3 <skill-dir>/scripts/restack.py --pr 42 [--repo owner/name] --dry-run
+python3 <skill-dir>/scripts/restack.py --pr 42 [--repo owner/name] --apply
+python3 <skill-dir>/scripts/restack.py --pr 42 --strategy rebase --apply --push --force-with-lease
+
+# Offline / fixture-backed single-PR restack
+python3 <skill-dir>/scripts/restack.py --pr 42 --from-file context.json --repo-dir . --remote origin --no-fetch --apply
+
+# Post-merge topological cascade across open same-repo PRs (isCrossRepository == false)
+python3 <skill-dir>/scripts/restack.py --cascade --merged-pr 40 [--repo owner/name] --dry-run
+python3 <skill-dir>/scripts/restack.py --cascade --merged-pr 40 [--repo owner/name] --apply
+```
+
+Flags: `--pr`, `--cascade`, `--merged-pr`, `--repo`, `--repo-dir`, `--remote`,
+`--from-file`, `--strategy` (`merge` | `rebase`), `--no-fetch`, `--push`,
+`--force-with-lease` (only with `--strategy rebase`), `--dry-run`, `--apply`.
+Exit codes: `0` clean / applied, `1` conflict (aborted cleanly; `conflicting_files`
+in stdout) / dirty tree / branch mismatch / cycle / unsafe ref, `2` git/gh/file
+error, `64` usage error.
+
+### Pre-merge L3 gate and squash merge (`merge_pr.py`)
+
+```bash
+python3 <skill-dir>/scripts/merge_pr.py --pr 42 [--repo owner/name] --dry-run
+python3 <skill-dir>/scripts/merge_pr.py --pr 42 [--repo owner/name] --execute
+python3 <skill-dir>/scripts/merge_pr.py --pr 42 [--repo owner/name] --auto --execute
+python3 <skill-dir>/scripts/merge_pr.py --from-file response.json --no-delete-branch --dry-run
+```
+
+Flags: `--pr`, `--repo`, `--from-file`, `--check-name`, `--bot-login`, `--auto`,
+`--no-delete-branch`, `--dry-run` (default), `--execute`.
+Exit codes: `0` ready / merged, `1` refused (open threads, `CONFLICTING`,
+`DIRTY`, `BLOCKED`, `UNKNOWN`, non-passing check, or `needs-human`), `2` gh/API
+error, `64` usage error.

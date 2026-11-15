@@ -395,8 +395,96 @@ class TestNegatives(unittest.TestCase):
     def test_help_documents_flags(self):
         proc = run("--help")
         self.assertEqual(proc.returncode, 0)
-        for flag in ("--pr", "--repo", "--from-file", "--check-name", "--bot-login"):
+        for flag in ("--pr", "--repo", "--from-file", "--check-name", "--bot-login",
+                     "--allow-unknown-mergeable"):
             self.assertIn(flag, proc.stdout)
+
+
+class TestMergeReadinessAndFixtures(unittest.TestCase):
+    """V1/V2/T1/T4: mergeable, mergeStateStatus, headRefOid, baseRefOid checks."""
+
+    def test_known_good_mergeable_clean_exits_zero(self):
+        proc = run("--from-file", str(FIXTURES / "known_good" / "mergeable_clean.json"))
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        doc = json.loads(proc.stdout)
+        self.assertEqual(doc["merge"], {
+            "mergeable": "MERGEABLE",
+            "merge_state": "CLEAN",
+            "head_oid": "b2c3d4e5f6a1",
+            "base_oid": "000111222333",
+        })
+
+    def test_conflicting_pr_fails_closed_even_when_threads_clean(self):
+        proc = run("--from-file", str(FIXTURES / "known_bad" / "conflicting_pr.json"))
+        self.assertEqual(proc.returncode, 1)
+        doc = json.loads(proc.stdout)
+        self.assertEqual(doc["merge"]["mergeable"], "CONFLICTING")
+        self.assertEqual(doc["merge"]["merge_state"], "DIRTY")
+        self.assertEqual(doc["verdict"]["conclusion"], "SUCCESS")
+
+    def test_dirty_merge_state_fails_closed_even_if_mergeable_flag_stale(self):
+        proc = run("--from-file", str(FIXTURES / "known_bad" / "dirty_state_mergeable_flag.json"))
+        self.assertEqual(proc.returncode, 1)
+        doc = json.loads(proc.stdout)
+        self.assertEqual(doc["merge"]["mergeable"], "MERGEABLE")
+        self.assertEqual(doc["merge"]["merge_state"], "DIRTY")
+
+    def test_unknown_or_omitted_mergeable_recorded_in_not_checked_and_fails_closed(self):
+        bad_path = str(FIXTURES / "known_bad" / "unknown_mergeable.json")
+        proc = run("--from-file", bad_path)
+        self.assertEqual(proc.returncode, 1)
+        doc = json.loads(proc.stdout)
+        self.assertEqual(doc["merge"]["mergeable"], "UNKNOWN")
+        self.assertEqual(doc["merge"]["head_oid"], "f6a1b2c3d4e5")
+        self.assertTrue(any("UNKNOWN" in item for item in doc["not_checked"]))
+
+        # --allow-unknown-mergeable permits exit 0 on legacy omitted fixtures,
+        # while still failing on CONFLICTING or DIRTY.
+        allowed = run("--from-file", bad_path, "--allow-unknown-mergeable")
+        self.assertEqual(allowed.returncode, 0, allowed.stderr)
+        allowed_doc = json.loads(allowed.stdout)
+        self.assertEqual(allowed_doc["merge"]["mergeable"], "UNKNOWN")
+        self.assertEqual(allowed_doc["not_checked"], [])
+
+        conflicting = run("--from-file", str(FIXTURES / "known_bad" / "conflicting_pr.json"),
+                          "--allow-unknown-mergeable")
+        self.assertEqual(conflicting.returncode, 1)
+
+    def test_truncated_status_contexts_reported_in_not_checked(self):
+        doc = copy.deepcopy(fixture("all_resolved"))
+        rollup = doc["data"]["repository"]["pullRequest"]["commits"]["nodes"][0]["commit"]["statusCheckRollup"]
+        rollup["contexts"]["pageInfo"] = {"hasNextPage": True}
+        state = RS.build_state(doc)
+        self.assertTrue(any("status check contexts" in item for item in state["not_checked"]))
+        self.assertEqual(RS.exit_code(state), 1)
+
+    def test_live_gh_fetch_and_resolve_repo_via_temp_cli(self):
+        payload = (FIXTURES / "known_good" / "mergeable_clean.json").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            resp_file = tmp_path / "resp.json"
+            resp_file.write_text(payload, encoding="utf-8")
+            gh_bin = tmp_path / "gh"
+            gh_bin.write_text(
+                f"#!{sys.executable}\n"
+                "import sys\n"
+                "from pathlib import Path\n"
+                "args = sys.argv[1:]\n"
+                "if args[:2] == ['repo', 'view']:\n"
+                "    print('acme/widgets')\n"
+                "elif args[:2] == ['api', 'graphql']:\n"
+                f"    print(Path({str(resp_file)!r}).read_text(encoding='utf-8'))\n"
+                "else:\n"
+                "    sys.exit(1)\n",
+                encoding="utf-8",
+            )
+            gh_bin.chmod(0o755)
+            env = {**os.environ, "PATH": f"{tmp}{os.pathsep}{os.environ.get('PATH', '')}"}
+            proc = run("--pr", "12", env=env)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            out = json.loads(proc.stdout)
+            self.assertEqual(out["pr"]["number"], 12)
+            self.assertEqual(out["merge"]["mergeable"], "MERGEABLE")
 
 
 if __name__ == "__main__":

@@ -1,15 +1,16 @@
 ---
 name: pr-review-loop
-description: Work automated PR review threads to convergence as the PR's author - fix, push back with evidence, or escalate - then push, reply, and loop until the verdict check passes. Use when a PR has pr-guardian review comments, a failing `pr-guardian/verdict` check, a `needs-human` label to respond to, or when invoked via /pr-review-loop.
+description: Work automated PR review threads, merge conflicts, squash-merged stacks, and pre-merge checks to `--squash` / `--auto --squash` convergence as the PR's author. Use when a PR has pr-guardian review comments, a failing `pr-guardian/verdict` check, `CONFLICTING`/`DIRTY` squash-stack conflicts, a `needs-human` label, or when invoked via /pr-review-loop.
 ---
 
 # PR review loop
 
-You wrote the PR. An automated reviewer (pr-guardian) has posted findings on it.
-Your job is to get every P0-P3 thread closed **honestly**: by fixing the code, or
-by convincing the reviewer with evidence, or by handing the disagreement to a
-human. The check `pr-guardian/verdict` stays red while any P0-P3 finding is
-open, and the branch also requires every conversation to be resolved.
+You wrote the PR. An automated reviewer (pr-guardian) has posted findings on it,
+or an upstream PR in your stack merged and left this branch behind or
+conflicting. Your job is to get every P0-P3 thread closed **honestly** and
+converge to a conflict-free, green merge state (`--squash` or `--auto --squash`).
+The check `pr-guardian/verdict` stays red while any P0-P3 finding is open, and
+branch rules require resolved conversations and zero conflicts.
 
 `<skill-dir>` below means the folder containing this file.
 
@@ -17,54 +18,38 @@ open, and the branch also requires every conversation to be resolved.
 
 - **Never push to `main`.** All work goes through a PR branch. If you are on the
   default branch, create a branch first.
-- **Never resolve a thread the reviewer hasn't verified.** pr-guardian can't
-  resolve threads. When it confirms a fix it replies "Verified fixed", and when
-  it accepts pushback it replies "Pushback accepted", each carrying a
-  `pr-guardian:status ... status=fixed|accepted_pushback` marker. Only then do
-  you resolve the thread, with `resolve.py`. Resolving earlier, or resolving a
-  thread you haven't addressed, is gaming the reviewer: it marks the finding
-  `reopened` next round.
-- **Never game the reviewer.** No `# noqa`, `nosec`, `eslint-disable`,
-  `@SuppressWarnings` or similar without a written justification on the same
-  line that would convince a human. No deleting or skipping tests. No weakening
-  the check, the workflow, or the ruleset. No editing the reviewer's config in
-  the same PR.
-- Every push triggers a full re-review, so batch your fixes into one push per
-  round. Don't push once per thread.
-- Commits use conventional commit messages (`fix(cache): include tenant id in
-  key`) and carry **no AI or agent attribution** (no `Co-Authored-By`, no
-  "Generated with").
+- **Never resolve a thread the reviewer hasn't verified.** pr-guardian replies
+  `pr-guardian:status ... status=fixed|accepted_pushback` when verified; only
+  then resolve with `resolve.py`. Resolving earlier marks it `reopened`.
+- **Never game the reviewer.** No `# noqa`, `nosec`, `eslint-disable`, or
+  `@SuppressWarnings` without inline justification. No skipped tests or rule
+  weakening.
+- **Never guess `-s ours` or force-push blindly.** Use `restack.py` (uses
+  `-s ours` only when `headRefOid^{tree} == origin/<base>^{tree}`); use
+  `--force-with-lease` only under explicit `--strategy rebase`.
+- **Batch fixes into one push per round**, with conventional commits (`fix(cache):
+  ...`) and **zero AI or agent attribution** (`Co-Authored-By`, etc.).
 
 ## The loop
 
-### 1. Fetch state
+### 1. Fetch state and merge readiness
 
 ```bash
 python3 <skill-dir>/scripts/review_state.py --pr <N> [--repo owner/name]
 ```
 
-It prints JSON evidence and exits `0` (no open threads, verdict passed: you are
-done), `1` (work remains), `2` (`gh` missing or the API failed: fix auth with
-`gh auth status`, don't guess), or `64` (bad flags). Read:
+It prints JSON evidence and exits `0` (no open threads, `mergeable` clean,
+verdict `SUCCESS`), `1` (work, conflicts, or `UNKNOWN` mergeability remains), `2`
+(`gh`/API failure), or `64` (bad flags). Read:
 
-- `threads.open`: one entry per unresolved finding, with `finding_id`,
-  `severity`, `path`, `line`, `first_comment_excerpt`, `reopen_events`,
-  `rounds_since_raised`, `last_comment_by`.
-- `threads.reopened`: findings you (or someone) marked resolved that the
-  reviewer reopened. Treat each one as a fix that did not work.
-- `threads.ready_to_resolve`: open threads whose latest pr-guardian reply is
-  `status=fixed` or `status=accepted_pushback`. Resolve these in step 1a.
-  Each open entry also carries `latest_bot_status`.
-- `threads.unparsed`: threads whose pr-guardian marker is malformed. They still
-  block the merge. Read them by hand.
-- `threads.other_open`: unresolved threads from humans. Answer these too.
-- `pending_wontfix`: your pushback the reviewer has not answered yet. Don't
-  repeat it. Wait for the next round.
+- `merge`: `mergeable` (`MERGEABLE|CONFLICTING|UNKNOWN`), `merge_state`
+  (`CLEAN|DIRTY|BLOCKED|BEHIND|UNSTABLE|UNKNOWN`), `head_oid`, `base_oid`.
+  Exits `1` if `CONFLICTING`, `DIRTY`, or `UNKNOWN` (unless
+  `--allow-unknown-mergeable` is passed for legacy offline fixtures).
+- `threads.open`, `threads.reopened`, `threads.ready_to_resolve`,
+  `threads.unparsed`, `threads.other_open`, `pending_wontfix`.
 - `nits_comment`, `verdict`, `labels`, `rounds`, `escalation`,
-  `escalation_signals`, `not_checked`.
-
-`escalation_signals` are facts (counts, timestamps), not instructions. You
-decide what they mean in step 3.
+  `escalation_signals` (facts only), `not_checked`.
 
 ### 1a. Resolve what the reviewer verified
 
@@ -74,78 +59,67 @@ For each entry in `threads.ready_to_resolve`:
 python3 <skill-dir>/scripts/resolve.py --pr <N> --thread-id <PRRT_...> [--repo owner/name]
 ```
 
-`resolve.py` re-reads the thread and refuses (exit `1`) unless pr-guardian's
-latest reply in it is `status=fixed` or `status=accepted_pushback`. A later
-`still_open` or `reopened` reply, or none at all, means it is not yours to
-resolve yet. Don't resolve any other thread: open findings without that
-status go on to step 2.
+`resolve.py` refuses (exit `1`) unless pr-guardian's latest reply in the thread
+is `status=fixed` or `status=accepted_pushback`.
+
+### 1b. Restack behind or conflicting PRs (squash-stack aware)
+
+Read `references/commands.md` before running `restack.py` or `merge_pr.py`.
+When `merge.mergeable == "CONFLICTING"` or `merge.merge_state` is `DIRTY`/`BEHIND`:
+
+```bash
+python3 <skill-dir>/scripts/restack.py --pr <N> [--repo owner/name] --dry-run
+python3 <skill-dir>/scripts/restack.py --pr <N> [--repo owner/name] --apply
+```
+
+- If a recently merged PR's `headRefOid` is already an ancestor of `HEAD` and
+  `headRefOid^{tree} == origin/<base>^{tree}`, `--apply` runs
+  `merge -s ours` cleanly without replaying squashed hunks.
+- Otherwise it runs `git merge --no-edit origin/<base>` (or `rebase` with
+  `--strategy rebase`). On conflict it aborts cleanly, prints `conflicting_files`
+  as JSON, and exits `1` so you resolve the conflicts semantically and test.
+- After merging a lower PR `#M` in a stack, preview or run cascade restack in
+  topological order for same-repo PRs (`isCrossRepository == false`):
+  `python3 <skill-dir>/scripts/restack.py --cascade --merged-pr <M> --dry-run`.
 
 ### 2. Triage
 
-For each open thread, read the finding **and the code it points at**, at the
-current head. Classify it:
-
-- **Real defect**: the finding is right.
-- **False positive**: the finding is wrong, and you can show why (a line
-  reference, a test, a doc).
-- **Out of scope**: right in general, but not this PR's job.
-- **Intentional**: the code is deliberately this way, for a reason you can
-  state.
-
-When unsure, assume the reviewer is right and verify. Don't argue just because
-a finding is inconvenient.
+For each open thread, read the finding and code at `HEAD`. Classify as **Real
+defect**, **False positive**, **Out of scope**, or **Intentional**. When unsure,
+verify assuming the reviewer is right.
 
 ### 3. Decide per thread
 
-- **fix**: make the smallest correct change. If the finding is a bug, add a
-  test that fails without the fix. Don't refactor beyond the finding.
-- **wontfix**: only with a concrete technical reason:
-  - *false positive*: cite the evidence (`path:line`, test name, spec).
-  - *out of scope*: open a follow-up issue first and link it.
-  - *intentional*: point at the comment, ADR, or doc that records the rationale
-    (add one in this PR if none exists).
-
-  "I disagree", "it's fine", or "low priority" are not reasons.
-- **escalate**: only when the loop is genuinely stuck: the reviewer repeats
-  rejected pushback with no new argument, contradicts itself across rounds,
-  demands an out-of-scope rewrite, or the same point has gone 3+ rounds.
-  **Read `references/escalation.md` before escalating**. It separates
-  legitimate escalation from escalating to avoid work.
-
-For a reopened thread, your previous fix was insufficient. Re-read the finding,
-check that the change is actually on the pushed branch, and fix the real cause.
+- **fix**: smallest correct change plus a regression test.
+- **wontfix**: concrete technical evidence (`path:line`, test, ADR, or follow-up
+  issue for out-of-scope). Never argue "I disagree" or "tests pass".
+- **escalate**: only when genuinely stuck (repeated rejection without new
+  argument, contradiction, out-of-scope rewrite, 3+ rounds). **Read
+  `references/escalation.md` before escalating.**
 
 ### 4. Commit and push
 
-Run the project's tests and linters first. Commit with conventional messages,
-then `git push`. Note the new commit SHA (`git rev-parse --short HEAD`).
+Run the repo's tests and linters first. Commit with conventional messages, then
+`git push` (or `--force-with-lease` only after an explicit rebase).
 
 ### 5. Reply in each thread
 
-Read `references/commands.md` for the exact command grammar before your first
-reply.
+Read `references/commands.md` for exact reply and marker grammar before posting:
 
 ```bash
-# fixed
 python3 <skill-dir>/scripts/reply.py --thread-id <PRRT_...> --fixed <sha> \
     --note "Cache key now includes tenant_id; test_cache_isolation covers it."
-# pushback
 python3 <skill-dir>/scripts/reply.py --thread-id <PRRT_...> \
-    --wontfix "False positive: request_id is public, compared in auth.py:80; secrets use hmac.compare_digest at auth.py:41."
+    --wontfix "False positive: request_id is public at auth.py:80."
 ```
 
-Use `--dry-run` to preview. `reply.py` refuses an empty wontfix reason. It
-only replies. It never resolves: resolving waits for the reviewer's verdict
-(step 1a, next round).
-
-To escalate, post on the PR (not in a thread):
-`gh pr comment <N> --body "/ai-review escalate: <why, citing finding ids and rounds>"`.
+To escalate, comment on the PR:
+`gh pr comment <N> --body "/ai-review escalate: <why, citing ids and rounds>"`.
 
 ### 6. Nits
 
-Nits live in one summary comment (`nits_comment`). They never block the merge.
-Fix the cheap ones in the same push as real fixes, if at all. Never spend a
-round on nits alone, and never reply to or argue about them.
+Nits (`nits_comment`) never block merge. Bundle cheap ones into real-fix pushes;
+never spend a round on nits alone or argue about them.
 
 ### 7. Wait for the next round
 
@@ -153,20 +127,25 @@ round on nits alone, and never reply to or argue about them.
 gh pr checks <N> --watch
 ```
 
-Then go back to step 1. The reviewer re-reviews the whole PR on every push: it
-can raise new findings, mark fake-resolved ones `reopened`, verify your fixes,
-and accept or reject your pushback. Threads it verifies show up in
-`threads.ready_to_resolve` for you to resolve.
+Return to step 1 after checks finish.
 
-### 8. Stop
+### 8. Pre-merge gate and stop
 
-Stop when any of these is true:
+When `review_state.py` exits `0`, verify deterministic merge readiness with
+`merge_pr.py` (refuses if any thread, conflict, `BLOCKED`/`DIRTY` state, or check
+is non-passing):
 
-- `review_state.py` exits `0`. Report the PR as review-clean.
-- You escalated. The `needs-human` label is set and the check stays red until
-  the owner applies `human-override`. Report what is pending and why, and don't
-  keep pushing to wear the reviewer down.
-- `review_state.py` exits `2`. Report the API failure.
+```bash
+python3 <skill-dir>/scripts/merge_pr.py --pr <N> [--repo owner/name] [--auto] --dry-run
+python3 <skill-dir>/scripts/merge_pr.py --pr <N> [--repo owner/name] [--auto] --execute
+```
 
-When you report, give the round count, what you fixed (with SHAs), what you
-pushed back on and the outcome, and anything escalated.
+Stop when:
+- `merge_pr.py` passes (or merges via `--squash` / `--auto --squash`), or
+  `review_state.py` exits `0` when you were asked only to get review-clean.
+- You escalated (`needs-human` active): stop pushing until `human-override`.
+- A script exits `2` (`gh`/API error) or `restack.py` exits `1` on semantic
+  conflicts requiring author edits.
+
+Report round count, fixed SHAs, restacks/cascade results, pushback outcomes, and
+merge readiness or escalation status.
