@@ -8,7 +8,7 @@
       "name": "Parallel Multi-Source Crawl",
       "prompt_template": "Execute parallel crawl: Codebase Scout maps paths, Web Intelligence searches docs, Docs Crawler queries MCP servers.",
       "subagent_role": "Scout - Multi-Source Crawler",
-      "model_tier": "flash_medium",
+      "model_tier": "flash",
       "workspace_mode": "share",
       "dependencies": [],
       "verification_gate": {
@@ -36,7 +36,7 @@
       "name": "OKF Knowledge Bundle Compilation",
       "prompt_template": "Compile final OKF bundle index.md, MEMORY.md promote entries, and interactive summary.",
       "subagent_role": "Mentor - Knowledge Compiler",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_02_synthesis"],
       "verification_gate": {

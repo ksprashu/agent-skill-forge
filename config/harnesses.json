@@ -34,7 +34,7 @@
     "voice-profiling": "Extract a human's authentic writing cadence and style markers.",
     "voice-application": "Apply a person's voice and channel register to text sent under their name.",
     "chart-authoring": "Design charts, dashboards, and data visualisations.",
-    "image-generation": "Generate technical diagrams and visual assets.",
+    "image-generation": "Generate, edit, and verify technical diagrams, infographics, multi-panel comics, sequential timelines, and visual assets.",
     "codelab-authoring": "Author step-by-step interactive developer tutorials.",
     "docs-authoring": "Scaffold SDLC docs and compile them into readable portals.",
     "knowledge-catalog": "Maintain a durable progressive-disclosure codebase memory.",

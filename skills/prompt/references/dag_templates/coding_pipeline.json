@@ -22,7 +22,7 @@
       "name": "Parallel Module Implementation",
       "prompt_template": "Implement the core logic and functions adhering strictly to data schemas created in node_01.",
       "subagent_role": "Builder - Module Developer",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "branch",
       "dependencies": ["node_01_architecture"],
       "verification_gate": {
@@ -36,7 +36,7 @@
       "name": "Unit & Integration Test Suite",
       "prompt_template": "Write comprehensive pytest / Jest unit and integration tests covering green and red paths.",
       "subagent_role": "Sentry - Test Engineer",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_02_module_build"],
       "verification_gate": {
@@ -50,7 +50,7 @@
       "name": "Code Review & Walkthrough",
       "prompt_template": "Conduct a 5-axis code review (correctness, readability, architecture, security, performance) and generate walkthrough.md.",
       "subagent_role": "Mentor - Lead Code Reviewer",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_03_tdd_suite"],
       "verification_gate": {

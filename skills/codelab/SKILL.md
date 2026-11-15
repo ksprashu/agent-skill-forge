@@ -89,7 +89,7 @@ Plan the visual elements.
 1. Identify steps where screenshots, architecture diagrams, or character graphics are needed.
 2. **Asset Library vs. Generation:**
    - **Pre-created Assets:** Use the standard 4-panel instructional comics in `assets/common-images/` (e.g., `activate_billing_comic.png`, `gemini_cli_comic.png`) for the common setup steps mentioned in Phase 2.
-   - **On-the-fly Generation:** For codelab-specific visuals (like app screenshots or custom architecture diagrams), use `image-gen-expert` to generate new assets.
+   - **On-the-fly Image Generation:** For codelab-specific visuals (like diagrams, comic panels, or character illustrations), follow `skills/image-gen/SKILL.md` (`image-gen`) so prompts, aspect ratios, and verification gates stay canonical.
 3. **Character Consistency:** When generating new assets, always use the Malti (beige Maltipoo) and Raggy (bicolor Ragdoll) mascots to maintain a consistent theme.
 4. *Action:* Formulate explicit prompts for new assets and note them in the `design-doc.md`. Use the standard assets for the reusable snippets.
 

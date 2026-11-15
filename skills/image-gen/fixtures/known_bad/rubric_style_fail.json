@@ -1,0 +1,32 @@
+{
+  "overall_pass": false,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "API Gateway and Auth Service nodes appear clearly.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Image uses pastel watercolor wash instead of clean dark-mode vector art direction.",
+      "fix_instruction": "Regenerate in clean dark-mode vector art direction."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Both exact text literals are legible.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Orthographic connectors cleanly separated.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "Keep everything else the same. Adjust colors slightly.",
+  "regenerated_prompt": "Clean dark-mode vector architecture diagram connecting \"API Gateway\" to \"Auth Service\"."
+}

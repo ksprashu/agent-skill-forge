@@ -21,10 +21,10 @@ working skill into a traceback on someone else's laptop, and the traceback
 arrives mid-task.
 
 The rule is not repository-wide, and pretending otherwise would be a lie this
-script then had to carry exceptions for: ``skills/image-gen`` needs Pillow and
-the Google SDK, and the OKF verifiers need PyYAML. Those skills declare their
-dependencies and bootstrap them. ``ENFORCED_ROOTS`` lists the trees where no
-such declaration exists and none is wanted.
+script then had to carry exceptions for: the OKF verifiers under
+``skills/catalog/scripts`` need PyYAML. Those skills declare their dependencies
+and bootstrap them. ``ENFORCED_ROOTS`` lists the trees where no such declaration
+exists and none is wanted, including the ``image-gen`` CLI controller.
 
 Exit codes: 0 clean, 1 violations found, 2 invocation error.
 """
@@ -38,9 +38,10 @@ from pathlib import Path
 from typing import Iterable, List, Sequence, Set, Tuple
 
 #: Trees that must run on a bare interpreter. Everything the /work DAG engine
-#: executes, plus the installer-side scripts and hooks.
+#: executes, plus the installer-side scripts, hooks, and media CLI controllers.
 ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts", "skills/review/scripts",
-                  "skills/security-review", "skills/pr-review-loop", "skills/handoff/scripts")
+                  "skills/security-review", "skills/pr-review-loop", "skills/handoff/scripts",
+                  "skills/image-gen/scripts")
 
 # sys.stdlib_module_names arrived in 3.10 and there is no honest way to fake the
 # list on an older runtime. Everything this repo actually installs runs on 3.9;

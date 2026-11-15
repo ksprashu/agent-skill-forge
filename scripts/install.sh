@@ -37,25 +37,155 @@ fi
 HARD_GATE=0
 NO_FETCH=0
 OFFLINE=0
+WITH_MEDIA_TOOLS=0
+UNINSTALL=0
+PROJECT_DIR=""
+HAS_SELECTION_FLAG=0
+HAS_LIST_ONLY=0
+HAS_SPINE=0
+HAS_MEDIA_SELECTION=0
 PASS_ARGS=()
 
-for arg in "$@"; do
+_check_clusters_for_media() {
+    local raw_list
+    raw_list="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+    local old_ifs="$IFS"
+    IFS=','
+    for tok in $raw_list; do
+        case "$tok" in
+            c3|content|core|all) HAS_MEDIA_SELECTION=1 ;;
+            c5|spine)            HAS_SPINE=1 ;;
+        esac
+    done
+    IFS="$old_ifs"
+}
+
+_check_skills_for_media() {
+    local raw_list
+    raw_list="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+    local old_ifs="$IFS"
+    IFS=','
+    for tok in $raw_list; do
+        case "$tok" in
+            image-gen|image-gen-expert) HAS_MEDIA_SELECTION=1 ;;
+        esac
+    done
+    IFS="$old_ifs"
+}
+
+ARGS=("$@")
+i=0
+while [ "$i" -lt "${#ARGS[@]}" ]; do
+    arg="${ARGS[$i]}"
     case "$arg" in
-        --uninstall)
-            # Only --uninstall goes through. Forwarding "$@" would hand
-            # sync_skills.py flags it does not define (--hard-gate, --offline)
-            # and argparse would exit 2 before removing anything.
-            python3 "$SCRIPT_DIR/sync_skills.py" --uninstall
-            python3 "$REPO_ROOT/hooks/design_gate.py" --uninstall || true
-            exit 0
+        --uninstall)        UNINSTALL=1 ;;
+        --hard-gate)        HARD_GATE=1 ;;
+        --no-hard-gate)     HARD_GATE=0 ;;
+        --no-fetch)         NO_FETCH=1 ;;
+        --offline)          OFFLINE=1 ;;
+        --with-media-tools) WITH_MEDIA_TOOLS=1 ;;
+        --all|--core|--content)
+            HAS_SELECTION_FLAG=1
+            HAS_MEDIA_SELECTION=1
+            PASS_ARGS+=("$arg")
             ;;
-        --hard-gate)   HARD_GATE=1 ;;
-        --no-hard-gate) HARD_GATE=0 ;;
-        --no-fetch)    NO_FETCH=1 ;;
-        --offline)     OFFLINE=1 ;;
-        *)             PASS_ARGS+=("$arg") ;;
+        --spine)
+            HAS_SELECTION_FLAG=1
+            HAS_SPINE=1
+            PASS_ARGS+=("$arg")
+            ;;
+        --domain)
+            HAS_SELECTION_FLAG=1
+            PASS_ARGS+=("$arg")
+            ;;
+        --list-available|--list-clusters|--list-harnesses)
+            HAS_LIST_ONLY=1
+            PASS_ARGS+=("$arg")
+            ;;
+        --project)
+            PASS_ARGS+=("$arg")
+            if [ $((i + 1)) -lt "${#ARGS[@]}" ]; then
+                i=$((i + 1))
+                PROJECT_DIR="${ARGS[$i]}"
+                PASS_ARGS+=("$PROJECT_DIR")
+            fi
+            ;;
+        --project=*)
+            PROJECT_DIR="${arg#--project=}"
+            PASS_ARGS+=("$arg")
+            ;;
+        --clusters)
+            PASS_ARGS+=("$arg")
+            HAS_SELECTION_FLAG=1
+            if [ $((i + 1)) -lt "${#ARGS[@]}" ]; then
+                i=$((i + 1))
+                _check_clusters_for_media "${ARGS[$i]}"
+                PASS_ARGS+=("${ARGS[$i]}")
+            fi
+            ;;
+        --clusters=*)
+            HAS_SELECTION_FLAG=1
+            _check_clusters_for_media "${arg#--clusters=}"
+            PASS_ARGS+=("$arg")
+            ;;
+        --skills)
+            PASS_ARGS+=("$arg")
+            HAS_SELECTION_FLAG=1
+            if [ $((i + 1)) -lt "${#ARGS[@]}" ]; then
+                i=$((i + 1))
+                _check_skills_for_media "${ARGS[$i]}"
+                PASS_ARGS+=("${ARGS[$i]}")
+            fi
+            ;;
+        --skills=*)
+            HAS_SELECTION_FLAG=1
+            _check_skills_for_media "${arg#--skills=}"
+            PASS_ARGS+=("$arg")
+            ;;
+        *)
+            PASS_ARGS+=("$arg")
+            ;;
     esac
+    i=$((i + 1))
 done
+
+_validate_media_url_scheme() {
+    local env_name="$1"
+    local url_val="$2"
+    [ -z "$url_val" ] && return 0
+    local lower_url
+    lower_url="$(printf '%s' "$url_val" | tr '[:upper:]' '[:lower:]')"
+    case "$lower_url" in
+        https://*|file://*) return 0 ;;
+        *)
+            echo "❌ Error: $env_name must use https:// or file:// (got: $url_val)." >&2
+            exit 2
+            ;;
+    esac
+}
+
+if [ "$WITH_MEDIA_TOOLS" -eq 1 ] && [ "$OFFLINE" -eq 1 ]; then
+    echo "❌ Error: --with-media-tools cannot be combined with --offline (media tool installation requires network access)." >&2
+    exit 2
+fi
+
+if [ "$WITH_MEDIA_TOOLS" -eq 1 ]; then
+    # Offline test / mirror seams (unprivileged):
+    #   FORGE_GEMINI_API_INSTALL_CMD - custom shell command replacing the curl installer in offline tests.
+    #   FORGE_GEMINI_API_INSTALL_URL - custom installer script URL override (https:// or file:// only).
+    #   FORGE_GEMINI_API_RELEASE_URL - validated here for cross-installer env parity; used by install.ps1 (https:// or file:// only).
+    _validate_media_url_scheme "FORGE_GEMINI_API_INSTALL_URL" "${FORGE_GEMINI_API_INSTALL_URL:-}"
+    _validate_media_url_scheme "FORGE_GEMINI_API_RELEASE_URL" "${FORGE_GEMINI_API_RELEASE_URL:-}"
+fi
+
+if [ "$UNINSTALL" -eq 1 ]; then
+    # Only --uninstall goes through. Forwarding "$@" would hand
+    # sync_skills.py flags it does not define (--hard-gate, --offline,
+    # --with-media-tools) and argparse would exit 2 before removing anything.
+    python3 "$SCRIPT_DIR/sync_skills.py" --uninstall
+    python3 "$REPO_ROOT/hooks/design_gate.py" --uninstall || true
+    exit 0
+fi
 
 # ------------------------------------------------------------------------------
 # Step 1: resolve reference-only upstream skills at their pinned commits.
@@ -124,6 +254,123 @@ if [ "$HARD_GATE" -eq 1 ]; then
     echo "    the instruction text in the brainstorm skill and nothing more."
 fi
 
+# ------------------------------------------------------------------------------
+# Step 5: media tools readiness & opt-in installation (--with-media-tools).
+# Never escalates privileges. Default mode stays fast and side-effect-free.
+# ------------------------------------------------------------------------------
+resolve_local_media_bin() {
+    if ! command -v gemini-api >/dev/null 2>&1 && [ -x "$HOME/.local/bin/gemini-api" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+}
+
+if [ "$WITH_MEDIA_TOOLS" -eq 1 ]; then
+    echo ""
+    echo "🎬 Checking & installing user-space media CLI tools (--with-media-tools, unprivileged)..."
+    resolve_local_media_bin
+
+    if ! command -v gemini-api >/dev/null 2>&1; then
+        echo "⬇️  gemini-api not found on PATH; installing user-space CLI..."
+        GEMINI_API_INSTALL_URL="${FORGE_GEMINI_API_INSTALL_URL:-https://raw.githubusercontent.com/google-gemini/gemini-api-cli/main/scripts/install.sh}"
+        INSTALL_OK=1
+        if [ -n "${FORGE_GEMINI_API_INSTALL_CMD:-}" ]; then
+            if ! bash -c "$FORGE_GEMINI_API_INSTALL_CMD"; then
+                INSTALL_OK=0
+            fi
+        elif command -v curl >/dev/null 2>&1; then
+            if ! curl -fsSL "$GEMINI_API_INSTALL_URL" | bash; then
+                INSTALL_OK=0
+            fi
+        else
+            echo "❌ Error: curl is required to install gemini-api CLI." >&2
+            INSTALL_OK=0
+        fi
+        resolve_local_media_bin
+        if [ "$INSTALL_OK" -eq 0 ] || ! command -v gemini-api >/dev/null 2>&1; then
+            echo "❌ Error: failed to install gemini-api CLI into user space ($HOME/.local/bin)." >&2
+            echo "   Manual install: curl -fsSL https://raw.githubusercontent.com/google-gemini/gemini-api-cli/main/scripts/install.sh | bash" >&2
+            echo "   Docs: https://aistudio.google.com/docs/cli" >&2
+            exit 1
+        fi
+    fi
+
+    GEMINI_API_VER="$(gemini-api --version 2>&1 || true)"
+    echo "  ✅ gemini-api: ${GEMINI_API_VER:-available}"
+
+    WHOAMI_RC=0
+    gemini-api whoami -o json >/dev/null 2>&1 || WHOAMI_RC=$?
+    if [ "$WHOAMI_RC" -eq 0 ]; then
+        echo "  🔐 gemini-api auth (whoami): authenticated"
+    else
+        echo "  ℹ️  gemini-api auth: not authenticated yet (non-fatal). Run: gemini-api auth login"
+    fi
+
+    if [ -n "${GEMINI_API_KEY:-}" ]; then
+        echo "  ⚠️  Warning: GEMINI_API_KEY is set in your environment and could shadow OS keyring credentials (https://aistudio.google.com/docs/cli)."
+    fi
+
+    HAVE_FFMPEG=0
+    HAVE_FFPROBE=0
+    command -v ffmpeg >/dev/null 2>&1 && HAVE_FFMPEG=1
+    command -v ffprobe >/dev/null 2>&1 && HAVE_FFPROBE=1
+
+    if [ "$HAVE_FFMPEG" -eq 0 ] || [ "$HAVE_FFPROBE" -eq 0 ]; then
+        OS_NAME="$(uname -s 2>/dev/null || echo unknown)"
+        if [ "$OS_NAME" = "Darwin" ]; then
+            if command -v brew >/dev/null 2>&1; then
+                echo "⬇️  ffmpeg/ffprobe missing; installing via Homebrew (brew install ffmpeg)..."
+                if ! brew install ffmpeg; then
+                    echo "  ⚠️  brew install ffmpeg failed; install manually from https://ffmpeg.org/download.html"
+                fi
+            else
+                echo "  ⚠️  ffmpeg/ffprobe not found. Install Homebrew (https://brew.sh) and run: brew install ffmpeg"
+            fi
+        else
+            echo "  ⚠️  ffmpeg/ffprobe not found on PATH (optional for media workflows)."
+            echo "     Install via your package manager (not run automatically; zero privilege escalation):"
+            echo "       Debian/Ubuntu: sudo apt install ffmpeg   |   Fedora/RHEL: sudo dnf install ffmpeg   |   Arch: sudo pacman -S ffmpeg"
+        fi
+    fi
+
+    HAVE_FFMPEG=0
+    HAVE_FFPROBE=0
+    command -v ffmpeg >/dev/null 2>&1 && HAVE_FFMPEG=1
+    command -v ffprobe >/dev/null 2>&1 && HAVE_FFPROBE=1
+    if [ "$HAVE_FFMPEG" -eq 1 ] && [ "$HAVE_FFPROBE" -eq 1 ]; then
+        echo "  ✅ ffmpeg & ffprobe: available"
+    fi
+else
+    MEDIA_SYNCED=0
+    if [ "$HAS_LIST_ONLY" -eq 1 ]; then
+        MEDIA_SYNCED=0
+    elif [ "$HAS_MEDIA_SELECTION" -eq 1 ] || [ "$HAS_SELECTION_FLAG" -eq 0 ]; then
+        MEDIA_SYNCED=1
+    elif [ "$HAS_SPINE" -eq 0 ]; then
+        for check_path in \
+            "$HOME/.agents/skills/image-gen" \
+            "$HOME/.gemini/skills/image-gen" \
+            "${PROJECT_DIR:-.}/.gemini/skills/image-gen"; do
+            if [ -e "$check_path" ] || [ -L "$check_path" ]; then
+                MEDIA_SYNCED=1
+                break
+            fi
+        done
+    fi
+
+    if [ "$MEDIA_SYNCED" -eq 1 ]; then
+        resolve_local_media_bin
+        GEMINI_API_STATE="missing"
+        FFMPEG_STATE="missing"
+        FFPROBE_STATE="missing"
+        command -v gemini-api >/dev/null 2>&1 && GEMINI_API_STATE="found"
+        command -v ffmpeg >/dev/null 2>&1 && FFMPEG_STATE="found"
+        command -v ffprobe >/dev/null 2>&1 && FFPROBE_STATE="found"
+        echo ""
+        echo " 🎬 Media tools readiness: gemini-api=$GEMINI_API_STATE, ffmpeg=$FFMPEG_STATE, ffprobe=$FFPROBE_STATE"
+        echo "    To install user-space media CLIs (unprivileged), re-run with: --with-media-tools"
+    fi
+fi
+
 echo ""
 echo "========================================================================"
 echo " ✅ AGENT SKILL FORGE IS FULLY CONFIGURED & ACTIVE"
@@ -142,6 +389,7 @@ echo "    Interactive Wizard:             bash $SCRIPT_DIR/install.sh"
 echo "    Install the spine only:         bash $SCRIPT_DIR/install.sh --spine"
 echo "    Spine + enforced design gate:   bash $SCRIPT_DIR/install.sh --spine --hard-gate"
 echo "    Install Content & Creative:     bash $SCRIPT_DIR/install.sh --content --prune"
+echo "    Install C3 + media CLIs:        bash $SCRIPT_DIR/install.sh --content --with-media-tools"
 echo "    Install Specific Clusters:      bash $SCRIPT_DIR/install.sh --clusters c3,d1"
 echo "    Install Complete Forge (All):   bash $SCRIPT_DIR/install.sh --all"
 echo "    Air-gapped install from cache:  bash $SCRIPT_DIR/install.sh --offline"

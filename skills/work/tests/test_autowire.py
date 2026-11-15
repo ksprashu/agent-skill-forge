@@ -314,6 +314,13 @@ class TestMatching(unittest.TestCase):
         labels = [m.domain.label for m in autowire.match_domains("expose /api/health!")]
         self.assertIn("Observability & Logging", labels)
 
+    def test_docker_image_task_does_not_trigger_visual_media_skill(self):
+        # REV-005: bare 'image' false-matched container tasks; explicit phrases avoid it.
+        labels = [m.domain.label for m in autowire.match_domains("Fix the Docker image build and push to registry")]
+        self.assertNotIn("Visual Media, Diagrams & Comics", labels)
+        media_labels = [m.domain.label for m in autowire.match_domains("Generate image diagram for architecture")]
+        self.assertIn("Visual Media, Diagrams & Comics", media_labels)
+
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):

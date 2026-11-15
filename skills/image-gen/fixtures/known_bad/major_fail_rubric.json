@@ -1,0 +1,32 @@
+{
+  "overall_pass": false,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": false,
+      "observed_evidence": "Shows a photorealistic landscape instead of an architecture diagram.",
+      "fix_instruction": "Replace scene with a flat orthographic architecture diagram."
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Oil painting texture rather than dark-mode vector.",
+      "fix_instruction": "Use dark-mode flat vector strokes."
+    },
+    {
+      "id": "AC-3",
+      "passed": false,
+      "observed_evidence": "Neither 'API Gateway' nor 'Auth Service' appears in the image.",
+      "fix_instruction": "Render exact labels 'API Gateway' and 'Auth Service'."
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "No garbled text present because no text was rendered.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "regenerate",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": "Flat orthographic dark-mode vector diagram showing \"API Gateway\" connected to \"Auth Service\"."
+}

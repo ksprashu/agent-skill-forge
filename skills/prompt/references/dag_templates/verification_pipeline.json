@@ -8,7 +8,7 @@
       "name": "Spec & Contract Alignment Audit",
       "prompt_template": "Verify 1:1 key alignment between design specs, Pydantic schemas, and API contracts.",
       "subagent_role": "Analyst - Contract Auditor",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": [],
       "verification_gate": {
@@ -22,7 +22,7 @@
       "name": "Dual Test Runner (pytest + behave)",
       "prompt_template": "Execute pytest unit test suite AND behave Gherkin feature scenarios.",
       "subagent_role": "Sentry - Dual Test Runner",
-      "model_tier": "flash_medium",
+      "model_tier": "flash",
       "workspace_mode": "share",
       "dependencies": ["node_01_spec_contract_audit"],
       "verification_gate": {
@@ -36,7 +36,7 @@
       "name": "Evidence Ledger Verification",
       "prompt_template": "Execute validate_evidence.py to programmatically confirm all Evidence IDs in EVIDENCE.md match files on disk.",
       "subagent_role": "Auditor - Evidence Verifier",
-      "model_tier": "flash_medium",
+      "model_tier": "inherit",
       "workspace_mode": "share",
       "dependencies": ["node_02_dual_test_runner"],
       "verification_gate": {

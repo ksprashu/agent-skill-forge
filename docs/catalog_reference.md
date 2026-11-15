@@ -44,7 +44,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C3** | **`human-voice`** | `/human-voice`, `/extract-human-voice` | User Slash | Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
 | **C3** | **`voice-register`** | "in my voice", outward text under your name | Autonomous | Resolves a voice profile (`.local.md` > `~/.gemini/personas/default/` > template) and applies the matching channel register (R1–R5) to text sent under your name. |
 | **C3** | **`cognitive-profiler`** | `/cognitive-profiler` | User Slash | Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions. |
-| **C3** | **`image-gen`** | `/image-gen`, `/image-gen-expert` | User Slash | Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
+| **C3** | **`image-gen`** | `/image-gen` *(legacy alias: `/image-gen-expert`)* | Auto / Slash | Generates verified images, diagrams, multi-panel comics, and sequential timelines via `gemini-api` CLI (`gemini-nano-banana-2.1`, `gemini-3-pro-image`). |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
 *Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
@@ -115,7 +115,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
 | **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice profiles, kept out of the public repo. |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Reader-preference profiling compiled into harness configuration. |
-| **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
+| **`image-gen`** | **Google DeepMind** | [Gemini API CLI & Image Docs](https://aistudio.google.com/docs/image-generation) | Stdlib `gemini-api` CLI image, comic, and sequential timeline generation (`gemini-nano-banana-2.1`, `gemini-3-pro-image`) with mechanical header and Argon rubric verification. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
