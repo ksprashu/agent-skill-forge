@@ -1,0 +1,54 @@
+{
+  "merged_pr": {
+    "number": 10,
+    "state": "MERGED",
+    "headRefName": "feat/step-1",
+    "baseRefName": "main",
+    "headRefOid": "1111111",
+    "mergeCommit": {
+      "oid": "2222222"
+    }
+  },
+  "open_prs": [
+    {
+      "number": 12,
+      "url": "https://github.com/acme/widgets/pull/12",
+      "headRefName": "feat/step-3",
+      "baseRefName": "feat/step-2",
+      "mergeable": "MERGEABLE",
+      "mergeStateStatus": "CLEAN",
+      "headRefOid": "4444444",
+      "isCrossRepository": false
+    },
+    {
+      "number": 11,
+      "url": "https://github.com/acme/widgets/pull/11",
+      "headRefName": "feat/step-2",
+      "baseRefName": "feat/step-1",
+      "mergeable": "CONFLICTING",
+      "mergeStateStatus": "DIRTY",
+      "headRefOid": "3333333",
+      "isCrossRepository": false
+    },
+    {
+      "number": 13,
+      "url": "https://github.com/acme/widgets/pull/13",
+      "headRefName": "fork/fix",
+      "baseRefName": "feat/step-1",
+      "mergeable": "CONFLICTING",
+      "mergeStateStatus": "DIRTY",
+      "headRefOid": "5555555",
+      "isCrossRepository": true
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/acme/widgets/pull/14",
+      "headRefName": "feat/unrelated-clean",
+      "baseRefName": "main",
+      "mergeable": "MERGEABLE",
+      "mergeStateStatus": "CLEAN",
+      "headRefOid": "6666666",
+      "isCrossRepository": false
+    }
+  ]
+}

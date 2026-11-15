@@ -1,0 +1,77 @@
+{
+  "data": {
+    "repository": {
+      "pullRequest": {
+        "number": 16,
+        "url": "https://github.com/acme/widgets/pull/16",
+        "state": "OPEN",
+        "headRefName": "feat/blocked",
+        "baseRefName": "main",
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "BLOCKED",
+        "headRefOid": "d4e5f6a1b2c3",
+        "baseRefOid": "000111222333",
+        "labels": {
+          "nodes": []
+        },
+        "reviewThreads": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "author": {
+                "login": "github-actions"
+              },
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-01T10:00:00Z",
+              "body": "pr-guardian review"
+            }
+          ]
+        },
+        "comments": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "oid": "d4e5f6a1b2c3",
+                "statusCheckRollup": {
+                  "contexts": {
+                    "nodes": [
+                      {
+                        "__typename": "CheckRun",
+                        "name": "tests",
+                        "status": "COMPLETED",
+                        "conclusion": "SUCCESS",
+                        "checkSuite": {
+                          "workflowRun": {
+                            "workflow": {
+                              "name": "ci"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "__typename": "StatusContext",
+                        "context": "pr-guardian/verdict",
+                        "state": "SUCCESS"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
