@@ -397,6 +397,133 @@ class TestSquashMergeAndDivergence(unittest.TestCase):
             self.assertEqual(_git(work, "rev-parse", "HEAD"), pre)
             self.assertFalse((work / ".git" / "rebase-merge").exists())
 
+    def test_stale_local_branch_refuses_to_clobber_remote_c2_and_pins_lease(self):
+        """REV-001: stale local branch or remote race never overwrites remote c2."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bare, work = _init_bare_and_clone(root)
+
+            _git(work, "checkout", "-b", "feat/step-1")
+            h1 = _commit_file(work, "shared.py", "line1-step1\nline2\nline3\n", "feat: step 1")
+            _git(work, "checkout", "-b", "feat/step-2")
+            c1 = _commit_file(work, "step2.py", "x = 1\n", "feat: c1")
+            _git(work, "push", "-u", "origin", "feat/step-2")
+
+            # Peer pushes c2 to origin/feat/step-2 while work remains at stale c1.
+            peer = root / "peer"
+            _git(root, "clone", str(bare), str(peer))
+            _git(peer, "checkout", "feat/step-2")
+            c2 = _commit_file(peer, "peer.py", "y = 2\n", "feat: c2 from peer")
+            _git(peer, "push", "origin", "feat/step-2")
+
+            s1 = _squash_branch_to_main(work, h1, "feat: step 1 (#10)")
+            _git(work, "checkout", "feat/step-2")
+
+            # Case A: live fetch brings in c2; restack refuses to overwrite remote c2.
+            gh_bin = root / "gh"
+            gh_bin.write_text(
+                f"#!{sys.executable}\n"
+                "import json, sys\n"
+                "args = sys.argv[1:]\n"
+                "if args[:2] == ['repo', 'view']:\n"
+                "    print('acme/widgets')\n"
+                "elif args[:3] == ['pr', 'view', '11']:\n"
+                f"    print(json.dumps({{'number': 11, 'state': 'OPEN', 'headRefName': 'feat/step-2', 'baseRefName': 'main', 'mergeable': 'CONFLICTING', 'mergeStateStatus': 'DIRTY', 'headRefOid': {c2!r}, 'isCrossRepository': False}}))\n"
+                "elif args[:2] == ['pr', 'list']:\n"
+                f"    print(json.dumps([{{'number': 10, 'headRefName': 'feat/step-1', 'baseRefName': 'main', 'headRefOid': {h1!r}, 'mergeCommit': {{'oid': {s1!r}}}}}]))\n"
+                "else:\n"
+                "    sys.exit(1)\n",
+                encoding="utf-8",
+            )
+            gh_bin.chmod(0o755)
+            env = _git_env({"PATH": f"{root}{os.pathsep}{os.environ.get('PATH', '')}"})
+
+            stale_proc = _run_script(
+                "--pr", "11", "--repo-dir", str(work), "--strategy", "rebase",
+                "--apply", "--push", "--force-with-lease", env=env,
+            )
+            self.assertEqual(stale_proc.returncode, 1)
+            self.assertIn("not an ancestor", stale_proc.stderr)
+            self.assertEqual(_git(bare, "rev-parse", "refs/heads/feat/step-2"), c2)
+            self.assertEqual(_git(work, "rev-parse", "HEAD"), c1)
+
+            # Case B: CWE-362 race where local tracking ref was still c1 (--no-fetch)
+            # and pr_meta still reported c1, while bare remote already has c2.
+            _git(work, "update-ref", "refs/remotes/origin/feat/step-2", c1)
+            race_ctx = root / "race_ctx.json"
+            race_ctx.write_text(json.dumps({
+                "pr": {
+                    "number": 11, "headRefName": "feat/step-2", "baseRefName": "main",
+                    "mergeable": "CONFLICTING", "mergeStateStatus": "DIRTY",
+                    "headRefOid": c1, "isCrossRepository": False,
+                },
+                "merged_prs": [{
+                    "number": 10, "headRefName": "feat/step-1", "baseRefName": "main",
+                    "headRefOid": h1, "mergeCommit": {"oid": s1},
+                }],
+            }), encoding="utf-8")
+            race_proc = _run_script(
+                "--pr", "11", "--from-file", str(race_ctx), "--repo-dir", str(work),
+                "--no-fetch", "--strategy", "rebase", "--apply", "--push", "--force-with-lease",
+            )
+            self.assertEqual(race_proc.returncode, 1)
+            race_doc = json.loads(race_proc.stdout)
+            self.assertEqual(race_doc["status"], "push_rejected")
+            self.assertFalse(race_doc["pushed"])
+            self.assertEqual(_git(bare, "rev-parse", "refs/heads/feat/step-2"), c2)
+            self.assertEqual(_git(work, "rev-parse", "HEAD"), c1)
+
+    def test_exact_tree_squash_ours_rejects_flattened_merge_commit_and_rolls_back(self):
+        """REV-002: rebase flattening a merge commit fails tree_mismatch before push."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bare, work = _init_bare_and_clone(root)
+
+            _git(work, "checkout", "-b", "feat/step-1")
+            h1 = _commit_file(work, "shared.py", "line1-step1\nline2\nline3\n", "feat: step 1")
+
+            _git(work, "checkout", "-b", "feat/step-2")
+            _commit_file(work, "step2.py", "x = 2\n", "feat: step 2")
+            _git(work, "checkout", "-b", "feat/side", h1)
+            side = _commit_file(work, "side.py", "s = 1\n", "feat: side")
+            _git(work, "checkout", "feat/step-2")
+            _git(work, "merge", "--no-ff", "--no-commit", side)
+            (work / "merge_only.py").write_text("m = 1\n", encoding="utf-8")
+            _git(work, "add", "merge_only.py")
+            _git(work, "-c", "commit.gpgsign=false", "commit", "-m", "merge side with merge_only.py")
+            h2 = _git(work, "rev-parse", "HEAD")
+            _git(work, "push", "-u", "origin", "feat/step-2")
+
+            s1 = _squash_branch_to_main(work, h1, "feat: step 1 (#10)")
+            _git(work, "checkout", "feat/step-2")
+
+            ctx = root / "merge_commit_ctx.json"
+            ctx.write_text(json.dumps({
+                "pr": {
+                    "number": 11, "headRefName": "feat/step-2", "baseRefName": "main",
+                    "mergeable": "CONFLICTING", "mergeStateStatus": "DIRTY",
+                    "headRefOid": h2, "isCrossRepository": False,
+                },
+                "merged_prs": [{
+                    "number": 10, "headRefName": "feat/step-1", "baseRefName": "main",
+                    "headRefOid": h1, "mergeCommit": {"oid": s1},
+                }],
+            }), encoding="utf-8")
+
+            proc = _run_script(
+                "--pr", "11", "--from-file", str(ctx), "--repo-dir", str(work),
+                "--no-fetch", "--strategy", "rebase", "--apply", "--push", "--force-with-lease",
+            )
+            self.assertEqual(proc.returncode, 1)
+            doc = json.loads(proc.stdout)
+            self.assertEqual(doc["status"], "tree_mismatch")
+            self.assertFalse(doc["applied"])
+            self.assertFalse(doc["pushed"])
+            self.assertFalse(doc["tree_unchanged"])
+            self.assertEqual(_git(work, "rev-parse", "HEAD"), h2)
+            self.assertTrue((work / "merge_only.py").is_file())
+            self.assertEqual(_git(bare, "rev-parse", "refs/heads/feat/step-2"), h2)
+
 
 class TestCascadeAndLiveGh(unittest.TestCase):
     """Topological cascade ordering, fork isolation, CWE-88, S8, and temp gh CLI."""
@@ -468,6 +595,83 @@ class TestCascadeAndLiveGh(unittest.TestCase):
             bad_doc = json.loads(bad.stdout)
             self.assertEqual(bad_doc["results"][0]["status"], "conflict")
             self.assertEqual(bad_doc["results"][1]["status"], "blocked_by_upstream_conflict")
+
+    def test_cascade_rebase_multi_commit_parent_tracks_parent_pre_oid_and_fast_forwards(self):
+        """REV-003 + REV-001: cascade rebase tracks parent_pre_oid and ff-syncs behind local head."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bare, work = _init_bare_and_clone(root)
+
+            _git(work, "checkout", "-b", "feat/step-1")
+            h1 = _commit_file(work, "shared.py", "v1\nline2\nline3\n", "feat: step 1")
+
+            # #11 has TWO commits modifying the same line of shared.py.
+            _git(work, "checkout", "-b", "feat/step-2")
+            _commit_file(work, "shared.py", "v2a\nline2\nline3\n", "feat: step 2a")
+            _commit_file(work, "shared.py", "v2b\nline2\nline3\n", "feat: step 2b")
+            _git(work, "push", "-u", "origin", "feat/step-2")
+
+            # Peer pushes one more commit on feat/step-2 so work's local feat/step-2 is behind!
+            peer = root / "peer"
+            _git(root, "clone", str(bare), str(peer))
+            _git(peer, "checkout", "feat/step-2")
+            h2 = _commit_file(peer, "step2_peer.py", "p = 1\n", "feat: step 2c peer")
+            _git(peer, "push", "origin", "feat/step-2")
+
+            # #12 branches from h2 (via peer) and adds step3.py.
+            _git(peer, "checkout", "-b", "feat/step-3")
+            h3 = _commit_file(peer, "step3.py", "z = 3\n", "feat: step 3")
+            _git(peer, "push", "-u", "origin", "feat/step-3")
+
+            s1 = _squash_branch_to_main(work, h1, "feat: step 1 (#10)")
+            _git(work, "fetch", "origin", "--prune")
+
+            cascade_ctx = root / "cascade_rebase.json"
+            cascade_ctx.write_text(json.dumps({
+                "merged_pr": {
+                    "number": 10, "state": "MERGED", "headRefName": "feat/step-1",
+                    "baseRefName": "main", "headRefOid": h1, "mergeCommit": {"oid": s1},
+                },
+                "open_prs": [
+                    {"number": 12, "headRefName": "feat/step-3", "baseRefName": "feat/step-2",
+                     "mergeable": "MERGEABLE", "mergeStateStatus": "CLEAN",
+                     "headRefOid": h3, "isCrossRepository": False},
+                    {"number": 11, "headRefName": "feat/step-2", "baseRefName": "feat/step-1",
+                     "mergeable": "CONFLICTING", "mergeStateStatus": "DIRTY",
+                     "headRefOid": h2, "isCrossRepository": False},
+                ],
+            }), encoding="utf-8")
+
+            proc = _run_script(
+                "--cascade", "--merged-pr", "10", "--from-file", str(cascade_ctx),
+                "--repo-dir", str(work), "--no-fetch", "--strategy", "rebase", "--apply",
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+            doc = json.loads(proc.stdout)
+            self.assertTrue(doc["applied"])
+            self.assertEqual([r["number"] for r in doc["results"]], [11, 12])
+            self.assertEqual(doc["results"][0]["mode"], "exact_tree_squash_ours")
+            self.assertEqual(doc["results"][1]["mode"], "cascade_parent_onto")
+            self.assertEqual(doc["results"][1]["parent_pre_oid"], h2)
+
+            # Confirm step2_peer.py (from c2 ff), shared.py v2b, and step3.py all survived!
+            _git(work, "checkout", "feat/step-3")
+            self.assertTrue((work / "step2_peer.py").is_file())
+            self.assertTrue((work / "step3.py").is_file())
+            self.assertEqual((work / "shared.py").read_text(encoding="utf-8"), "v2b\nline2\nline3\n")
+            _git(work, "merge-base", "--is-ancestor", s1, "HEAD")
+
+            # Also verify diverged local branch is refused cleanly in cascade.
+            _git(work, "checkout", "feat/step-2")
+            _commit_file(work, "local_only.py", "l = 1\n", "feat: local diverge")
+            div = _run_script(
+                "--cascade", "--merged-pr", "10", "--from-file", str(cascade_ctx),
+                "--repo-dir", str(work), "--no-fetch", "--strategy", "rebase", "--apply",
+            )
+            self.assertEqual(div.returncode, 1)
+            div_doc = json.loads(div.stdout)
+            self.assertEqual(div_doc["results"][0]["status"], "stale_local_branch")
+            self.assertEqual(div_doc["results"][1]["status"], "blocked_by_upstream_conflict")
 
     def test_known_bad_cycle_and_unsafe_ref_and_s8_redaction(self):
         with tempfile.TemporaryDirectory() as tmp:

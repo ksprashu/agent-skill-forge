@@ -325,6 +325,7 @@ def plan_restack(
     base_name: str,
     merged_prs: list[dict[str, Any]],
     strategy: str = "merge",
+    parent_pre_oid: str | None = None,
 ) -> dict[str, Any]:
     """Compute a deterministic restack plan without modifying the repo."""
     head_oid = git_oid(repo_dir, head_rev)
@@ -346,6 +347,21 @@ def plan_restack(
             "matched_merged_pr": None,
             "sync_commit": None,
             "commands_planned": [],
+        }
+
+    if strategy == "rebase" and parent_pre_oid and git_is_ancestor(repo_dir, parent_pre_oid, head_oid):
+        return {
+            "mode": "cascade_parent_onto",
+            "strategy": strategy,
+            "head_oid": head_oid,
+            "target_ref": target_rev,
+            "target_oid": target_oid,
+            "exact_tree_match": False,
+            "chain_tree_match": False,
+            "matched_merged_pr": None,
+            "sync_commit": None,
+            "parent_pre_oid": parent_pre_oid,
+            "commands_planned": [_merge_cmd(target_rev, "rebase", onto_base=parent_pre_oid)],
         }
 
     target_tree = git_tree_oid(repo_dir, target_oid)
@@ -446,6 +462,33 @@ def _abort_in_progress(repo_dir: Path, strategy: str, pre_head: str) -> None:
         run_git(repo_dir, ["reset", "--hard", pre_head], check=False)
 
 
+def _check_remote_ancestry(
+    repo_dir: Path,
+    head_branch: str,
+    head_oid: str,
+    remote: str,
+    pr_head_oid: Any,
+) -> str | None:
+    """Return expected remote OID if safe, or raise RefusalError if local head is stale."""
+    remote_ref = f"{remote}/{head_branch}"
+    remote_oid = git_oid(repo_dir, remote_ref)
+    if remote_oid and not git_is_ancestor(repo_dir, remote_oid, head_oid):
+        raise RefusalError(
+            f"remote ref {remote_ref!r} ({remote_oid}) is not an ancestor of local "
+            f"{head_branch!r} ({head_oid}); remote has newer commits"
+        )
+    expected_pr_oid = validate_oid(pr_head_oid)
+    if expected_pr_oid and (
+        not git_oid(repo_dir, expected_pr_oid)
+        or not git_is_ancestor(repo_dir, expected_pr_oid, head_oid)
+    ):
+        raise RefusalError(
+            f"PR headRefOid {expected_pr_oid} is not an ancestor of local "
+            f"{head_branch!r} ({head_oid}); fetch or pull before --apply"
+        )
+    return remote_oid or expected_pr_oid
+
+
 def _execute_plan(
     repo_dir: Path,
     plan: dict[str, Any],
@@ -453,8 +496,9 @@ def _execute_plan(
     target_rev: str,
     remote: str,
     push: bool,
+    pr_head_oid: Any = None,
 ) -> tuple[int, dict[str, Any]]:
-    """Run planned git operations in repo_dir, aborting atomically on conflict."""
+    """Run planned git operations in repo_dir, aborting atomically on conflict or mismatch."""
     if git_is_dirty(repo_dir):
         raise RefusalError("working tree has uncommitted changes; commit or stash before --apply")
     cur_branch = git_current_branch(repo_dir)
@@ -463,10 +507,14 @@ def _execute_plan(
             f"checked out branch is {cur_branch!r}, expected PR head {head_branch!r}"
         )
 
-    diff_vs_base_before = git_diff_stats(repo_dir, f"{target_rev}..HEAD")
-    pr_net_diff_before = git_diff_stats(repo_dir, f"{target_rev}...HEAD")
     pre_head = git_oid(repo_dir, "HEAD") or ""
     pre_tree = git_tree_oid(repo_dir, "HEAD")
+    expected_remote_oid = _check_remote_ancestry(
+        repo_dir, head_branch, pre_head, remote, pr_head_oid
+    )
+
+    diff_vs_base_before = git_diff_stats(repo_dir, f"{target_rev}..HEAD")
+    pr_net_diff_before = git_diff_stats(repo_dir, f"{target_rev}...HEAD")
 
     if plan["mode"] == "already_up_to_date":
         return 0, {
@@ -502,6 +550,41 @@ def _execute_plan(
 
     post_head = git_oid(repo_dir, "HEAD")
     post_tree = git_tree_oid(repo_dir, "HEAD")
+    target_oid = plan.get("target_oid") or git_oid(repo_dir, target_rev)
+    if not post_head or not target_oid or not git_is_ancestor(repo_dir, target_oid, post_head):
+        _abort_in_progress(repo_dir, strategy, pre_head)
+        return 1, {
+            **plan,
+            "applied": False,
+            "status": "ancestry_mismatch",
+            "pushed": False,
+            "conflicting_files": [],
+            "error": (
+                f"post-restack HEAD does not descend from target {target_rev!r} "
+                f"({target_oid}); rolled back"
+            ),
+            "diff_vs_base_before": diff_vs_base_before,
+            "pr_net_diff_before": pr_net_diff_before,
+        }
+
+    tree_unchanged = bool(pre_tree and post_tree and pre_tree == post_tree)
+    if plan["mode"] == "exact_tree_squash_ours" and not tree_unchanged:
+        _abort_in_progress(repo_dir, strategy, pre_head)
+        return 1, {
+            **plan,
+            "applied": False,
+            "status": "tree_mismatch",
+            "pushed": False,
+            "conflicting_files": [],
+            "tree_unchanged": False,
+            "error": (
+                "exact_tree_squash_ours altered the branch tree (for example, rebase "
+                "flattened a merge commit); rolled back"
+            ),
+            "diff_vs_base_before": diff_vs_base_before,
+            "pr_net_diff_before": pr_net_diff_before,
+        }
+
     diff_vs_base_after = git_diff_stats(repo_dir, f"{target_rev}..HEAD")
     pr_net_diff_after = git_diff_stats(repo_dir, f"{target_rev}...HEAD")
 
@@ -509,9 +592,23 @@ def _execute_plan(
     if push:
         push_args = ["push"]
         if strategy == "rebase":
-            push_args.append("--force-with-lease")
+            lease_oid = expected_remote_oid or ""
+            push_args.append(f"--force-with-lease=refs/heads/{head_branch}:{lease_oid}")
         push_args.extend([remote, head_branch])
-        run_git(repo_dir, push_args, check=True)
+        push_proc = run_git(repo_dir, push_args, check=False)
+        if push_proc.returncode != 0:
+            _abort_in_progress(repo_dir, strategy, pre_head)
+            detail = push_proc.stderr.strip() or push_proc.stdout.strip()
+            return 1, {
+                **plan,
+                "applied": False,
+                "status": "push_rejected",
+                "pushed": False,
+                "conflicting_files": [],
+                "error": detail,
+                "diff_vs_base_before": diff_vs_base_before,
+                "pr_net_diff_before": pr_net_diff_before,
+            }
         pushed = True
 
     return 0, {
@@ -525,7 +622,7 @@ def _execute_plan(
         "pr_net_diff_before": pr_net_diff_before,
         "diff_vs_base_after": diff_vs_base_after,
         "pr_net_diff_after": pr_net_diff_after,
-        "tree_unchanged": bool(pre_tree and post_tree and pre_tree == post_tree),
+        "tree_unchanged": tree_unchanged,
     }
 
 
@@ -585,7 +682,10 @@ def run_single_pr(
             "pr_net_diff_before": pr_net_diff_before,
         }
 
-    code, result = _execute_plan(repo_dir, plan, head_branch, target_rev, remote, push)
+    code, result = _execute_plan(
+        repo_dir, plan, head_branch, target_rev, remote, push,
+        pr_head_oid=pr_meta.get("headRefOid"),
+    )
     if code == 0 and retarget_base and repo_slug:
         run_gh(["pr", "edit", str(pr_meta["number"]), "--repo", repo_slug, "--base", retarget_base])
     result["pr"] = {
@@ -703,6 +803,50 @@ def build_cascade_plan(
     return plan, skipped_forks
 
 
+def _sync_cascade_local_branch(
+    repo_dir: Path,
+    head_branch: str,
+    remote: str,
+    pr_head_oid: Any,
+) -> str | None:
+    """Checkout head_branch, creating or fast-forwarding from remote when behind."""
+    local_oid = git_oid(repo_dir, head_branch)
+    remote_ref = f"{remote}/{head_branch}"
+    remote_oid = git_oid(repo_dir, remote_ref)
+    expected_pr_oid = validate_oid(pr_head_oid)
+
+    if local_oid is None:
+        if remote_oid:
+            run_git(repo_dir, ["checkout", "-b", head_branch, remote_ref])
+            local_oid = remote_oid
+        elif expected_pr_oid and git_oid(repo_dir, expected_pr_oid):
+            run_git(repo_dir, ["checkout", "-b", head_branch, expected_pr_oid])
+            local_oid = expected_pr_oid
+        else:
+            return f"local and remote refs missing for {head_branch!r}"
+    else:
+        run_git(repo_dir, ["checkout", head_branch])
+        if remote_oid and remote_oid != local_oid:
+            if git_is_ancestor(repo_dir, local_oid, remote_oid):
+                run_git(repo_dir, ["merge", "--ff-only", remote_ref])
+                local_oid = remote_oid
+            elif not git_is_ancestor(repo_dir, remote_oid, local_oid):
+                return (
+                    f"local {head_branch!r} ({local_oid}) diverged from {remote_ref!r} "
+                    f"({remote_oid}); resolve divergence before cascade"
+                )
+
+    if expected_pr_oid and (
+        not git_oid(repo_dir, expected_pr_oid)
+        or not git_is_ancestor(repo_dir, expected_pr_oid, local_oid)
+    ):
+        return (
+            f"PR headRefOid {expected_pr_oid} is not an ancestor of {head_branch!r} "
+            f"({local_oid}); fetch or pull before cascade"
+        )
+    return None
+
+
 def run_cascade(
     repo_dir: Path,
     merged_pr: dict[str, Any],
@@ -750,6 +894,7 @@ def run_cascade(
         orig_branch = git_oid(repo_dir, "HEAD") or "HEAD"
 
     restacked_heads: set[str] = set()
+    pre_oid_by_head: dict[str, str] = {}
     blocked_heads: set[str] = set()
     results: list[dict[str, Any]] = []
     overall_exit = 0
@@ -762,14 +907,29 @@ def run_cascade(
                 overall_exit = 1
                 continue
 
-            run_git(repo_dir, ["checkout", item["head"]])
+            sync_err = _sync_cascade_local_branch(
+                repo_dir, item["head"], remote, item.get("head_oid")
+            )
+            if sync_err is not None:
+                blocked_heads.add(item["head"])
+                results.append({**item, "status": "stale_local_branch", "applied": False, "error": sync_err})
+                overall_exit = 1
+                continue
+
+            pre_head_oid = git_oid(repo_dir, "HEAD") or ""
             target_rev = (item["target_base"] if item["target_base"] in restacked_heads
                           else f"{remote}/{item['target_base']}")
+            parent_pre_oid = (
+                pre_oid_by_head.get(item["target_base"])
+                if item["target_base"] in restacked_heads else None
+            )
             step_plan = plan_restack(
-                repo_dir, "HEAD", target_rev, item["target_base"], merged_pool, strategy
+                repo_dir, "HEAD", target_rev, item["target_base"], merged_pool,
+                strategy, parent_pre_oid=parent_pre_oid,
             )
             code, step_res = _execute_plan(
-                repo_dir, step_plan, item["head"], target_rev, remote, push
+                repo_dir, step_plan, item["head"], target_rev, remote, push,
+                pr_head_oid=item.get("head_oid"),
             )
             if code == 0 and item["needs_retarget"] and repo_slug:
                 run_gh(["pr", "edit", str(item["number"]), "--repo", repo_slug,
@@ -780,6 +940,8 @@ def run_cascade(
                 overall_exit = 1
             else:
                 restacked_heads.add(item["head"])
+                if pre_head_oid:
+                    pre_oid_by_head[item["head"]] = pre_head_oid
     finally:
         run_git(repo_dir, ["checkout", orig_branch], check=False)
 

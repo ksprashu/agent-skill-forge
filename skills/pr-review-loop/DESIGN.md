@@ -59,5 +59,11 @@ commits that landed on `main` after `S1`. To make `-s ours` mathematically safe:
 - `--cascade` filters strictly for `isCrossRepository is False`, recording fork
   PRs in `skipped_forks` rather than attempting cross-repo restacks.
 - Secret/token redaction (`S8`) runs at ingest in `_run_cmd` and `load_json_file`.
-- Rebase pushes require explicit `--force-with-lease` under `--strategy rebase`;
-  bare `git push --force` is never emitted.
+- Rebase pushes require explicit `--force-with-lease` under `--strategy rebase`
+  and verify remote ancestry (`origin/<head>` and `headRefOid` must descend into
+  local `HEAD`), pinning `--force-with-lease=refs/heads/<head>:<expected_oid>`
+  to close `CWE-362` races; bare `git push --force` is never emitted.
+- Post-restack verification checks target ancestry and exact-tree invariance
+  (`pre_tree == post_tree` under `exact_tree_squash_ours`) before pushing, and
+  `--cascade --strategy rebase` tracks each rebased parent's pre-restack OID so
+  downstream PRs replay only `parent_pre_oid..HEAD`.
