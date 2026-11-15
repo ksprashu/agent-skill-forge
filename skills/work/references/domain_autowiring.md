@@ -45,6 +45,7 @@ if the two disagree, so a row cannot rot here without breaking the build.
 | **Testing & TDD** | `skills/test` & `skills/verify` | Challenger, Worker | Red-Green-Refactor, static verifier scripts, blinded rubrics. |
 | **Code Review & Standards** | `skills/review` & `skills/unslop` | Reviewer | 8-axis review plus style, boilerplate stripping, zero AI fluff. |
 | **Performance & Benchmarking** | `.upstream/performance-optimization` | Challenger, Worker | Latency budgets, p99 regression gates, memory leak detection. |
+| **Narrative Nonfiction & Field Books** | `skills/chronicle` & `skills/atelier` & `skills/unslop` & `skills/voice-register` | Worker | Gladwell/Grant narrative, evidence badges, field notebooks, atelier literary edition, unslop prose, and the author's voice register. |
 | **Visual Media, Diagrams & Comics** | `skills/image-gen` | Explorer, Worker | Frozen specs, binary header checks, blinded rubric verification, sequential anchor lock. |
 | **Video Production & Post-Processing** | `skills/video-gen` | Explorer, Worker | Timeline plans, anchored keyframe chaining, 2-pass loudnorm audio mixing, captions/motion cards, ffprobe and Argon verification. |
 | **Audio, Music, Voice & SFX Synthesis** | `skills/audio-gen` | Explorer, Worker | Frozen audio specs, WAV/PCM and -14 LUFS 2-pass mastering, speech_metadata separation, consent-gated voice replication, Argon rubric verification. |

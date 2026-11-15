@@ -43,7 +43,8 @@
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
     "session-handoff": "Package multi-repo session state and arm auto-pickup beacons across harnesses.",
     "horizon-watch": "Track 6-12 month technical/AI forecasts in a central ledger, run mechanical upstream/anchor probes, validate sweep verdicts, and enforce backup/PR provenance.",
-    "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests)."
+    "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests).",
+    "narrative-nonfiction": "Turn technical reports and dossiers into grounded nonfiction narrative with evidence badges and field-notebook actions."
   },
 
   "skill_capabilities": {
@@ -76,6 +77,7 @@
     "video-gen": "video-generation",
     "audio-gen": "audio-generation",
     "atelier": "human-grade-output",
+    "chronicle": "narrative-nonfiction",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",
     "google-oss": "oss-compliance",

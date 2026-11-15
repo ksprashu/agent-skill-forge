@@ -120,6 +120,7 @@ bash scripts/install.sh --all
 *   **`/human-voice`** (`skills/human-voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
 *   **`voice-register`** (`skills/voice-register`): Applies your voice profile in the right channel register (email, blog, strategy doc, notes) on top of `unslop`. Profile tiers: `.local.md` > `~/.gemini/personas/default/` > `.template.md`.
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
+*   **`/chronicle`** (`skills/chronicle`): Turns a technical report, dossier, or architecture brief into a Gladwell/Grant nonfiction chapter or field book, with evidence badges and a Field Notebook checklist.
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
 *   **`/docs`** (`skills/docs`): Generates full SDLC documentation suites and compiles markdown into interactive, 4-theme standalone HTML presentation portals.
@@ -199,6 +200,8 @@ Used when authoring documentation, tutorials, technical blogs, or developer keyn
 6. **`/docs`**: Compiles the markdown documentation into an interactive, self-contained single-page HTML portal.
 7. **`/google-oss`**: Verifies Apache-2.0 headers and cleans internal company paths before publication.
 
+For a narrative edition of an existing report or brief, invoke `/chronicle` (a chapter arc, evidence badges, and a Field Notebook) on the draft.
+
 ### B. The Fast Tactical Bugfix Flow
 Used for urgent hotfixes, regression debugging, or localized patches:
 1. **`debugging-and-error-recovery`** (JIT): Deconstructs the stack trace and isolates the minimal reproduction script.
@@ -270,6 +273,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` & `compile_docs.py` |
 | Extracting developer voice or drafting technical prose | Invoke `/human-voice`, then `voice-register` |
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
+| Turning a technical report or brief into a nonfiction story or field book | Invoke `/chronicle` |
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
 | Switching AI coding tools or pausing a multi-session / multi-repo arc | Invoke `/handoff` (`skills/handoff`) |
