@@ -2156,6 +2156,8 @@ def apply_audio_mix_and_master(
                 "192k",
                 "-ar",
                 str(AUDIO_SAMPLE_RATE),
+                "-af",
+                "apad",
                 "-c:s",
                 "copy",
                 "-shortest",

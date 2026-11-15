@@ -66,6 +66,8 @@ from video_post import (  # noqa: E402
     validate_safe_local_file,
 )
 
+VALID_ASPECT_RATIOS: tuple[str, ...] = ("16:9", "9:16")
+
 VALID_CONTINUITY_MODES: tuple[str, ...] = (
     "keyframe-chain",
     "scene-cuts",
@@ -377,7 +379,66 @@ def _check_no_legacy_xml(text: str, *, label: str) -> None:
             )
 
 
-def parse_script_file(script_path_raw: str) -> dict[str, Any]:
+def _validate_script_metadata(
+    doc: Mapping[str, Any],
+    *,
+    valid_aspect_ratios: Sequence[str] = VALID_ASPECT_RATIOS,
+) -> dict[str, Any]:
+    """Validate optional top-level JSON script metadata before merging onto runtime config."""
+    meta: dict[str, Any] = {}
+    if "style" in doc and doc["style"] is not None:
+        val = doc["style"]
+        if not isinstance(val, str) or not val.strip():
+            raise ValueError("--script metadata 'style' must be a non-empty string.")
+        _check_no_legacy_xml(val, label="--script metadata 'style'")
+        meta["style"] = val.strip()
+
+    if "aspect_ratio" in doc and doc["aspect_ratio"] is not None:
+        val = doc["aspect_ratio"]
+        if not isinstance(val, str) or val.strip() not in valid_aspect_ratios:
+            raise ValueError(
+                f"--script metadata 'aspect_ratio' must be one of {', '.join(valid_aspect_ratios)} (got {val!r})."
+            )
+        meta["aspect_ratio"] = val.strip()
+
+    if "continuity" in doc and doc["continuity"] is not None:
+        val = doc["continuity"]
+        if not isinstance(val, str) or val.strip() not in VALID_CONTINUITY_MODES:
+            raise ValueError(
+                f"--script metadata 'continuity' must be one of {', '.join(VALID_CONTINUITY_MODES)} (got {val!r})."
+            )
+        meta["continuity"] = val.strip()
+
+    if "crossfade_sec" in doc and doc["crossfade_sec"] is not None:
+        val = doc["crossfade_sec"]
+        if (
+            isinstance(val, bool)
+            or not isinstance(val, (int, float))
+            or not math.isfinite(float(val))
+            or float(val) < 0.0
+            or float(val) > MAX_CROSSFADE_S
+        ):
+            raise ValueError(
+                f"--script metadata 'crossfade_sec' must be a finite number between 0.0 and {MAX_CROSSFADE_S:.1f}s "
+                f"(got {val!r})."
+            )
+        meta["crossfade_sec"] = float(val)
+
+    if "narration_text" in doc and doc["narration_text"] is not None:
+        val = doc["narration_text"]
+        if not isinstance(val, str) or not val.strip():
+            raise ValueError("--script metadata 'narration_text' must be a non-empty string.")
+        _check_no_legacy_xml(val, label="--script metadata 'narration_text'")
+        meta["narration_text"] = val.strip()
+
+    return meta
+
+
+def parse_script_file(
+    script_path_raw: str,
+    *,
+    valid_aspect_ratios: Sequence[str] = VALID_ASPECT_RATIOS,
+) -> dict[str, Any]:
     """Parse `--script <json|md>` into normalized beat dicts and optional metadata."""
     resolved = validate_safe_local_file(script_path_raw, label="--script")
     try:
@@ -403,9 +464,7 @@ def parse_script_file(script_path_raw: str) -> dict[str, Any]:
             raw_beats = doc
         elif isinstance(doc, dict) and isinstance(doc.get("beats"), list):
             raw_beats = doc["beats"]
-            for key in ("style", "aspect_ratio", "continuity", "crossfade_sec", "narration_text"):
-                if key in doc and doc[key] is not None:
-                    meta[key] = doc[key]
+            meta = _validate_script_metadata(doc, valid_aspect_ratios=valid_aspect_ratios)
         else:
             raise ValueError(
                 f"--script JSON '{contract_home(resolved)}' must be a list or object with 'beats'."
@@ -595,28 +654,50 @@ def _split_long_beat(duration_s: int, *, min_seg_s: int, max_seg_s: int) -> list
     )
 
 
-def compile_timeline_plan(config: Any) -> dict[str, Any]:
+def compile_timeline_plan(
+    config: Any,
+    *,
+    valid_aspect_ratios: Sequence[str] = VALID_ASPECT_RATIOS,
+) -> dict[str, Any]:
     """Compile deterministic `timeline_plan.json` for `--duration > 15` or `--script`."""
-    if config.continuity not in VALID_CONTINUITY_MODES:
+    parsed_script: dict[str, Any] | None = None
+    if config.script:
+        parsed_script = parse_script_file(config.script, valid_aspect_ratios=valid_aspect_ratios)
+    script_meta = dict(parsed_script["metadata"]) if parsed_script is not None else {}
+
+    effective_continuity = (
+        config.continuity
+        if getattr(config, "_explicit_continuity", False)
+        else str(script_meta.get("continuity") or config.continuity)
+    )
+    raw_meta_xfade = script_meta.get("crossfade_sec")
+    effective_crossfade = (
+        float(config.crossfade_sec)
+        if getattr(config, "_explicit_crossfade", False)
+        else float(raw_meta_xfade if raw_meta_xfade is not None else config.crossfade_sec)
+    )
+
+    if effective_continuity not in VALID_CONTINUITY_MODES:
         raise ValueError(
-            f"Unsupported --continuity '{config.continuity}'. Valid: {', '.join(VALID_CONTINUITY_MODES)}."
+            f"Unsupported --continuity '{effective_continuity}'. Valid: {', '.join(VALID_CONTINUITY_MODES)}."
         )
-    if not math.isfinite(config.crossfade_sec) or config.crossfade_sec < 0.0 or config.crossfade_sec > MAX_CROSSFADE_S:
+    if (
+        not math.isfinite(effective_crossfade)
+        or effective_crossfade < 0.0
+        or effective_crossfade > MAX_CROSSFADE_S
+    ):
         raise ValueError(
-            f"--crossfade-sec must be finite between 0.0 and {MAX_CROSSFADE_S:.1f}s (got {config.crossfade_sec}s)."
+            f"--crossfade-sec must be finite between 0.0 and {MAX_CROSSFADE_S:.1f}s "
+            f"(got {effective_crossfade}s)."
         )
 
     is_interpolated = config.synthesize_keyframes == "start-end"
     max_seg_s = (
         MAX_INTERPOLATED_SEGMENT_S
-        if (is_interpolated or config.continuity == "extend-blocks")
+        if (is_interpolated or effective_continuity == "extend-blocks")
         else MAX_STANDARD_SEGMENT_S
     )
     min_seg_s = MIN_SEGMENT_S
-
-    parsed_script: dict[str, Any] | None = None
-    if config.script:
-        parsed_script = parse_script_file(config.script)
 
     raw_beats: list[dict[str, Any]] = []
     if parsed_script is not None:
@@ -646,7 +727,7 @@ def compile_timeline_plan(config: Any) -> dict[str, Any]:
                     )
 
     segments: list[dict[str, Any]] = []
-    crossfade = float(config.crossfade_sec)
+    crossfade = effective_crossfade
 
     if raw_beats:
         all_have_dur = all(b.get("duration_s") is not None for b in raw_beats)
@@ -782,11 +863,11 @@ def compile_timeline_plan(config: Any) -> dict[str, Any]:
             seg["xfade_offset_s"] = (
                 round(float(cumulative_raw) - crossfade * idx, 3) if crossfade > 0 else None
             )
-            if config.continuity == "scene-cuts":
+            if effective_continuity == "scene-cuts":
                 seg["chain_mode"] = (
                     "synthesized_start_keyframe" if config.synthesize_keyframes else "scene_cut_with_refs"
                 )
-            elif config.continuity == "extend-blocks":
+            elif effective_continuity == "extend-blocks":
                 # Source clip passed to Omni --extend must be <= 15s and cumulative block <= 25..30s
                 prev_dur = int(segments[idx - 1]["duration_s"])
                 if (
@@ -818,7 +899,7 @@ def compile_timeline_plan(config: Any) -> dict[str, Any]:
     plan: dict[str, Any] = {
         "schema_version": 1,
         "target_duration_s": int(target_duration_s),
-        "continuity": config.continuity,
+        "continuity": effective_continuity,
         "crossfade_sec": effective_crossfade,
         "segment_count": len(segments),
         "raw_segment_sum_s": cumulative_raw,
@@ -1084,12 +1165,14 @@ def _emit_partial_failure(
     segment_provenance: Sequence[dict[str, Any]],
     unchecked: Sequence[str],
     extra: Mapping[str, Any] | None = None,
+    status: str = "PARTIAL",
+    exit_code: int = 1,
 ) -> int:
     if output_path.exists():
         output_path.unlink()
     payload: dict[str, Any] = {
         "schema_version": 1,
-        "status": "PARTIAL",
+        "status": status,
         "generated_at": utc_now_iso(),
         plan_or_manifest_key: plan_or_manifest_val,
         "output_path": contract_home(output_path),
@@ -1104,7 +1187,7 @@ def _emit_partial_failure(
     Path(f"{output_path}.provenance.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     Path(f"{output_path}.report.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"error: {reason}", file=sys.stderr)
-    return 1
+    return exit_code
 
 
 def run_timeline_pipeline(
@@ -1121,6 +1204,7 @@ def run_timeline_pipeline(
     sleep_fn: Callable[[float], None],
     env: Mapping[str, str],
     image_gen_script: Path,
+    validate_constraints_fn: Callable[[Any], list[str]] | None = None,
 ) -> int:
     """Compile `timeline_plan.json`, generate/chain/verify segments, stitch, and post-process."""
     try:
@@ -1133,17 +1217,37 @@ def run_timeline_pipeline(
     script_meta = plan.get("script_metadata") or {}
     effective_ar = (
         config.aspect_ratio
-        if config._explicit_ar
+        if getattr(config, "_explicit_ar", False)
         else str(script_meta.get("aspect_ratio") or config.aspect_ratio)
     )
     effective_style = config.style if config.style is not None else script_meta.get("style")
+    effective_continuity = (
+        config.continuity
+        if getattr(config, "_explicit_continuity", False)
+        else str(script_meta.get("continuity") or config.continuity)
+    )
+    raw_meta_xfade = script_meta.get("crossfade_sec")
+    effective_crossfade = (
+        float(config.crossfade_sec)
+        if getattr(config, "_explicit_crossfade", False)
+        else float(raw_meta_xfade if raw_meta_xfade is not None else config.crossfade_sec)
+    )
     effective_narration = config.narration_text or script_meta.get("narration_text")
     active_base = dataclasses.replace(
         config,
         aspect_ratio=effective_ar,
         style=effective_style,
+        continuity=effective_continuity,
+        crossfade_sec=effective_crossfade,
         narration_text=effective_narration,
     )
+
+    if validate_constraints_fn is not None:
+        merged_errors = validate_constraints_fn(active_base)
+        if merged_errors:
+            for err in merged_errors:
+                print(f"error: {err}", file=sys.stderr)
+            return 2
 
     output_path = Path(active_base.output).resolve()
 
@@ -1367,15 +1471,27 @@ def run_timeline_pipeline(
             env=env,
         )
     except ValueError as exc:
-        if output_path.exists():
-            output_path.unlink()
-        print(f"error: {exc}", file=sys.stderr)
-        return 2
-    except RuntimeError as exc:
-        if output_path.exists():
-            output_path.unlink()
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
+        return _emit_partial_failure(
+            output_path,
+            reason=str(exc),
+            plan_or_manifest_key="timeline_plan_path",
+            plan_or_manifest_val=contract_home(plan_path),
+            preserved_segments=verified_segments,
+            segment_provenance=segment_provenance,
+            unchecked=unchecked,
+            status="FAILED_VERIFICATION",
+            exit_code=2,
+        )
+    except (RuntimeError, FileNotFoundError) as exc:
+        return _emit_partial_failure(
+            output_path,
+            reason=str(exc),
+            plan_or_manifest_key="timeline_plan_path",
+            plan_or_manifest_val=contract_home(plan_path),
+            preserved_segments=verified_segments,
+            segment_provenance=segment_provenance,
+            unchecked=unchecked,
+        )
 
     for surf in post_unchecked:
         if surf not in unchecked:
@@ -1636,11 +1752,7 @@ def run_storyboard_pipeline(
     )
     segment_configs: list[tuple[dict[str, Any], Any]] = []
     for seg in segment_specs:
-        seg_out = (
-            output_path
-            if len(segment_specs) == 1
-            else segments_dir / f"segment_{seg['segment_index']:02d}.mp4"
-        )
+        seg_out = segments_dir / f"segment_{seg['segment_index']:02d}.mp4"
         refs = list(config.image_refs)
         if anchor_path is not None and (
             isinstance(anchor_path, str) or (isinstance(anchor_path, Path) and anchor_path.exists())
@@ -1710,7 +1822,7 @@ def run_storyboard_pipeline(
             sleep_fn=sleep_fn,
             env=effective_env,
             asset_cache=shared_cache,
-            skip_post_processing=(len(segment_configs) > 1),
+            skip_post_processing=True,
         )
         if rc != 0:
             return rc
@@ -1725,67 +1837,99 @@ def run_storyboard_pipeline(
     concat_mech: dict[str, Any] | None = None
     post_report: dict[str, Any] | None = None
 
+    raw_output: Path
     if len(verified_segments) > 1:
         ffmpeg_bin = resolve_ffmpeg_binary("ffmpeg", env=effective_env, which_fn=which_fn)
         if ffmpeg_bin is None:
-            if output_path.exists():
-                output_path.unlink()
             if "ffmpeg_multi_segment_concat" not in unchecked:
                 unchecked.append("ffmpeg_multi_segment_concat")
-            partial_prov = {
-                "schema_version": 1,
-                "status": "PARTIAL",
-                "generated_at": utc_now_iso(),
-                "storyboard_manifest": contract_home(manifest_path),
-                "output_path": contract_home(output_path),
-                "preserved_segments": [contract_home(p) for p in verified_segments],
-                "segments": segment_provenance,
-                "unchecked_surfaces": unchecked,
-            }
-            Path(f"{output_path}.provenance.json").write_text(
-                json.dumps(partial_prov, indent=2) + "\n", encoding="utf-8"
+            return _emit_partial_failure(
+                output_path,
+                reason=(
+                    f"ffmpeg not found on PATH; cannot concatenate {len(verified_segments)} storyboard segments "
+                    f"into {contract_home(output_path)} (preserved segments in {contract_home(segments_dir)})."
+                ),
+                plan_or_manifest_key="storyboard_manifest",
+                plan_or_manifest_val=contract_home(manifest_path),
+                preserved_segments=verified_segments,
+                segment_provenance=segment_provenance,
+                unchecked=unchecked,
             )
-            print(
-                f"error: ffmpeg not found on PATH; cannot concatenate {len(verified_segments)} storyboard segments "
-                f"into {contract_home(output_path)} (preserved segments in {contract_home(segments_dir)}).",
-                file=sys.stderr,
-            )
-            return 1
 
+        raw_output = segments_dir / "stitched_raw.mp4"
         try:
             stitch_segments(
                 verified_segments,
                 actual_segment_durations,
-                output_path,
+                raw_output,
                 crossfade_sec=float(config.crossfade_sec),
                 include_audio=(config.audio_mode != "silent"),
                 ffmpeg_bin=ffmpeg_bin,
                 runner=runner,
             )
         except RuntimeError as exc:
-            if output_path.exists():
-                output_path.unlink()
-            print(f"error: {exc}", file=sys.stderr)
-            return 1
+            return _emit_partial_failure(
+                output_path,
+                reason=str(exc),
+                plan_or_manifest_key="storyboard_manifest",
+                plan_or_manifest_val=contract_home(manifest_path),
+                preserved_segments=verified_segments,
+                segment_provenance=segment_provenance,
+                unchecked=unchecked,
+            )
+    else:
+        raw_output = verified_segments[0]
 
-        raw_sum = sum(int(s["duration_s"]) for s in segment_specs)
-        expected_total_dur = max(
-            MIN_EXPLICIT_BEAT_S,
-            int(round(raw_sum - float(config.crossfade_sec) * (len(segment_specs) - 1))),
-        )
+    raw_sum = sum(int(s["duration_s"]) for s in segment_specs)
+    expected_total_dur = max(
+        MIN_EXPLICIT_BEAT_S,
+        int(round(raw_sum - float(config.crossfade_sec) * max(0, len(segment_specs) - 1))),
+    )
+    actual_total_dur = max(
+        float(MIN_EXPLICIT_BEAT_S),
+        sum(actual_segment_durations)
+        - float(config.crossfade_sec) * max(0, len(verified_segments) - 1),
+    )
+    active_storyboard_cfg = dataclasses.replace(config, aspect_ratio=ar, style=style)
+
+    try:
         post_report, post_unchecked = run_post_pipeline_fn(
-            config,
+            active_storyboard_cfg,
+            raw_output,
             output_path,
-            output_path,
-            video_duration_s=float(expected_total_dur),
+            video_duration_s=actual_total_dur,
             runner=runner,
             which_fn=which_fn,
             env=effective_env,
         )
-        for surf in post_unchecked:
-            if surf not in unchecked:
-                unchecked.append(surf)
+    except ValueError as exc:
+        return _emit_partial_failure(
+            output_path,
+            reason=str(exc),
+            plan_or_manifest_key="storyboard_manifest",
+            plan_or_manifest_val=contract_home(manifest_path),
+            preserved_segments=verified_segments,
+            segment_provenance=segment_provenance,
+            unchecked=unchecked,
+            status="FAILED_VERIFICATION",
+            exit_code=2,
+        )
+    except (RuntimeError, FileNotFoundError) as exc:
+        return _emit_partial_failure(
+            output_path,
+            reason=str(exc),
+            plan_or_manifest_key="storyboard_manifest",
+            plan_or_manifest_val=contract_home(manifest_path),
+            preserved_segments=verified_segments,
+            segment_provenance=segment_provenance,
+            unchecked=unchecked,
+        )
 
+    for surf in post_unchecked:
+        if surf not in unchecked:
+            unchecked.append(surf)
+
+    if len(verified_segments) > 1 or post_report.get("applied"):
         expected_audio = (
             "silent"
             if config.audio_mode == "silent"
@@ -1818,6 +1962,7 @@ def run_storyboard_pipeline(
                 "generated_at": utc_now_iso(),
                 "storyboard_manifest": contract_home(manifest_path),
                 "output_path": contract_home(output_path),
+                "post_processing": post_report,
                 "concat_mechanical": concat_mech,
                 "segments": segment_provenance,
                 "unchecked_surfaces": unchecked,
@@ -1825,8 +1970,11 @@ def run_storyboard_pipeline(
             Path(f"{output_path}.provenance.json").write_text(
                 json.dumps(failed_prov, indent=2) + "\n", encoding="utf-8"
             )
+            Path(f"{output_path}.report.json").write_text(
+                json.dumps(failed_prov, indent=2) + "\n", encoding="utf-8"
+            )
             print(
-                f"error: Concatenated storyboard output failed mechanical verification: {concat_mech['failures']}",
+                f"error: Storyboard output failed mechanical verification: {concat_mech['failures']}",
                 file=sys.stderr,
             )
             return 1
@@ -1859,5 +2007,7 @@ def run_storyboard_pipeline(
         Path(f"{output_path}.report.json").write_text(
             json.dumps(storyboard_prov, indent=2) + "\n", encoding="utf-8"
         )
+    else:
+        Path(f"{output_path}.report.json").unlink(missing_ok=True)
     print(json.dumps({"status": storyboard_prov["status"], "output": contract_home(output_path)}))
     return 0
