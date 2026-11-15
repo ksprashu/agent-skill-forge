@@ -1,0 +1,20 @@
+{
+  "streams": [
+    {
+      "index": 0,
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 720,
+      "height": 1280,
+      "r_frame_rate": "24/1",
+      "duration": "6.000000"
+    }
+  ],
+  "format": {
+    "filename": "verified_silent_720p.mp4",
+    "nb_streams": 1,
+    "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+    "duration": "6.000000",
+    "size": "3120640"
+  }
+}

@@ -1,0 +1,11 @@
+1
+00:00:05,000 --> 00:00:02,000
+Inverted cue range that ends before it starts.
+
+2
+00:00:06,000 -- 00:00:08,000
+Malformed arrow separator and missing text in cue 3.
+
+3
+00:00:08,500 --> 00:00:10,000
+   

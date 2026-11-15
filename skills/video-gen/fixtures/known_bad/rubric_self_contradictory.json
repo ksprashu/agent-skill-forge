@@ -1,0 +1,33 @@
+{
+  "overall_passed": true,
+  "status": "pass",
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Brass clockwork owl is present on the observatory desk.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Hard jump cut occurs at 4.8s between close-up and wide shot.",
+      "fix_instruction": "Remove the hard cut at 4.8s and maintain one continuous dolly movement."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Starting frame matches reference.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Plaque clearly reads 'CHRONOS LAB'.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "Keep everything else the same. Remove the hard cut at 4.8s and maintain one continuous dolly movement.",
+  "regenerated_prompt": ""
+}

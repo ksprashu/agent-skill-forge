@@ -1,0 +1,25 @@
+{
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Brass clockwork owl is present.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Continuous camera movement with zero cuts.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Plaque reads 'CHRONOS LAB'.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": ""
+}

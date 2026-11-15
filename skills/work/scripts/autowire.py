@@ -248,6 +248,16 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "keyframe", "illustration", "banner",
         ),
     ),
+    Domain(
+        label="Video Production & Post-Processing",
+        skills=("skills/video-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Timeline plans, anchored keyframe chaining, 2-pass loudnorm audio mixing, captions/motion cards, ffprobe and Argon verification.",
+        triggers=(
+            "generate video", "video generation", "video-gen", "omni-video",
+            "video timeline", "video captions", "lower third",
+        ),
+    ),
 )
 
 

@@ -666,7 +666,12 @@ class LegacyModelAndSkillReferenceCleanupTests(unittest.TestCase):
         self.assertLessEqual(len(atelier.splitlines()), 200)
 
         self.assertIn("legacy alias: `/image-gen-expert`", catalog)
-        self.assertIsNone(re.search(r"video[-_]gen", catalog, re.IGNORECASE))
+        if (REPO_ROOT / "skills" / "video-gen" / "SKILL.md").is_file():
+            self.assertIn("`video-gen`", catalog)
+            self.assertIn("skills/video-gen/SKILL.md", codelab)
+            self.assertIn("skills/video-gen/SKILL.md", atelier)
+        else:
+            self.assertIsNone(re.search(r"video[-_]gen", catalog, re.IGNORECASE))
 
         for seam in (
             "FORGE_GEMINI_API_INSTALL_CMD",

@@ -1,0 +1,31 @@
+{
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "A brass clockwork owl perches on the observatory desk and turns its head toward the telescope.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Camera tracks smoothly from [0-5s] desk close-up to [5-10s] starlit dome reveal with zero hard cuts.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Opening frame matches the supplied starting keyframe composition.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": false,
+      "observed_evidence": "Brass plaque reads 'OBSERVATORIUM' instead of the required literal 'CHRONOS LAB'.",
+      "fix_instruction": "Change the engraved text on the brass desk plaque to read 'CHRONOS LAB' in crisp uppercase lettering."
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "Keep everything else the same. Change the engraved text on the brass desk plaque to read 'CHRONOS LAB' in crisp uppercase lettering.",
+  "regenerated_prompt": ""
+}

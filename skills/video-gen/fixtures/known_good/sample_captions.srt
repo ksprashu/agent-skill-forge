@@ -1,0 +1,7 @@
+1
+00:00:00,200 --> 00:00:03,400
+Deploy verified containers in ninety seconds.
+
+2
+00:00:03,800 --> 00:00:07,500
+Zero manual configuration or cold-start drift.
