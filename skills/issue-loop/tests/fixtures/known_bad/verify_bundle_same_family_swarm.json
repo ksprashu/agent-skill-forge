@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "mode": "swarm",
+  "track_id": "track-auth",
+  "branch": "fix/issue-101-auth-token",
+  "head_sha": "abc1234def5678",
+  "author_model": "claude-opus-5-5-high",
+  "review_model": "claude-sonnet-5-5-high",
+  "security_model": "claude-sonnet-5-5-high",
+  "tests": {
+    "head_sha": "abc1234def5678",
+    "command": "python3 -m unittest tests/test_tokens.py",
+    "exit_code": 0,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "red_green_verified": true
+  },
+  "scope": {
+    "allowed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ],
+    "changed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ]
+  },
+  "review": {
+    "head_sha": "abc1234def5678",
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "review",
+      "mode": "diff",
+      "summary": "Reviewed auth token guard.",
+      "inspected": [
+        "src/auth/tokens.py",
+        "tests/test_tokens.py"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  },
+  "security": {
+    "head_sha": "abc1234def5678",
+    "secrets_found": 0,
+    "scanners": {
+      "semgrep": "clean",
+      "gitleaks": "clean",
+      "actionlint": "not_applicable",
+      "zizmor": "not_applicable",
+      "osv-scanner": "not_applicable",
+      "trivy": "not_applicable"
+    },
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "security-review",
+      "mode": "diff",
+      "summary": "Zero security findings.",
+      "inspected": [
+        "src/auth/tokens.py",
+        "semgrep",
+        "gitleaks"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  }
+}

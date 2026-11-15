@@ -43,6 +43,7 @@
     "alignment-distillation": "Distil transcript learnings into a bounded AGENTS.md.",
     "session-handoff": "Package multi-repo session state and arm auto-pickup beacons across harnesses.",
     "horizon-watch": "Track 6-12 month technical/AI forecasts in a central ledger, run mechanical upstream/anchor probes, validate sweep verdicts, and enforce backup/PR provenance.",
+    "issue-resolution": "Triage, plan, implement, verify, and ship PRs for GitHub issues end-to-end.",
     "human-grade-output": "Produce distinctive, subject-grounded visual and structured outputs for human consumption (reports, briefs, digests).",
     "narrative-nonfiction": "Turn technical reports and dossiers into grounded nonfiction narrative with evidence badges and field-notebook actions."
   },
@@ -83,7 +84,8 @@
     "google-oss": "oss-compliance",
     "continuous-alignment": "alignment-distillation",
     "handoff": "session-handoff",
-    "horizon": "horizon-watch"
+    "horizon": "horizon-watch",
+    "issue-loop": "issue-resolution"
   },
 
   "harnesses": {

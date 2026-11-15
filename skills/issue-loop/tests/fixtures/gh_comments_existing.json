@@ -1,0 +1,16 @@
+[
+  {
+    "id": 5001,
+    "user": {
+      "login": "maintainer"
+    },
+    "body": "<!-- issue-loop:stage=triage v1 -->\nInitial triage summary for #101."
+  },
+  {
+    "id": 5002,
+    "user": {
+      "login": "contributor"
+    },
+    "body": "Reproduced locally on Python 3.12."
+  }
+]
