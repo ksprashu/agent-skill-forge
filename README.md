@@ -177,7 +177,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`atelier`](./skills/atelier)** | (auto on reports/briefs) | Auto / Slash | **Distinctive Human-Grade Output**: Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and liberal use of diagrams and images. Avoids generic AI aesthetics. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
-*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
+*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, keeps AGENTS.md lean, and tracks 6-12 month technical horizons.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
@@ -186,6 +186,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`google-oss`](./skills/google-oss)** | `/google-oss` | User Slash | **Open Source Compliance**: Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **[`continuous-alignment`](./skills/continuous-alignment)** | `/align`, `/evolve` | Auto / Slash | **Continuous Alignment Engine**: Distills transcript learnings into a strict 200-line `AGENTS.md` budget, records living ADRs, and compiles roadmap visualizers. |
 | **[`handoff`](./skills/handoff)** | `/handoff`, `/handover` | User Slash | **Automagic Cross-Harness Session Handoff**: Captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity (`agy`), Claude Code (`SessionStart` + `CLAUDE.md`), OpenAI Codex, and Cursor. See [`skills/handoff/README.md`](./skills/handoff/README.md). |
+| **[`horizon`](./skills/horizon)** | `/horizon`, `/radar`, `/tech-horizon` | Auto / Slash | **Horizon Sentinel (6-12 Month Predictive Watchlist)**: Persists forecasts into a central `0o700`/`0o600` ledger (`~/.gemini/horizons/`), runs deterministic upstream/anchor probes (`S9`), validates sweep verdicts (`L3`), enforces SHA-256 pre-edit backups and PR URL provenance, and renders `INDEX.md`. See [`skills/horizon/README.md`](./skills/horizon/README.md). |
 
 ---
 
@@ -320,6 +321,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice overlay split out of `unslop` (#17). |
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
+| **`horizon`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/horizon`](https://github.com/ksprashu/agent-skill-forge) | Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine (`cli_help`, `github_release`, `http_digest`, `file_anchor`, `gh_pr_status`, `agent_query`), L3 verdict validator, and SHA-256 backup/PR provenance gate. |
 | **`image-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib closed-loop diagram, illustration, comic-grid, and sequential keyframe generator with binary header and blinded multimodal rubric gates. |
 | **`video-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib arbitrary-length Omni 1.2 Flash video director, boundary keyframe chainer, caption/card compositor, and 2-pass `-14 LUFS` audio mixer with `creative-stack` integration. |
 | **`audio-gen`** | **Google DeepMind & Cloud TTS** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib Lyria 3.5 music/song engine, Gemini 3.8 TTS & `/v1beta/voices` custom voice engine, Cloud TTS `Chirp 3: HD`, foley/stinger synthesis, and 2-pass `-14 LUFS` broadcast stem mixer. |

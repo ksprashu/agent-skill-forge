@@ -269,6 +269,16 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "sound effect", "lyria", "chirp3", "loudnorm",
         ),
     ),
+    Domain(
+        label="Tech Horizon & Upstream Watchlist",
+        skills=("skills/horizon",),
+        roles=("Explorer", "Worker"),
+        instructions="Central horizon ledger (~/.gemini/horizons/), S9 mechanical probes before verdict validation, SHA-256 pre-edit backups for global configs, PR URL provenance for repo targets.",
+        triggers=(
+            "tech horizon", "predictive horizon", "horizon watch",
+            "forecast ledger", "horizon-sentinel",
+        ),
+    ),
 )
 
 

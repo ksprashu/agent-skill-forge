@@ -42,7 +42,8 @@ from typing import Iterable, List, Sequence, Set, Tuple
 #: executes, plus the installer-side scripts, hooks, and media CLI controllers.
 ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts", "skills/review/scripts",
                   "skills/security-review", "skills/pr-review-loop", "skills/handoff/scripts",
-                  "skills/image-gen/scripts", "skills/video-gen/scripts", "skills/audio-gen/scripts")
+                  "skills/horizon/scripts", "skills/image-gen/scripts", "skills/video-gen/scripts",
+                  "skills/audio-gen/scripts")
 
 # sys.stdlib_module_names arrived in 3.10 and there is no honest way to fake the
 # list on an older runtime. Everything this repo actually installs runs on 3.9;

@@ -48,6 +48,7 @@ if the two disagree, so a row cannot rot here without breaking the build.
 | **Visual Media, Diagrams & Comics** | `skills/image-gen` | Explorer, Worker | Frozen specs, binary header checks, blinded rubric verification, sequential anchor lock. |
 | **Video Production & Post-Processing** | `skills/video-gen` | Explorer, Worker | Timeline plans, anchored keyframe chaining, 2-pass loudnorm audio mixing, captions/motion cards, ffprobe and Argon verification. |
 | **Audio, Music, Voice & SFX Synthesis** | `skills/audio-gen` | Explorer, Worker | Frozen audio specs, WAV/PCM and -14 LUFS 2-pass mastering, speech_metadata separation, consent-gated voice replication, Argon rubric verification. |
+| **Tech Horizon & Upstream Watchlist** | `skills/horizon` | Explorer, Worker | Central horizon ledger (~/.gemini/horizons/), S9 mechanical probes before verdict validation, SHA-256 pre-edit backups for global configs, PR URL provenance for repo targets. |
 
 Run `autowire.py --list` to print the matrix together with each skill's
 frontmatter description, its catalog tags, and its resolution status.

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1",
+  "evaluated_at": "2026-11-14T12:05:00Z",
+  "summary": "Claimed drop confirmed without any evidence citations.",
+  "triggered_count": 1,
+  "not_inspected": [],
+  "decisions": [
+    {
+      "item_id": "cli-flag-stabilization",
+      "decision": "drop_confirmed",
+      "summary": "Release dropped.",
+      "evidence_citations": []
+    }
+  ]
+}

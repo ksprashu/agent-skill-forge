@@ -49,7 +49,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C3** | **`audio-gen`** | `/audio-gen`, `/music-gen`, `/sfx-gen`, `/tts-gen` | Auto / Slash | Generates verified BGMs/songs (`lyria-3.5`), Gemini 3.8 TTS narration/dialogue (`speech_metadata` + Chunk-1 pinning), `/v1beta/voices` design/replication, `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass mixes. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
-*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
+*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, keeps AGENTS.md lean, and tracks 6-12 month technical horizons.*
 
 | Cluster | Slug | Invocations & Triggers | Execution Mode | Scope & Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
@@ -58,6 +58,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C4** | **`google-oss`**| `/google-oss`, `/make-google-oss`| User Slash | Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **C4** | **`continuous-alignment`** | `/align`, `/evolve` | Auto / Slash | Autonomous continuous alignment engine: distills session transcripts into strict 200-line AGENTS.md budget, records living ADRs, and compiles roadmap visualizers. |
 | **C4** | **`handoff`** | `/handoff`, `/handover` | User Slash | Cross-harness session handoff engine: captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity, Claude Code, OpenAI Codex, and Cursor. |
+| **C4** | **`horizon`** | `/horizon`, `/radar`, `/tech-horizon` | Auto / Slash | Central 6-12 month predictive watchlist engine (`~/.gemini/horizons/`): collects factual mechanical probe evidence (`S9`), gates sweep verdicts (`L3`), enforces SHA-256 pre-edit backups and PR URL provenance, and renders `INDEX.md`. |
 
 ---
 
@@ -123,4 +124,5 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
+| **`horizon`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/horizon`](https://github.com/ksprashu/agent-skill-forge) | Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine, L3 verdict verifier, and SHA-256 backup/PR provenance gate. |
 | **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. `agent-security-posture` is local. |
