@@ -1,0 +1,63 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "track_id": "track-main",
+  "branch": "fix/issue-101-auth-token",
+  "head_sha": "abc1234def5678",
+  "tests": {
+    "head_sha": "0000000stale00",
+    "command": "python3 -m unittest tests/test_tokens.py",
+    "exit_code": 0,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "red_green_verified": true
+  },
+  "scope": {
+    "allowed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ],
+    "changed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ]
+  },
+  "review": {
+    "head_sha": "abc1234def5678",
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "review",
+      "mode": "diff",
+      "summary": "Review clean.",
+      "inspected": [
+        "src/auth/tokens.py"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  },
+  "security": {
+    "head_sha": "abc1234def5678",
+    "secrets_found": 0,
+    "scanners": {
+      "semgrep": "clean",
+      "gitleaks": "clean",
+      "actionlint": "not_applicable",
+      "zizmor": "not_applicable",
+      "osv-scanner": "not_applicable",
+      "trivy": "not_applicable"
+    },
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "security-review",
+      "mode": "diff",
+      "summary": "Security clean.",
+      "inspected": [
+        "src/auth/tokens.py"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  }
+}

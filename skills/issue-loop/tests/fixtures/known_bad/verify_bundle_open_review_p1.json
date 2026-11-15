@@ -1,0 +1,84 @@
+{
+  "schema_version": "1",
+  "mode": "standalone",
+  "track_id": "track-main",
+  "branch": "fix/issue-101-auth-token",
+  "head_sha": "abc1234def5678",
+  "tests": {
+    "head_sha": "abc1234def5678",
+    "command": "python3 -m unittest tests/test_tokens.py",
+    "exit_code": 0,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "red_green_verified": true
+  },
+  "scope": {
+    "allowed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ],
+    "changed_files": [
+      "src/auth/tokens.py",
+      "tests/test_tokens.py"
+    ]
+  },
+  "review": {
+    "head_sha": "abc1234def5678",
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "review",
+      "mode": "diff",
+      "summary": "One open P1 race condition remains.",
+      "inspected": [
+        "src/auth/tokens.py"
+      ],
+      "not_inspected": [],
+      "findings": [
+        {
+          "id": "R-001",
+          "severity": "P1",
+          "axis": "correctness",
+          "rule": "timing-compare",
+          "title": "Token comparison uses == instead of hmac.compare_digest",
+          "file": "src/auth/tokens.py",
+          "start_line": 44,
+          "end_line": 44,
+          "rationale": "Direct string equality leaks prefix length via timing.",
+          "evidence": "if token == expected_token:  # src/auth/tokens.py:44",
+          "suggestion": "if hmac.compare_digest(token, expected_token):",
+          "references": [],
+          "confidence": "high",
+          "status": "new",
+          "prior_id": "",
+          "security_verdict": "n/a"
+        }
+      ]
+    }
+  },
+  "security": {
+    "head_sha": "abc1234def5678",
+    "secrets_found": 0,
+    "scanners": {
+      "semgrep": "clean",
+      "gitleaks": "clean",
+      "actionlint": "not_applicable",
+      "zizmor": "not_applicable",
+      "osv-scanner": "not_applicable",
+      "trivy": "not_applicable"
+    },
+    "findings_doc": {
+      "schema_version": "1",
+      "producer": "security-review",
+      "mode": "diff",
+      "summary": "Scanners clean.",
+      "inspected": [
+        "src/auth/tokens.py",
+        "semgrep",
+        "gitleaks"
+      ],
+      "not_inspected": [],
+      "findings": []
+    }
+  }
+}

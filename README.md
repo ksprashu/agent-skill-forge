@@ -108,7 +108,7 @@ bash scripts/install.sh --content --prune
 # Install specific clusters (e.g., Content C3 + Full-Stack D1)
 bash scripts/install.sh --clusters c3,d1
 
-# Install only Quality & Verification skills (test, verify, review, security-review, pr-review-loop, unslop)
+# Install only Quality & Verification skills (test, verify, review, security-review, pr-review-loop, issue-loop, unslop)
 bash scripts/install.sh --clusters c2 --prune
 
 # Install all Core skills (C1, C2, C3, C4)
@@ -151,7 +151,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`prompt`](./skills/prompt)** | `/prompt` | User Slash | **Meta-Task & Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into intent directives, model tier selection, and DAG task graphs (`task_graph.json`). |
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
-*Enforces TDD, static verifiers, blinded judge rubrics, grounded code and security reviews, the PR review loop, and slop elimination.*
+*Enforces TDD, static verifiers, blinded judge rubrics, grounded code and security reviews, the PR and GitHub issue loops, and slop elimination.*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
@@ -160,6 +160,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`review`](./skills/review)** | `/review` | Autonomous | **8-Axis Grounded Code Review**: Runs the repo's linters and type checkers, then reviews across scope/architecture, correctness, security, reliability, performance, data integrity, tests and observability, plus style cited against the repo's config and the language's canonical guide. Emits schema-validated findings (P0–P3, nit) and SARIF; `--pr`, `--rereview` and `--ci` modes. |
 | **[`security-review`](./skills/security-review)** | `/security-review` | Autonomous | **Grounded Security Review**: Runs semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor and native audits as leads, then confirms each against a six-element finding test. Grounded in OWASP Top 10 2025, ASVS 5.0, CWE Top 25, OWASP LLM and API Top 10, and GitHub Actions hardening. Same findings schema and P0–P3 scale as `review`. |
 | **[`pr-review-loop`](./skills/pr-review-loop)** | `/pr-review-loop` | Autonomous | **PR Review Loop (author side)**: Works the review threads on your PR until the `pr-guardian/verdict` gate is green: fix and reply with the SHA, push back with `/ai-review wontfix:`, or escalate to a human. Resolves a thread only after pr-guardian replies that the fix is verified or the pushback accepted, and never one it has not addressed. |
+| **[`issue-loop`](./skills/issue-loop)** | `/issue-loop`, `/fix-issue`, `/fix-issues` | Autonomous | **End-to-End GitHub Issue Loop**: Drives open issues through five gated stages — redacted and injection-framed intake + triage comment, file-disjoint track planning + plan comment, TDD red-green fix on a feature branch, 8-axis review + security + cross-family verification gate, and PR creation (`Fixes` vs `Refs` for partial fixes) with final issue updates and optional `pr-review-loop` handoff. |
 | **[`unslop`](./skills/unslop)** | `/unslop`, `/simplify` | Auto / Slash | **Universal Anti-Bloat Engine**: Strips AI boilerplate, defensive wrapper clutter, sterile prose, and dead single-use abstractions from code, prose, and UI. Persona-neutral; pairs with `voice-register` for personal voice. |
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
@@ -323,6 +324,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Evidence-cited agent communication preferences compiled to per-harness config files. |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
 | **`horizon`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/horizon`](https://github.com/ksprashu/agent-skill-forge) | Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine (`cli_help`, `github_release`, `http_digest`, `file_anchor`, `gh_pr_status`, `agent_query`), L3 verdict validator, and SHA-256 backup/PR provenance gate. |
+| **`issue-loop`** | **Prashanth Subrahmanyam** (sister to `pr-review-loop`) | [`agent-skill-forge/skills/issue-loop`](https://github.com/ksprashu/agent-skill-forge) | End-to-end 5-stage GitHub issue loop with capture-time redaction, injection framing, idempotent stage markers, file-disjoint swarm track validator, SHA-bound cross-family gate, and partial-fix PR guard. |
 | **`image-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib closed-loop diagram, illustration, comic-grid, and sequential keyframe generator with binary header and blinded multimodal rubric gates. |
 | **`chronicle`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/chronicle`](https://github.com/ksprashu/agent-skill-forge) | Technical nonfiction storytelling and interactive field books. |
 | **`video-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib arbitrary-length Omni 1.2 Flash video director, boundary keyframe chainer, caption/card compositor, and 2-pass `-14 LUFS` audio mixer with `creative-stack` integration. |

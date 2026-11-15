@@ -1,0 +1,38 @@
+{
+  "schema_version": "1",
+  "mode": "swarm",
+  "issues": [
+    {
+      "issue": 101,
+      "classification": "valid_bug",
+      "evidence": ["src/auth/login.py:12 rejects valid cookie"],
+      "track_id": "track-a"
+    },
+    {
+      "issue": 102,
+      "classification": "valid_enhancement",
+      "evidence": ["src/auth/tokens.py:30 needs rotation hook"],
+      "track_id": "track-b"
+    }
+  ],
+  "tracks": [
+    {
+      "track_id": "track-a",
+      "issues": [101],
+      "partial_issues": [],
+      "summary": "Update auth package handler.",
+      "owned_files": ["src/auth"],
+      "test_files": ["tests/test_login.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_login.py"]
+    },
+    {
+      "track_id": "track-b",
+      "issues": [102],
+      "partial_issues": [],
+      "summary": "Add token rotation hook.",
+      "owned_files": ["src/auth/tokens.py"],
+      "test_files": ["tests/test_tokens.py"],
+      "acceptance_tests": ["python3 -m unittest tests/test_tokens.py"]
+    }
+  ]
+}
