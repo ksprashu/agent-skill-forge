@@ -1,0 +1,40 @@
+# Managed by the pr-guardian governor when opted in (--restack / PRG_RESTACK_REPOS).
+# Separate from pr-guardian.yml so PR review stays strictly read-only (contents: read).
+name: stack-restack
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      merged_pr:
+        description: Merged PR number to restack children from (blank = latest merged)
+        required: false
+        default: ""
+permissions: {}
+jobs:
+  restack:
+    # Start a run only when a same-repo PR merges into the default branch, or on a
+    # manual dispatch from the default branch. Unmerged closes, non-default bases,
+    # and fork PRs never start a job or enter the concurrency queue.
+    if: >-
+      (github.event_name == 'pull_request'
+      && github.event.action == 'closed'
+      && github.event.pull_request.merged == true
+      && github.event.pull_request.base.ref == github.event.repository.default_branch
+      && github.event.pull_request.head.repo.full_name == github.repository)
+      || (github.event_name == 'workflow_dispatch'
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
+    concurrency:
+      group: pr-guardian-restack-${{ github.repository }}
+      cancel-in-progress: false
+    uses: ksprashu/pr-guardian/.github/workflows/restack.yml@726d97b0d63fc2bd3bf270911c41105dced26680
+    with:
+      guardian_ref: 726d97b0d63fc2bd3bf270911c41105dced26680
+      merged_pr: ${{ inputs.merged_pr || '' }}
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    secrets:
+      STACK_RESTACK_TOKEN: ${{ secrets.STACK_RESTACK_TOKEN }}
