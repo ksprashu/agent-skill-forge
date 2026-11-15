@@ -73,6 +73,7 @@
     "voice-register": "voice-application",
     "image-gen": "image-generation",
     "video-gen": "video-generation",
+    "audio-gen": "audio-generation",
     "atelier": "human-grade-output",
     "docs": "docs-authoring",
     "catalog": "knowledge-catalog",

@@ -73,7 +73,7 @@ function Resolve-ClustersForMedia([string]$RawList) {
 
 function Resolve-SkillsForMedia([string]$RawList) {
     foreach ($tok in ($RawList.ToLowerInvariant() -split ',')) {
-        if ($tok.Trim() -in @('image-gen', 'video-gen', 'image-gen-expert', 'omni-video')) {
+        if ($tok.Trim() -in @('image-gen', 'video-gen', 'audio-gen', 'image-gen-expert', 'omni-video', 'music-gen', 'sfx-gen', 'tts-gen')) {
             $script:HasMediaSelection = $true
         }
     }
@@ -408,10 +408,13 @@ function Show-MediaReadinessNote {
         $checkPaths = @(
             (Join-Path (Join-Path (Join-Path $HOME '.agents') 'skills') 'image-gen'),
             (Join-Path (Join-Path (Join-Path $HOME '.agents') 'skills') 'video-gen'),
+            (Join-Path (Join-Path (Join-Path $HOME '.agents') 'skills') 'audio-gen'),
             (Join-Path (Join-Path (Join-Path $HOME '.gemini') 'skills') 'image-gen'),
             (Join-Path (Join-Path (Join-Path $HOME '.gemini') 'skills') 'video-gen'),
+            (Join-Path (Join-Path (Join-Path $HOME '.gemini') 'skills') 'audio-gen'),
             (Join-Path (Join-Path (Join-Path $projBase '.gemini') 'skills') 'image-gen'),
-            (Join-Path (Join-Path (Join-Path $projBase '.gemini') 'skills') 'video-gen')
+            (Join-Path (Join-Path (Join-Path $projBase '.gemini') 'skills') 'video-gen'),
+            (Join-Path (Join-Path (Join-Path $projBase '.gemini') 'skills') 'audio-gen')
         )
         foreach ($p in $checkPaths) {
             if (Test-Path -LiteralPath $p) {

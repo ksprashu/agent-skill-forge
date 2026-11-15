@@ -41,13 +41,17 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 IMAGE_GEN_DIR = REPO_ROOT / "skills" / "image-gen" / "scripts"
 VIDEO_GEN_DIR = REPO_ROOT / "skills" / "video-gen" / "scripts"
+AUDIO_GEN_DIR = REPO_ROOT / "skills" / "audio-gen" / "scripts"
 IMAGE_GEN_SCRIPT = IMAGE_GEN_DIR / "image_gen.py"
 VIDEO_GEN_SCRIPT = VIDEO_GEN_DIR / "video_gen.py"
+AUDIO_GEN_SCRIPT = AUDIO_GEN_DIR / "audio_gen.py"
 
-for _p in (str(IMAGE_GEN_DIR), str(VIDEO_GEN_DIR)):
+for _p in (str(IMAGE_GEN_DIR), str(VIDEO_GEN_DIR), str(AUDIO_GEN_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import audio_engines  # noqa: E402
+import audio_gen  # noqa: E402
 import image_gen  # noqa: E402
 import video_gen  # noqa: E402
 
@@ -73,6 +77,9 @@ VALID_MP4_HEX = (
 
 def _install_media_cli_stubs(bin_dir: Path, calls_log: Path) -> None:
     """Write executable stub gemini-api, ffprobe, and ffmpeg tools into bin_dir."""
+    tiny_wav_hex = (
+        REPO_ROOT / "skills" / "video-gen" / "fixtures" / "known_good" / "tiny_tone.wav"
+    ).read_bytes().hex()
     gemini_stub = bin_dir / "gemini-api"
     gemini_stub.write_text(
         f"""#!{sys.executable}
@@ -95,6 +102,20 @@ if sub == "whoami":
     sys.exit(0)
 if sub == "files" and len(argv) >= 2 and argv[1] == "upload":
     print("files/contract_cached_asset")
+    sys.exit(0)
+if sub in ("music", "tts"):
+    out = pathlib.Path(argv[argv.index("--out") + 1])
+    out.parent.mkdir(parents=True, exist_ok=True)
+    payload = bytes.fromhex({tiny_wav_hex!r})
+    out.write_bytes(payload)
+    print(json.dumps({{
+        "kind": sub,
+        "path": str(out),
+        "size_bytes": len(payload),
+        "mime_type": "audio/wav",
+        "response_id": f"v1_{{sub}}_stub",
+        "status": "completed",
+    }}))
     sys.exit(0)
 if sub == "image":
     out = pathlib.Path(argv[argv.index("--out") + 1])
@@ -244,9 +265,11 @@ if "-filters" in argv:
 if argv and argv[-1] == "-" and "-f" in argv and "null" in argv:
     joined = " ".join(argv)
     if "loudnorm=" in joined and "print_format=json" in joined:
+        src_path = argv[argv.index("-i") + 1].removeprefix("file:") if "-i" in argv else ""
+        is_normed = bool(src_path and pathlib.Path(src_path + ".normed").is_file())
         sys.stderr.write(json.dumps({{
-            "input_i": "-20.50",
-            "input_tp": "-4.20",
+            "input_i": "-14.00" if is_normed else "-20.50",
+            "input_tp": "-1.00" if is_normed else "-4.20",
             "input_lra": "5.80",
             "input_thresh": "-30.80",
             "target_offset": "0.10",
@@ -262,6 +285,9 @@ if out.suffix.lower() == ".png":
     sys.exit(0)
 if out.suffix.lower() == ".wav":
     out.write_bytes(bytes.fromhex({tiny_wav_hex!r}))
+    if "linear=true" in " ".join(argv):
+        pathlib.Path(str(out) + ".normed").write_text("1", encoding="utf-8")
+        sys.stderr.write("Normalization Type: Linear\\n")
     sys.exit(0)
 
 out.write_bytes(bytes.fromhex({VALID_MP4_HEX!r}))
@@ -319,22 +345,28 @@ class MediaCliContractFreshnessTests(unittest.TestCase):
 
     def test_verifier_chain_and_deprecated_prefixes_match_byte_for_byte(self):
         self.assertEqual(video_gen.VERIFIER_MODEL_CHAIN, ("gemini-4-argon", "gemini-4-carbon"))
+        self.assertEqual(audio_gen.VERIFIER_MODEL_CHAIN, ("gemini-4-argon", "gemini-4-carbon"))
         self.assertTrue(all("gemini-3." not in m for m in video_gen.VERIFIER_MODEL_CHAIN))
         self.assertEqual(image_gen.VERIFIER_MODEL_CHAIN[:2], video_gen.VERIFIER_MODEL_CHAIN)
         self.assertEqual(image_gen.DEPRECATED_MODEL_PREFIXES, video_gen.DEPRECATED_MODEL_PREFIXES)
+        self.assertEqual(audio_gen.DEPRECATED_MODEL_PREFIXES, video_gen.DEPRECATED_MODEL_PREFIXES)
         self.assertEqual(image_gen.SECRET_PATTERNS, video_gen.SECRET_PATTERNS)
         self.assertIn("Credential key assignment", [lbl for lbl, _ in video_gen.SECRET_PATTERNS])
+        self.assertIn("Credential key assignment", [lbl for lbl, _ in audio_engines.SECRET_PATTERNS])
         self.assertIn("gemini-3.1-flash-image", image_gen.DEPRECATED_MODEL_PREFIXES)
         self.assertIn("veo-3.1", video_gen.DEPRECATED_MODEL_PREFIXES)
-        # Bare key= & JSON redaction parity across both modules
+        # Bare key= & JSON redaction parity across all three modules
         secret_sample = 'err key=MySuperSecretToken12345678 and key=char {"key": null, "api_key": "tok_secret_99"}'
         self.assertEqual(image_gen.redact_secrets(secret_sample), video_gen.redact_secrets(secret_sample))
         self.assertNotIn("MySuperSecretToken12345678", video_gen.redact_secrets(secret_sample))
-        self.assertNotIn("tok_secret_99", video_gen.redact_secrets(secret_sample))
-        self.assertIn("key=char", video_gen.redact_secrets(secret_sample))
+        self.assertNotIn("MySuperSecretToken12345678", audio_gen.redact_secrets(secret_sample))
+        self.assertNotIn("tok_secret_99", audio_gen.redact_secrets(secret_sample))
+        self.assertIn("key=char", audio_gen.redact_secrets(secret_sample))
+        num_json = json.dumps({"key": 12345678901234567890, "api_key": 42})
+        self.assertEqual(json.loads(audio_gen.redact_secrets(num_json)), json.loads(num_json))
 
     def test_both_clis_enforce_override_reason_on_allow_unverified(self):
-        for script in (IMAGE_GEN_SCRIPT, VIDEO_GEN_SCRIPT):
+        for script in (IMAGE_GEN_SCRIPT, VIDEO_GEN_SCRIPT, AUDIO_GEN_SCRIPT):
             proc = subprocess.run(
                 [sys.executable, str(script), "--prompt", "Draft test", "--allow-unverified"],
                 capture_output=True,
@@ -782,6 +814,57 @@ out.write_bytes(pathlib.Path({str(wav_fixture)!r}).read_bytes())
             rep["post_processing"]["caption_renderer"],
             "creative-stack:vidkit/captions.py:karaoke",
         )
+
+    def test_pr3_video_gen_full_mix_invokes_real_audio_gen_for_narration_and_bgm(self):
+        out_mp4 = self.root / "video_plus_real_audio_gen.mp4"
+        stub_env = dict(self.env)
+        stub_env["CREATIVE_STACK_FFMPEG"] = str(self.bin_dir / "ffmpeg")
+        stub_env["CREATIVE_STACK_FFPROBE"] = str(self.bin_dir / "ffprobe")
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(VIDEO_GEN_SCRIPT),
+                "--prompt",
+                "Walkthrough of active-active cloud failover",
+                "--duration",
+                "8",
+                "--audio-mode",
+                "full-mix",
+                "--narration-text",
+                "Traffic shifts seamlessly to the secondary region.",
+                "--voice-name",
+                "Kore",
+                "--bgm-prompt",
+                "Warm minimal electronic pulse",
+                "--creative-stack",
+                "off",
+                "--raw-prompt",
+                "--output",
+                str(out_mp4),
+            ],
+            capture_output=True,
+            text=True,
+            env=stub_env,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(out_mp4.read_bytes(), bytes.fromhex(VALID_MP4_HEX))
+
+        rep = json.loads(Path(f"{out_mp4}.report.json").read_text(encoding="utf-8"))
+        self.assertEqual(rep["status"], "VERIFIED")
+        self.assertEqual(rep["post_processing"]["audio_renderer"], "ffmpeg:standalone_2pass_loudnorm")
+
+        calls = self._read_calls()
+        tts_calls = [c["argv"] for c in calls if c["bin"] == "gemini-api" and c["argv"][0] == "tts"]
+        music_calls = [c["argv"] for c in calls if c["bin"] == "gemini-api" and c["argv"][0] == "music"]
+        judge_calls = [c["argv"] for c in calls if c["bin"] == "gemini-api" and c["argv"][0] == "generate"]
+        ff_calls = [" ".join(c["argv"]) for c in calls if c["bin"] == "ffmpeg"]
+
+        self.assertEqual(len(tts_calls), 1, f"expected 1 real audio_gen TTS call, got {tts_calls}")
+        self.assertEqual(len(music_calls), 1, f"expected 1 real audio_gen Lyria call, got {music_calls}")
+        self.assertGreaterEqual(len(judge_calls), 3)
+        self.assertTrue(any("amix=inputs=2:duration=longest:normalize=0" in c for c in ff_calls))
+        self.assertTrue(any("linear=true" in c and "-ar 48000" in c for c in ff_calls))
 
 
 if __name__ == "__main__":

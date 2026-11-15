@@ -672,6 +672,8 @@ class LegacyModelAndSkillReferenceCleanupTests(unittest.TestCase):
             self.assertIn("skills/video-gen/SKILL.md", atelier)
         else:
             self.assertIsNone(re.search(r"video[-_]gen", catalog, re.IGNORECASE))
+        if (REPO_ROOT / "skills" / "audio-gen" / "SKILL.md").is_file():
+            self.assertIn("`audio-gen`", catalog)
 
         for seam in (
             "FORGE_GEMINI_API_INSTALL_CMD",

@@ -1,0 +1,21 @@
+[Parsed_ebur128_0 @ 0x100] Summary:
+  Integrated loudness:
+    I:         -14.0 LUFS
+    Threshold: -24.2 LUFS
+  Loudness range:
+    LRA:         5.4 LU
+  True peak:
+    Peak:       -1.1 dBFS
+[Parsed_loudnorm_0 @ 0x101]
+{
+  "input_i" : "-14.02",
+  "input_tp" : "-1.15",
+  "input_lra" : "5.40",
+  "input_thresh" : "-24.20",
+  "output_i" : "-14.00",
+  "output_tp" : "-1.10",
+  "output_lra" : "5.40",
+  "output_thresh" : "-24.18",
+  "normalization_type" : "linear",
+  "target_offset" : "-0.02"
+}

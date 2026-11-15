@@ -1,0 +1,24 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Heard warm Rhodes seventh chords and steady upright bass groove around 84 BPM.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Full 15-second duration is purely instrumental with zero vocal or spoken elements.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Clean stereo image with smooth dynamics and no clipping or static.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_prompt": ""
+}

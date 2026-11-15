@@ -101,7 +101,7 @@ Developer Mode or an elevated shell; the script warns if you have neither, and
 Install only the specific clusters you need across all AI developer tools (`~/.gemini`, `~/.agents`, `~/.claude`, etc.):
 
 ```bash
-# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, cognitive-profiler, image-gen, video-gen, atelier)
+# Install ONLY Content, Creative & Authoring skills (codelab, human-voice, voice-register, cognitive-profiler, image-gen, video-gen, audio-gen, atelier)
 # Prunes unselected skills like plan, spec, test, etc.
 bash scripts/install.sh --content --prune
 
@@ -173,6 +173,7 @@ The Core Action Skills cover the complete end-to-end engineering lifecycle and a
 | **[`cognitive-profiler`](./skills/cognitive-profiler)** | `/cognitive-profiler`, `/profile-me` | User Slash | **Agent Communication Profiler**: Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`. |
 | **[`image-gen`](./skills/image-gen)** | `/image-gen` | Auto / Slash | **Closed-Loop Visual & Sequential Asset Generator**: Generates and verifies diagrams, infographics, multi-panel comic grids, character sheets, and `keyframes_manifest.json` timelines via `gemini-api` (`gemini-nano-banana-2.1` / `gemini-3-pro-image`) with binary header checks and blinded `gemini-4-argon` rubric grading. |
 | **[`video-gen`](./skills/video-gen)** | `/video-gen` | Auto / Slash | **Grounded Long-Form Video & Post-Production Director**: Generates, chains arbitrary-length timelines (`3s..3600s+`), scores/ducks/masters broadcast `-14 LUFS` audio, composites OCR-verified scene text, captions, and motion cards, and integrates `creative-stack` `/vidkit` & `/sound` via `gemini-api` (`gemini-omni-1.2-flash`) + `ffmpeg`. |
+| **[`audio-gen`](./skills/audio-gen)** | `/audio-gen`, `/music-gen`, `/sfx-gen`, `/tts-gen` | Auto / Slash | **Grounded Music, Voice, Foley & Broadcast Mastering Engine**: Generates and verifies BGMs/songs (`lyria-3.5`), Gemini 3.8 TTS narration/dialogue (`speech_metadata`, Chunk-1 pinning), `/v1beta/voices` design & consent-gated replication, Cloud TTS `Chirp 3: HD`, `gemini-omni-1.2-flash` foley/stingers, and 2-pass `-14 LUFS` ducked mixes with `creative-stack` `/sound`. |
 | **[`atelier`](./skills/atelier)** | (auto on reports/briefs) | Auto / Slash | **Distinctive Human-Grade Output**: Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and liberal use of diagrams and images. Avoids generic AI aesthetics. |
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
@@ -321,6 +322,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
 | **`image-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib closed-loop diagram, illustration, comic-grid, and sequential keyframe generator with binary header and blinded multimodal rubric gates. |
 | **`video-gen`** | **Google DeepMind** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib arbitrary-length Omni 1.2 Flash video director, boundary keyframe chainer, caption/card compositor, and 2-pass `-14 LUFS` audio mixer with `creative-stack` integration. |
+| **`audio-gen`** | **Google DeepMind & Cloud TTS** | [`gemini-api` CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib Lyria 3.5 music/song engine, Gemini 3.8 TTS & `/v1beta/voices` custom voice engine, Cloud TTS `Chirp 3: HD`, foley/stinger synthesis, and 2-pass `-14 LUFS` broadcast stem mixer. |
 | **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. |
 
 ---
