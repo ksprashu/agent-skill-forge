@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "mode": "diagram",
+  "raw_prompt": "Clean vector architecture diagram with label \"API Gateway\" connecting to \"Auth Service\"",
+  "compiled_prompt": "Clean vector architecture diagram with label \"API Gateway\" connecting to \"Auth Service\". Crisp vector/orthographic hierarchy, legible typography, high-contrast connectors, zero garbled pseudo-labels.",
+  "style": "clean dark-mode vector",
+  "aspect_ratio": "16:9",
+  "image_size": "1K",
+  "explicit_constraints": {
+    "aspect_ratio": "16:9",
+    "image_size": "1K",
+    "quoted_literals": [
+      "API Gateway",
+      "Auth Service"
+    ],
+    "reference_count": 0,
+    "references": []
+  },
+  "implicit_constraints": [
+    "Crisp vector/orthographic hierarchy with clear directional connectors",
+    "Zero garbled pseudo-labels or illegible micro-text",
+    "High-contrast foreground elements separated cleanly from background"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "category": "subject",
+      "requirement": "Depicts clean vector architecture diagram connecting \"API Gateway\" to \"Auth Service\".",
+      "mandatory": true
+    },
+    {
+      "id": "AC-2",
+      "category": "style",
+      "requirement": "Follows clean dark-mode vector art direction with high-contrast connectors.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-3",
+      "category": "text",
+      "requirement": "Renders exact text literals \"API Gateway\" and \"Auth Service\" legibly without typos.",
+      "mandatory": true
+    },
+    {
+      "id": "AC-4",
+      "category": "craft",
+      "requirement": "Maintains orthographic diagram hierarchy with zero garbled pseudo-labels.",
+      "mandatory": true
+    }
+  ]
+}

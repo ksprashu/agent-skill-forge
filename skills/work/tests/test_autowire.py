@@ -334,6 +334,39 @@ class TestMatching(unittest.TestCase):
         labels = [m.domain.label for m in autowire.match_domains("expose /api/health!")]
         self.assertIn("Observability & Logging", labels)
 
+    def test_docker_image_task_does_not_trigger_visual_media_skill(self):
+        # REV-005: bare 'image' false-matched container tasks; explicit phrases avoid it.
+        labels = [m.domain.label for m in autowire.match_domains("Fix the Docker image build and push to registry")]
+        self.assertNotIn("Visual Media, Diagrams & Comics", labels)
+        media_labels = [m.domain.label for m in autowire.match_domains("Generate image diagram for architecture")]
+        self.assertIn("Visual Media, Diagrams & Comics", media_labels)
+
+    def test_generic_video_or_frame_tasks_do_not_trigger_video_skill(self):
+        for non_video_task in (
+            "Update video conferencing URL",
+            "Fix frame buffer alignment bug",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(non_video_task)]
+            self.assertNotIn("Video Production & Post-Processing", labels)
+        video_labels = [
+            m.domain.label
+            for m in autowire.match_domains("Use video-gen for video generation with video captions")
+        ]
+        self.assertIn("Video Production & Post-Processing", video_labels)
+
+    def test_generic_sound_or_voice_tasks_do_not_trigger_audio_skill(self):
+        for non_audio_task in (
+            "Check kernel sound driver regression",
+            "Update user voice settings URL",
+        ):
+            labels = [m.domain.label for m in autowire.match_domains(non_audio_task)]
+            self.assertNotIn("Audio, Music, Voice & SFX Synthesis", labels)
+        audio_labels = [
+            m.domain.label
+            for m in autowire.match_domains("Use audio-gen for background music and voiceover synthesis")
+        ]
+        self.assertIn("Audio, Music, Voice & SFX Synthesis", audio_labels)
+
 
 class TestResolution(unittest.TestCase):
     def test_resolution_attaches_the_discovered_entry(self):

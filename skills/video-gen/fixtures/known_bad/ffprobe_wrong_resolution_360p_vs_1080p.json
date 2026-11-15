@@ -1,0 +1,28 @@
+{
+  "streams": [
+    {
+      "index": 0,
+      "codec_name": "h264",
+      "codec_type": "video",
+      "width": 640,
+      "height": 360,
+      "r_frame_rate": "24/1",
+      "duration": "10.000000"
+    },
+    {
+      "index": 1,
+      "codec_name": "aac",
+      "codec_type": "audio",
+      "sample_rate": "48000",
+      "channels": 2,
+      "duration": "10.000000"
+    }
+  ],
+  "format": {
+    "filename": "candidate_low_res.mp4",
+    "nb_streams": 2,
+    "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+    "duration": "10.000000",
+    "size": "980120"
+  }
+}

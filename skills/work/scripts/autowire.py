@@ -252,6 +252,38 @@ DOMAIN_MATRIX: Tuple[Domain, ...] = (
             "field guide", "storybook", "interactive storybook",
         ),
     ),
+    Domain(
+        label="Visual Media, Diagrams & Comics",
+        skills=("skills/image-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Frozen specs, binary header checks, blinded rubric verification, sequential anchor lock.",
+        triggers=(
+            "generate image", "image generation", "image-gen", "hero image",
+            "diagram", "infographic", "comic", "storyboard",
+            "keyframe", "illustration", "banner",
+        ),
+    ),
+    Domain(
+        label="Video Production & Post-Processing",
+        skills=("skills/video-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Timeline plans, anchored keyframe chaining, 2-pass loudnorm audio mixing, captions/motion cards, ffprobe and Argon verification.",
+        triggers=(
+            "generate video", "video generation", "video-gen", "omni-video",
+            "video timeline", "video captions", "lower third",
+        ),
+    ),
+    Domain(
+        label="Audio, Music, Voice & SFX Synthesis",
+        skills=("skills/audio-gen",),
+        roles=("Explorer", "Worker"),
+        instructions="Frozen audio specs, WAV/PCM and -14 LUFS 2-pass mastering, speech_metadata separation, consent-gated voice replication, Argon rubric verification.",
+        triggers=(
+            "generate audio", "audio generation", "audio-gen", "music-gen", "sfx-gen", "tts-gen",
+            "background music", "voiceover", "voice design", "voice replication",
+            "sound effect", "lyria", "chirp3", "loudnorm",
+        ),
+    ),
 )
 
 

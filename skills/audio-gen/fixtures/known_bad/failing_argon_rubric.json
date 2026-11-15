@@ -1,0 +1,24 @@
+{
+  "overall_pass": false,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Warm Rhodes chords at ~84 BPM.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Audible vocal humming enters at 0:06 despite instrumental BGM constraint.",
+      "fix_instruction": "Remove all vocal humming and choir pads; keep strictly Rhodes piano and upright bass."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Clean fidelity.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_prompt": "Warm lofi instrumental with Rhodes electric piano and upright bass only, strictly zero vocal humming or singing."
+}

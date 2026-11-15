@@ -1,0 +1,32 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Central API Gateway box connects via directional arrow to Auth Service block.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": true,
+      "observed_evidence": "Dark slate background with crisp cyan and white vector strokes.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Both 'API Gateway' and 'Auth Service' labels are sharp and spelled accurately.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Orthographic boxes and connectors have no garbled filler text.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "",
+  "regenerated_prompt": ""
+}

@@ -74,14 +74,12 @@ When dispatching worker subagents in python or agent code:
 
 ```python
 invoke_subagent(
-    Subagents=[{
-        "Model": "flash",
-        "Role": "Sentry-Gatekeeper",
-        "TypeName": "self",
-        "Prompt": """You are operating in the 'Sentry-Gatekeeper' persona role under EGA Task Node node_03.
+    Model="inherit",
+    Role="Sentry-Gatekeeper",
+    TypeName="self",
+    Prompt="""You are operating in the 'Sentry-Gatekeeper' persona role under EGA Task Node node_03.
 Mandate: Approach the deliverable with pure adversarial skepticism. Write unit tests for expired tokens, signature tampering, and privilege escalation.
-Task Directive: .gemini/harness/EGA-89A1/tasks/task_03_spec.md"""
-    }]
+Task Directive: .gemini/harness/EGA-89A1/tasks/task_03_spec.md""",
 )
 ```
 

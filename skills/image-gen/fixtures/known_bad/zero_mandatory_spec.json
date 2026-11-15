@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "mode": "diagram",
+  "raw_prompt": "Architecture diagram with zero mandatory criteria",
+  "compiled_prompt": "Architecture diagram with zero mandatory criteria.",
+  "style": "dark-mode vector",
+  "aspect_ratio": "16:9",
+  "image_size": "1K",
+  "explicit_constraints": {
+    "aspect_ratio": "16:9",
+    "image_size": "1K",
+    "quoted_literals": [],
+    "references": []
+  },
+  "implicit_constraints": [],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "category": "craft",
+      "requirement": "Optional aesthetic preference only",
+      "mandatory": false
+    }
+  ]
+}

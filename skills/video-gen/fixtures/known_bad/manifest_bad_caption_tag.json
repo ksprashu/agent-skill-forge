@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "mode": "timeline",
+  "aspect_ratio": "16:9",
+  "frames": [
+    {
+      "index": 1,
+      "path": "valid_frame.png",
+      "prompt": "Clean dolly shot across workshop",
+      "caption": "Use <FIRST_FRAME> legacy XML tag here",
+      "duration_s": 5
+    }
+  ]
+}

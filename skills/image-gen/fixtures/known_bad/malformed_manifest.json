@@ -1,0 +1,10 @@
+{
+  "mode": "timeline",
+  "aspect_ratio": "16:9",
+  "frames": [
+    {
+      "caption": "Missing prompt field and bad duration",
+      "duration_s": "not-an-int"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "overall_pass": true,
+  "criteria_results": [
+    {
+      "id": "AC-1",
+      "passed": true,
+      "observed_evidence": "Architecture boxes are shown.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-2",
+      "passed": false,
+      "observed_evidence": "Background is bright yellow watercolor instead of dark-mode vector.",
+      "fix_instruction": "Switch background to dark slate vector aesthetic."
+    },
+    {
+      "id": "AC-3",
+      "passed": true,
+      "observed_evidence": "Labels 'API Gateway' and 'Auth Service' are readable.",
+      "fix_instruction": ""
+    },
+    {
+      "id": "AC-4",
+      "passed": true,
+      "observed_evidence": "Connectors are clean.",
+      "fix_instruction": ""
+    }
+  ],
+  "remediation_mode": "edit_turn",
+  "edit_delta_prompt": "Switch background to dark slate vector aesthetic.",
+  "regenerated_prompt": ""
+}

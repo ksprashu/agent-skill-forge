@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "mode": "timeline",
+  "style": "cinematic storyboard",
+  "aspect_ratio": "16:9",
+  "anchor_image": "frames/anchor.png",
+  "frames": [
+    {
+      "index": 1,
+      "path": "frames/frame_01.png",
+      "response_id": "v1_frame01",
+      "prompt": "Wide establishing shot of an alpine research station at dawn",
+      "caption": "Step 1: Dawn arrival",
+      "duration_s": 6
+    },
+    {
+      "index": 2,
+      "path": "frames/frame_02.png",
+      "response_id": "v1_frame02",
+      "prompt": "Medium shot of solar array unfolding across the snowy ridge",
+      "caption": "Step 2: Array deployment",
+      "duration_s": 6
+    },
+    {
+      "index": 3,
+      "path": "frames/frame_03.png",
+      "response_id": "v1_frame03",
+      "prompt": "Close-up of telemetry console lighting up green inside the dome",
+      "caption": "Step 3: Online telemetry",
+      "duration_s": 5
+    }
+  ]
+}
