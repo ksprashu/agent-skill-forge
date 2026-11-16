@@ -37,3 +37,6 @@ skills/*/.gemini/
 skills/*/**/.gemini/
 preferred/*/.gemini/
 .antigravitycli/
+
+# Session-distilled memory store (auto-appended by continuous-alignment Stop hook)
+.gemini/knowledge/memories.jsonl
