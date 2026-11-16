@@ -675,10 +675,10 @@ class TestMechanicalProbesAndHttpServer(unittest.TestCase):
 
             # file_anchor repo + global_config + missing.
             target = root / "config.md"
-            target.write_text("pin=gemini-launch-candidate-high\n", encoding="utf-8")
+            target.write_text("pin=gemini-4-argon-high\n", encoding="utf-8")
             fa_found, fa_ni = horizon_probes.run_probe(
                 "item-fa",
-                {"kind": "file_anchor", "scope": "repo", "path": "config.md", "anchor_literal": "gemini-launch-candidate-high"},
+                {"kind": "file_anchor", "scope": "repo", "path": "config.md", "anchor_literal": "gemini-4-argon-high"},
                 repo_root=root,
                 allow_roots=[root],
             )
