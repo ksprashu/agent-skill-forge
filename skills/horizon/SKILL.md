@@ -5,9 +5,14 @@ description: Track 6-12 month technical and AI forecasts in a central machine-wi
 
 # Horizon Sentinel (`/horizon`, `/radar`, `/tech-horizon`)
 
-Manage 6-12 month technical and AI forecasts as verifiable ledger entries via `<skill-dir>/scripts/horizon.py` (100% Python 3.12 stdlib).
+Manage 6-12 month technical and AI forecasts as verifiable ledger entries via the `horizon` MCP server (`horizon_record`, `horizon_list`, `horizon_collect_evidence`, `horizon_validate_verdict`, `horizon_backup_target`, `horizon_record_action`, `horizon_render_index`, `horizon_doctor`) or `<skill-dir>/scripts/horizon.py` (100% Python 3.12 stdlib, serialized across concurrent processes and conversations via `fcntl.flock`).
 
 **Central ledger resolution:** `--ledger-dir` -> `$FORGE_HORIZONS_DIR` -> `~/.gemini/horizons` (created `0o700`, files `0o600`).
+
+## Runtime Selection (Cross-Conversation & Sandbox Safety)
+
+1. **MCP tools connected (`horizon` server — preferred in sandboxed conversations & swarms):** Call `horizon_doctor`, `horizon_list`, `horizon_record`, `horizon_collect_evidence`, `horizon_validate_verdict`, `horizon_backup_target`, `horizon_record_action`, or `horizon_render_index` directly (or via `call_mcp_tool` when lazy-loaded). Because the host Language Server spawns `python3 <skill-dir>/scripts/horizon.py mcp` outside per-workspace terminal sandboxes, `~/.gemini/horizons/` is writable from every conversation, subagent, and swarm worker without workspace path blocks.
+2. **CLI (`horizon` on `PATH` or `python3 <skill-dir>/scripts/horizon.py`):** Use directly from shells, `cron` / `launchd` jobs, or non-MCP sessions. Inside a workspace-sandboxed shell tool where `~/.gemini/horizons/` sits outside the active repository, if a mutating `record`, `collect-evidence`, `backup-target`, `record-action`, or `render-index` call fails with `PermissionError`, re-run that single `horizon` command outside the workspace sandbox (`BypassSandbox: true`).
 
 ---
 

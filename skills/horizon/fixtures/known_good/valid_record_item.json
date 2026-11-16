@@ -3,7 +3,7 @@
   "title": "Monitor gemini-4-argon pricing and routing table drop",
   "category": "model-pricing",
   "window": "2026-Q4..2027-Q2",
-  "baseline_measurement": "gemini-launch-candidate-high serves as argon preview tier",
+  "baseline_measurement": "gemini-4-argon-high serves as the Argon preview tier",
   "forecast": "Model catalogue promotes gemini-4-argon to stable GA ID within 6-12 months, enabling swarm-models.md simplification.",
   "playbook": "Update ~/.gemini/config/rules/swarm-models.md after creating a SHA-256 backup via horizon.py backup-target.",
   "source": "architecture-review",
@@ -28,7 +28,7 @@
       "kind": "file_anchor",
       "scope": "global_config",
       "path": "~/.gemini/config/rules/swarm-models.md",
-      "anchor_literal": "gemini-launch-candidate-high"
+      "anchor_literal": "gemini-4-argon-high"
     },
     {
       "kind": "agent_query",

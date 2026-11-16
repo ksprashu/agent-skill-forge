@@ -161,7 +161,9 @@ def ensure_secure_dir(path: Path) -> Path:
     """Create directory if missing and enforce ``0o700`` permissions on POSIX."""
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
     if os.name == "posix":
-        os.chmod(path, 0o700)
+        current_mode = stat.S_IMODE(path.lstat().st_mode)
+        if current_mode != 0o700:
+            os.chmod(path, 0o700)
     return path
 
 
@@ -175,10 +177,10 @@ def atomic_write_bytes(path: Path, data: bytes, *, mode: int = 0o600) -> None:
             handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
-        if os.name == "posix":
+        if os.name == "posix" and stat.S_IMODE(tmp_path.lstat().st_mode) != mode:
             os.chmod(tmp_path, mode)
         os.replace(tmp_path, path)
-        if os.name == "posix":
+        if os.name == "posix" and stat.S_IMODE(path.lstat().st_mode) != mode:
             os.chmod(path, mode)
     except Exception:
         if tmp_path.exists():
@@ -198,8 +200,11 @@ def ledger_lock(ledger_dir: Path) -> Iterator[None]:
     lock_path = ledger_dir / ".ledger.lock"
     flags = os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
     fd = os.open(lock_path, flags, 0o600)
-    if os.name == "posix":
-        os.chmod(lock_path, 0o600)
+    if os.name == "posix" and stat.S_IMODE(os.fstat(fd).st_mode) != 0o600:
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
+        else:
+            os.chmod(lock_path, 0o600)
     try:
         if fcntl is not None:
             fcntl.flock(fd, fcntl.LOCK_EX)
@@ -1384,6 +1389,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Exit 1 if INDEX.md is missing or out of date vs ledger.jsonl.",
     )
+
+    subparsers.add_parser(
+        "mcp",
+        parents=[shared_ledger],
+        help="Run stdio Model Context Protocol (MCP) server for cross-conversation ledger access.",
+    )
     return parser
 
 
@@ -1549,6 +1560,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             rc, info = cmd_render_index(ledger_dir, check=args.check)
             print(json.dumps(info, indent=2))
             return rc
+
+        if args.subcommand == "mcp":
+            import horizon_mcp  # noqa: PLC0415
+
+            return horizon_mcp.serve_stdio(ledger_dir)
 
         raise CliUsageError(f"Unknown subcommand: {args.subcommand}")
     except CliUsageError as exc:

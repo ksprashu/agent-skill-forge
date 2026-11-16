@@ -675,10 +675,10 @@ class TestMechanicalProbesAndHttpServer(unittest.TestCase):
 
             # file_anchor repo + global_config + missing.
             target = root / "config.md"
-            target.write_text("pin=gemini-launch-candidate-high\n", encoding="utf-8")
+            target.write_text("pin=gemini-4-argon-high\n", encoding="utf-8")
             fa_found, fa_ni = horizon_probes.run_probe(
                 "item-fa",
-                {"kind": "file_anchor", "scope": "repo", "path": "config.md", "anchor_literal": "gemini-launch-candidate-high"},
+                {"kind": "file_anchor", "scope": "repo", "path": "config.md", "anchor_literal": "gemini-4-argon-high"},
                 repo_root=root,
                 allow_roots=[root],
             )
@@ -1394,7 +1394,7 @@ class TestDifferentiationFreshnessAndContracts(unittest.TestCase):
 
         # S6: Every documented subcommand and --flag in SKILL.md and references/*.md must exist in --help.
         help_texts = [_run_horizon("--help").stdout]
-        subcommands = ("record", "list", "collect-evidence", "validate-verdict", "backup-target", "record-action", "render-index")
+        subcommands = ("record", "list", "collect-evidence", "validate-verdict", "backup-target", "record-action", "render-index", "mcp")
         for sub in subcommands:
             res = _run_horizon(sub, "--help")
             self.assertEqual(res.returncode, 0, res.stderr)

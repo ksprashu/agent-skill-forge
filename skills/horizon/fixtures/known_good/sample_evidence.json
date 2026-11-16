@@ -43,7 +43,7 @@
           "path": "~/.gemini/config/rules/swarm-models.md",
           "exists": true,
           "file_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-          "anchor_literal": "gemini-launch-candidate-high",
+          "anchor_literal": "gemini-4-argon-high",
           "anchor_found": true,
           "changed_vs_baseline": false,
           "error": null
