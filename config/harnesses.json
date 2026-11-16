@@ -67,6 +67,7 @@
     "spec": "spec-authoring",
     "prompt": "intent-engineering",
     "work": "swarm-execution",
+    "h2o": "swarm-execution",
     "test": "tdd",
     "review": "code-review",
     "verify": "verification-rubrics",

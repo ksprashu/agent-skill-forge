@@ -263,7 +263,7 @@
 <h3 id="core-clusters-18-action-skills" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">📦 Core Clusters (18 Action Skills)</h3>
 <p class="mb-4 text-[var(--text-secondary)]">Available globally or installable in focused sections:</p>
 <ul class="list-disc pl-5 my-3 space-y-1">
-<li>  <strong>Cluster C1: Planning & Specification (<code class="inline-code">plan-spec</code>)</strong>: <code class="inline-code">spec</code>, <code class="inline-code">plan</code>, <code class="inline-code">grill</code>, <code class="inline-code">prompt</code></li>
+<li>  <strong>Cluster C1: Planning & Specification (<code class="inline-code">plan-spec</code>)</strong>: <code class="inline-code">spec</code>, <code class="inline-code">plan</code>, <code class="inline-code">grill</code>, <code class="inline-code">prompt</code>, <code class="inline-code">h2o</code></li>
 <li>  <strong>Cluster C2: Quality & Verification (<code class="inline-code">test-review</code>)</strong>: <code class="inline-code">test</code>, <code class="inline-code">verify</code>, <code class="inline-code">review</code>, <code class="inline-code">unslop</code></li>
 <li>  <strong>Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</strong>: <code class="inline-code">codelab</code>, <code class="inline-code">human-voice</code>, <code class="inline-code">copy-write</code>, <code class="inline-code">image-gen</code></li>
 <li>  <strong>Cluster C4: Knowledge & Governance (<code class="inline-code">docs-governance</code>)</strong>: <code class="inline-code">docs</code>, <code class="inline-code">catalog</code>, <code class="inline-code">google-oss</code>, <code class="inline-code">continuous-alignment</code>, <code class="inline-code">sync</code></li>
@@ -382,6 +382,7 @@ bash scripts/install.sh --all
 <li>  <strong><code class="inline-code">/plan</code></strong> (<code class="inline-code">skills/plan</code>): Slices specifications into vertically testable task units with dependency DAG checkpoints.</li>
 <li>  <strong><code class="inline-code">/grill</code></strong> (<code class="inline-code">skills/grill</code>): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing until all ambiguities are resolved.</li>
 <li>  <strong><code class="inline-code">/prompt</code></strong> (<code class="inline-code">skills/prompt</code>): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (<code class="inline-code">task_graph.json</code>).</li>
+<li>  <strong><code class="inline-code">/h2o</code></strong> (<code class="inline-code">skills/h2o</code>): Runs a lean sequential swarm. The coordinator grills you to &gt;= 90% confidence and freezes binary done criteria, then one Hydrogen planner and one Hydrogen implementer work against Opus adversarial gates (plan, functional, code, security). Each gate allows 3 NOT GOOD verdicts before asking you to stop or continue. Use <code class="inline-code">/work</code> instead for the heavyweight parallel DAG swarm with design tournaments.</li>
 </ul>
 <h3 id="cluster-c2-quality-verification---inline-code-48" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧪 Cluster C2: Quality & Verification (<code class="inline-code">test-review</code>)</h3>
 <ul class="list-disc pl-5 my-3 space-y-1">
@@ -636,6 +637,10 @@ npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
 <td>Invoke <code class="inline-code">/plan</code></td>
 </tr>
 <tr>
+<td>Running a gated plan-build-review loop with cross-family adversarial reviewers</td>
+<td>Invoke <code class="inline-code">/h2o</code> (lean, sequential); use <code class="inline-code">/work</code> for a parallel DAG swarm</td>
+</tr>
+<tr>
 <td>Writing code or fixing a bug</td>
 <td>Invoke <code class="inline-code">/test</code> (Prove-It TDD loop)</td>
 </tr>
@@ -718,7 +723,7 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 
 ### 📦 Core Clusters (18 Action Skills)
 Available globally or installable in focused sections:
-*   **Cluster C1: Planning &amp; Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
+*   **Cluster C1: Planning &amp; Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`, `h2o`
 *   **Cluster C2: Quality &amp; Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
 *   **Cluster C3: Content, Creative &amp; Authoring (`content-creative`)**: `codelab`, `human-voice`, `copy-write`, `image-gen`
 *   **Cluster C4: Knowledge &amp; Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `sync`
@@ -810,6 +815,7 @@ bash scripts/install.sh --all
 *   **`/plan`** (`skills/plan`): Slices specifications into vertically testable task units with dependency DAG checkpoints.
 *   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing until all ambiguities are resolved.
 *   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`).
+*   **`/h2o`** (`skills/h2o`): Runs a lean sequential swarm. The coordinator grills you to &gt;= 90% confidence and freezes binary done criteria, then one Hydrogen planner and one Hydrogen implementer work against Opus adversarial gates (plan, functional, code, security). Each gate allows 3 NOT GOOD verdicts before asking you to stop or continue. Use `/work` instead for the heavyweight parallel DAG swarm with design tournaments.
 
 ### 🧪 Cluster C2: Quality &amp; Verification (`test-review`)
 *   **`/test`** (`skills/test`): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.
@@ -949,6 +955,7 @@ npx skills add ksprashu/agent-skill-forge --skill &lt;skill-name&gt;
 | Unclear requirements, design trade-offs, or multiple choices | Invoke `/grill` |
 | Defining new API interfaces, endpoints, or data models | Invoke `/spec` &amp; `api-and-interface-design` |
 | Creating a multi-step refactoring or implementation roadmap | Invoke `/plan` |
+| Running a gated plan-build-review loop with cross-family adversarial reviewers | Invoke `/h2o` (lean, sequential); use `/work` for a parallel DAG swarm |
 | Writing code or fixing a bug | Invoke `/test` (Prove-It TDD loop) |
 | Cleaning verbose code, repetitive wrappers, or AI filler | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` &amp; `/review` |

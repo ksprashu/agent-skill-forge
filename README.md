@@ -140,13 +140,14 @@ python3 scripts/sync_skills.py --list-clusters
 The Core Action Skills cover the complete end-to-end engineering lifecycle and are organized into 4 functional clusters:
 
 ### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
-*Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.*
+*Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms (the parallel `/work` engine and the gated `/h2o` plan-build-review loop).*
 
 | Skill | Triggers | Execution Mode | What It Does & How It Helps |
 | :--- | :--- | :--- | :--- |
 | **[`spec`](./skills/spec)** | `/spec` | Autonomous | **Grounded Specifications**: Writes specifications with official documentation citations, interface contracts, and explicit non-goals before coding. Prevents API hallucinations and scope creep. |
 | **[`plan`](./skills/plan)** | `/plan` | Autonomous | **Task Slicing & Dependency DAGs**: Slices complex features or refactors into small, vertically testable tasks with verifiable checkpoints. Ensures incremental progress and rollback points. |
 | **[`work`](./skills/work)** | `/work` | User Slash | **Autonomous Multi-Agent Swarm Engine**: Coordinates parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. Six scaffold topologies, a DAG whose gates are settled by a script rather than by the agent's own say-so, and a forensic auditor calibrated against a known-fake corpus. |
+| **[`h2o`](./skills/h2o)** | `/h2o` | Autonomous | **H2O Loop Swarm (Hydrogen writes, Opus attacks)**: Grills the prompt to >= 90% confidence, freezes binary done criteria, then runs a Hydrogen planner and implementer against Opus adversarial reviewers (plan, functional and code at `medium`, deep security at `high`). Each gate allows 3 NOT GOOD verdicts before asking you to stop or continue. |
 | **[`grill`](./skills/grill)** | `/grill` | User Slash | **Socratic Requirements Interview**: 1-question Socratic interview with attached technical hypotheses to clarify requirements and tradeoffs until 95% confident. Eliminates hidden assumptions. |
 | **[`prompt`](./skills/prompt)** | `/prompt` | User Slash | **Meta-Task & Intent Engineering**: Decomposes complex tasks, vague ideas, or multi-step goals into intent directives, model tier selection, and DAG task graphs (`task_graph.json`). |
 
@@ -312,6 +313,7 @@ We gratefully acknowledge the creators, open-source contributors, and engineerin
 | **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
 | **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | Code review framework; extended in the forge to eight axes plus grounded style, executed linters and machine-readable findings. |
 | **`work`** | **Google DeepMind Antigravity Team** | Google Antigravity Teamwork Architecture | Fully open, decoupled multi-agent swarm with Sentinel, Dispatch-Only Orchestrator, Explorers, Competitive Workers, Adversarial Quartet, and Victory Auditor. |
+| **`h2o`** | **Prashanth Subrahmanyam** (sibling to `work`) | [`agent-skill-forge/skills/h2o`](https://github.com/ksprashu/agent-skill-forge) | Lean sequential swarm: Hydrogen planner and implementer, Opus adversarial gates, frozen done criteria, and a stdlib gate script (`h2o_gate.py`) capping each gate at 3 NOT GOOD verdicts. |
 | **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
 | **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Autonomous alignment, 200-line AGENTS.md budget engine, and living ADR compiler. |

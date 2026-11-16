@@ -26,6 +26,7 @@
 - **Skill Format Invariant**: Skills follow the `npx skills` format: `skills/<name>/SKILL.md` with `name` (matching the folder) and `description` frontmatter, optional `license` and `metadata.*`, and no harness-specific keys. A skill must work from its own folder after `npx skills add`; call bundled scripts as `<skill-dir>/scripts/...`, never by repo-relative path.
 - Never commit unencrypted API keys or passwords.
 - **Work Slash Command Invariant (`/work`)**: When `/work` is triggered, the primary chat agent operates strictly as the Work Sentinel. It is STRICTLY FORBIDDEN from writing functional code or executing fixes directly on the primary thread. It MUST scaffold `.agents/` and delegate execution to subagents using the harness's subagent tool.
+- **H2O Invariant (`/h2o`)**: Authors (planner, implementer) run on Hydrogen and every reviewer on Opus; never review work with its own model family. `skills/h2o/swarm.config.json` is the source of truth for roles, models and loop limits, and `skills/h2o/tests/test_h2o_config.py` fails if `SKILL.md`, `README.md` or `references/models.md` drift from it.
 - **Reserved Namespace Invariant**: Never name skills or aliases after Antigravity native slash commands (`grill-me`, `teamwork-preview`, `voice`, `goal`, `boost`, etc.) or built-in skills (`agy-customizations`, `antigravity_guide`, `generative_ui`, `migrate-workflows`, `permissioned-github`). Higher-priority forge links mask native Antigravity system features.
 
 ---

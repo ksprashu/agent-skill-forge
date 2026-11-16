@@ -24,6 +24,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C1** | **`spec`** | `/spec`, auto on new features | Autonomous | Writes structured, doc-cited specifications with explicit non-goals before executing code. |
 | **C1** | **`plan`** | `/plan`, `/planning` | Autonomous | Slices complex features, refactors, or projects into small, vertically sliced tasks with verifiable checkpoints. |
 | **C1** | **`work`** | `/work` | User Slash | Coordinates autonomous parallel swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. |
+| **C1** | **`h2o`** | `/h2o` | Autonomous | Lean sequential swarm: grills to >= 90% confidence, freezes binary done criteria, then runs a Hydrogen planner and implementer against Opus adversarial gates (plan, functional, code, security), each capped at 3 NOT GOOD verdicts before the user decides. |
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
 *Enforces TDD, static verifiers, blinded judge rubrics, architectural reviews, and slop elimination.*
@@ -125,6 +126,7 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **`audio-gen`** | **Google DeepMind & Cloud TTS** | [Gemini API CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib Lyria 3.5 music/song generator, Gemini 3.8 TTS & `/v1beta/voices` engine, Cloud TTS `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass ducked broadcast mixer. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
 | **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
+| **`h2o`** | **Prashanth Subrahmanyam** (sibling to `work`) | [`agent-skill-forge/skills/h2o`](https://github.com/ksprashu/agent-skill-forge) | Lean sequential swarm with Hydrogen authors, Opus adversarial gates, frozen done criteria, and a stdlib gate script (`h2o_gate.py`). |
 | **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, & **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
 | **`horizon`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/horizon`](https://github.com/ksprashu/agent-skill-forge) | Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine, L3 verdict verifier, and SHA-256 backup/PR provenance gate. |
 | **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. `agent-security-posture` is local. |
