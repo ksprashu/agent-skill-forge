@@ -74,8 +74,8 @@ Pass `gate_bundle.json` to `scripts/verify_gate.py --bundle gate_bundle.json --r
   "branch": "fix/issue-101-auth-token",
   "head_sha": "abc1234def5678",
   "author_model": "gemini-4-carbon-high",
-  "review_model": "opus-5.5-high",
-  "security_model": "opus-5.5-high",
+  "review_model": "claude-opus-5-5-high",
+  "security_model": "claude-opus-5-5-high",
   "tests": {
     "head_sha": "abc1234def5678",
     "command": "python3 -m unittest tests/test_tokens.py",
