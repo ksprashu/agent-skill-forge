@@ -27,9 +27,9 @@ jobs:
     concurrency:
       group: pr-guardian-restack-${{ github.repository }}
       cancel-in-progress: false
-    uses: ksprashu/pr-guardian/.github/workflows/restack.yml@726d97b0d63fc2bd3bf270911c41105dced26680
+    uses: ksprashu/pr-guardian/.github/workflows/restack.yml@298b06b06266f508b18e4a7d43c590766376b8f2
     with:
-      guardian_ref: 726d97b0d63fc2bd3bf270911c41105dced26680
+      guardian_ref: 298b06b06266f508b18e4a7d43c590766376b8f2
       merged_pr: ${{ inputs.merged_pr || '' }}
     permissions:
       contents: write
