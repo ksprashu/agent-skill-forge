@@ -16,7 +16,7 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 
 ### 📦 Core Clusters (Action Skills)
 Available globally or installable in focused sections:
-*   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`
+*   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`, `h2o`
 *   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
 *   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `image-gen`
 *   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `handoff`
@@ -108,6 +108,7 @@ bash scripts/install.sh --all
 *   **`/plan`** (`skills/plan`): Slices specifications into vertically testable task units with dependency DAG checkpoints.
 *   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing until all ambiguities are resolved.
 *   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`).
+*   **`/h2o`** (`skills/h2o`): Runs a lean sequential swarm. The coordinator grills you to >= 90% confidence and freezes binary done criteria, then one Hydrogen planner and one Hydrogen implementer work against Opus adversarial gates (plan, functional, code, security). Each gate allows 3 NOT GOOD verdicts before asking you to stop or continue. Use `/work` instead for the heavyweight parallel DAG swarm with design tournaments.
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
 *   **`/test`** (`skills/test`): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.
@@ -267,6 +268,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Unclear requirements, design trade-offs, or multiple choices | Invoke `/grill` |
 | Defining new API interfaces, endpoints, or data models | Invoke `/spec` & `api-and-interface-design` |
 | Creating a multi-step refactoring or implementation roadmap | Invoke `/plan` |
+| Running a gated plan-build-review loop with cross-family adversarial reviewers | Invoke `/h2o` (lean, sequential); use `/work` for a parallel DAG swarm |
 | Writing code or fixing a bug | Invoke `/test` (Prove-It TDD loop) |
 | Cleaning AI filler from prose, comments, or commit messages | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` & `/review` |

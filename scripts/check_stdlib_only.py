@@ -42,7 +42,7 @@ from typing import Iterable, List, Sequence, Set, Tuple
 #: executes, plus the installer-side scripts, hooks, and media CLI controllers.
 ENFORCED_ROOTS = ("scripts", "hooks", "skills/work/scripts", "skills/review/scripts",
                   "skills/security-review", "skills/pr-review-loop", "skills/issue-loop",
-                  "skills/handoff/scripts", "skills/horizon/scripts",
+                  "skills/handoff/scripts", "skills/horizon/scripts", "skills/h2o/scripts",
                   "skills/image-gen/scripts", "skills/video-gen/scripts",
                   "skills/audio-gen/scripts")
 

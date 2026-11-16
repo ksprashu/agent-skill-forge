@@ -88,6 +88,7 @@ CORE_SKILLS = {
     'handoff': os.path.join(CORE_SKILLS_DIR, 'handoff'),
     'horizon': os.path.join(CORE_SKILLS_DIR, 'horizon'),
     'work': os.path.join(CORE_SKILLS_DIR, 'work'),
+    'h2o': os.path.join(CORE_SKILLS_DIR, 'h2o'),
     'profile': os.path.join(CORE_SKILLS_DIR, 'cognitive-profiler'),
 }
 
@@ -299,7 +300,7 @@ CORE_CLUSTERS = {
         'id': 'plan-spec',
         'name': 'Planning, Specification & Swarm Execution',
         'description': 'Requirements gathering, Socratic grilling, spec design, task DAG planning, and autonomous swarm execution.',
-        'skills': ['spec', 'plan', 'grill', 'prompt', 'work'],
+        'skills': ['spec', 'plan', 'grill', 'prompt', 'work', 'h2o'],
     },
     'c2': {
         'id': 'test-review',

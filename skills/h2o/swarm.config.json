@@ -1,0 +1,143 @@
+{
+  "name": "h2o",
+  "version": "2.1.0",
+  "description": "H2O swarm: Hydrogen authors (planner, implementer) and Opus adversarial reviewers in a gated, loop-capped pipeline. Grill -> done criteria -> plan -> plan review -> implement -> functional review -> code review -> deep security review -> summary.",
+  "model_policy": {
+    "authors_family": "gemini-4-hydrogen",
+    "reviewers_family": "claude-opus-5-5",
+    "reviewer_default": "claude-opus-5-5-medium",
+    "reviewer_exceptions": {
+      "security-reviewer": "claude-opus-5-5-high"
+    },
+    "forbid_inherit": true,
+    "coordinator": "the model the user picked for the conversation; runs the grilling itself"
+  },
+  "roles": {
+    "intent-reviewer": {
+      "kind": "adversarial_reviewer",
+      "model": "claude-opus-5-5-medium",
+      "workspace": "inherit"
+    },
+    "criteria-writer": {
+      "kind": "author",
+      "model": "gemini-4-hydrogen-high",
+      "workspace": "inherit"
+    },
+    "planner": {
+      "kind": "author",
+      "model": "gemini-4-hydrogen-xhigh",
+      "workspace": "inherit"
+    },
+    "plan-reviewer": {
+      "kind": "adversarial_reviewer",
+      "model": "claude-opus-5-5-medium",
+      "workspace": "inherit"
+    },
+    "implementer": {
+      "kind": "author",
+      "model": "gemini-4-hydrogen-high",
+      "escalate_to": "gemini-4-hydrogen-xhigh",
+      "escalate_after_not_good": 1,
+      "workspace": "inherit"
+    },
+    "functional-reviewer": {
+      "kind": "adversarial_reviewer",
+      "model": "claude-opus-5-5-medium",
+      "workspace": "inherit"
+    },
+    "code-reviewer": {
+      "kind": "adversarial_reviewer",
+      "model": "claude-opus-5-5-medium",
+      "workspace": "inherit"
+    },
+    "security-reviewer": {
+      "kind": "adversarial_reviewer",
+      "model": "claude-opus-5-5-high",
+      "workspace": "inherit"
+    },
+    "summarizer": {
+      "kind": "author",
+      "model": "gemini-4-hydrogen-high",
+      "workspace": "inherit"
+    },
+    "monitor": {
+      "kind": "support",
+      "skill": "swarm_monitor",
+      "model": "gemini-4-hydrogen-medium",
+      "workspace": "inherit"
+    }
+  },
+  "stages": [
+    {
+      "id": "grill",
+      "owner": "coordinator",
+      "next": "intent_review"
+    },
+    {
+      "id": "intent_review",
+      "owner": "intent-reviewer",
+      "gate": true,
+      "on_good": "done_criteria",
+      "on_not_good": "grill"
+    },
+    {
+      "id": "done_criteria",
+      "owner": "criteria-writer",
+      "exit": "user approves the criteria; criteria and acceptance tests are frozen",
+      "next": "plan"
+    },
+    {
+      "id": "plan",
+      "owner": "planner",
+      "next": "plan_review"
+    },
+    {
+      "id": "plan_review",
+      "owner": "plan-reviewer",
+      "gate": true,
+      "on_good": "implement",
+      "on_not_good": "plan"
+    },
+    {
+      "id": "implement",
+      "owner": "implementer",
+      "next": "functional_review"
+    },
+    {
+      "id": "functional_review",
+      "owner": "functional-reviewer",
+      "gate": true,
+      "on_good": "code_review",
+      "on_not_good": "implement",
+      "on_design_defect": "plan"
+    },
+    {
+      "id": "code_review",
+      "owner": "code-reviewer",
+      "gate": true,
+      "on_good": "security_review",
+      "on_not_good": "implement",
+      "on_design_defect": "plan"
+    },
+    {
+      "id": "security_review",
+      "owner": "security-reviewer",
+      "gate": true,
+      "on_good": "summary",
+      "on_not_good": "implement",
+      "on_design_defect": "plan"
+    },
+    {
+      "id": "summary",
+      "owner": "summarizer",
+      "next": "output"
+    }
+  ],
+  "loop_policy": {
+    "max_not_good_per_gate": 3,
+    "on_cap": "ask_user_stop_or_continue",
+    "continue_grants_attempts": 3,
+    "design_defect_counts_against": "plan_review",
+    "implement_rework_reruns": ["functional_review", "code_review", "security_review"]
+  }
+}
