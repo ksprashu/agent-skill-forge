@@ -256,9 +256,9 @@
             <div id="ui-view">
                 <article class="glass-panel">
                     <h1 id="skills-catalog-reference-attribution-matrix" class="text-2xl font-bold mb-4 pb-2 border-b border-[var(--border-color)] text-[var(--text-primary)]">📚 Skills Catalog Reference & Attribution Matrix</h1>
-<p class="mb-4 text-[var(--text-secondary)]">Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 29 skills in <strong>Agent Skill Forge</strong>.</p>
+<p class="mb-4 text-[var(--text-secondary)]">Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for every skill in <strong>Agent Skill Forge</strong>.</p>
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="1-core-universal-action-verbs-17-skills-across-4-clusters" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 1. Core Universal Action Verbs (17 Skills across 4 Clusters)</h2>
+<h2 id="1-core-universal-action-verbs-4-clusters" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🌟 1. Core Universal Action Verbs (4 Clusters)</h2>
 <p class="mb-4 text-[var(--text-secondary)]">The Core Skills can be installed individually or in functional clusters using <code class="inline-code">bash scripts/install.sh --clusters &lt;ids&gt;</code> (e.g. <code class="inline-code">--clusters c3</code> or <code class="inline-code">--content</code>).</p>
 <h3 id="cluster-c1-planning-specification-swarm-execution---inline-code-3" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">📐 Cluster C1: Planning, Specification & Swarm Execution (<code class="inline-code">plan-spec</code>)</h3>
 <p class="mb-4 text-[var(--text-secondary)]"><em>Grounds requirements, gathers intent, conducts Socratic alignment, plans dependency DAGs, and executes autonomous swarms.</em></p>
@@ -310,11 +310,11 @@
 <td><strong><code class="inline-code">h2o</code></strong></td>
 <td><code class="inline-code">/h2o</code></td>
 <td>Autonomous</td>
-<td>Lean sequential swarm: grills to &gt;= 90% confidence, freezes binary done criteria, then runs a Hydrogen planner and implementer against Opus adversarial gates (plan, functional, code, security), each capped at 3 NOT GOOD verdicts before the user decides.</td>
+<td>Lean sequential swarm: grills to >= 90% confidence, freezes binary done criteria, then runs a Hydrogen planner and implementer against Opus adversarial gates (plan, functional, code, security), each capped at 3 NOT GOOD verdicts before the user decides.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-c2-quality-verification---inline-code-18" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧪 Cluster C2: Quality & Verification (<code class="inline-code">test-review</code>)</h3>
-<p class="mb-4 text-[var(--text-secondary)]"><em>Enforces TDD, static verifiers, blinded judge rubrics, architectural reviews, and slop elimination.</em></p>
+<h3 id="cluster-c2-quality-verification---inline-code-20" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧪 Cluster C2: Quality & Verification (<code class="inline-code">test-review</code>)</h3>
+<p class="mb-4 text-[var(--text-secondary)]"><em>Enforces TDD, static verifiers, blinded judge rubrics, grounded code and security reviews, the PR and GitHub issue loops, and slop elimination.</em></p>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -342,18 +342,39 @@
 <td><strong><code class="inline-code">review</code></strong></td>
 <td><code class="inline-code">/review</code>, pre-merge</td>
 <td>Autonomous</td>
-<td>Audits diffs across correctness, security, performance, architecture, and readability with exact line fixes.</td>
+<td>Runs the repo's linters and type checkers, then reviews diffs across eight axes (scope/architecture, correctness, security, reliability, performance, data integrity, tests, observability) plus style, emitting schema-validated findings (P0–P3, nit) and SARIF.</td>
+</tr>
+<tr>
+<td><strong>C2</strong></td>
+<td><strong><code class="inline-code">security-review</code></strong></td>
+<td><code class="inline-code">/security-review</code></td>
+<td>Autonomous</td>
+<td>Runs semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor and native audits as leads, then confirms each against a six-element finding test grounded in OWASP Top 10 2025, ASVS 5.0, CWE Top 25, OWASP LLM and API Top 10, and GitHub Actions hardening. Same findings schema and P0–P3 scale as <code class="inline-code">review</code>.</td>
+</tr>
+<tr>
+<td><strong>C2</strong></td>
+<td><strong><code class="inline-code">pr-review-loop</code></strong></td>
+<td><code class="inline-code">/pr-review-loop</code></td>
+<td>Autonomous</td>
+<td>Works the review threads on your PR until the <code class="inline-code">pr-guardian/verdict</code> gate is green: fix and reply with the SHA, push back with <code class="inline-code">/ai-review wontfix:</code>, or escalate to a human. Resolves a thread only after pr-guardian verifies the fix or accepts the pushback.</td>
+</tr>
+<tr>
+<td><strong>C2</strong></td>
+<td><strong><code class="inline-code">issue-loop</code></strong></td>
+<td><code class="inline-code">/issue-loop</code>, <code class="inline-code">/fix-issue</code>, <code class="inline-code">/fix-issues</code></td>
+<td>Autonomous</td>
+<td>Drives open GitHub issues through five gated stages: redacted, injection-framed intake and triage, file-disjoint track planning, TDD red-green fix on a feature branch, 8-axis review plus security and cross-family verification gate, and PR creation (<code class="inline-code">Fixes</code> vs <code class="inline-code">Refs</code> for partial fixes) with optional <code class="inline-code">pr-review-loop</code> handoff.</td>
 </tr>
 <tr>
 <td><strong>C2</strong></td>
 <td><strong><code class="inline-code">unslop</code></strong></td>
-<td><code class="inline-code">/unslop</code>, <code class="inline-code">/deslop</code>, <code class="inline-code">/simplify</code></td>
+<td><code class="inline-code">/unslop</code>, <code class="inline-code">/deslop</code></td>
 <td>Auto / Slash</td>
-<td>Strips AI boilerplate, defensive wrapper clutter, sterile prose, and unnecessary complexity from code, text, analyses, and UI.</td>
+<td>Strips AI smells, promotional bloat, and needless words from prose, docs, code comments, commit messages, analyses, and UI copy. Leaves code logic alone.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-c3-content-creative-authoring---inline-code-31" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🎨 Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</h3>
-<p class="mb-4 text-[var(--text-secondary)]"><em>Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.</em></p>
+<h3 id="cluster-c3-content-creative-authoring---inline-code-46" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🎨 Cluster C3: Content, Creative & Authoring (<code class="inline-code">content-creative</code>)</h3>
+<p class="mb-4 text-[var(--text-secondary)]"><em>Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, produces distinctive human-grade reports and briefs, and turns technical dossiers into grounded nonfiction field books.</em></p>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -378,21 +399,56 @@
 </tr>
 <tr>
 <td><strong>C3</strong></td>
-<td><strong><code class="inline-code">copy-write</code></strong></td>
-<td><code class="inline-code">/copy-write</code>, <code class="inline-code">/copy-write-bara</code></td>
+<td><strong><code class="inline-code">voice-register</code></strong></td>
+<td>"in my voice", outward text under your name</td>
+<td>Autonomous</td>
+<td>Resolves a voice profile (<code class="inline-code">.local.md</code> > <code class="inline-code">~/.gemini/personas/default/</code> > template) and applies the matching channel register (R1–R5) to text sent under your name.</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong><code class="inline-code">cognitive-profiler</code></strong></td>
+<td><code class="inline-code">/cognitive-profiler</code></td>
 <td>User Slash</td>
-<td>Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization.</td>
+<td>Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions.</td>
 </tr>
 <tr>
 <td><strong>C3</strong></td>
 <td><strong><code class="inline-code">image-gen</code></strong></td>
-<td><code class="inline-code">/image-gen</code>, <code class="inline-code">/image-gen-expert</code></td>
-<td>User Slash</td>
-<td>Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image.</td>
+<td><code class="inline-code">/image-gen</code> <em>(legacy alias: <code class="inline-code">/image-gen-expert</code>)</em></td>
+<td>Auto / Slash</td>
+<td>Generates verified images, diagrams, multi-panel comics, and sequential timelines via <code class="inline-code">gemini-api</code> CLI (<code class="inline-code">gemini-nano-banana-2.1</code>, <code class="inline-code">gemini-3-pro-image</code>).</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong><code class="inline-code">atelier</code></strong></td>
+<td>auto on reports, briefs, and digests</td>
+<td>Auto / Slash</td>
+<td>Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and diagrams. Avoids generic AI aesthetics.</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong><code class="inline-code">chronicle</code></strong></td>
+<td><code class="inline-code">/chronicle</code>, <code class="inline-code">@chronicle</code></td>
+<td>Auto / Slash</td>
+<td>Turns technical reports and dossiers into Gladwell/Grant nonfiction with evidence badges and a Field Notebook.</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong><code class="inline-code">video-gen</code></strong></td>
+<td><code class="inline-code">/video-gen</code>, <code class="inline-code">/omni-video</code></td>
+<td>Auto / Slash</td>
+<td>Generates arbitrary-length videos (<code class="inline-code">3s..3600s+</code>), chains anchored keyframes (<code class="inline-code">image-gen</code>), mixes ducked <code class="inline-code">-14 LUFS</code> audio, overlays captions/cards (<code class="inline-code">vidkit</code>/<code class="inline-code">sound</code> or standalone <code class="inline-code">ffmpeg</code>), and verifies with <code class="inline-code">ffprobe</code> + Argon.</td>
+</tr>
+<tr>
+<td><strong>C3</strong></td>
+<td><strong><code class="inline-code">audio-gen</code></strong></td>
+<td><code class="inline-code">/audio-gen</code>, <code class="inline-code">/music-gen</code>, <code class="inline-code">/sfx-gen</code>, <code class="inline-code">/tts-gen</code></td>
+<td>Auto / Slash</td>
+<td>Generates verified BGMs/songs (<code class="inline-code">lyria-3.5</code>), Gemini 3.8 TTS narration/dialogue (<code class="inline-code">speech_metadata</code> + Chunk-1 pinning), <code class="inline-code">/v1beta/voices</code> design/replication, <code class="inline-code">Chirp 3: HD</code>, foley/stingers, and <code class="inline-code">-14 LUFS</code> 2-pass mixes.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-c4-knowledge-governance---inline-code-45" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">📚 Cluster C4: Knowledge & Governance (<code class="inline-code">docs-governance</code>)</h3>
-<p class="mb-4 text-[var(--text-secondary)]"><em>Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.</em></p>
+<h3 id="cluster-c4-knowledge-governance---inline-code-89" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">📚 Cluster C4: Knowledge & Governance (<code class="inline-code">docs-governance</code>)</h3>
+<p class="mb-4 text-[var(--text-secondary)]"><em>Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, keeps AGENTS.md lean, and tracks 6-12 month technical horizons.</em></p>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -431,16 +487,23 @@
 </tr>
 <tr>
 <td><strong>C4</strong></td>
-<td><strong><code class="inline-code">sync</code></strong></td>
-<td><code class="inline-code">/sync</code>, <code class="inline-code">/skill-sync</code></td>
+<td><strong><code class="inline-code">handoff</code></strong></td>
+<td><code class="inline-code">/handoff</code>, <code class="inline-code">/handover</code></td>
 <td>User Slash</td>
-<td>Manages symlinks across global agent runtimes and bootstraps domain skills into project workspaces.</td>
+<td>Cross-harness session handoff engine: captures multi-repo git/SHA-256 drift digests into <code class="inline-code">.handoff/</code>, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity, Claude Code, OpenAI Codex, and Cursor.</td>
+</tr>
+<tr>
+<td><strong>C4</strong></td>
+<td><strong><code class="inline-code">horizon</code></strong></td>
+<td><code class="inline-code">/horizon</code>, <code class="inline-code">/radar</code>, <code class="inline-code">/tech-horizon</code></td>
+<td>Auto / Slash</td>
+<td>Central 6-12 month predictive watchlist engine (<code class="inline-code">~/.gemini/horizons/</code>): collects factual mechanical probe evidence (<code class="inline-code">S9</code>), gates sweep verdicts (<code class="inline-code">L3</code>), enforces SHA-256 pre-edit backups and PR URL provenance, and renders <code class="inline-code">INDEX.md</code>.</td>
 </tr>
 </tbody></table></div>
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
-<h2 id="2-preferred-domain-specific-skills-12-skills-across-4-clusters" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛠️ 2. Preferred Domain-Specific Skills (12 Skills across 4 Clusters)</h2>
-<p class="mb-4 text-[var(--text-secondary)]">The 12 Preferred Domain Skills are located in <code class="inline-code">preferred/</code> and can be installed via NPX or linked globally via <code class="inline-code">scripts/sync_skills.py --clusters d1,d2...</code> or <code class="inline-code">--domain</code>.</p>
-<h3 id="cluster-d1-full-stack-quality---inline-code-65" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🌐 Cluster D1: Full-Stack & Quality (<code class="inline-code">fullstack</code>)</h3>
+<h2 id="2-preferred-domain-specific-skills-4-clusters" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">🛠️ 2. Preferred Domain-Specific Skills (4 Clusters)</h2>
+<code class="inline-code">agent-security-posture</code> lives in <code class="inline-code">preferred/</code>. The rest are <code class="inline-code">addyosmani/agent-skills</code> (MIT), pinned to a commit in <code class="inline-code">config/upstream.lock.json</code> and fetched into <code class="inline-code">.upstream/</code> by <code class="inline-code">scripts/fetch_upstream.py</code>; nothing is vendored. Install them via NPX or link them globally via <code class="inline-code">scripts/sync_skills.py --clusters d1,d2...</code> or <code class="inline-code">--domain</code>.
+<h3 id="cluster-d1-full-stack-quality---inline-code-123" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🌐 Cluster D1: Full-Stack & Quality (<code class="inline-code">fullstack</code>)</h3>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -478,7 +541,7 @@
 <td>Hyrum's law, discriminated unions, idempotent REST/GraphQL contracts, and backward compatibility.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-d2-security-diagnostics-reliability---inline-code-75" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🛡️ Cluster D2: Security, Diagnostics & Reliability (<code class="inline-code">security</code>)</h3>
+<h3 id="cluster-d2-security-diagnostics-reliability---inline-code-133" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🛡️ Cluster D2: Security, Diagnostics & Reliability (<code class="inline-code">security</code>)</h3>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -489,10 +552,10 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>D2</strong></td>
-<td><strong><code class="inline-code">security-and-hardening</code></strong></td>
+<td><strong><code class="inline-code">agent-security-posture</code></strong></td>
 <td>Security & Sentry</td>
-<td><code class="inline-code">npx skills add addyosmani/agent-skills --skill security-and-hardening</code></td>
-<td>Threat modeling, OWASP Top 10 mitigations, input sanitization, and secret protection.</td>
+<td><code class="inline-code">npx skills add ksprashu/agent-skill-forge --skill agent-security-posture</code></td>
+<td>Agent authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, read-only infrastructure audits.</td>
 </tr>
 <tr>
 <td><strong>D2</strong></td>
@@ -509,7 +572,7 @@
 <td>Structured JSON logs, OpenTelemetry distributed tracing, Prometheus metrics, and alert rules.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-d3-devops-workflows---inline-code-82" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🚀 Cluster D3: DevOps & Workflows (<code class="inline-code">devops</code>)</h3>
+<h3 id="cluster-d3-devops-workflows---inline-code-140" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🚀 Cluster D3: DevOps & Workflows (<code class="inline-code">devops</code>)</h3>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -540,7 +603,7 @@
 <td>Expand/Contract database migrations, automated codemods, and zero-downtime upgrades.</td>
 </tr>
 </tbody></table></div>
-<h3 id="cluster-d4-ai-evaluation---inline-code-89" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧠 Cluster D4: AI & Evaluation (<code class="inline-code">ai</code>)</h3>
+<h3 id="cluster-d4-ai-context---inline-code-147" class="text-lg font-semibold mt-6 mb-2 text-[var(--text-primary)]">🧠 Cluster D4: AI & Context (<code class="inline-code">ai</code>)</h3>
 <div class="overflow-x-auto my-4"><table class="rich-table">
 <thead><tr>
 <th>Cluster</th>
@@ -556,13 +619,6 @@
 <td><code class="inline-code">npx skills add addyosmani/agent-skills --skill context-engineering</code></td>
 <td>Token context window budgeting, prompt packing, and progressive disclosure tree navigation.</td>
 </tr>
-<tr>
-<td><strong>D4</strong></td>
-<td><strong><code class="inline-code">benchmark-harness</code></strong></td>
-<td>Evals & Benchmarking</td>
-<td><code class="inline-code">npx skills add agent-skill-forge --skill benchmark-harness</code></td>
-<td>Automated latency, memory allocation, and throughput regression testing with statistical variance checks.</td>
-</tr>
 </tbody></table></div>
 <p class="mb-4 text-[var(--text-secondary)]">---</p>
 <h2 id="3-attributions-lineage-matrix" class="text-xl font-bold mt-8 mb-3 text-[var(--text-primary)]">👤 3. Attributions & Lineage Matrix</h2>
@@ -577,7 +633,7 @@
 <td><strong><code class="inline-code">unslop</code></strong></td>
 <td><strong>Matt Pocock</strong> & <strong>poteto / Cursor pstack</strong></td>
 <td><a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">mattpocock/skills/deslop</code></a> & <a href="https://github.com/cursor/plugins/tree/main/pstack" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">cursor/plugins/pstack</code></a></td>
-<td>Fused universal anti-bloat engine spanning code, prose, analysis, and visual UI.</td>
+<td>Fused anti-bloat pass for human-readable text: prose, docs, comments, analyses, and UI copy.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">grill</code></strong></td>
@@ -607,7 +663,25 @@
 <td><strong><code class="inline-code">review</code></strong></td>
 <td><strong>Addy Osmani</strong></td>
 <td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills/skills/review</code></a></td>
-<td>5-axis code and architectural review framework.</td>
+<td>Code review framework; extended in the forge to eight axes plus grounded style, executed linters and machine-readable findings.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">security-review</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong> (checklist adapted from <strong>Addy Osmani</strong>'s <code class="inline-code">security-and-hardening</code>)</td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/security-review</code></a> & <a href="https://owasp.org/Top10/" target="_blank" rel="noopener noreferrer" class="external-link">OWASP Top 10</a></td>
+<td>Scanner-backed code security review with a six-element finding test, grounded in OWASP Top 10 2025, ASVS 5.0 and CWE Top 25, sharing the <code class="inline-code">review</code> findings schema.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">pr-review-loop</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/pr-review-loop</code></a></td>
+<td>Author-side loop that works pr-guardian review threads to a green <code class="inline-code">pr-guardian/verdict</code>, restacks squash-merged stacks, and gates <code class="inline-code">--auto --squash</code> merges.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">issue-loop</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong> (sister to <code class="inline-code">pr-review-loop</code>)</td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/issue-loop</code></a></td>
+<td>End-to-end 5-stage GitHub issue loop with capture-time redaction, injection framing, idempotent stage markers, file-disjoint swarm track validator, SHA-bound cross-family gate, and partial-fix PR guard.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">prompt</code></strong></td>
@@ -634,12 +708,6 @@
 <td>Codebase memory and progressive disclosure index tree specification.</td>
 </tr>
 <tr>
-<td><strong><code class="inline-code">sync</code></strong></td>
-<td><strong>Prashanth Subrahmanyam</strong></td>
-<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/sync</code></a></td>
-<td>Multi-runtime symlink synchronizer and JIT workspace bootstrapper.</td>
-</tr>
-<tr>
 <td><strong><code class="inline-code">google-oss</code></strong></td>
 <td><strong>Google Open Source Programs Office (OSPO)</strong></td>
 <td><a href="https://opensource.google/documentation" target="_blank" rel="noopener noreferrer" class="external-link">Google Open Source Docs</a></td>
@@ -658,16 +726,46 @@
 <td>PII-sanitized linguistic style and typing cadence extraction.</td>
 </tr>
 <tr>
-<td><strong><code class="inline-code">copy-write</code></strong></td>
+<td><strong><code class="inline-code">voice-register</code></strong></td>
 <td><strong>Prashanth Subrahmanyam</strong></td>
-<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/copy-write</code></a></td>
-<td>Technical prose companion with 3-tier Profile-Overlay voice personalization.</td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/voice-register</code></a></td>
+<td>Channel-register voice profiles, kept out of the public repo.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">cognitive-profiler</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/cognitive-profiler</code></a></td>
+<td>Reader-preference profiling compiled into harness configuration.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">image-gen</code></strong></td>
 <td><strong>Google DeepMind</strong></td>
-<td><a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer" class="external-link">Gemini API Documentation</a></td>
-<td>Multimodal image and diagram generation using Gemini Flash Image.</td>
+<td><a href="https://aistudio.google.com/docs/image-generation" target="_blank" rel="noopener noreferrer" class="external-link">Gemini API CLI & Image Docs</a></td>
+<td>Stdlib <code class="inline-code">gemini-api</code> CLI image, comic, and sequential timeline generation (<code class="inline-code">gemini-nano-banana-2.1</code>, <code class="inline-code">gemini-3-pro-image</code>) with mechanical header and Argon rubric verification.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">atelier</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/atelier</code></a></td>
+<td>Subject-grounded design direction for human-facing reports, briefs, and documents, with strong hierarchy, scannable tables, and anti-AI-slop aesthetics.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">chronicle</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/chronicle</code></a></td>
+<td>Technical nonfiction storytelling and interactive field books.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">video-gen</code></strong></td>
+<td><strong>Google DeepMind</strong></td>
+<td><a href="https://aistudio.google.com/docs/omni" target="_blank" rel="noopener noreferrer" class="external-link">Gemini Omni Flash Docs</a></td>
+<td>Stdlib arbitrary-length <code class="inline-code">gemini-api</code> CLI video director (<code class="inline-code">gemini-omni-1.2-flash</code>), keyframe chaining, broadcast 2-pass audio mixing, caption/card compositing, and <code class="inline-code">ffprobe</code> + Argon verification.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">audio-gen</code></strong></td>
+<td><strong>Google DeepMind & Cloud TTS</strong></td>
+<td><a href="https://aistudio.google.com/docs/cli" target="_blank" rel="noopener noreferrer" class="external-link">Gemini API CLI Docs</a></td>
+<td>Stdlib Lyria 3.5 music/song generator, Gemini 3.8 TTS & <code class="inline-code">/v1beta/voices</code> engine, Cloud TTS <code class="inline-code">Chirp 3: HD</code>, foley/stingers, and <code class="inline-code">-14 LUFS</code> 2-pass ducked broadcast mixer.</td>
 </tr>
 <tr>
 <td><strong><code class="inline-code">continuous-alignment</code></strong></td>
@@ -677,7 +775,7 @@
 </tr>
 <tr>
 <td><strong><code class="inline-code">work</code></strong></td>
-<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><strong>Prashanth Subrahmanyam</strong> (inspired by the <strong>Google Antigravity Teamwork architecture</strong>)</td>
 <td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/work</code></a></td>
 <td>Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner.</td>
 </tr>
@@ -688,10 +786,22 @@
 <td>Lean sequential swarm with Hydrogen authors, Opus adversarial gates, frozen done criteria, and a stdlib gate script (<code class="inline-code">h2o_gate.py</code>).</td>
 </tr>
 <tr>
-<td><strong>Preferred Skills (12)</strong></td>
-<td><strong>Addy Osmani</strong>, <strong>Matt Pocock</strong>, <strong>Cursor</strong>, <strong>Anthropic</strong></td>
-<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills</code></a>, <a href="https://github.com/mattpocock/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">mattpocock/skills</code></a>, <a href="https://github.com/anthropics/skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">anthropics/skills</code></a></td>
-<td>Curated domain skills for frontend, performance, security, CI/CD, and debugging.</td>
+<td><strong><code class="inline-code">handoff</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong> (inspired by <strong>Matt Pocock</strong>, <strong>EveryInc</strong>, & <strong>REMvisual</strong>)</td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/handoff</code></a></td>
+<td>Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager.</td>
+</tr>
+<tr>
+<td><strong><code class="inline-code">horizon</code></strong></td>
+<td><strong>Prashanth Subrahmanyam</strong></td>
+<td><a href="https://github.com/ksprashu/agent-skill-forge" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">agent-skill-forge/skills/horizon</code></a></td>
+<td>Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine, L3 verdict verifier, and SHA-256 backup/PR provenance gate.</td>
+</tr>
+<tr>
+<td><strong>Preferred Skills</strong></td>
+<td><strong>Addy Osmani</strong></td>
+<td><a href="https://github.com/addyosmani/agent-skills" target="_blank" rel="noopener noreferrer" class="external-link"><code class="inline-code">addyosmani/agent-skills</code></a> (MIT)</td>
+<td>Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from <code class="inline-code">config/upstream.lock.json</code>. Not vendored. <code class="inline-code">agent-security-posture</code> is local.</td>
 </tr>
 </tbody></table></div>
                 </article>
@@ -711,11 +821,11 @@ description: &quot;Comprehensive dictionary, clusters, triggers, and attribution
 
 # 📚 Skills Catalog Reference &amp; Attribution Matrix
 
-Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for all 29 skills in **Agent Skill Forge**.
+Comprehensive dictionary, cluster categorization, execution triggers, and upstream attribution lineage for every skill in **Agent Skill Forge**.
 
 ---
 
-## 🌟 1. Core Universal Action Verbs (17 Skills across 4 Clusters)
+## 🌟 1. Core Universal Action Verbs (4 Clusters)
 
 The Core Skills can be installed individually or in functional clusters using `bash scripts/install.sh --clusters &lt;ids&gt;` (e.g. `--clusters c3` or `--content`).
 
@@ -732,27 +842,35 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C1** | **`h2o`** | `/h2o` | Autonomous | Lean sequential swarm: grills to &gt;= 90% confidence, freezes binary done criteria, then runs a Hydrogen planner and implementer against Opus adversarial gates (plan, functional, code, security), each capped at 3 NOT GOOD verdicts before the user decides. |
 
 ### 🧪 Cluster C2: Quality &amp; Verification (`test-review`)
-*Enforces TDD, static verifiers, blinded judge rubrics, architectural reviews, and slop elimination.*
+*Enforces TDD, static verifiers, blinded judge rubrics, grounded code and security reviews, the PR and GitHub issue loops, and slop elimination.*
 
 | Cluster | Slug | Invocations &amp; Triggers | Execution Mode | Scope &amp; Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
 | **C2** | **`test`** | `/test`, auto during coding | Autonomous | Enforces writing failing tests first to prove bug reproduction and verify new feature behavior (TDD &amp; Prove-It). |
 | **C2** | **`verify`** | `/verify`, `/ega`, `/expectation-harness` | Autonomous | Dual-layer verification running deterministic static check scripts and blinded multi-persona dynamic judge rubrics. |
-| **C2** | **`review`** | `/review`, pre-merge | Autonomous | Audits diffs across correctness, security, performance, architecture, and readability with exact line fixes. |
-| **C2** | **`unslop`** | `/unslop`, `/deslop`, `/simplify` | Auto / Slash | Strips AI boilerplate, defensive wrapper clutter, sterile prose, and unnecessary complexity from code, text, analyses, and UI. |
+| **C2** | **`review`** | `/review`, pre-merge | Autonomous | Runs the repo&#x27;s linters and type checkers, then reviews diffs across eight axes (scope/architecture, correctness, security, reliability, performance, data integrity, tests, observability) plus style, emitting schema-validated findings (P0–P3, nit) and SARIF. |
+| **C2** | **`security-review`** | `/security-review` | Autonomous | Runs semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor and native audits as leads, then confirms each against a six-element finding test grounded in OWASP Top 10 2025, ASVS 5.0, CWE Top 25, OWASP LLM and API Top 10, and GitHub Actions hardening. Same findings schema and P0–P3 scale as `review`. |
+| **C2** | **`pr-review-loop`** | `/pr-review-loop` | Autonomous | Works the review threads on your PR until the `pr-guardian/verdict` gate is green: fix and reply with the SHA, push back with `/ai-review wontfix:`, or escalate to a human. Resolves a thread only after pr-guardian verifies the fix or accepts the pushback. |
+| **C2** | **`issue-loop`** | `/issue-loop`, `/fix-issue`, `/fix-issues` | Autonomous | Drives open GitHub issues through five gated stages: redacted, injection-framed intake and triage, file-disjoint track planning, TDD red-green fix on a feature branch, 8-axis review plus security and cross-family verification gate, and PR creation (`Fixes` vs `Refs` for partial fixes) with optional `pr-review-loop` handoff. |
+| **C2** | **`unslop`** | `/unslop`, `/deslop` | Auto / Slash | Strips AI smells, promotional bloat, and needless words from prose, docs, code comments, commit messages, analyses, and UI copy. Leaves code logic alone. |
 
 ### 🎨 Cluster C3: Content, Creative &amp; Authoring (`content-creative`)
-*Designs step-by-step developer tutorials, extracts human writing cadence, drafts articles, and synthesizes diagrams.*
+*Designs step-by-step developer tutorials, extracts human writing cadence, profiles how you want agents to write back, drafts articles, synthesizes diagrams, produces distinctive human-grade reports and briefs, and turns technical dossiers into grounded nonfiction field books.*
 
 | Cluster | Slug | Invocations &amp; Triggers | Execution Mode | Scope &amp; Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
 | **C3** | **`codelab`** | `/codelab`, `/codelab-creator` | User Slash | Scaffolds and validates interactive step-by-step developer tutorials, workshops, and guides formatted for `claat`. |
 | **C3** | **`human-voice`** | `/human-voice`, `/extract-human-voice` | User Slash | Scans developer tool conversation logs, scrubs PII, and extracts authentic human writing style markers. |
-| **C3** | **`copy-write`**| `/copy-write`, `/copy-write-bara`| User Slash | Drafts technical articles, documentation, keynotes, and copy using 3-tier Profile-Overlay personalization. |
-| **C3** | **`image-gen`** | `/image-gen`, `/image-gen-expert` | User Slash | Generates high-fidelity technical diagrams, infographics, and UI assets using Gemini Flash Image. |
+| **C3** | **`voice-register`** | &quot;in my voice&quot;, outward text under your name | Autonomous | Resolves a voice profile (`.local.md` &gt; `~/.gemini/personas/default/` &gt; template) and applies the matching channel register (R1–R5) to text sent under your name. |
+| **C3** | **`cognitive-profiler`** | `/cognitive-profiler` | User Slash | Profiles how you prefer to be written to from your AI-tool logs, and turns it into harness instructions. |
+| **C3** | **`image-gen`** | `/image-gen` *(legacy alias: `/image-gen-expert`)* | Auto / Slash | Generates verified images, diagrams, multi-panel comics, and sequential timelines via `gemini-api` CLI (`gemini-nano-banana-2.1`, `gemini-3-pro-image`). |
+| **C3** | **`atelier`** | auto on reports, briefs, and digests | Auto / Slash | Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and diagrams. Avoids generic AI aesthetics. |
+| **C3** | **`chronicle`** | `/chronicle`, `@chronicle` | Auto / Slash | Turns technical reports and dossiers into Gladwell/Grant nonfiction with evidence badges and a Field Notebook. |
+| **C3** | **`video-gen`** | `/video-gen`, `/omni-video` | Auto / Slash | Generates arbitrary-length videos (`3s..3600s+`), chains anchored keyframes (`image-gen`), mixes ducked `-14 LUFS` audio, overlays captions/cards (`vidkit`/`sound` or standalone `ffmpeg`), and verifies with `ffprobe` + Argon. |
+| **C3** | **`audio-gen`** | `/audio-gen`, `/music-gen`, `/sfx-gen`, `/tts-gen` | Auto / Slash | Generates verified BGMs/songs (`lyria-3.5`), Gemini 3.8 TTS narration/dialogue (`speech_metadata` + Chunk-1 pinning), `/v1beta/voices` design/replication, `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass mixes. |
 
 ### 📚 Cluster C4: Knowledge &amp; Governance (`docs-governance`)
-*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, and keeps AGENTS.md lean.*
+*Preserves durable codebase memory, compiles interactive portals, enforces OSS licensing, keeps AGENTS.md lean, and tracks 6-12 month technical horizons.*
 
 | Cluster | Slug | Invocations &amp; Triggers | Execution Mode | Scope &amp; Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
@@ -760,13 +878,14 @@ The Core Skills can be installed individually or in functional clusters using `b
 | **C4** | **`catalog`** | `/catalog`, `/knowledge-catalog` | Autonomous | Scaffolds and indexes progressive disclosure knowledge bundles (`.gemini/knowledge/`) for long-term project memory. |
 | **C4** | **`google-oss`**| `/google-oss`, `/make-google-oss`| User Slash | Audits repositories for Apache-2.0 license headers, scrubs internal corporate paths, and validates OSS structure. |
 | **C4** | **`continuous-alignment`** | `/align`, `/evolve` | Auto / Slash | Autonomous continuous alignment engine: distills session transcripts into strict 200-line AGENTS.md budget, records living ADRs, and compiles roadmap visualizers. |
-| **C4** | **`sync`** | `/sync`, `/skill-sync` | User Slash | Manages symlinks across global agent runtimes and bootstraps domain skills into project workspaces. |
+| **C4** | **`handoff`** | `/handoff`, `/handover` | User Slash | Cross-harness session handoff engine: captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity, Claude Code, OpenAI Codex, and Cursor. |
+| **C4** | **`horizon`** | `/horizon`, `/radar`, `/tech-horizon` | Auto / Slash | Central 6-12 month predictive watchlist engine (`~/.gemini/horizons/`): collects factual mechanical probe evidence (`S9`), gates sweep verdicts (`L3`), enforces SHA-256 pre-edit backups and PR URL provenance, and renders `INDEX.md`. |
 
 ---
 
-## 🛠️ 2. Preferred Domain-Specific Skills (12 Skills across 4 Clusters)
+## 🛠️ 2. Preferred Domain-Specific Skills (4 Clusters)
 
-The 12 Preferred Domain Skills are located in `preferred/` and can be installed via NPX or linked globally via `scripts/sync_skills.py --clusters d1,d2...` or `--domain`.
+`agent-security-posture` lives in `preferred/`. The rest are `addyosmani/agent-skills` (MIT), pinned to a commit in `config/upstream.lock.json` and fetched into `.upstream/` by `scripts/fetch_upstream.py`; nothing is vendored. Install them via NPX or link them globally via `scripts/sync_skills.py --clusters d1,d2...` or `--domain`.
 
 ### 🌐 Cluster D1: Full-Stack &amp; Quality (`fullstack`)
 
@@ -781,7 +900,7 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 
 | Cluster | Slug | Category | NPX Install Command | Capabilities &amp; Frameworks |
 | :--- | :--- | :--- | :--- | :--- |
-| **D2** | **`security-and-hardening`** | Security &amp; Sentry | `npx skills add addyosmani/agent-skills --skill security-and-hardening` | Threat modeling, OWASP Top 10 mitigations, input sanitization, and secret protection. |
+| **D2** | **`agent-security-posture`** | Security &amp; Sentry | `npx skills add ksprashu/agent-skill-forge --skill agent-security-posture` | Agent authority rules, OSV/NVD dependency checks, secret handling, finding verdicts, read-only infrastructure audits. |
 | **D2** | **`debugging-and-error-recovery`**| Diagnostics | `npx skills add addyosmani/agent-skills --skill debugging-and-error-recovery` | Systematic root cause analysis, stack trace deconstruction, and defensive error isolation. |
 | **D2** | **`observability-and-instrumentation`**| Ops &amp; Telemetry | `npx skills add addyosmani/agent-skills --skill observability-and-instrumentation` | Structured JSON logs, OpenTelemetry distributed tracing, Prometheus metrics, and alert rules. |
 
@@ -793,12 +912,11 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 | **D3** | **`git-workflow-and-versioning`** | Git &amp; Release | `npx skills add addyosmani/agent-skills --skill git-workflow-and-versioning` | Conventional commits, atomic PRs, interactive rebase workflows, and semantic versioning tags. |
 | **D3** | **`deprecation-and-migration`** | Database &amp; Migration | `npx skills add addyosmani/agent-skills --skill deprecation-and-migration` | Expand/Contract database migrations, automated codemods, and zero-downtime upgrades. |
 
-### 🧠 Cluster D4: AI &amp; Evaluation (`ai`)
+### 🧠 Cluster D4: AI &amp; Context (`ai`)
 
 | Cluster | Slug | Category | NPX Install Command | Capabilities &amp; Frameworks |
 | :--- | :--- | :--- | :--- | :--- |
 | **D4** | **`context-engineering`** | AI Engineering | `npx skills add addyosmani/agent-skills --skill context-engineering` | Token context window budgeting, prompt packing, and progressive disclosure tree navigation. |
-| **D4** | **`benchmark-harness`** | Evals &amp; Benchmarking | `npx skills add agent-skill-forge --skill benchmark-harness` | Automated latency, memory allocation, and throughput regression testing with statistical variance checks. |
 
 ---
 
@@ -806,26 +924,35 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
 
 | Skill / Domain | Original Creators &amp; Inspirations | Upstream Repositories / Standards | Adaptation &amp; Role in `agent-skill-forge` |
 | :--- | :--- | :--- | :--- |
-| **`unslop`** | **Matt Pocock** &amp; **poteto / Cursor pstack** | [`mattpocock/skills/deslop`](https://github.com/mattpocock/skills) &amp; [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) | Fused universal anti-bloat engine spanning code, prose, analysis, and visual UI. |
+| **`unslop`** | **Matt Pocock** &amp; **poteto / Cursor pstack** | [`mattpocock/skills/deslop`](https://github.com/mattpocock/skills) &amp; [`cursor/plugins/pstack`](https://github.com/cursor/plugins/tree/main/pstack) | Fused anti-bloat pass for human-readable text: prose, docs, comments, analyses, and UI copy. |
 | **`grill`** | **Matt Pocock** &amp; **Addy Osmani** | [`mattpocock/skills/grill-me-with-docs`](https://github.com/mattpocock/skills) &amp; [`addyosmani/agent-skills/interview-me`](https://github.com/addyosmani/agent-skills) | Fused 1-question Socratic alignment protocol with confidence stop gating. |
 | **`spec`** | **Addy Osmani** | [`addyosmani/agent-skills/source-driven-development`](https://github.com/addyosmani/agent-skills) | Source-grounded specification engine with official API doc citations. |
 | **`plan`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/planning`](https://github.com/addyosmani/agent-skills) | Vertical task slicing and dependency DAG checkpointing. |
 | **`test`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/test`](https://github.com/addyosmani/agent-skills) | Test-Driven Development and Prove-It bug reproduction loop. |
-| **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | 5-axis code and architectural review framework. |
+| **`review`** | **Addy Osmani** | [`addyosmani/agent-skills/skills/review`](https://github.com/addyosmani/agent-skills) | Code review framework; extended in the forge to eight axes plus grounded style, executed linters and machine-readable findings. |
+| **`security-review`** | **Prashanth Subrahmanyam** (checklist adapted from **Addy Osmani**&#x27;s `security-and-hardening`) | [`agent-skill-forge/skills/security-review`](https://github.com/ksprashu/agent-skill-forge) &amp; [OWASP Top 10](https://owasp.org/Top10/) | Scanner-backed code security review with a six-element finding test, grounded in OWASP Top 10 2025, ASVS 5.0 and CWE Top 25, sharing the `review` findings schema. |
+| **`pr-review-loop`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/pr-review-loop`](https://github.com/ksprashu/agent-skill-forge) | Author-side loop that works pr-guardian review threads to a green `pr-guardian/verdict`, restacks squash-merged stacks, and gates `--auto --squash` merges. |
+| **`issue-loop`** | **Prashanth Subrahmanyam** (sister to `pr-review-loop`) | [`agent-skill-forge/skills/issue-loop`](https://github.com/ksprashu/agent-skill-forge) | End-to-end 5-stage GitHub issue loop with capture-time redaction, injection framing, idempotent stage markers, file-disjoint swarm track validator, SHA-bound cross-family gate, and partial-fix PR guard. |
 | **`prompt`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/prompt`](https://github.com/ksprashu/agent-skill-forge) | Intent engineering, 6-persona framework, and DAG task graph compiler. |
 | **`verify`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/verify`](https://github.com/ksprashu/agent-skill-forge) | Expectation-Grounded Alignment (EGA) with static checks + blinded judge rubrics. |
 | **`docs`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/docs`](https://github.com/ksprashu/agent-skill-forge) | Full SDLC documentation scaffolding + Stitch 4-theme interactive HTML compiler. |
 | **`catalog`** | **Prashanth Subrahmanyam** | [Google Open Knowledge Format (OKF)](https://github.com/ksprashu/agent-skill-forge) | Codebase memory and progressive disclosure index tree specification. |
-| **`sync`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/sync`](https://github.com/ksprashu/agent-skill-forge) | Multi-runtime symlink synchronizer and JIT workspace bootstrapper. |
 | **`google-oss`** | **Google Open Source Programs Office (OSPO)** | [Google Open Source Docs](https://opensource.google/documentation) | Apache-2.0 compliance, header automation, and repository sanitization. |
 | **`codelab`** | **Google Developer Relations** | [Google Codelabs](https://codelabs.developers.google.com/) | Interactive step-by-step developer tutorial authoring and quality validation. |
 | **`human-voice`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/human-voice`](https://github.com/ksprashu/agent-skill-forge) | PII-sanitized linguistic style and typing cadence extraction. |
-| **`copy-write`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/copy-write`](https://github.com/ksprashu/agent-skill-forge) | Technical prose companion with 3-tier Profile-Overlay voice personalization. |
-| **`image-gen`** | **Google DeepMind** | [Gemini API Documentation](https://ai.google.dev/) | Multimodal image and diagram generation using Gemini Flash Image. |
+| **`voice-register`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/voice-register`](https://github.com/ksprashu/agent-skill-forge) | Channel-register voice profiles, kept out of the public repo. |
+| **`cognitive-profiler`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/cognitive-profiler`](https://github.com/ksprashu/agent-skill-forge) | Reader-preference profiling compiled into harness configuration. |
+| **`image-gen`** | **Google DeepMind** | [Gemini API CLI &amp; Image Docs](https://aistudio.google.com/docs/image-generation) | Stdlib `gemini-api` CLI image, comic, and sequential timeline generation (`gemini-nano-banana-2.1`, `gemini-3-pro-image`) with mechanical header and Argon rubric verification. |
+| **`atelier`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/atelier`](https://github.com/ksprashu/agent-skill-forge) | Subject-grounded design direction for human-facing reports, briefs, and documents, with strong hierarchy, scannable tables, and anti-AI-slop aesthetics. |
+| **`chronicle`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/chronicle`](https://github.com/ksprashu/agent-skill-forge) | Technical nonfiction storytelling and interactive field books. |
+| **`video-gen`** | **Google DeepMind** | [Gemini Omni Flash Docs](https://aistudio.google.com/docs/omni) | Stdlib arbitrary-length `gemini-api` CLI video director (`gemini-omni-1.2-flash`), keyframe chaining, broadcast 2-pass audio mixing, caption/card compositing, and `ffprobe` + Argon verification. |
+| **`audio-gen`** | **Google DeepMind &amp; Cloud TTS** | [Gemini API CLI Docs](https://aistudio.google.com/docs/cli) | Stdlib Lyria 3.5 music/song generator, Gemini 3.8 TTS &amp; `/v1beta/voices` engine, Cloud TTS `Chirp 3: HD`, foley/stingers, and `-14 LUFS` 2-pass ducked broadcast mixer. |
 | **`continuous-alignment`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/continuous-alignment`](https://github.com/ksprashu/agent-skill-forge) | Transcript-distilled memory distillation, strict 200-line AGENTS.md budget guard, living ADRs, and roadmap visualizer. |
-| **`work`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
+| **`work`** | **Prashanth Subrahmanyam** (inspired by the **Google Antigravity Teamwork architecture**) | [`agent-skill-forge/skills/work`](https://github.com/ksprashu/agent-skill-forge) | Autonomous multi-agent swarm engine with Sentinel protocol, tournament arbiter, and DAG runner. |
 | **`h2o`** | **Prashanth Subrahmanyam** (sibling to `work`) | [`agent-skill-forge/skills/h2o`](https://github.com/ksprashu/agent-skill-forge) | Lean sequential swarm with Hydrogen authors, Opus adversarial gates, frozen done criteria, and a stdlib gate script (`h2o_gate.py`). |
-| **Preferred Skills (12)** | **Addy Osmani**, **Matt Pocock**, **Cursor**, **Anthropic** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills), [`mattpocock/skills`](https://github.com/mattpocock/skills), [`anthropics/skills`](https://github.com/anthropics/skills) | Curated domain skills for frontend, performance, security, CI/CD, and debugging. |
+| **`handoff`** | **Prashanth Subrahmanyam** (inspired by **Matt Pocock**, **EveryInc**, &amp; **REMvisual**) | [`agent-skill-forge/skills/handoff`](https://github.com/ksprashu/agent-skill-forge) | Stdlib cross-harness session handoff collector, secret/path verifier, SHA-256 drift detector, and reversible Turn-0 startup beacon manager. |
+| **`horizon`** | **Prashanth Subrahmanyam** | [`agent-skill-forge/skills/horizon`](https://github.com/ksprashu/agent-skill-forge) | Stdlib 6-12 month predictive tech horizon ledger, S9 mechanical probe engine, L3 verdict verifier, and SHA-256 backup/PR provenance gate. |
+| **Preferred Skills** | **Addy Osmani** | [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) (MIT) | Domain skills for frontend, performance, CI/CD, and debugging, fetched at a pinned SHA from `config/upstream.lock.json`. Not vendored. `agent-security-posture` is local. |
 </code></pre>
                 </div>
             </div>
@@ -834,16 +961,16 @@ The 12 Preferred Domain Skills are located in `preferred/` and can be installed 
         <aside class="toc-bar">
             <span class="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">On This Page</span>
             <nav class="mt-3 space-y-1">
-                <a href="#1-core-universal-action-verbs-17-skills-across-4-clusters" class="sidebar-link text-xs">🌟 1. Core Universal Action Verbs (17 Skills across 4 Clusters)</a>
+                <a href="#1-core-universal-action-verbs-4-clusters" class="sidebar-link text-xs">🌟 1. Core Universal Action Verbs (4 Clusters)</a>
 <a href="#cluster-c1-planning-specification-swarm-execution---inline-code-3" class="sidebar-link text-xs ml-2">📐 Cluster C1: Planning, Specification & Swarm Execution (<!--INLINE_CODE_3-->)</a>
-<a href="#cluster-c2-quality-verification---inline-code-18" class="sidebar-link text-xs ml-2">🧪 Cluster C2: Quality & Verification (<!--INLINE_CODE_18-->)</a>
-<a href="#cluster-c3-content-creative-authoring---inline-code-31" class="sidebar-link text-xs ml-2">🎨 Cluster C3: Content, Creative & Authoring (<!--INLINE_CODE_31-->)</a>
-<a href="#cluster-c4-knowledge-governance---inline-code-45" class="sidebar-link text-xs ml-2">📚 Cluster C4: Knowledge & Governance (<!--INLINE_CODE_45-->)</a>
-<a href="#2-preferred-domain-specific-skills-12-skills-across-4-clusters" class="sidebar-link text-xs">🛠️ 2. Preferred Domain-Specific Skills (12 Skills across 4 Clusters)</a>
-<a href="#cluster-d1-full-stack-quality---inline-code-65" class="sidebar-link text-xs ml-2">🌐 Cluster D1: Full-Stack & Quality (<!--INLINE_CODE_65-->)</a>
-<a href="#cluster-d2-security-diagnostics-reliability---inline-code-75" class="sidebar-link text-xs ml-2">🛡️ Cluster D2: Security, Diagnostics & Reliability (<!--INLINE_CODE_75-->)</a>
-<a href="#cluster-d3-devops-workflows---inline-code-82" class="sidebar-link text-xs ml-2">🚀 Cluster D3: DevOps & Workflows (<!--INLINE_CODE_82-->)</a>
-<a href="#cluster-d4-ai-evaluation---inline-code-89" class="sidebar-link text-xs ml-2">🧠 Cluster D4: AI & Evaluation (<!--INLINE_CODE_89-->)</a>
+<a href="#cluster-c2-quality-verification---inline-code-20" class="sidebar-link text-xs ml-2">🧪 Cluster C2: Quality & Verification (<!--INLINE_CODE_20-->)</a>
+<a href="#cluster-c3-content-creative-authoring---inline-code-46" class="sidebar-link text-xs ml-2">🎨 Cluster C3: Content, Creative & Authoring (<!--INLINE_CODE_46-->)</a>
+<a href="#cluster-c4-knowledge-governance---inline-code-89" class="sidebar-link text-xs ml-2">📚 Cluster C4: Knowledge & Governance (<!--INLINE_CODE_89-->)</a>
+<a href="#2-preferred-domain-specific-skills-4-clusters" class="sidebar-link text-xs">🛠️ 2. Preferred Domain-Specific Skills (4 Clusters)</a>
+<a href="#cluster-d1-full-stack-quality---inline-code-123" class="sidebar-link text-xs ml-2">🌐 Cluster D1: Full-Stack & Quality (<!--INLINE_CODE_123-->)</a>
+<a href="#cluster-d2-security-diagnostics-reliability---inline-code-133" class="sidebar-link text-xs ml-2">🛡️ Cluster D2: Security, Diagnostics & Reliability (<!--INLINE_CODE_133-->)</a>
+<a href="#cluster-d3-devops-workflows---inline-code-140" class="sidebar-link text-xs ml-2">🚀 Cluster D3: DevOps & Workflows (<!--INLINE_CODE_140-->)</a>
+<a href="#cluster-d4-ai-context---inline-code-147" class="sidebar-link text-xs ml-2">🧠 Cluster D4: AI & Context (<!--INLINE_CODE_147-->)</a>
 <a href="#3-attributions-lineage-matrix" class="sidebar-link text-xs">👤 3. Attributions & Lineage Matrix</a>
             </nav>
         </aside>
