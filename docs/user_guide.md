@@ -16,10 +16,10 @@ To maximize agent efficiency, eliminate AI slop, and prevent context bloat, **Ag
 
 ### 📦 Core Clusters (Action Skills)
 Available globally or installable in focused sections:
-*   **Cluster C1: Planning & Specification (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`, `h2o`
-*   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `unslop`
-*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `image-gen`
-*   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `handoff`
+*   **Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)**: `spec`, `plan`, `grill`, `prompt`, `work`, `h2o`
+*   **Cluster C2: Quality & Verification (`test-review`)**: `test`, `verify`, `review`, `security-review`, `pr-review-loop`, `issue-loop`, `unslop`
+*   **Cluster C3: Content, Creative & Authoring (`content-creative`)**: `codelab`, `human-voice`, `voice-register`, `cognitive-profiler`, `image-gen`, `video-gen`, `audio-gen`, `atelier`, `chronicle`
+*   **Cluster C4: Knowledge & Governance (`docs-governance`)**: `docs`, `catalog`, `google-oss`, `continuous-alignment`, `handoff`, `horizon`
 
 ### 🛠️ Domain Clusters (Preferred Skills)
 Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed globally. All but `agent-security-posture` come from `addyosmani/agent-skills`, pinned in `config/upstream.lock.json` and fetched into `.upstream/` at install time:
@@ -30,7 +30,7 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
 
 ```
                                   ┌──────────────────────────────────────────────────────────┐
-                                  │            AGENT SKILL FORGE TAXONOMY (30 SKILLS)        │
+                                  │            AGENT SKILL FORGE TAXONOMY (39 SKILLS)        │
                                   └────────────────────────────┬─────────────────────────────┘
                                                                │
                               ┌────────────────────────────────┴────────────────────────────────┐
@@ -38,21 +38,28 @@ Bootstrapped JIT into project workspaces (`.gemini/skills/`) or installed global
                ┌──────────────────────────────┐                                  ┌──────────────────────────────┐
                │    CORE CLUSTERS (C1 - C4)   │                                  │   DOMAIN CLUSTERS (D1 - D4)  │
                ├──────────────────────────────┤                                  ├──────────────────────────────┤
-               │ C1: Plan & Spec              │                                  │ D1: Full-Stack & Quality     │
+               │ C1: Plan, Spec & Swarm       │                                  │ D1: Full-Stack & Quality     │
                │     /spec, /plan, /grill,    │                                  │     frontend-ui, perf-opt,   │
-               │     /prompt                  │                                  │     browser-test, api-design │
+               │     /prompt, /work, /h2o     │                                  │     browser-test, api-design │
                │                              │                                  │                              │
                │ C2: Quality & Verification   │                                  │ D2: Security & Reliability   │
-               │     /test, /verify, /review, │                                  │     security, debugging,     │
-               │     /unslop                  │                                  │     observability            │
+               │     /test, /verify, /review, │                                  │     agent-security-posture,  │
+               │     /security-review,        │                                  │     debugging, observability │
+               │     /pr-review-loop,         │                                  │                              │
+               │     /issue-loop, /unslop     │                                  │                              │
                │                              │                                  │                              │
                │ C3: Content & Creative       │                                  │ D3: DevOps & Workflows       │
                │     /codelab, /human-voice,  │                                  │     ci-cd, git-workflow,     │
-               │ voice-register, /image-gen   │                                  │     deprecation-migration    │
+               │     voice-register,          │                                  │     deprecation-migration    │
+               │     /cognitive-profiler,     │                                  │                              │
+               │     /image-gen, /video-gen,  │                                  │                              │
+               │     /audio-gen, atelier,     │                                  │                              │
+               │     /chronicle               │                                  │                              │
                │                              │                                  │                              │
                │ C4: Knowledge & Governance   │                                  │ D4: AI & Context             │
                │     /docs, /catalog,         │                                  │     context-engineering      │
-               │ /google-oss, /align, /handoff│                                  │                              │
+               │     /google-oss, /align,     │                                  │                              │
+               │     /handoff, /horizon       │                                  │                              │
                └──────────────────────────────┘                                  └──────────────────────────────┘
 ```
 
@@ -103,24 +110,32 @@ bash scripts/install.sh --all
 
 ## 🌟 3. Detailed Core Skills Directory by Cluster
 
-### 📐 Cluster C1: Planning & Specification (`plan-spec`)
+### 📐 Cluster C1: Planning, Specification & Swarm Execution (`plan-spec`)
 *   **`/spec`** (`skills/spec`): Writes source-grounded specifications with official API doc citations, interface data contracts, and explicit non-goals before generating code.
 *   **`/plan`** (`skills/plan`): Slices specifications into vertically testable task units with dependency DAG checkpoints.
 *   **`/grill`** (`skills/grill`): Conducts an iterative, 1-question-at-a-time Socratic interview with attached technical hypotheses, continuing until all ambiguities are resolved.
 *   **`/prompt`** (`skills/prompt`): Deconstructs vague requests, complex architectural goals, or multi-step tasks into clear intent directives and machine-readable dependency graphs (`task_graph.json`).
+*   **`/work`** (`skills/work`): Coordinates parallel multi-agent swarms with Sentinel oversight, dispatch-only orchestration, competitive branching tournaments, and adversarial verification. Its DAG gates are settled by a script rather than by the agent's own say-so, and a forensic auditor is calibrated against a known-fake corpus.
 *   **`/h2o`** (`skills/h2o`): Runs a lean sequential swarm. The coordinator grills you to >= 90% confidence and freezes binary done criteria, then one Hydrogen planner and one Hydrogen implementer work against Opus adversarial gates (plan, functional, code, security). Each gate allows 3 NOT GOOD verdicts before asking you to stop or continue. Use `/work` instead for the heavyweight parallel DAG swarm with design tournaments.
 
 ### 🧪 Cluster C2: Quality & Verification (`test-review`)
 *   **`/test`** (`skills/test`): Enforces Test-Driven Development (TDD) and Prove-It reproduction loops. Requires writing failing unit/integration tests before writing implementation logic.
 *   **`/verify`** (`skills/verify`): Expectation-Grounded Alignment (EGA). Executes deterministic static check scripts alongside blinded multi-persona dynamic LLM judge rubrics.
-*   **`/review`** (`skills/review`): Conducts 5-axis code reviews (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation diffs.
+*   **`/review`** (`skills/review`): Runs the repo's linters and type checkers, then reviews across eight axes (scope/architecture, correctness, security, reliability, performance, data integrity, tests, observability) plus style, and emits schema-validated findings (P0–P3, nit) and SARIF.
+*   **`/security-review`** (`skills/security-review`): Runs semgrep, gitleaks, osv-scanner, trivy, actionlint, zizmor and native audits as leads, then confirms each against a six-element finding test grounded in OWASP Top 10 2025, ASVS 5.0 and CWE Top 25. Uses the same findings schema and P0–P3 scale as `review`.
+*   **`/pr-review-loop`** (`skills/pr-review-loop`): Works the review threads on your PR until the `pr-guardian/verdict` gate is green: fixes and replies with the SHA, pushes back with `/ai-review wontfix:`, or escalates to a human, and resolves a thread only after pr-guardian verifies it.
+*   **`/issue-loop`** (`skills/issue-loop`, aliases `/fix-issue`, `/fix-issues`): Drives open GitHub issues through five gated stages: redacted intake and triage, file-disjoint track planning, a TDD red-green fix on a feature branch, review plus a cross-family verification gate, and PR creation with final issue updates.
 *   **`/unslop`** (`skills/unslop`): Universal anti-bloat engine. Strips AI smells, promotional bloat, and filler words from prose, docs, code comments, commit messages, analyses, and UI copy. It leaves code logic alone.
 
 ### 🎨 Cluster C3: Content, Creative & Authoring (`content-creative`)
 *   **`/codelab`** (`skills/codelab`): Scaffolds and validates interactive step-by-step developer tutorials and hands-on workshops formatted for `claat`.
 *   **`/human-voice`** (`skills/human-voice`): Scans developer tool logs, scrubs PII, and extracts authentic human writing style markers and typing cadence for personalization.
 *   **`voice-register`** (`skills/voice-register`): Applies your voice profile in the right channel register (email, blog, strategy doc, notes) on top of `unslop`. Profile tiers: `.local.md` > `~/.gemini/personas/default/` > `.template.md`.
+*   **`/cognitive-profiler`** (`skills/cognitive-profiler`, alias `/profile-me`): Harvests redacted evidence of how you react to AI output, judges it against a rubric, and compiles a cited communication profile into `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, and `.cursorrules`.
 *   **`/image-gen`** (`skills/image-gen`): Generates high-fidelity technical architecture diagrams, infographics, and UI graphics using Gemini Flash Image.
+*   **`/video-gen`** (`skills/video-gen`): Generates and chains arbitrary-length videos via `gemini-api` (`gemini-omni-1.2-flash`) and `ffmpeg`, with broadcast `-14 LUFS` audio, OCR-verified scene text, captions, and motion cards.
+*   **`/audio-gen`** (`skills/audio-gen`, aliases `/music-gen`, `/sfx-gen`, `/tts-gen`): Generates and verifies music, TTS narration and dialogue, custom voices, foley, and stingers, then masters 2-pass `-14 LUFS` ducked mixes.
+*   **`atelier`** (`skills/atelier`, auto on reports and briefs): Produces subject-grounded, scannable reports, briefs, digests, and documents with strong hierarchy, tables, and diagrams, avoiding generic AI aesthetics.
 *   **`/chronicle`** (`skills/chronicle`): Turns a technical report, dossier, or architecture brief into a Gladwell/Grant nonfiction chapter or field book, with evidence badges and a Field Notebook checklist.
 
 ### 📚 Cluster C4: Knowledge & Governance (`docs-governance`)
@@ -129,10 +144,11 @@ bash scripts/install.sh --all
 *   **`/google-oss`** (`skills/google-oss`): Audits codebases for Google Open Source compliance, inserts Apache-2.0 license headers, and sanitizes internal corporate paths.
 *   **`/align`** (`skills/continuous-alignment`): Distills conversation session transcripts into a strict 200-line `AGENTS.md` budget, records living Architecture Decision Records (ADRs), and compiles roadmap visualizers.
 *   **`/handoff`** (`skills/handoff`, alias `/handover`): Packages multi-repository session state, locked decisions, and SHA-256 file digests into `.handoff/HANDOFF.md`, and arms reversible Turn-0 auto-pickup beacons across Google Antigravity (`agy`), Claude Code, OpenAI Codex, and Cursor. See [`skills/handoff/README.md`](../skills/handoff/README.md).
+*   **`/horizon`** (`skills/horizon`, aliases `/radar`, `/tech-horizon`): Persists 6-12 month technical forecasts into a central ledger (`~/.gemini/horizons/`), runs deterministic upstream and anchor probes, validates sweep verdicts, enforces SHA-256 pre-edit backups and PR URL provenance, and renders `INDEX.md`. See [`skills/horizon/README.md`](../skills/horizon/README.md).
 
 ---
 
-## 🔄 3. The Universal Engineering Flow & Order of Execution
+## 🔄 4. The Universal Engineering Flow & Order of Execution
 
 For any substantive engineering, refactoring, or feature development task, invoke skills in this strict sequence:
 
@@ -159,7 +175,7 @@ For any substantive engineering, refactoring, or feature development task, invok
       │
 [8. /verify]  ────────► Run static verifier scripts & blinded judge rubrics
       │
-[9. /review]  ────────► 5-Axis audit (Correctness, Security, Perf, Arch, Style)
+[9. /review]  ────────► 8-axis audit + style (Scope/Arch, Correctness, Security, ...)
       │
 [10. /docs]   ────────► Scaffold SDLC docs & compile standalone HTML portal
       │
@@ -170,7 +186,7 @@ For any substantive engineering, refactoring, or feature development task, invok
 
 ---
 
-## 📋 4. Step-by-Step Flow Rationale: Why This Order Matters
+## 📋 5. Step-by-Step Flow Rationale: Why This Order Matters
 
 | Sequence | Skill / Gate | Why It Must Run at This Exact Stage |
 | :--- | :--- | :--- |
@@ -182,14 +198,14 @@ For any substantive engineering, refactoring, or feature development task, invok
 | **Step 6** | **`/test`** | **Guarantees correctness by construction.** For bugs, writing the failing test first proves reproduction. For new features, it defines expected behavior upfront. |
 | **Step 7** | **`/unslop`** | **Strips AI tells before review.** Cleans sterile comments, docstrings, and commit messages while the diff is fresh. It leaves code logic alone. |
 | **Step 8** | **`/verify`** | **Dual-layer deterministic proof.** Runs static deterministic check scripts (`verify_okf.py`) combined with multi-persona blinded LLM judge rubrics. |
-| **Step 9** | **`/review`** | **Adversarial gate before commit.** Evaluates diffs across 5 axes (Correctness, Security, Performance, Architecture, Readability) with line-by-line remediation. |
+| **Step 9** | **`/review`** | **Adversarial gate before commit.** Runs the repo's linters and type checkers, then evaluates diffs across eight axes (scope/architecture, correctness, security, reliability, performance, data integrity, tests, observability) plus style, emitting schema-validated findings. |
 | **Step 10**| **`/docs` & `/catalog`** | **Preserves codebase memory.** Documents architecture in the Google Open Knowledge Format (`.gemini/knowledge/`) and compiles 4-theme standalone HTML portals. |
 | **Step 11**| **`/align`** | **Keeps agent memory hot & lean.** Summarizes transcript learnings into the 200-line `AGENTS.md` budget, records living ADRs, and updates project roadmaps. |
 | **Step 12**| **`/handoff`** | **Enables zero-loss cross-harness continuity.** Captures multi-repo git/SHA-256 drift digests into `.handoff/`, validates secret-free workspace-confined state, and arms reversible Turn-0 auto-pickup beacons across harnesses. |
 
 ---
 
-## 🎨 5. Specialized Sub-Workflows
+## 🎨 6. Specialized Sub-Workflows
 
 ### A. The Content, Prose & Codelab Pipeline
 Used when authoring documentation, tutorials, technical blogs, or developer keynotes:
@@ -228,7 +244,7 @@ If you don't set the variable, nothing is fetched and you get neutral prose, wit
 
 ---
 
-## 📦 6. Curated Preferred Skills (On-Demand / JIT Catalog)
+## 📦 7. Curated Preferred Skills (On-Demand / JIT Catalog)
 
 Specialized engineering skills should **never** be permanently installed in global scope. Instead, bootstrap them on demand into your workspace:
 
@@ -260,7 +276,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 
 ---
 
-## 🎯 7. Decision Matrix: Which Skill to Invoke When
+## 🎯 8. Decision Matrix: Which Skill to Invoke When
 
 | User Scenario / Trigger | Skill Invocations & Action |
 | :--- | :--- |
@@ -272,6 +288,9 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Writing code or fixing a bug | Invoke `/test` (Prove-It TDD loop) |
 | Cleaning AI filler from prose, comments, or commit messages | Invoke `/unslop` |
 | Auditing code quality, security, or regressions | Invoke `/verify` & `/review` |
+| Scanner-backed security review of a diff, PR, or repository | Invoke `/security-review` |
+| Working pr-guardian review threads on your PR until the verdict gate is green | Invoke `/pr-review-loop` |
+| Fixing one or more open GitHub issues end to end, from triage to PR | Invoke `/issue-loop` (`/fix-issue`, `/fix-issues`) |
 | Scaffolding SDLC doc suite or compiling HTML presentations | Invoke `/docs` & `compile_docs.py` |
 | Extracting developer voice or drafting technical prose | Invoke `/human-voice`, then `voice-register` |
 | Creating step-by-step developer workshops or codelabs | Invoke `/codelab` |
@@ -279,6 +298,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 | Verifying OSS license compliance and cleaning company paths | Invoke `/google-oss` |
 | Maintaining project vision, rules budget, and living ADRs | Invoke `/align` (`continuous-alignment`) |
 | Switching AI coding tools or pausing a multi-session / multi-repo arc | Invoke `/handoff` (`skills/handoff`) |
+| Tracking a 6-12 month technical forecast or sweeping an upstream watchlist | Invoke `/horizon` (`/radar`, `/tech-horizon`) |
 | Adding UI components, styles, or responsive layouts | Bootstrap JIT: `frontend-ui-engineering` |
 | Optimizing database queries, bundle size, or CWV (LCP/INP) | Bootstrap JIT: `performance-optimization` |
 | Building secure auth flows or remediating OWASP/CWE issues | Invoke `/review`; bootstrap JIT: `agent-security-posture` |
@@ -286,7 +306,7 @@ npx skills add ksprashu/agent-skill-forge --skill <skill-name>
 
 ---
 
-## 💡 8. The 5 Invariant Best Practices
+## 💡 9. The 5 Invariant Best Practices
 
 1. **Never Skip the `/test` Prove-It Step**: For bug fixes, reproduction *is* the proof. Write the failing test before changing a single line of application logic.
 2. **Run `/unslop` Before `/review`**: Always de-slop generated comments and documentation before running reviews. Verbose comments distract from architectural review.
