@@ -1394,7 +1394,7 @@ class TestDifferentiationFreshnessAndContracts(unittest.TestCase):
 
         # S6: Every documented subcommand and --flag in SKILL.md and references/*.md must exist in --help.
         help_texts = [_run_horizon("--help").stdout]
-        subcommands = ("record", "list", "collect-evidence", "validate-verdict", "backup-target", "record-action", "render-index")
+        subcommands = ("record", "list", "collect-evidence", "validate-verdict", "backup-target", "record-action", "render-index", "mcp")
         for sub in subcommands:
             res = _run_horizon(sub, "--help")
             self.assertEqual(res.returncode, 0, res.stderr)
